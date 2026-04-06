@@ -11,7 +11,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -20,8 +22,10 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.jsonIo
+import kotlinx.coroutines.delay
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalSerializationApi::class)
 internal object DiscordApi {
@@ -44,7 +48,7 @@ internal object DiscordApi {
     }
 
     suspend fun getThreads(channelId: String) =
-        client.get("guilds/${BuildKonfig.discordGuildId}/threads/active")
+        client.get("channels/$channelId/threads/active")
             .body<ThreadsList>()
 
     suspend fun getChannel(channelId: String) =
@@ -57,15 +61,23 @@ internal object DiscordApi {
     suspend fun createThread(
         channelId: String,
         title: String,
-        message: String,
+        firstMessage: String,
+        secondMessage: String? = null,
     ) {
-        client.post("channels/$channelId/threads") {
+        val threadChannel = client.post("channels/$channelId/threads") {
             setBody(
                 CreateThread(
                     name = title,
-                    message = CreateMessage(message),
+                    message = CreateMessage(firstMessage),
                 )
             )
+        }.assertSuccess().body<Channel>()
+        createMessage(threadChannel.id, secondMessage?.ifBlank { null } ?: "Reserved")
+    }
+
+    suspend fun createMessage(channelId: String, message: String) {
+        client.post("channels/$channelId/messages") {
+            setBody(CreateMessage(message))
         }.assertSuccess()
     }
 
@@ -75,15 +87,32 @@ internal object DiscordApi {
         }.assertSuccess()
     }
 
+    suspend fun getOldestThreadMessage(channelId: String) =
+        client.get("channels/$channelId/messages") {
+            parameter("after", "0")
+            parameter("limit", "2")
+        }
+            .body<List<Message>>()
+            .first()
+
     suspend fun modifyThread(threadId: String, name: String? = null, archived: Boolean? = null) {
         client.patch("channels/$threadId") {
             setBody(ModifyThread(name = name, archived = archived))
         }.assertSuccess()
     }
 
-    private suspend fun HttpResponse.assertSuccess() {
+    suspend fun deleteThread(threadId: String) {
+        client.delete("channels/$threadId").assertSuccess()
+    }
+
+    private suspend fun HttpResponse.assertSuccess() = apply {
         if (!status.isSuccess()) {
-            println("Failed request ${this.request.url}: ${bodyAsText()}")
+            println("Failed request ${this.request.url}: $headers ${bodyAsText()}")
+            val retryAfter = headers["Retry-After"]?.toIntOrNull()?.milliseconds
+            if (retryAfter != null) {
+                println("Delaying by $retryAfter, this will not retry the request")
+                delay(retryAfter)
+            }
         }
     }
 }

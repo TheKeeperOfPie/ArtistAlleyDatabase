@@ -53,6 +53,9 @@ fun main() {
                         Button(onClick = { scope.launch { ForumSyncer.verifyChannel() } }) {
                             Text("Verify channel")
                         }
+                        Button(onClick = { scope.launch { ForumSyncer.deleteAllThreads() } }) {
+                            Text("Delete all threads")
+                        }
                         Button(onClick = { scope.launch { ForumSyncer.syncPinned() } }) {
                             Text("Sync pinned")
                         }

@@ -32,6 +32,8 @@ internal object ForumSyncer {
 
     var error by mutableStateOf<String?>(null)
 
+    private val THROTTLE_DELAY = 3.seconds
+
     suspend fun verifyChannel() {
         val channel = DiscordApi.getChannel(BuildKonfig.discordForumChannelId)
         if (channel.defaultForumLayout != ForumLayout.GALLERY_VIEW) {
@@ -40,6 +42,23 @@ internal object ForumSyncer {
             println(errorMessage)
             error = errorMessage
         }
+        val threads = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        println("Threads = ${threads.threads.map { it.name }}")
+    }
+
+    suspend fun deleteAllThreads() {
+        println("Deleting ALL threads")
+        val threads = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        threads.threads
+            .filter {
+                val flags = it.flags
+                flags == null || (flags.flags and ChannelFlag.PINNED.flag) == 0
+            }
+            .forEach {
+                delay(THROTTLE_DELAY)
+                println("Deleting ${it.name}")
+                DiscordApi.deleteThread(it.id)
+            }
     }
 
     suspend fun syncPinned() = withContext(Dispatchers.IO) {
@@ -67,7 +86,7 @@ internal object ForumSyncer {
             DiscordApi.createThread(
                 channelId = BuildKonfig.discordForumChannelId,
                 title = "What is this?",
-                message = message,
+                firstMessage = message,
             )
         } else {
             DiscordApi.editMessage(
@@ -114,7 +133,7 @@ internal object ForumSyncer {
             .toMutableSet()
 
         val missing = mutableListOf<Artist>()
-        val changed = mutableListOf<Pair<Artist, ThreadWrapper>>()
+        val changed = mutableListOf<Pair<Artist, ThreadWithContent>>()
         artists.forEach { artist ->
             val thread = threads.find {
                 it.booth == artist.booth && it.artistName == artist.entry.name
@@ -124,17 +143,20 @@ internal object ForumSyncer {
                 missing += artist
             } else {
                 if (thread.messageHash != artist.messageHash) {
-                    delay(1.seconds)
+                    delay(THROTTLE_DELAY)
                     println("Fetching ${thread.thread.name}")
-                    val message = DiscordApi.getChannelMessage(thread.thread.id, thread.thread.id)
-                    val original = message.content.lines()
-                    val revised = artist.threadContent.lines()
+                    val firstMessage =
+                        DiscordApi.getChannelMessage(thread.thread.id, thread.thread.id)
+                    val secondMessage = DiscordApi.getOldestThreadMessage(thread.thread.id)
+                    val original = firstMessage.content.lines() + secondMessage.content.lines()
+                    val revised =
+                        artist.threadContent.first.lines() + artist.threadContent.second.lines()
                     val diff = DiffRowGenerator().generateDiffRows(original, revised)
                     println("Diff for ${thread.thread.name}: ")
                     diff.withIndex()
                         .filter { it.value.tag != DiffRow.Tag.EQUAL }
                         .forEach { println("\t ${it.index}: ${it.value}") }
-                    changed += artist to thread
+                    changed += artist to ThreadWithContent(thread, firstMessage, secondMessage)
                 }
             }
         }
@@ -150,38 +172,47 @@ internal object ForumSyncer {
         }
 
         missing.forEach {
-            delay(1.seconds)
+            delay(THROTTLE_DELAY)
             DiscordApi.createThread(
                 channelId = BuildKonfig.discordForumChannelId,
                 title = it.threadTitle,
-                message = it.threadContent,
+                firstMessage = it.threadContent.first,
+                secondMessage = it.threadContent.second,
             )
             println("Created ${it.threadTitle}")
         }
 
         changed.forEach {
-            delay(1.seconds)
-            if (it.second.messageHash != it.first.messageHash) {
+            if (it.second.thread.messageHash != it.first.messageHash) {
+                delay(THROTTLE_DELAY)
                 DiscordApi.editMessage(
-                    channelId = it.second.thread.id,
-                    messageId = it.second.thread.id,
-                    message = it.first.threadContent,
+                    channelId = it.second.thread.thread.id,
+                    messageId = it.second.firstMessage.id,
+                    message = it.first.threadContent.first,
                 )
-                println("Edited ${it.second.thread.name}")
+                println("Edited ${it.second.firstMessage.id}")
+                delay(THROTTLE_DELAY)
+                DiscordApi.editMessage(
+                    channelId = it.second.thread.thread.id,
+                    messageId = it.second.secondMessage.id,
+                    message = it.first.threadContent.second,
+                )
+                println("Edited ${it.second.secondMessage.id}")
+                println("Edited ${it.second.thread.thread.name}")
             }
-            if (it.second.thread.name != it.first.threadTitle) {
-                delay(1.seconds)
+            if (it.second.thread.thread.name != it.first.threadTitle) {
+                delay(THROTTLE_DELAY)
                 DiscordApi.modifyThread(
-                    threadId = it.second.thread.id,
+                    threadId = it.second.thread.thread.id,
                     name = it.first.threadTitle
                 )
-                println("Updated ${it.second.thread.name} -> ${it.first.threadTitle}")
+                println("Updated ${it.second.thread.thread.name} -> ${it.first.threadTitle}")
             }
         }
 
         if (range == null) {
             threads.forEach {
-                delay(1.seconds)
+                delay(THROTTLE_DELAY)
                 DiscordApi.modifyThread(threadId = it.thread.id, archived = true)
             }
         }
@@ -196,8 +227,8 @@ internal object ForumSyncer {
 
     private data class Artist(
         val entry: ArtistEntryAnimeExpo2026,
-        val seriesInferred: List<String?>,
-        val seriesConfirmed: List<String?>,
+        val seriesInferred: List<String>,
+        val seriesConfirmed: List<String>,
     ) {
         companion object {
             fun fromEntry(entry: ArtistEntryAnimeExpo2026, series: Map<String, SeriesInfo>) =
@@ -208,74 +239,124 @@ internal object ForumSyncer {
                 )
 
             private fun List<String>.mapSeriesNames(series: Map<String, SeriesInfo>) =
-                map { series[it]?.name(AniListLanguageOption.DEFAULT) }
+                map { series[it]?.name(AniListLanguageOption.DEFAULT) ?: it }
         }
 
         val booth = entry.booth?.let(Booth::fromStringOrNull)
 
-        val threadContent = buildString {
-            if (!entry.summary.isNullOrBlank()) {
-                appendLine(entry.summary)
-            }
+        val threadTitleWithoutHash = "${entry.booth} - ${entry.name}"
 
-            // Portfolio goes first to ensure image preview shows artwork
-            if (entry.portfolioLinks.isNotEmpty()) {
-                appendLine("### Portfolio")
-                entry.portfolioLinks.forEach {
-                    appendLine("- $it")
-                }
-            }
-
-            if (entry.socialLinks.isNotEmpty()) {
-                appendLine("### Links")
-                entry.socialLinks.forEach {
-                    appendLine("- $it")
-                }
-            }
-
-            if (entry.storeLinks.isNotEmpty()) {
-                appendLine("### Store")
-                entry.storeLinks.forEach {
-                    appendLine("- $it")
-                }
-            }
-
-            if (entry.commissions.isNotEmpty()) {
-                appendLine("### Commissions")
-                entry.commissions.forEach {
-                    appendLine("- $it")
-                }
-            }
-
-            if (seriesConfirmed.isNotEmpty()) {
-                appendLine("### Series")
-                seriesConfirmed.forEach { appendLine("- $it") }
-            } else if (seriesInferred.isNotEmpty()) {
-                appendLine("### Series - Unconfirmed")
-                seriesInferred.forEach { appendLine("- $it") }
-            }
-
-            if (entry.merchConfirmed.isNotEmpty()) {
-                appendLine("### Merch")
-                entry.merchConfirmed.forEach {
-                    appendLine("- $it")
-                }
-            } else if (entry.merchInferred.isNotEmpty()) {
-                appendLine("### Merch - Unconfirmed")
-                entry.merchInferred.forEach {
-                    appendLine("- $it")
-                }
-            }
-        }
+        val threadContent = buildMessage()
 
         val messageHash = threadContent.hashCode().absoluteValue.toString()
 
         val threadTitle =
-            "${entry.booth} - ${entry.name} - $messageHash".also {
+            "$threadTitleWithoutHash - $messageHash".also {
                 if (it.length > 100) {
                     throw IllegalStateException("Thread title too long: $it")
                 }
             }
+
+        private fun buildMessage(): Pair<String, String> {
+            val name = entry.name
+            val summary = buildString {
+                if (!entry.summary.isNullOrBlank()) {
+                    appendLine(entry.summary)
+                }
+            }
+
+            val portfolioLinks = buildString {
+                if (entry.portfolioLinks.isNotEmpty()) {
+                    appendLine("### Portfolio")
+                    entry.portfolioLinks.forEach {
+                        appendLine("- $it")
+                    }
+                }
+            }
+
+            val socialLinks = buildString {
+                if (entry.socialLinks.isNotEmpty()) {
+                    appendLine("### Links")
+                    entry.socialLinks.forEach {
+                        appendLine("- $it")
+                    }
+                }
+            }
+
+            val storeLinks = buildString {
+                if (entry.storeLinks.isNotEmpty()) {
+                    appendLine("### Store")
+                    entry.storeLinks.forEach {
+                        appendLine("- $it")
+                    }
+                }
+            }
+
+            val commissions = buildString {
+                if (entry.commissions.isNotEmpty()) {
+                    appendLine("### Commissions")
+                    entry.commissions.forEach {
+                        appendLine("- $it")
+                    }
+                }
+            }
+
+            val series = buildString {
+                if (seriesConfirmed.isNotEmpty()) {
+                    appendLine("### Series")
+                    seriesConfirmed.forEach {
+                        appendLine("- $it")
+                    }
+                } else if (seriesInferred.isNotEmpty()) {
+                    appendLine("### Series - Unconfirmed")
+                    seriesInferred.forEach {
+                        appendLine("- $it")
+                    }
+                }
+            }
+
+            val merch = buildString {
+                if (entry.merchConfirmed.isNotEmpty()) {
+                    appendLine("### Merch")
+                    entry.merchConfirmed.forEach {
+                        appendLine("- $it")
+                    }
+                } else if (entry.merchInferred.isNotEmpty()) {
+                    appendLine("### Merch - Unconfirmed")
+                    entry.merchInferred.forEach {
+                        appendLine("- $it")
+                    }
+                }
+            }
+
+            // Portfolio goes first to ensure image preview shows artwork
+            val parts = listOf(
+                name,
+                summary,
+                portfolioLinks,
+                socialLinks,
+                storeLinks,
+                commissions,
+                series,
+                merch
+            )
+            var firstMessage = ""
+            var secondMessage = ""
+            parts.map { it.take(2000) }
+                .forEach {
+                    if (secondMessage.isEmpty() && firstMessage.length + it.length < 2000) {
+                        firstMessage += it
+                    } else {
+                        secondMessage += it
+                    }
+                }
+
+            if (secondMessage.length >= 2000) {
+                throw IllegalStateException("Thread content too long for $threadTitleWithoutHash: $secondMessage")
+            }
+
+            return firstMessage to secondMessage
+        }
     }
 
     private data class ThreadWrapper(val thread: Thread) {
@@ -293,6 +374,7 @@ internal object ForumSyncer {
 
     private data class ThreadWithContent(
         val thread: ThreadWrapper,
-        val message: Message?,
+        val firstMessage: Message,
+        val secondMessage: Message,
     )
 }
