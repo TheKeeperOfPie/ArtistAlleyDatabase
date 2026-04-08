@@ -97,15 +97,17 @@ fun main() {
                             }
                             val boothStart = Booth.fromStringOrNull(start.text.toString())
                             val boothEnd = Booth.fromStringOrNull(end.text.toString())
+                            val range = boothStart?.let { it..(boothEnd ?: it) }
+
                             Button(onClick = {
-                                if (boothStart != null && boothEnd != null) {
+                                if (range != null) {
                                     scope.launch {
-                                        ForumSyncer.syncThreads(boothStart..boothEnd)
+                                        ForumSyncer.syncThreads(range)
                                     }
                                 }
                             }) {
-                                if (boothStart != null && boothEnd != null) {
-                                    Text("Sync $boothStart to $boothEnd")
+                                if (range != null) {
+                                    Text("Sync ${range.start} to ${range.endInclusive}")
                                 } else {
                                     CircularProgressIndicator()
                                 }

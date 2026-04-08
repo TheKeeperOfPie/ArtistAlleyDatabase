@@ -61,29 +61,31 @@ internal object DiscordApi {
     suspend fun createThread(
         channelId: String,
         title: String,
-        firstMessage: String,
-        secondMessage: String? = null,
+        firstMessage: CreateMessage,
+        secondMessage: CreateMessage? = null,
     ) {
         val threadChannel = client.post("channels/$channelId/threads") {
             setBody(
                 CreateThread(
                     name = title,
-                    message = CreateMessage(firstMessage),
+                    message = firstMessage,
                 )
             )
         }.assertSuccess().body<Channel>()
-        createMessage(threadChannel.id, secondMessage?.ifBlank { null } ?: "Reserved")
+        if (secondMessage != null) {
+            createMessage(threadChannel.id, secondMessage)
+        }
     }
 
-    suspend fun createMessage(channelId: String, message: String) {
+    suspend fun createMessage(channelId: String, message: CreateMessage) {
         client.post("channels/$channelId/messages") {
-            setBody(CreateMessage(message))
+            setBody(message)
         }.assertSuccess()
     }
 
-    suspend fun editMessage(channelId: String, messageId: String, message: String) {
+    suspend fun editMessage(channelId: String, messageId: String, message: CreateMessage) {
         client.patch("channels/$channelId/messages/$messageId") {
-            setBody(CreateMessage(message))
+            setBody(message)
         }.assertSuccess()
     }
 

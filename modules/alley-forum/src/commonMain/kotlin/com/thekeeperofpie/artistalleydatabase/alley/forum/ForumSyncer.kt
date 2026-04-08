@@ -11,11 +11,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo202
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.discord.ChannelFlag
+import com.thekeeperofpie.artistalleydatabase.discord.CreateMessage
+import com.thekeeperofpie.artistalleydatabase.discord.Embed
 import com.thekeeperofpie.artistalleydatabase.discord.ForumLayout
 import com.thekeeperofpie.artistalleydatabase.discord.Message
 import com.thekeeperofpie.artistalleydatabase.discord.Thread
@@ -24,6 +28,7 @@ import io.github.petertrr.diffutils.text.DiffRowGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.getString
 import java.nio.file.Files
 import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
@@ -86,13 +91,13 @@ internal object ForumSyncer {
             DiscordApi.createThread(
                 channelId = BuildKonfig.discordForumChannelId,
                 title = "What is this?",
-                firstMessage = message,
+                firstMessage = CreateMessage(content = message),
             )
         } else {
             DiscordApi.editMessage(
                 channelId = existingPin.id,
                 messageId = existingPin.id,
-                message = message,
+                message = CreateMessage(content = message),
             )
         }
     }
@@ -148,9 +153,10 @@ internal object ForumSyncer {
                     val firstMessage =
                         DiscordApi.getChannelMessage(thread.thread.id, thread.thread.id)
                     val secondMessage = DiscordApi.getOldestThreadMessage(thread.thread.id)
-                    val original = firstMessage.content.lines() + secondMessage.content.lines()
+                    val original =
+                        firstMessage.content.trim().lines() + secondMessage.content.trim().lines()
                     val revised =
-                        artist.threadContent.first.lines() + artist.threadContent.second.lines()
+                        artist.threadContent.first.content.lines() + artist.threadContent.second.content.lines()
                     val diff = DiffRowGenerator().generateDiffRows(original, revised)
                     println("Diff for ${thread.thread.name}: ")
                     diff.withIndex()
@@ -225,28 +231,169 @@ internal object ForumSyncer {
         JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
     }
 
-    private data class Artist(
+    @ConsistentCopyVisibility
+    private data class Artist private constructor(
         val entry: ArtistEntryAnimeExpo2026,
         val seriesInferred: List<String>,
         val seriesConfirmed: List<String>,
+        val threadContent: Pair<CreateMessage, CreateMessage>,
     ) {
         companion object {
-            fun fromEntry(entry: ArtistEntryAnimeExpo2026, series: Map<String, SeriesInfo>) =
-                Artist(
+            suspend fun fromEntry(
+                entry: ArtistEntryAnimeExpo2026,
+                series: Map<String, SeriesInfo>,
+            ): Artist {
+                val seriesInferred = entry.seriesInferred.mapSeriesNames(series)
+                val seriesConfirmed = entry.seriesConfirmed.mapSeriesNames(series)
+                return Artist(
                     entry = entry,
-                    seriesInferred = entry.seriesInferred.mapSeriesNames(series),
-                    seriesConfirmed = entry.seriesConfirmed.mapSeriesNames(series),
+                    seriesInferred = seriesInferred,
+                    seriesConfirmed = seriesConfirmed,
+                    threadContent = buildMessage(entry, seriesInferred, seriesConfirmed)
                 )
+            }
 
             private fun List<String>.mapSeriesNames(series: Map<String, SeriesInfo>) =
                 map { series[it]?.name(AniListLanguageOption.DEFAULT) ?: it }
+
+
+            private suspend fun buildMessage(
+                entry: ArtistEntryAnimeExpo2026,
+                seriesInferred: List<String>,
+                seriesConfirmed: List<String>,
+            ): Pair<CreateMessage, CreateMessage> {
+                val name = entry.name
+                val summary = buildString {
+                    if (!entry.summary.isNullOrBlank()) {
+                        appendLine(entry.summary)
+                    }
+                }
+
+                val series = buildString {
+                    if (seriesConfirmed.isNotEmpty()) {
+                        appendLine("### Series")
+                        seriesConfirmed.forEach {
+                            appendLine("- $it")
+                        }
+                    } else if (seriesInferred.isNotEmpty()) {
+                        appendLine("### Series - Unconfirmed")
+                        seriesInferred.forEach {
+                            appendLine("- $it")
+                        }
+                    }
+                }
+
+                val merch = buildString {
+                    if (entry.merchConfirmed.isNotEmpty()) {
+                        appendLine("### Merch")
+                        entry.merchConfirmed.forEach {
+                            appendLine("- $it")
+                        }
+                    } else if (entry.merchInferred.isNotEmpty()) {
+                        appendLine("### Merch - Unconfirmed")
+                        entry.merchInferred.forEach {
+                            appendLine("- $it")
+                        }
+                    }
+                }
+
+                suspend fun LinkModel.asMarkdownLink(): String {
+                    val textRes = type?.textRes
+                    val label = if (textRes == null) {
+                        identifier
+                    } else {
+                        getString(textRes)
+                    }
+                    return "[$label](${link})"
+                }
+
+                val portfolioLinksEmbed = if (entry.portfolioLinks.isNotEmpty()) {
+                    Embed.Field(
+                        name = "Portfolio",
+                        value = entry.portfolioLinks
+                            .map(LinkModel::parse)
+                            .map { it.asMarkdownLink() }
+                            .joinToString("\n"),
+                        inline = true,
+                    )
+                } else null
+
+                val socialLinksEmbed = if (entry.socialLinks.isNotEmpty()) {
+                    Embed.Field(
+                        name = "Socials",
+                        value = entry.socialLinks
+                            .map(LinkModel::parse)
+                            .map { it.asMarkdownLink() }
+                            .joinToString("\n"),
+                        inline = true,
+                    )
+                } else null
+
+                val storeLinksEmbed = if (entry.storeLinks.isNotEmpty()) {
+                    Embed.Field(
+                        name = "Store",
+                        value = entry.storeLinks
+                            .map(LinkModel::parse)
+                            .map { it.asMarkdownLink() }
+                            .joinToString("\n"),
+                        inline = true,
+                    )
+                } else null
+
+                val commissionsEmbed = if (entry.commissions.isNotEmpty()) {
+                    Embed.Field(
+                        name = "Commissions",
+                        value = entry.commissions
+                            .map(LinkModel::parse)
+                            .map { it.asMarkdownLink() }
+                            .joinToString("\n"),
+                        inline = true,
+                    )
+                } else null
+
+                val linksEmbed =
+                    Embed(
+                        title = "Links",
+                        fields = listOfNotNull(
+                            portfolioLinksEmbed,
+                            socialLinksEmbed,
+                            storeLinksEmbed,
+                            commissionsEmbed,
+                        )
+                    ).takeUnless { it.fields.isNullOrEmpty() }
+
+                val parts = listOf(
+                    name,
+                    summary,
+                    series,
+                    merch,
+                )
+                var firstMessage = ""
+                var secondMessage = ""
+                parts.map { it.take(2000) }
+                    .forEach {
+                        if (secondMessage.isEmpty() && firstMessage.length + it.length < 2000) {
+                            firstMessage += it
+                        } else {
+                            secondMessage += it
+                        }
+                    }
+                if (secondMessage.length >= 2000) {
+                    throw IllegalStateException("Thread content too long for ${entry.name}: $secondMessage")
+                }
+
+                val firstCreateMessage = CreateMessage(
+                    firstMessage,
+                    listOfNotNull(linksEmbed).ifEmpty { null }
+                )
+                val secondCreateMessage = CreateMessage(secondMessage.ifEmpty { "Reserved" })
+                return firstCreateMessage to secondCreateMessage
+            }
         }
 
         val booth = entry.booth?.let(Booth::fromStringOrNull)
 
         val threadTitleWithoutHash = "${entry.booth} - ${entry.name}"
-
-        val threadContent = buildMessage()
 
         val messageHash = threadContent.hashCode().absoluteValue.toString()
 
@@ -256,107 +403,6 @@ internal object ForumSyncer {
                     throw IllegalStateException("Thread title too long: $it")
                 }
             }
-
-        private fun buildMessage(): Pair<String, String> {
-            val name = entry.name
-            val summary = buildString {
-                if (!entry.summary.isNullOrBlank()) {
-                    appendLine(entry.summary)
-                }
-            }
-
-            val portfolioLinks = buildString {
-                if (entry.portfolioLinks.isNotEmpty()) {
-                    appendLine("### Portfolio")
-                    entry.portfolioLinks.forEach {
-                        appendLine("- $it")
-                    }
-                }
-            }
-
-            val socialLinks = buildString {
-                if (entry.socialLinks.isNotEmpty()) {
-                    appendLine("### Links")
-                    entry.socialLinks.forEach {
-                        appendLine("- $it")
-                    }
-                }
-            }
-
-            val storeLinks = buildString {
-                if (entry.storeLinks.isNotEmpty()) {
-                    appendLine("### Store")
-                    entry.storeLinks.forEach {
-                        appendLine("- $it")
-                    }
-                }
-            }
-
-            val commissions = buildString {
-                if (entry.commissions.isNotEmpty()) {
-                    appendLine("### Commissions")
-                    entry.commissions.forEach {
-                        appendLine("- $it")
-                    }
-                }
-            }
-
-            val series = buildString {
-                if (seriesConfirmed.isNotEmpty()) {
-                    appendLine("### Series")
-                    seriesConfirmed.forEach {
-                        appendLine("- $it")
-                    }
-                } else if (seriesInferred.isNotEmpty()) {
-                    appendLine("### Series - Unconfirmed")
-                    seriesInferred.forEach {
-                        appendLine("- $it")
-                    }
-                }
-            }
-
-            val merch = buildString {
-                if (entry.merchConfirmed.isNotEmpty()) {
-                    appendLine("### Merch")
-                    entry.merchConfirmed.forEach {
-                        appendLine("- $it")
-                    }
-                } else if (entry.merchInferred.isNotEmpty()) {
-                    appendLine("### Merch - Unconfirmed")
-                    entry.merchInferred.forEach {
-                        appendLine("- $it")
-                    }
-                }
-            }
-
-            // Portfolio goes first to ensure image preview shows artwork
-            val parts = listOf(
-                name,
-                summary,
-                portfolioLinks,
-                socialLinks,
-                storeLinks,
-                commissions,
-                series,
-                merch
-            )
-            var firstMessage = ""
-            var secondMessage = ""
-            parts.map { it.take(2000) }
-                .forEach {
-                    if (secondMessage.isEmpty() && firstMessage.length + it.length < 2000) {
-                        firstMessage += it
-                    } else {
-                        secondMessage += it
-                    }
-                }
-
-            if (secondMessage.length >= 2000) {
-                throw IllegalStateException("Thread content too long for $threadTitleWithoutHash: $secondMessage")
-            }
-
-            return firstMessage to secondMessage
-        }
     }
 
     private data class ThreadWrapper(val thread: Thread) {
