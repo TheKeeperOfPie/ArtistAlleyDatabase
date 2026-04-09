@@ -44,7 +44,8 @@ sqldelight {
 val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
 val changelogTask = tasks.register<ArtistAlleyChangelogTask>("generateArtistAlleyChangelog")
 val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase") {
-    inputImages.set(inputsTask.flatMap { it.outputResources })
+    inputImages.set(inputsTask.flatMap { it.outputImages })
+    inputCache.set(project.file("cache"))
     inputChangelog.set(changelogTask.flatMap { it.outputFile })
     mustRunAfter(changelogTask, inputsTask)
 }
@@ -54,8 +55,8 @@ compose.resources {
     customDirectory(
         sourceSetName = "commonMain",
         // zip to force databaseTask to run
-        directoryProvider = inputsTask.zip(databaseTask) { first, _ ->
-            first.outputResources.get()
+        directoryProvider = inputsTask.zip(databaseTask) { _, _ ->
+            layout.buildDirectory.dir("generated/composeResources").get()
         },
     )
 }

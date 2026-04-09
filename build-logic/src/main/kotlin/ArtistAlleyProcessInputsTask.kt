@@ -1,5 +1,5 @@
 
-import com.sksamuel.scrimage.webp.CWebpHandler
+import ImageUtils.parseScaledImageWidthHeight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -15,72 +15,12 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.nio.file.Path
 import java.util.UUID
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import javax.imageio.ImageIO
-import javax.imageio.stream.FileCacheImageInputStream
 import javax.inject.Inject
 
 @CacheableTask
 abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
-
-    companion object {
-        private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp", "webp")
-        private const val RESIZE_TARGET = 1200
-        private const val WEBP_TARGET_QUALITY = 80
-        private const val WEBP_METHOD = 6
-
-        private val cwebpPath by  lazy {
-            val field = CWebpHandler::class.java.getDeclaredField("binary")
-            field.trySetAccessible()
-            field.get(null) as Path
-        }
-
-        internal fun parseScaledImageWidthHeight(
-            imageCacheDir: File,
-            file: File,
-        ): Triple<Int, Int, Boolean> =
-            file.extension
-                .let(ImageIO::getImageReadersBySuffix)
-                .asSequence()
-                .firstNotNullOf { reader ->
-                    try {
-                        file.inputStream().use {
-                            FileCacheImageInputStream(it, imageCacheDir).use {
-                                reader.setInput(it)
-                                val imageWidth = reader.getWidth(reader.minIndex)
-                                val imageHeight = reader.getHeight(reader.minIndex)
-
-                                val width: Int
-                                val height: Int
-                                val resized: Boolean
-                                if (imageWidth > imageHeight && imageWidth > RESIZE_TARGET) {
-                                    width = RESIZE_TARGET
-                                    height =
-                                        (RESIZE_TARGET.toFloat() / imageWidth * imageHeight).toInt()
-                                    resized = true
-                                } else if (imageHeight >= imageWidth && imageHeight > RESIZE_TARGET) {
-                                    width =
-                                        (RESIZE_TARGET.toFloat() / imageHeight * imageWidth).toInt()
-                                    height = RESIZE_TARGET
-                                    resized = true
-                                } else {
-                                    width = imageWidth
-                                    height = imageHeight
-                                    resized = false
-                                }
-                                Triple(width, height, resized)
-                            }
-                        }
-                    } catch (_: Throwable) {
-                        null
-                    } finally {
-                        reader.dispose()
-                    }
-                }
-    }
 
     @get:Inject
     abstract val layout: ProjectLayout
@@ -94,7 +34,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     abstract val imagesFolder: DirectoryProperty
 
     @get:OutputDirectory
-    abstract val outputResources: DirectoryProperty
+    abstract val outputImages: DirectoryProperty
 
     @get:OutputDirectory
     abstract val outputSource: DirectoryProperty
@@ -102,7 +42,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     init {
         inputsFolder.convention(layout.projectDirectory.dir("inputs"))
         imagesFolder.convention(layout.projectDirectory.dir("images"))
-        outputResources.convention(layout.buildDirectory.dir("generated/composeResources"))
+        outputImages.convention(layout.buildDirectory.dir("generated/composeResources/files/images"))
         outputSource.convention(layout.buildDirectory.dir("generated/source"))
     }
 
@@ -125,8 +65,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 ).forEach {
                     val processed = imagesFolder.dir("$it/processed").get().asFile
                     if (processed.exists()) {
-                        val output = outputResources.dir("files/$it").get().asFile
-                            .apply { mkdirs() }
+                        val output = outputImages.dir(it).get().asFile.apply { mkdirs() }
                         processed.copyRecursively(
                             output,
                             overwrite = false,
@@ -223,10 +162,10 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         transformId: (String) -> String = transformName,
         transformImageName: (index: Int, hash: String, name: String) -> String = { index, hash, _ ->
             "${index.toString().padStart(2, '0')}-$hash.webp"
-        }
+        },
     ): List<CatalogFolder> {
         val input = imagesFolder.dir(path).get().asFile
-        val output = outputResources.dir("files/$path").get().asFile
+        val output = outputImages.dir(path).get().asFile
         return processFolders(
             imageCacheDir = imageCacheDir,
             inputFolder = input,
@@ -253,22 +192,18 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     val images = it.listFiles()
                         .orEmpty()
                         .filter { file ->
-                            file.isFile && IMAGE_EXTENSIONS.any {
+                            file.isFile && ImageUtils.IMAGE_EXTENSIONS.any {
                                 it.equals(file.extension, ignoreCase = true)
                             }
                         }
                         .sorted()
                         .mapIndexed { index, file ->
                             val (width, height, resized) = parseScaledImageWidthHeight(
+                                logger = logger,
                                 imageCacheDir = imageCacheDir,
                                 file = file
                             )
-                            val hash = Utils.hash(
-                                file = file,
-                                RESIZE_TARGET,
-                                WEBP_METHOD,
-                                WEBP_TARGET_QUALITY
-                            ).toString()
+                            val hash = ImageUtils.hash(file)
                             CatalogFolder.Image(
                                 file = file,
                                 width = width,
@@ -315,40 +250,19 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             .flatten()
             .map { (image, output) ->
                 async {
-                    compressAndRename(image, output)
+                    ImageUtils.compressAndRename(
+                        logger = logger,
+                        input = image.file,
+                        resized = image.resized,
+                        width = image.width,
+                        height = image.height,
+                        target = output,
+                    )
                 }
             }
             .awaitAll()
 
         return folders
-    }
-
-    private fun compressAndRename(image: CatalogFolder.Image, target: File) {
-        val input = image.file
-        logger.lifecycle("Compressing $input")
-        val params = mutableListOf(
-            cwebpPath.toAbsolutePath().toString(),
-            "-af",
-            "-q",
-            WEBP_TARGET_QUALITY.toString(),
-            "-m",
-            WEBP_METHOD.toString(),
-            input.absolutePath,
-            "-o",
-            target.absolutePath,
-        )
-        if (image.resized) {
-            params += "-resize"
-            params += image.width.toString()
-            params += image.height.toString()
-        }
-        val success = ProcessBuilder(params)
-            .redirectErrorStream(true)
-            .start()
-            .waitFor(30, TimeUnit.SECONDS)
-        if (!success) {
-            throw IllegalStateException("Failed to compress $input")
-        }
     }
 
     data class CatalogFolder(

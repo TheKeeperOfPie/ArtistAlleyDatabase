@@ -10,26 +10,44 @@ object AlleyImageUtils {
 
     fun getArtistImages(
         year: DataYear,
-        images: List<CatalogImage>
-    ) = images.map {
-        val path = "files/${year.folderName}/catalogs/${it.name}"
-        CatalogImage(
-            uri = Uri.parse(Res.getUri(path)),
-            width = it.width,
-            height = it.height,
-        )
+        images: List<CatalogImage>,
+    ) = images.mapNotNull {
+        try {
+            if (it.name.startsWith("embed-")) {
+                CatalogImage(
+                    uri = Uri.parse(Res.getUri("files/embeds/${it.name}")),
+                    width = it.width,
+                    height = it.height,
+                )
+            } else {
+                val path = "files/images/${year.folderName}/catalogs/${it.name}"
+                CatalogImage(
+                    uri = Uri.parse(Res.getUri(path)),
+                    width = it.width,
+                    height = it.height,
+                )
+            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
+        }
     }
 
     fun getRallyImages(
         year: DataYear,
-        images: List<CatalogImage>
-    ) = images.map {
-        val path = "files/${year.folderName}/rallies/${it.name}"
-        CatalogImage(
-            uri = Uri.parse(Res.getUri(path)),
-            width = it.width,
-            height = it.height,
-        )
+        images: List<CatalogImage>,
+    ) = images.mapNotNull {
+        try {
+            val path = "files/images/${year.folderName}/rallies/${it.name}"
+            CatalogImage(
+                uri = Uri.parse(Res.getUri(path)),
+                width = it.width,
+                height = it.height,
+            )
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
+        }
     }
 
     suspend fun artistImageExists(artistEntryDao: ArtistEntryDao, path: String): Boolean {

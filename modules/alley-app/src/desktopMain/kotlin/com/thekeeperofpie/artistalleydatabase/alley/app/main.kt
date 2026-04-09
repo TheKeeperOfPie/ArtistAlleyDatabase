@@ -22,8 +22,10 @@ import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.Options
 import coil3.request.crossfade
+import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
@@ -45,13 +47,20 @@ fun main() {
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
                 .components {
+                    val networkFactory = KtorNetworkFetcherFactory()
                     add(object : Fetcher.Factory<Uri> {
                         override fun create(
                             data: Uri,
                             options: Options,
                             imageLoader: ImageLoader,
                         ): Fetcher? {
-                            if (data.scheme != "jar") return null
+                            if (data.scheme != "jar") {
+                                return networkFactory.create(
+                                    data.toString().toUri(),
+                                    options,
+                                    imageLoader,
+                                )
+                            }
                             return object : Fetcher {
                                 override suspend fun fetch(): FetchResult? {
                                     val source =

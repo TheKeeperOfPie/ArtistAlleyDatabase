@@ -722,6 +722,7 @@ class ArtistEntryDao(
                         ->
                         this += "$tableName.driveLink LIKE 'http%'"
                     DataYear.ANIME_EXPO_2026 -> {
+                        // TODO: This will include embeds
                         this += "$tableName.images != '[]'"
                         if (!filterParams.showOutdatedCatalogs) {
                             this += "$tableName.fallbackImageYear != NULL"
