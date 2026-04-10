@@ -112,6 +112,7 @@ object ArtistAlleyAppScreen {
                     type = AlleyDestination.Images.Type.Artist(
                         id = entry.id,
                         booth = entry.booth.orEmpty(),
+                        profileImage = AlleyImageUtils.getProfileImage(entry.embeds),
                         name = entry.name,
                     ),
                     images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
@@ -219,7 +220,7 @@ object ArtistAlleyAppScreen {
                             AlleyDestination.ArtistMap(route.id)
                         )
                     },
-                    onOpenImages = { year, artistId, booth, name, images, imageIndex ->
+                    onOpenImages = { year, artistId, booth, name, images, imageIndex, profileImage ->
                         navStack.navigate(
                             AlleyDestination.Images(
                                 year = year,
@@ -228,6 +229,7 @@ object ArtistAlleyAppScreen {
                                     // TODO: Does this have to be passed in separately?
                                     id = artistId,
                                     booth = booth,
+                                    profileImage = profileImage,
                                     name = name,
                                 ),
                                 images = images,

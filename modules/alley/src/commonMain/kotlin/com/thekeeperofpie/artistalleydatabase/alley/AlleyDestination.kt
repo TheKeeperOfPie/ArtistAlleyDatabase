@@ -63,6 +63,7 @@ sealed interface AlleyDestination : NavKey {
                 val id: String,
                 val booth: String,
                 val name: String?,
+                val profileImage: com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage?
             ) : Type
 
             @Serializable

@@ -21,6 +21,7 @@ class ArtistEntryGridModel(
     val hasMoreMerch: Boolean,
     val showOutdatedCatalogs: Boolean,
     override val images: List<CatalogImage>,
+    val profileImage: CatalogImage?,
     override val placeholderText: String,
 ) : SearchScreen.SearchEntryModel {
 
@@ -71,6 +72,8 @@ class ArtistEntryGridModel(
                 embeds = artist.embeds,
             )
 
+            val profileImage = AlleyImageUtils.getProfileImage(artist.embeds)
+
             return ArtistEntryGridModel(
                 artist = artist,
                 userEntry = entry.userEntry,
@@ -80,6 +83,7 @@ class ArtistEntryGridModel(
                 hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
                 showOutdatedCatalogs = showOutdatedCatalogs,
                 images = images,
+                profileImage = profileImage,
                 placeholderText = artist.booth ?: artist.name,
             )
         }

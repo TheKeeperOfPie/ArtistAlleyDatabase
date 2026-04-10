@@ -64,6 +64,7 @@ object ImagesScreen {
                                     year = route.year,
                                     id = route.id,
                                     booth = type.booth,
+                                    profileImage = type.profileImage,
                                     name = type.name,
                                     useSharedElement = false,
                                 )

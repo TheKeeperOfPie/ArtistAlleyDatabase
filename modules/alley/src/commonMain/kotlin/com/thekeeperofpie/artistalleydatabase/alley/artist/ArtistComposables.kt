@@ -1,14 +1,20 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -27,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -36,12 +44,14 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
+import coil3.compose.AsyncImage
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
@@ -62,11 +72,18 @@ fun ArtistTitle(
     year: DataYear,
     id: String,
     booth: String?,
+    profileImage: CatalogImage?,
     name: String?,
     useSharedElement: Boolean = true,
 ) {
     SelectionContainer {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.height(IntrinsicSize.Min)
+        ) {
+            ArtistProfileImage(id, profileImage)
+            Spacer(Modifier.width(12.dp))
+
             val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
             if (!isCurrentYear) {
                 Text(text = "${stringResource(year.shortName)} - ")
@@ -120,25 +137,37 @@ fun ArtistListRow(
     Column(modifier = modifier.fillMaxWidth()) {
         val artist = entry.artist
         Row(
-            modifier = Modifier.sharedBounds("container", artist.id)
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .sharedBounds("container", artist.id)
         ) {
+            val profileImage = entry.profileImage
+            Spacer(Modifier.width(10.dp))
+            ArtistProfileImage(
+                artistId = artist.id,
+                image = profileImage,
+                modifier = Modifier.padding(vertical = 10.dp)
+            )
+
             val booth = artist.booth
             if (!booth.isNullOrBlank()) {
                 Text(
                     text = booth,
                     style = MaterialTheme.typography.titleLarge
                         .copy(fontFamily = FontFamily.Monospace),
+                    maxLines = 1,
                     modifier = Modifier
-                        .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
                         .sharedElement("booth", artist.id)
+                        .padding(12.dp)
                 )
-                Spacer(Modifier.width(16.dp))
             }
 
             Text(
                 text = artist.name,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
                 modifier = Modifier
                     .sharedElement("name", artist.id)
                     .weight(1f)
@@ -210,6 +239,34 @@ fun ArtistListRow(
     }
 }
 
+@Composable
+private fun ArtistProfileImage(
+    artistId: String,
+    image: CatalogImage?,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .aspectRatio(1f, matchHeightConstraintsFirst = true)
+    ) {
+        AsyncImage(
+            model = image?.coilImageModel,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .sharedElement("profile_image", artistId)
+                .matchParentSize()
+                .clip(RoundedCornerShape(8.dp))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.primary,
+                    RoundedCornerShape(8.dp)
+                )
+        )
+    }
+}
+
 private val chipHeightModifier = Modifier.height(24.dp)
 
 @Composable
@@ -228,13 +285,13 @@ internal fun SeriesRow(
             .padding(bottom = 8.dp)
             .fillMaxWidth()
             .fadingEdgeEnd(
-                startOpaque = 12.dp,
+                startOpaque = 2.dp,
                 endOpaque = 32.dp,
                 endTransparent = 16.dp,
             )
             .then(modifier)
     ) {
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(2.dp))
         val colors = AssistChipDefaults.assistChipColors(
             labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )

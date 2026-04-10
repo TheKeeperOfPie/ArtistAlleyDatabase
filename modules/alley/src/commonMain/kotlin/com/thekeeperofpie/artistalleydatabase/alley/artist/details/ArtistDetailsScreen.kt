@@ -81,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
@@ -125,7 +126,7 @@ object ArtistDetailsScreen {
         onOpenStampRally: (StampRallyDatabaseEntry) -> Unit,
         onOpenOtherYear: (DataYear) -> Unit,
         onOpenMap: () -> Unit,
-        onOpenImages: (DataYear, artistId: String, booth: String, name: String, images: List<CatalogImage>, imageIndex: Int) -> Unit,
+        onOpenImages: (DataYear, artistId: String, booth: String, name: String, images: List<CatalogImage>, imageIndex: Int, profileImage: CatalogImage?) -> Unit,
         onNavigateUp: () -> Unit,
         viewModel: ArtistDetailsViewModel = viewModel {
             graph.artistDetailsViewModelFactory.create(
@@ -188,6 +189,8 @@ object ArtistDetailsScreen {
                                     val year = catalog.result?.fallbackYear
                                         ?.takeIf { showingOutdatedCatalogs }
                                         ?: route.year
+                                    val profileImage =
+                                        AlleyImageUtils.getProfileImage(artist.embeds)
                                     onOpenImages(
                                         year,
                                         artist.id,
@@ -197,6 +200,7 @@ object ArtistDetailsScreen {
                                         artist.name,
                                         images,
                                         event.imageIndex,
+                                        profileImage,
                                     )
                                 }
                             }
@@ -238,7 +242,18 @@ object ArtistDetailsScreen {
                 val id = artist?.id ?: route.id
                 val booth = artist?.booth ?: route.booth
                 val name = artist?.name ?: route.name
-                ArtistTitle(year = route.year, id = id, booth = booth, name = name)
+                val profileImage = remember(artist) {
+                    artist?.let {
+                        AlleyImageUtils.getProfileImage(artist.embeds)
+                    }
+                }
+                ArtistTitle(
+                    year = route.year,
+                    id = id,
+                    booth = booth,
+                    profileImage = profileImage,
+                    name = name,
+                )
             },
             sharedElementId = route.id,
             favorite = { entry()?.favorite },

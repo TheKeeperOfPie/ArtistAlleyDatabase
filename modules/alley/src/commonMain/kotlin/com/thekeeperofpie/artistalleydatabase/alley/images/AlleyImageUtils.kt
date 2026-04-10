@@ -28,18 +28,27 @@ object AlleyImageUtils {
         }
     }
 
-    fun getEmbedImages(embeds: Map<String, CatalogImage>) = embeds.mapNotNull {
-        try {
-            it.key to CatalogImage(
-                uri = Uri.parse(Res.getUri("files/embeds/${it.value.name}")),
-                width = it.value.width,
-                height = it.value.height,
-            )
-        } catch (t: Throwable) {
-            t.printStackTrace()
-            null
+    private const val EMBED_MIN_DIMENSION = 300
+
+    fun getEmbedImages(embeds: Map<String, CatalogImage>) = embeds
+        .filter {
+            val width = it.value.width
+            val height = it.value.height
+            width != null && height != null &&
+                    width > EMBED_MIN_DIMENSION && height > EMBED_MIN_DIMENSION
         }
-    }.toMap()
+        .mapNotNull {
+            try {
+                it.key to CatalogImage(
+                    uri = Uri.parse(Res.getUri("files/embeds/${it.value.name}")),
+                    width = it.value.width,
+                    height = it.value.height,
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
+        }.toMap()
 
     private val embedOrder = listOf(
         LinkCategory.PORTFOLIOS,
@@ -65,6 +74,23 @@ object AlleyImageUtils {
             .sortedWith(embedComparator)
             .map { it.value }
     }
+
+    fun getProfileImage(embeds: Map<String, CatalogImage>) =
+        embeds.asSequence()
+            .filter {
+                val width = it.value.width
+                val height = it.value.height
+                width != null && height != null &&
+                        width < EMBED_MIN_DIMENSION && height < EMBED_MIN_DIMENSION
+            }
+            .firstOrNull { LinkModel.parse(it.key).type.category == LinkCategory.SOCIALS }
+            ?.let {
+                CatalogImage(
+                    uri = Uri.parse(Res.getUri("files/embeds/${it.value.name}")),
+                    width = it.value.width,
+                    height = it.value.height,
+                )
+            }
 
     fun getRallyImages(
         year: DataYear,

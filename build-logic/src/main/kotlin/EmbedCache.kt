@@ -20,7 +20,7 @@ import java.net.URI
 import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.seconds
 
-private val DIMENSION_RANGE = 300..4000
+private val DIMENSION_RANGE = 30..4000
 private val REQUEST_THROTTLE = 2.seconds
 
 internal class EmbedCache(
@@ -41,6 +41,7 @@ internal class EmbedCache(
                 .mapValues {
                     val value = it.value ?: return@mapValues null
                     if (value.failureReason == null &&
+                        value.width != null && value.height != null &&
                         (value.width !in DIMENSION_RANGE || value.height !in DIMENSION_RANGE)
                     ) {
                         value.copy(
