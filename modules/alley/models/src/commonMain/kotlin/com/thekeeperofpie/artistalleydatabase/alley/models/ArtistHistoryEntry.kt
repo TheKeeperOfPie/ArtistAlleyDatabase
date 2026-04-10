@@ -123,6 +123,7 @@ data class ArtistHistoryEntry(
                 merchConfirmed = merchConfirmed.orEmpty(),
                 _images = images.orEmpty(),
                 fallbackImageYear = null,
+                embeds = emptyMap(),
                 editorNotes = editorNotes,
                 lastEditor = lastEditor,
                 lastEditTime = Clock.System.now(),

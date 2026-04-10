@@ -1,4 +1,3 @@
-
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
@@ -81,6 +80,13 @@ internal object Utils {
         override fun decode(databaseValue: Long) = TableMin.parseFromValue(databaseValue.toInt())
 
         override fun encode(value: TableMin) = value.serializedValue.toLong()
+    }
+
+    private val embedsAdapter = object : ColumnAdapter<Map<String, CatalogImage>, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<Map<String, CatalogImage>>(databaseValue)
+
+        override fun encode(value: Map<String, CatalogImage>) = Json.encodeToString(value)
     }
 
     fun hash(file: File, vararg inputs: Any): Long {
@@ -175,6 +181,7 @@ internal object Utils {
                 commissionsAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
                 fallbackImageYearAdapter = dataYearAdapter,
+                embedsAdapter = embedsAdapter,
                 lastEditTimeAdapter = instantAdapter,
             ),
             artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(

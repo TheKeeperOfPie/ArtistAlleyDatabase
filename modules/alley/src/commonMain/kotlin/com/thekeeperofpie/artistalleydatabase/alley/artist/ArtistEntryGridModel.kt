@@ -50,27 +50,29 @@ class ArtistEntryGridModel(
             entry: ArtistWithUserData,
             showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
         ): ArtistEntryGridModel {
+            val artist = entry.artist
             val merch = TagUtils.combineForDisplay(
-                inferred = entry.artist.merchInferred,
-                confirmed = entry.artist.merchConfirmed,
+                inferred = artist.merchInferred,
+                confirmed = artist.merchConfirmed,
                 randomSeed = randomSeed,
                 showOnlyConfirmedTags = showOnlyConfirmedTags,
             )
 
             val series = TagUtils.combineForDisplay(
-                inferred = entry.artist.seriesInferred,
-                confirmed = entry.artist.seriesConfirmed,
+                inferred = artist.seriesInferred,
+                confirmed = artist.seriesConfirmed,
                 randomSeed = randomSeed,
                 showOnlyConfirmedTags = showOnlyConfirmedTags,
             )
 
-            val images = AlleyImageUtils.getArtistImages(
-                year = entry.artist.year,
-                images = entry.artist.images,
+            val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
+                year = artist.year,
+                images = artist.images,
+                embeds = artist.embeds,
             )
 
             return ArtistEntryGridModel(
-                artist = entry.artist,
+                artist = artist,
                 userEntry = entry.userEntry,
                 series = series.take(TagUtils.TAGS_TO_SHOW),
                 hasMoreSeries = series.size > TagUtils.TAGS_TO_SHOW,
@@ -78,7 +80,7 @@ class ArtistEntryGridModel(
                 hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
                 showOutdatedCatalogs = showOutdatedCatalogs,
                 images = images,
-                placeholderText = entry.artist.booth ?: entry.artist.name,
+                placeholderText = artist.booth ?: artist.name,
             )
         }
     }

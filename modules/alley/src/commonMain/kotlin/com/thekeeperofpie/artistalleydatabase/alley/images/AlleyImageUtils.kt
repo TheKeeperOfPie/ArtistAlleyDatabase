@@ -3,6 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.images
 import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
@@ -13,24 +16,54 @@ object AlleyImageUtils {
         images: List<CatalogImage>,
     ) = images.mapNotNull {
         try {
-            if (it.name.startsWith("embed-")) {
-                CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/embeds/${it.name}")),
-                    width = it.width,
-                    height = it.height,
-                )
-            } else {
-                val path = "files/images/${year.folderName}/catalogs/${it.name}"
-                CatalogImage(
-                    uri = Uri.parse(Res.getUri(path)),
-                    width = it.width,
-                    height = it.height,
-                )
-            }
+            val path = "files/images/${year.folderName}/catalogs/${it.name}"
+            CatalogImage(
+                uri = Uri.parse(Res.getUri(path)),
+                width = it.width,
+                height = it.height,
+            )
         } catch (t: Throwable) {
             t.printStackTrace()
             null
         }
+    }
+
+    fun getEmbedImages(embeds: Map<String, CatalogImage>) = embeds.mapNotNull {
+        try {
+            it.key to CatalogImage(
+                uri = Uri.parse(Res.getUri("files/embeds/${it.value.name}")),
+                width = it.value.width,
+                height = it.value.height,
+            )
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
+        }
+    }.toMap()
+
+    private val embedOrder = listOf(
+        LinkCategory.PORTFOLIOS,
+        LinkCategory.SOCIALS,
+        LinkCategory.STORES,
+        LinkCategory.COMMISSIONS,
+        LinkCategory.SUPPORT,
+        LinkCategory.OTHER,
+    )
+    private val embedComparator =
+        compareBy<Map.Entry<String, com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>(
+            { embedOrder.indexOf(LinkModel.parse(it.key).type.category) },
+            { it.key },
+        )
+
+    fun getArtistImagesWithEmbedFallback(
+        year: DataYear,
+        images: List<CatalogImage>,
+        embeds: Map<String, CatalogImage>,
+    ) = getArtistImages(year, images).ifEmpty {
+        getEmbedImages(embeds)
+            .map { it }
+            .sortedWith(embedComparator)
+            .map { it.value }
     }
 
     fun getRallyImages(

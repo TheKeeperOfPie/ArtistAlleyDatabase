@@ -97,7 +97,11 @@ class ArtistDetailsViewModel(
             artist.images.isNotEmpty() || fallbackImageYear == null ->
                 LoadingResult.success(
                     DetailsScreenCatalog(
-                        images = AlleyImageUtils.getArtistImages(artist.year, artist.images),
+                        images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
+                            artist.year,
+                            artist.images,
+                            artist.embeds,
+                        ),
                         showOutdatedCatalogs = null,
                         fallbackYear = null,
                     )

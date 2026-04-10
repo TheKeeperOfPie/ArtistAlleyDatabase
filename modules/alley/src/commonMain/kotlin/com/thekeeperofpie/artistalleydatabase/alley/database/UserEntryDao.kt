@@ -38,6 +38,7 @@ private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
         name = name,
         images = images,
         fallbackImageYear = null,
+        embeds = emptyMap(),
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -49,6 +50,7 @@ private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
         name = name,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        embeds = emptyMap(),
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -60,6 +62,7 @@ private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
         name = name,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        embeds = emptyMap(),
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -71,6 +74,7 @@ private fun GetBoothsWithFavoritesAnimeExpo2026.toBoothWithFavorite() =
         name = name,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        embeds = embeds.orEmpty(),
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -82,6 +86,7 @@ private fun GetBoothsWithFavoritesAnimeNyc2024.toBoothWithFavorite() =
         name = name,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        embeds = emptyMap(),
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -93,6 +98,7 @@ private fun GetBoothsWithFavoritesAnimeNyc2025.toBoothWithFavorite() =
         name = name,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        embeds = emptyMap(),
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 

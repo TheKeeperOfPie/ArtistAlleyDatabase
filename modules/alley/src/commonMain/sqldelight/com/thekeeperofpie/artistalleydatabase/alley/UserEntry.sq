@@ -26,7 +26,7 @@ LEFT OUTER JOIN artistUserEntry
 ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
 
 getBoothsWithFavoritesAnimeExpo2026:
-SELECT artistEntryAnimeExpo2026.id, artistEntryAnimeExpo2026.booth, artistEntryAnimeExpo2026.name, artistEntryAnimeExpo2026.images, artistEntryAnimeExpo2026.fallbackImageYear, artistUserEntry.favorite FROM artistEntryAnimeExpo2026
+SELECT artistEntryAnimeExpo2026.id, artistEntryAnimeExpo2026.booth, artistEntryAnimeExpo2026.name, artistEntryAnimeExpo2026.images, artistEntryAnimeExpo2026.fallbackImageYear, artistEntryAnimeExpo2026.embeds, artistUserEntry.favorite FROM artistEntryAnimeExpo2026
 LEFT OUTER JOIN artistUserEntry
 ON artistEntryAnimeExpo2026.id = artistUserEntry.artistId AND 'AX2026' = artistUserEntry.dataYear;
 

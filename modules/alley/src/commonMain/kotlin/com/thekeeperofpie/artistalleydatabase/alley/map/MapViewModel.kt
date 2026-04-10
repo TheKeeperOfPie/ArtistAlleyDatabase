@@ -124,9 +124,10 @@ class MapViewModel(
         val images = if (primaryArtist.fallbackImageYear != null) {
             emptyList()
         } else {
-            AlleyImageUtils.getArtistImages(
+            AlleyImageUtils.getArtistImagesWithEmbedFallback(
                 year = primaryArtist.year,
                 images = primaryArtist.images,
+                embeds = primaryArtist.embeds,
             )
         }
         val imageIndex = if (showRandomCatalogImage) {

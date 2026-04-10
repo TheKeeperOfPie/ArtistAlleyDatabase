@@ -28,6 +28,7 @@ interface ArtistDatabaseEntry {
     val images: List<CatalogImage>
     val fallbackImages: List<CatalogImage>
     val fallbackImageYear: DataYear?
+    val embeds: Map<String, CatalogImage>
     val editorNotes: String?
     val lastEditor: String?
     val lastEditTime: Instant?
@@ -54,6 +55,7 @@ interface ArtistDatabaseEntry {
         override val merchConfirmed: List<String>,
         val _images: List<CatalogImage>,
         override val fallbackImageYear: DataYear?,
+        override val embeds: Map<String, CatalogImage>,
         override val editorNotes: String?,
         override val lastEditor: String?,
         override val lastEditTime: Instant?,
@@ -70,10 +72,12 @@ interface ArtistDatabaseEntry {
         // Need to ignore metadata for equality
         fun hasChanged(before: Impl?, after: Impl) =
             before?.copy(
+                embeds = emptyMap(),
                 verifiedArtist = false,
                 lastEditTime = null,
                 lastEditor = null
             ) != after.copy(
+                embeds = emptyMap(),
                 verifiedArtist = false,
                 lastEditTime = null,
                 lastEditor = null
@@ -116,6 +120,7 @@ interface ArtistDatabaseEntry {
             merchConfirmed = merchConfirmed,
             _images = images,
             fallbackImageYear = fallbackImageYear,
+            embeds = emptyMap(),
             status = ArtistStatus.UNKNOWN,
             editorNotes = null,
             lastEditor = null,

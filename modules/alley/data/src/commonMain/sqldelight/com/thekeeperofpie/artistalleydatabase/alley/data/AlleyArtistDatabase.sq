@@ -1,6 +1,7 @@
 import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
+import kotlin.collections.Map;
 import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
@@ -125,6 +126,7 @@ CREATE TABLE
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
         fallbackImageYear TEXT AS DataYear DEFAULT NULL,
+        embeds TEXT AS Map<String, CatalogImage> DEFAULT NULL,
         editorNotes TEXT,
         lastEditor TEXT,
         lastEditTime TEXT AS Instant,

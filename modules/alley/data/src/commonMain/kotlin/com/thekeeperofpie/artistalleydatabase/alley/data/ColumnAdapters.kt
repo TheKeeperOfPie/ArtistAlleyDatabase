@@ -62,6 +62,13 @@ object ColumnAdapters {
         override fun encode(value: TableMin) = value.serializedValue.toLong()
     }
 
+    private val embedsAdapter = object : ColumnAdapter<Map<String, CatalogImage>, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<Map<String, CatalogImage>>(databaseValue)
+
+        override fun encode(value: Map<String, CatalogImage>) = Json.encodeToString(value)
+    }
+
     val artistEntry2023Adapter = ArtistEntry2023.Adapter(
         artistNamesAdapter = listStringAdapter,
         linksAdapter = listStringAdapter,
@@ -104,6 +111,7 @@ object ColumnAdapters {
         commissionsAdapter = listStringAdapter,
         imagesAdapter = listCatalogImageAdapter,
         fallbackImageYearAdapter = dataYearAdapter,
+        embedsAdapter = embedsAdapter,
         lastEditTimeAdapter = instantAdapter,
     )
     val artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(

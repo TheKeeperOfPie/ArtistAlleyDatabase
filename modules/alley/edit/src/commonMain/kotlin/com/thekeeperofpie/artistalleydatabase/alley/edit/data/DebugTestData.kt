@@ -154,6 +154,7 @@ object DebugTestData {
                 merchConfirmed = emptyList(),
                 _images = emptyList(),
                 fallbackImageYear = null,
+                embeds = emptyMap(),
                 editorNotes = null,
                 lastEditor = "fakeemail@example.com",
                 lastEditTime = Clock.System.now() - 1.hours,

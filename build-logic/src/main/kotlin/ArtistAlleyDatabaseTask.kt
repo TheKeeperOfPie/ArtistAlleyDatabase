@@ -337,14 +337,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                 val images =
                     findArtistImages(imageCacheDir, DataYear.ANIME_EXPO_2026, artist.id)
-                val updatedImages = if (images.isNotEmpty()) {
-                    artist.images.map { original ->
-                        images.first { it.name.contains(original.name) }
-                    }
-                } else {
-                    (artist.portfolioLinks + socialLinks + storeLinks + artist.commissions)
-                        .mapNotNull { embedCache.getEmbedCatalogImage(it) }
+                val updatedImages = artist.images.map { original ->
+                    images.first { it.name.contains(original.name) }
                 }
+                    val embeds = (artist.portfolioLinks + socialLinks + storeLinks + artist.commissions)
+                        .mapNotNull {
+                            val image = embedCache.getEmbedCatalogImage(it) ?: return@mapNotNull null
+                            it to image
+                        }
+                        .toMap()
 
                 database.mutationQueries.updateArtistEntryAnimeExpo2026(
                     artist.copy(
@@ -356,6 +357,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         linkFlags2 = linkFlags2,
                         commissionFlags = commissionFlags,
                         images = updatedImages,
+                        embeds = embeds,
                     )
                 ).await()
             }

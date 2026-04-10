@@ -114,13 +114,14 @@ object ArtistAlleyAppScreen {
                         booth = entry.booth.orEmpty(),
                         name = entry.name,
                     ),
-                    images = AlleyImageUtils.getArtistImages(
+                    images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
                         year = entry.fallbackImageYear ?: entry.year,
                         images = if (entry.fallbackImageYear == null) {
                             entry.images
                         } else {
                             entry.fallbackImages
                         },
+                        embeds = entry.embeds,
                     ),
                     initialImageIndex = imageIndex,
                 )

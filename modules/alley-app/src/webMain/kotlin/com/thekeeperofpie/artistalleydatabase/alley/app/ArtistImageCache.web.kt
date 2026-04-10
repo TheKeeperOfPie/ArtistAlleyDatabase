@@ -23,12 +23,9 @@ import kotlinx.coroutines.launch
 import org.w3c.fetch.Request
 import org.w3c.workers.Cache
 import org.w3c.workers.CacheQueryOptions
-import kotlin.collections.plus
-import kotlin.collections.plusAssign
 import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.js.get
 import kotlin.js.length
-import kotlin.text.get
 
 @OptIn(ExperimentalWasmJsInterop::class)
 @SingleIn(AppScope::class)
@@ -105,9 +102,10 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                         }
                     }
                     val images = entriesForArtist.flatMap {
-                        AlleyImageUtils.getArtistImages(
+                        AlleyImageUtils.getArtistImagesWithEmbedFallback(
                             year = it.artist.year,
                             images = it.artist.images,
+                            embeds = it.artist.embeds,
                         )
                     }
                     if (images.isEmpty()) return
@@ -146,9 +144,10 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                         DataYear.entries.forEach {
                             val artist = artistEntryDao.getEntry(it, artist.artistId)
                                 ?: return@forEach
-                            val images = AlleyImageUtils.getArtistImages(
+                            val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
                                 year = it,
                                 images = artist.artist.images,
+                                embeds = artist.artist.embeds,
                             )
                             images.forEach { image ->
                                 var matchingKey: Request? = null
