@@ -186,8 +186,10 @@ fun ArtistListRow(
                     contentDescription = stringResource(
                         Res.string.alley_artist_commission_icon_content_description
                     ),
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
                         .size(16.dp)
+                        .align(Alignment.Top)
                 )
             }
 
