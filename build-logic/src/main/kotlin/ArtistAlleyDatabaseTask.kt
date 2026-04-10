@@ -342,7 +342,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         images.first { it.name.contains(original.name) }
                     }
                 } else {
-                    (artist.portfolioLinks + socialLinks)
+                    (artist.portfolioLinks + socialLinks + storeLinks + artist.commissions)
                         .mapNotNull { embedCache.getEmbedCatalogImage(it) }
                 }
 
