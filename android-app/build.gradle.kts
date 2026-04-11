@@ -172,6 +172,7 @@ dependencies {
     implementation(libs.work.runtime)
     implementation(libs.work.runtime.ktx)
     implementation(projects.modules.anilist)
+    implementation(projects.modules.anilist.data)
     implementation(projects.modules.anime)
     implementation(projects.modules.anime2anime)
     implementation(projects.modules.art)

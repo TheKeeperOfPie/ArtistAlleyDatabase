@@ -10,6 +10,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.anilist)
+            api(projects.modules.anilist.data)
             api(projects.modules.browse)
             api(projects.modules.data)
             api(projects.modules.entry)

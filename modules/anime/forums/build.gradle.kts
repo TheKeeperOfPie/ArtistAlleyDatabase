@@ -9,6 +9,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.anilist)
+            api(projects.modules.anilist.data)
             api(projects.modules.utilsCompose)
             implementation(projects.modules.anime.forums.data)
             implementation(projects.modules.anime.media.data)

@@ -30,6 +30,7 @@ kotlin {
             api(projects.modules.anime.users)
 
             implementation(projects.modules.anilist)
+            implementation(projects.modules.anilist.data)
             implementation(projects.modules.anime.data)
             implementation(projects.modules.anime.ui)
             implementation(projects.modules.cds)

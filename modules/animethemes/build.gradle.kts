@@ -8,6 +8,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.anilist)
+            implementation(projects.modules.anilist.data)
             implementation(projects.modules.anime.songs)
             implementation(projects.modules.utilsNetwork)
             implementation(libs.ktor.client.core)

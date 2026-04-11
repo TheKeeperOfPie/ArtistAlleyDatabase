@@ -19,6 +19,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.androidx.security.crypto)
+            api(projects.modules.anilist.data)
             implementation(projects.modules.secrets)
             implementation(libs.androidx.browser)
             implementation(libs.activity.compose)

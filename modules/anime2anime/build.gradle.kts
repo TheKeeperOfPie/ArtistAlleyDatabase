@@ -8,6 +8,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.anilist)
+            implementation(projects.modules.anilist.data)
             implementation(projects.modules.anime)
             implementation(projects.modules.anime.ignore.data)
             implementation(projects.modules.anime.media.data)
