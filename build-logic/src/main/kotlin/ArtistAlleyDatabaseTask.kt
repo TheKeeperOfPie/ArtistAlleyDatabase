@@ -1,4 +1,3 @@
-
 import Utils.createDatabase
 import app.cash.sqldelight.Query
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
@@ -340,12 +339,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 val updatedImages = artist.images.map { original ->
                     images.first { it.name.contains(original.name) }
                 }
-                    val embeds = (artist.portfolioLinks + socialLinks + storeLinks + artist.commissions)
-                        .mapNotNull {
-                            val image = embedCache.getEmbedCatalogImage(it) ?: return@mapNotNull null
-                            it to image
-                        }
-                        .toMap()
+                val embeds = (artist.portfolioLinks + socialLinks + storeLinks + artist.commissions)
+                    .mapNotNull {
+                        val image = embedCache.getEmbedCatalogImage(it) ?: return@mapNotNull null
+                        it to image
+                    }
+                    .toMap()
 
                 database.mutationQueries.updateArtistEntryAnimeExpo2026(
                     artist.copy(
@@ -537,7 +536,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         id: String,
     ): List<CatalogImage> {
         val folder = inputImages.get()
-            .dir("files")
             .dir(year.folderName)
             .dir("catalogs")
             .asFile
@@ -581,7 +579,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 -> id
         }
         val folder = inputImages.get()
-            .dir("files")
             .dir(year.folderName)
             .dir("rallies")
             .asFile

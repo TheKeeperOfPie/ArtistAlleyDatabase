@@ -30,6 +30,7 @@ class StampRallyEntryGridModel(
 
     override val booth get() = stampRally.hostTable
 
+    override val hasCatalog get() = images.isNotEmpty()
     override val fallbackImages get() = emptyList<CatalogImage>()
     override val fallbackYear: DataYear? get() = null
 

@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
@@ -89,9 +90,11 @@ class ArtistDetailsViewModel(
     }.flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val catalog = combineStates(showFallbackImages, entry) { showFallbackImages, entry ->
-        val artist = entry?.artist
+    val catalog = combineStates(
+        showFallbackImages,
+        entry.mapState(viewModelScope) { it?.artist }) { showFallbackImages, artist ->
         val fallbackImageYear = artist?.fallbackImageYear
+        val embedImages = artist?.embeds?.let(AlleyImageUtils::getEmbedImages).orEmpty()
         when {
             artist == null -> LoadingResult.loading()
             artist.images.isNotEmpty() || fallbackImageYear == null ->
@@ -106,11 +109,19 @@ class ArtistDetailsViewModel(
                         fallbackYear = null,
                     )
                 )
-            !showFallbackImages ->
+            !showFallbackImages && embedImages.isEmpty() ->
                 LoadingResult.success(
                     DetailsScreenCatalog(
                         images = emptyList(),
-                        showOutdatedCatalogs = showFallbackImages,
+                        showOutdatedCatalogs = false,
+                        fallbackYear = artist.fallbackImageYear,
+                    )
+                )
+            !showFallbackImages && embedImages.isNotEmpty() ->
+                LoadingResult.success(
+                    DetailsScreenCatalog(
+                        images = embedImages,
+                        showOutdatedCatalogs = false,
                         fallbackYear = artist.fallbackImageYear,
                     )
                 )

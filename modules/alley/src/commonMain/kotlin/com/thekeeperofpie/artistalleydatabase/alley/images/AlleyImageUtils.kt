@@ -48,7 +48,9 @@ object AlleyImageUtils {
                 t.printStackTrace()
                 null
             }
-        }.toMap()
+        }
+        .sortedWith(embedComparator)
+        .map { it.second }
 
     private val embedOrder = listOf(
         LinkCategory.PORTFOLIOS,
@@ -59,21 +61,17 @@ object AlleyImageUtils {
         LinkCategory.OTHER,
     )
     private val embedComparator =
-        compareBy<Map.Entry<String, com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>(
-            { embedOrder.indexOf(LinkModel.parse(it.key).type.category) },
-            { it.key },
+        compareBy<Pair<String, com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>(
+            { embedOrder.indexOf(LinkModel.parse(it.first).type.category) },
+            { it.first },
         )
 
     fun getArtistImagesWithEmbedFallback(
         year: DataYear,
         images: List<CatalogImage>,
         embeds: Map<String, CatalogImage>,
-    ) = getArtistImages(year, images).ifEmpty {
-        getEmbedImages(embeds)
-            .map { it }
-            .sortedWith(embedComparator)
-            .map { it.value }
-    }
+    ) = getArtistImages(year, images)
+        .ifEmpty { getEmbedImages(embeds) }
 
     fun getProfileImage(embeds: Map<String, CatalogImage>) =
         embeds.asSequence()

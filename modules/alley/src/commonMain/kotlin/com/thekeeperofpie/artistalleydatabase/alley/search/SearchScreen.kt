@@ -580,6 +580,7 @@ object SearchScreen {
     interface SearchEntryModel : EntryGridModel {
         val booth: String?
         val images: List<CatalogImage>
+        val hasCatalog: Boolean
         val fallbackImages: List<CatalogImage>
         val fallbackYear: DataYear?
         var favorite: Boolean

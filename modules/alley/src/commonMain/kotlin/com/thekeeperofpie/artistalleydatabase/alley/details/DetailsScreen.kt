@@ -187,7 +187,7 @@ object DetailsScreen {
                     if (catalog.loading) {
                         LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth())
                     } else if (showFallbackPrompt) {
-                        AvailableFallbackPrompt(
+                        LargeAvailableFallbackPrompt(
                             fallbackYear = fallbackYear,
                             onShowFallback = onShowFallback,
                             onAlwaysShowFallback = onAlwaysShowFallback,
@@ -199,7 +199,15 @@ object DetailsScreen {
             if (hasImages) {
                 Column {
                     if (fallbackYear != null) {
-                        ImageFallbackBanner(sharedElementId, fallbackYear)
+                        if (showFallbackImages == true) {
+                            ImageFallbackBanner(sharedElementId, fallbackYear)
+                        } else if (showFallbackImages == false) {
+                            SmallAvailableFallbackPrompt(
+                                fallbackYear = fallbackYear,
+                                onShowFallback = onShowFallback,
+                                onAlwaysShowFallback = onAlwaysShowFallback,
+                            )
+                        }
                     }
 
                     ImageGrid(
@@ -304,10 +312,10 @@ object DetailsScreen {
         val catalog = catalog()
         val images = catalog.result?.images
         val fallbackYear = catalog.result?.fallbackYear
+        val showFallbackImages = catalog.result?.showOutdatedCatalogs
         if (images.isNullOrEmpty()) {
-            val showFallbackImages = catalog.result?.showOutdatedCatalogs
             if (showFallbackImages == false && fallbackYear != null) {
-                AvailableFallbackPrompt(
+                LargeAvailableFallbackPrompt(
                     fallbackYear = fallbackYear,
                     onShowFallback = onShowFallback,
                     onAlwaysShowFallback = onAlwaysShowFallback,
@@ -338,14 +346,22 @@ object DetailsScreen {
                     onClickFullscreen = null,
                 )
                 if (fallbackYear != null) {
-                    ImageFallbackBanner(sharedElementId, fallbackYear)
+                    if (showFallbackImages == true) {
+                        ImageFallbackBanner(sharedElementId, fallbackYear)
+                    } else if (showFallbackImages == false) {
+                        SmallAvailableFallbackPrompt(
+                            fallbackYear = fallbackYear,
+                            onShowFallback = onShowFallback,
+                            onAlwaysShowFallback = onAlwaysShowFallback,
+                        )
+                    }
                 }
             }
         }
     }
 
     @Composable
-    private fun AvailableFallbackPrompt(
+    private fun LargeAvailableFallbackPrompt(
         fallbackYear: DataYear,
         onShowFallback: () -> Unit,
         onAlwaysShowFallback: () -> Unit,
@@ -368,6 +384,53 @@ object DetailsScreen {
                         Res.string.alley_artist_catalog_image_none
                     )
                 )
+                Text(
+                    text = stringResource(
+                        Res.string.alley_artist_catalog_available_fallback_prompt,
+                        stringResource(fallbackYear.fullName),
+                    )
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Button(onClick = onShowFallback) {
+                        Text(
+                            text = stringResource(
+                                Res.string.alley_artist_catalog_available_fallback_prompt_show,
+                                stringResource(fallbackYear.shortName),
+                            )
+                        )
+                    }
+                    Button(onClick = onAlwaysShowFallback) {
+                        Text(
+                            text = stringResource(
+                                Res.string.alley_artist_catalog_available_fallback_prompt_always_show
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun SmallAvailableFallbackPrompt(
+        fallbackYear: DataYear,
+        onShowFallback: () -> Unit,
+        onAlwaysShowFallback: () -> Unit,
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Text(
                     text = stringResource(
                         Res.string.alley_artist_catalog_available_fallback_prompt,
