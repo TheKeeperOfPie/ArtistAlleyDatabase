@@ -51,6 +51,7 @@ class ArtistEntryGridModel(
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
             showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
+            showEmbeds: Boolean = true,
         ): ArtistEntryGridModel {
             val artist = entry.artist
             val merch = TagUtils.combineForDisplay(
@@ -70,7 +71,7 @@ class ArtistEntryGridModel(
             val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
                 year = artist.year,
                 images = artist.images,
-                embeds = artist.embeds,
+                embeds = artist.embeds.takeIf { showEmbeds }.orEmpty(),
             )
 
             val profileImage = AlleyImageUtils.getProfileImage(artist.embeds)

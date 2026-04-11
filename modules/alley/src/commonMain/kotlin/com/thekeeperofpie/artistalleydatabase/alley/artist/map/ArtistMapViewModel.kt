@@ -48,6 +48,7 @@ class ArtistMapViewModel(
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
                         showOutdatedCatalogs = showOutdatedCatalogs,
+                        showEmbeds = false,
                     )
                 }
         }
