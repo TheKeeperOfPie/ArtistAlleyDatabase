@@ -1,3 +1,4 @@
+
 import ImageUtils.parseScaledImageWidthHeight
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Document
@@ -30,14 +31,15 @@ internal class EmbedCache(
     private val workingImagesFolder: File,
 ) {
     private val cache: MutableMap<String, EmbedImage?>
+    private val ignored: MutableSet<String>
     private val json = Json { prettyPrint = true }
 
     init {
         val initialFile = inputFolder.resolve("embeds.json")
-        cache = if (initialFile.exists()) {
-            initialFile.inputStream()
-                .use { json.decodeFromStream<EmbedLinkMap>(it) }
-                .images
+        if (initialFile.exists()) {
+            val embeds = initialFile.inputStream()
+                .use { json.decodeFromStream<Embeds>(it) }
+            cache = embeds.images
                 .mapValues {
                     val value = it.value ?: return@mapValues null
                     if (value.failureReason == null &&
@@ -56,8 +58,10 @@ internal class EmbedCache(
                     }
                 }
                 .toMutableMap()
+            ignored = embeds.ignored.toMutableSet()
         } else {
-            mutableMapOf()
+            cache = mutableMapOf()
+            ignored = mutableSetOf()
         }
         logger.lifecycle("Loaded ${cache.size} embeds from cache at $initialFile")
 
@@ -74,6 +78,7 @@ internal class EmbedCache(
         val targetLink = link.lowercase()
         if (cache.contains(targetLink)) {
             val cached = cache[targetLink]
+            if (ignored.contains(cached?.link)) return null
             if (cached != null) {
                 if (cached.failureReason == null && (cached.fileName == null ||
                             !workingImagesFolder.resolve(cached.fileName).exists())
@@ -135,10 +140,13 @@ internal class EmbedCache(
                 fetchResult = FetchResult(failureReason = EmbedFailureReason.DIMENSIONS),
             )
             cache[targetLink] = embedImage
-            return embedImage.catalogImage
+            return null
         }
 
+        // Fetch first before checking ignored to ensure value is cached
         val fetchResult = fetchEmbedImage(imageLink)
+        if (ignored.contains(imageLink)) return null
+
         val embedImage = EmbedImage(link = imageLink, fetchResult = fetchResult)
         cache[targetLink] = embedImage
         return embedImage.catalogImage
@@ -151,34 +159,52 @@ internal class EmbedCache(
     ) {
         outputJsonFile.resolve("embeds.json").outputStream().use {
             it.writer().use {
-                it.write(json.encodeToString<EmbedLinkMap>(EmbedLinkMap(cache.toSortedMap())))
+                it.write(
+                    json.encodeToString<Embeds>(
+                        Embeds(
+                            cache.toSortedMap(),
+                            ignored.toSortedSet(),
+                        )
+                    )
+                )
             }
-            cache.values.filterNotNull()
-                .map {
-                    scope.async {
-                        val imageFile = it.fileName?.let(workingImagesFolder::resolve)
-                        if (imageFile?.exists() == true) {
-                            val targetFile = embedImagesOutputFolder.resolve(it.resourceFileName)
-                            if (!targetFile.exists()) {
-                                val (width, height, resized) = parseScaledImageWidthHeight(
-                                    logger = logger,
-                                    imageCacheDir = imageCacheDir,
-                                    file = imageFile,
-                                )
-                                ImageUtils.compressAndRename(
-                                    logger = logger,
-                                    input = imageFile,
-                                    resized = resized,
-                                    width = width,
-                                    height = height,
-                                    target = targetFile,
-                                )
-                            }
+        }
+        val expectedFiles = cache.map { (_, embed) ->
+            embed?.resourceFileName.takeUnless { ignored.contains(embed?.link) }
+        }.toSet()
+        embedImagesOutputFolder.list()
+            .filterNot(expectedFiles::contains)
+            .forEach {
+                logger.lifecycle("Deleting unexpected embed $it")
+                embedImagesOutputFolder.resolve(it).delete()
+            }
+        cache.values
+            .filterNotNull()
+            .filterNot { ignored.contains(it.link) }
+            .map {
+                scope.async {
+                    val imageFile = it.fileName?.let(workingImagesFolder::resolve)
+                    if (imageFile?.exists() == true) {
+                        val targetFile = embedImagesOutputFolder.resolve(it.resourceFileName)
+                        if (!targetFile.exists()) {
+                            val (width, height, resized) = parseScaledImageWidthHeight(
+                                logger = logger,
+                                imageCacheDir = imageCacheDir,
+                                file = imageFile,
+                            )
+                            ImageUtils.compressAndRename(
+                                logger = logger,
+                                input = imageFile,
+                                resized = resized,
+                                width = width,
+                                height = height,
+                                target = targetFile,
+                            )
                         }
                     }
                 }
-                .awaitAll()
-        }
+            }
+            .awaitAll()
     }
 
     private suspend fun fetchEmbedImage(imageLink: String) = withContext(Dispatchers.IO) {
@@ -304,5 +330,8 @@ internal class EmbedCache(
     }
 
     @Serializable
-    private data class EmbedLinkMap(val images: Map<String, EmbedImage?>)
+    private data class Embeds(
+        val images: Map<String, EmbedImage?>,
+        val ignored: Set<String>,
+    )
 }
