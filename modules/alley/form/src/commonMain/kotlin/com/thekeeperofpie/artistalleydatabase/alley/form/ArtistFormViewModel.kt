@@ -46,7 +46,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 
 @AssistedInject
@@ -168,10 +170,14 @@ class ArtistFormViewModel(
                 )
             }
 
+            val (seriesById, merchById) = (withTimeoutOrNull(5.seconds) {
+                tagAutocomplete.seriesById.first { it.isNotEmpty() } to
+                        tagAutocomplete.merchById.first { it.isNotEmpty() }
+            } ?: (emptyMap<String, SeriesInfo>() to emptyMap()))
             state.applyDatabaseEntry(
                 artist = artist,
-                seriesById = tagAutocomplete.seriesById.first(),
-                merchById = tagAutocomplete.merchById.first(),
+                seriesById = seriesById,
+                merchById = merchById,
                 mergeBehavior = FormMergeBehavior.REPLACE,
             )
             state.artistFormState.images.replaceAll(artist.images.map(ImageUtils::toEditImage))

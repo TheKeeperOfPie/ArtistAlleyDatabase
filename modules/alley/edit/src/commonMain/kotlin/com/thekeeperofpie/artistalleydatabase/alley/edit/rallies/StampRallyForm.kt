@@ -453,6 +453,7 @@ abstract class StampRallyFormScope(
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        showUnknownIndicator: Boolean = true,
     ) {
         val seriesById = seriesById()
         val initialSeries = remember(seriesById, initialStampRally?.series) {
@@ -474,6 +475,7 @@ abstract class StampRallyFormScope(
             items = series,
             predictions = seriesPredictions,
             image = seriesImage,
+            showUnknownIndicator = showUnknownIndicator,
         )
     }
 

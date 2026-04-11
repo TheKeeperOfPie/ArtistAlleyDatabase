@@ -288,6 +288,7 @@ internal fun SeriesSection(
     showItems: () -> Boolean = { true },
     predictions: suspend (String) -> Flow<List<SeriesInfo>>,
     image: (SeriesInfo) -> String?,
+    showUnknownIndicator: Boolean = true,
     additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
     MultiTextSection(
@@ -315,6 +316,7 @@ internal fun SeriesSection(
                     image = { image(value) },
                     textStyle = textStyle,
                     showAllTitles = true,
+                    showUnknownIndicator = showUnknownIndicator,
                     modifier = Modifier.weight(1f)
                 )
 

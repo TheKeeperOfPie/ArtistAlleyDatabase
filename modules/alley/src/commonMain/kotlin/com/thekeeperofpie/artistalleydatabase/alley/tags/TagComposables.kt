@@ -90,6 +90,7 @@ fun SeriesRow(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showAllTitles: Boolean = false,
+    showUnknownIndicator: Boolean = true,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     Row(
@@ -111,7 +112,7 @@ fun SeriesRow(
         )
 
         // For highlighting tag that needs resolution in edit app
-        if (series?.faked == true) {
+        if (series?.faked == true && showUnknownIndicator) {
             UnrecognizedTagIcon()
         }
 

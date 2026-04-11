@@ -219,6 +219,7 @@ interface ArtistFormScope : EntryFormScope {
         seriesImage: (SeriesInfo) -> String?,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        showUnknownIndicator: Boolean = false,
     )
 
     @Composable
@@ -228,6 +229,7 @@ interface ArtistFormScope : EntryFormScope {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         showConfirmed: Boolean = true,
+        showUnknownIndicator: Boolean = true,
     )
 
     @Composable
@@ -237,6 +239,7 @@ interface ArtistFormScope : EntryFormScope {
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        showUnknownIndicator: Boolean = true,
     )
 
     @Composable
@@ -245,6 +248,7 @@ interface ArtistFormScope : EntryFormScope {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         showConfirmed: Boolean = true,
+        showUnknownIndicator: Boolean = true,
     )
 
     @Composable
@@ -253,6 +257,7 @@ interface ArtistFormScope : EntryFormScope {
         confirmed: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        showUnknownIndicator: Boolean = true,
     )
 
     @Composable
@@ -669,14 +674,21 @@ private abstract class ArtistFormScopeImpl(
         seriesImage: (SeriesInfo) -> String?,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        showUnknownIndicator: Boolean,
     ) {
         SeriesSection(
             state = series,
             seriesById = seriesById,
             seriesPredictions = seriesPredictions,
             seriesImage = seriesImage,
+            showUnknownIndicator = showUnknownIndicator,
         )
-        MerchSection(state = merch, merchById = merchById, merchPredictions = merchPredictions)
+        MerchSection(
+            state = merch,
+            merchById = merchById,
+            merchPredictions = merchPredictions,
+            showUnknownIndicator = showUnknownIndicator,
+        )
     }
 
     @Composable
@@ -686,6 +698,7 @@ private abstract class ArtistFormScopeImpl(
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         showConfirmed: Boolean,
+        showUnknownIndicator: Boolean,
     ) {
         val hasConfirmedSeries by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
@@ -714,6 +727,7 @@ private abstract class ArtistFormScopeImpl(
             showItems = { showSeriesInferred },
             predictions = seriesPredictions,
             image = seriesImage,
+            showUnknownIndicator = showUnknownIndicator,
             additionalHeaderActions = {
                 if (!this@ArtistFormScopeImpl.forceLocked && showConfirmed) {
                     ArtistForm.ShowInferredButton(
@@ -732,6 +746,7 @@ private abstract class ArtistFormScopeImpl(
                 seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
+                showUnknownIndicator = showUnknownIndicator,
             )
         }
     }
@@ -743,6 +758,7 @@ private abstract class ArtistFormScopeImpl(
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        showUnknownIndicator: Boolean,
     ) {
         val seriesById = seriesById()
         val initialConfirmed = remember(seriesById, initialArtist?.seriesConfirmed) {
@@ -764,6 +780,7 @@ private abstract class ArtistFormScopeImpl(
             items = confirmed,
             predictions = seriesPredictions,
             image = seriesImage,
+            showUnknownIndicator = showUnknownIndicator,
         )
     }
 
@@ -773,6 +790,7 @@ private abstract class ArtistFormScopeImpl(
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         showConfirmed: Boolean,
+        showUnknownIndicator: Boolean,
     ) {
         val hasConfirmedMerch by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
@@ -802,7 +820,7 @@ private abstract class ArtistFormScopeImpl(
             itemToSubText = { it.notes },
             itemToSerializedValue = { it.name },
             leadingIcon = {
-                if (it.faked) {
+                if (it.faked && showUnknownIndicator) {
                     UnrecognizedTagIcon()
                 }
             },
@@ -838,6 +856,7 @@ private abstract class ArtistFormScopeImpl(
                 confirmed = state.confirmed,
                 merchById = merchById,
                 merchPredictions = merchPredictions,
+                showUnknownIndicator = showUnknownIndicator,
             )
         }
     }
@@ -848,6 +867,7 @@ private abstract class ArtistFormScopeImpl(
         confirmed: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        showUnknownIndicator: Boolean,
     ) {
         val merchById = merchById()
         val initialConfirmed = remember(merchById, initialArtist?.merchConfirmed) {
@@ -872,7 +892,7 @@ private abstract class ArtistFormScopeImpl(
             itemToSubText = { it.notes },
             itemToSerializedValue = { it.name },
             leadingIcon = {
-                if (it.faked) {
+                if (it.faked && showUnknownIndicator) {
                     UnrecognizedTagIcon()
                 }
             },
@@ -1000,7 +1020,8 @@ object ArtistForm {
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
                 merchById = merchById,
-                merchPredictions = merchPredictions
+                merchPredictions = merchPredictions,
+                showUnknownIndicator = false,
             )
 
             NotesSection(state.info.notes, this@ArtistFormScope.initialArtist?.notes)

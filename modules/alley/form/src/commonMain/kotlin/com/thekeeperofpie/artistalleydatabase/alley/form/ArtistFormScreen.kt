@@ -589,12 +589,14 @@ object ArtistFormScreen {
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
                 showConfirmed = false,
+                showUnknownIndicator = false,
             )
             MerchSection(
                 state = formState.merch,
                 merchById = merchById,
                 merchPredictions = merchPredictions,
                 showConfirmed = false,
+                showUnknownIndicator = false,
             )
             NotesSection(
                 state = formState.notes,
@@ -793,6 +795,7 @@ object ArtistFormScreen {
                                     seriesById = seriesById,
                                     seriesPredictions = seriesPredictions,
                                     seriesImage = seriesImage,
+                                    showUnknownIndicator = false,
                                 )
                                 MerchSection(
                                     formState.stateMerch,
@@ -1110,12 +1113,14 @@ object ArtistFormScreen {
                         seriesById = seriesById,
                         seriesPredictions = seriesPredictions,
                         seriesImage = seriesImage,
+                        showUnknownIndicator = false,
                     )
                     MerchConfirmedSection(
                         state = state.merch.stateConfirmed,
                         confirmed = state.merch.confirmed,
                         merchById = merchById,
                         merchPredictions = merchPredictions,
+                        showUnknownIndicator = false,
                     )
                 }
             }
