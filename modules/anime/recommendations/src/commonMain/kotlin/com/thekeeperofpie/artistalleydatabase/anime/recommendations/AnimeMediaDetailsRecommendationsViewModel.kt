@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendations
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.data.MediaDetailsQuery
@@ -18,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,7 +26,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,

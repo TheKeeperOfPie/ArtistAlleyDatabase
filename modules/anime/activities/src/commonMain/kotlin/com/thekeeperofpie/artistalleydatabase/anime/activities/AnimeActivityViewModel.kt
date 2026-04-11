@@ -25,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +40,7 @@ import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class AnimeActivityViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
     private val settings: MediaDataSettings,

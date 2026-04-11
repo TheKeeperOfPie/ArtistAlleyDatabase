@@ -27,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -37,7 +36,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class UserFavoriteCharactersViewModel<CharacterEntry : Any, MediaEntry>(
     aniListApi: AuthedAniListApi,
     mediaListStatusController: MediaListStatusController,

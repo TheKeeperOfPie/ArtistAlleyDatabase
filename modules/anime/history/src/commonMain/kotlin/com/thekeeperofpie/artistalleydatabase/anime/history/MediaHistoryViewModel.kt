@@ -29,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -37,7 +36,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-@Inject
+@AssistedInject
 class MediaHistoryViewModel<MediaEntry : Any>(
     aniListApi: AuthedAniListApi,
     historySettings: HistorySettings,

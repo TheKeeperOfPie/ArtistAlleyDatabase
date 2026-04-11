@@ -40,7 +40,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -53,7 +52,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class ForumThreadViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
     navigationTypeMap: NavigationTypeMap,

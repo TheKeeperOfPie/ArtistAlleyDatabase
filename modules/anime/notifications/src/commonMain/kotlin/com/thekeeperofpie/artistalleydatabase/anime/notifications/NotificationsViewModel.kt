@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUnique
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class NotificationsViewModel<MediaEntry, ForumCommentEntry>(
     private val aniListApi: AuthedAniListApi,
     settings: MediaDataSettings,

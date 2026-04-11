@@ -46,17 +46,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.data.UserEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.users.data.filter.UsersSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -75,7 +72,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-@Inject
+@AssistedInject
 class AnimeSearchViewModel<MediaPreviewEntry : Any, MediaWithListStatusEntry, CharacterEntry, StaffEntry, StudioEntry, UserEntry>(
     aniListApi: AuthedAniListApi,
     settings: MediaDataSettings,

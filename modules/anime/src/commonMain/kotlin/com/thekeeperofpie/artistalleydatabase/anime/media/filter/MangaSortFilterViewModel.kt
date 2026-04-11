@@ -40,7 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.TimeZone
@@ -261,7 +261,7 @@ open class MangaSortFilterViewModel<SortType>(
         )
     }
 
-    @Inject
+    @AssistedInject
     class Factory(
         private val aniListApi: AuthedAniListApi,
         private val featureOverrideProvider: FeatureOverrideProvider,

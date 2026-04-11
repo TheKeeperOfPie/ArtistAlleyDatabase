@@ -28,7 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -111,7 +110,7 @@ abstract class UserListViewModel<MediaEntry>(
         }
     }
 
-    @Inject
+    @AssistedInject
     class Following<MediaEntry>(
         aniListApi: AuthedAniListApi,
         mediaListStatusController: MediaListStatusController,
@@ -174,7 +173,7 @@ abstract class UserListViewModel<MediaEntry>(
         }
     }
 
-    @Inject
+    @AssistedInject
     class Followers<MediaEntry>(
         aniListApi: AuthedAniListApi,
         mediaListStatusController: MediaListStatusController,

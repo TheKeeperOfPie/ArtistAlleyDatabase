@@ -56,7 +56,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -81,7 +80,7 @@ import kotlinx.datetime.plus
 import kotlin.time.Clock
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, MediaCompactWithTagsEntry, StudioEntry>(
     private val aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
