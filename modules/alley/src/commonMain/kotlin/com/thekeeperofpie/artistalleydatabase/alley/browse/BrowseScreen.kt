@@ -5,11 +5,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,7 +63,6 @@ import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
@@ -210,9 +206,19 @@ object BrowseScreen {
                                     onOpenSettings = onOpenSettings,
                                     scrollStateSaver = scrollStateSaver,
                                     additionalHeader = {
-                                        item(key = "seriesLanguageOption") {
-                                            tagsViewModel.seriesLanguageSection
-                                                .Content(Modifier.fillMaxWidth())
+                                        item(key = "seriesFilterOptions") {
+                                            Column {
+                                                tagsViewModel.seriesLanguageSection
+                                                    .Content(Modifier.fillMaxWidth())
+
+                                                val seriesSortFilterController =
+                                                    tagsViewModel.seriesSortFilterController
+                                                seriesSortFilterController.showOnlyConfirmedTagsSection
+                                                    .Content(
+                                                        state = seriesSortFilterController.state.expanded,
+                                                        showDivider = true,
+                                                    )
+                                            }
                                         }
                                     }
                                 )
@@ -405,25 +411,6 @@ object BrowseScreen {
                 }
 
                 PrimaryVerticalScrollbar(listState)
-            }
-        }
-    }
-
-    @Composable
-    private fun SeriesFilters(
-        seriesFiltersState: List<Pair<SeriesFilterOption, Boolean>>,
-        onSeriesFilterClick: (SeriesFilterOption) -> Unit,
-    ) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        ) {
-            seriesFiltersState.forEach { (option, selected) ->
-                FilterChip(
-                    selected = selected,
-                    label = { Text(stringResource(option.title)) },
-                    onClick = { onSeriesFilterClick(option) },
-                )
             }
         }
     }

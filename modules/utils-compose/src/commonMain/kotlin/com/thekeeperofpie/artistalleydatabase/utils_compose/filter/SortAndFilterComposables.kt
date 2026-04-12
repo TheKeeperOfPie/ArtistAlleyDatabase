@@ -1036,6 +1036,9 @@ fun SortFilterBottomScaffold(
                     state = state,
                     bottomNavigationState = bottomNavigationState,
                 )
+            } else {
+                // State saver crashes if this contains nothing
+                Spacer(Modifier.height(1.dp))
             }
         },
         sheetTonalElevation = 4.dp,
