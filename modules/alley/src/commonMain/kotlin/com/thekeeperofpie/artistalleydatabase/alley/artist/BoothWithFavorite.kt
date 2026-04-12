@@ -12,4 +12,5 @@ data class BoothWithFavorite(
     val fallbackImageYear: DataYear?,
     val embeds: Map<String, CatalogImage>,
     val favorite: Boolean,
+    val hasNotes: Boolean,
 )

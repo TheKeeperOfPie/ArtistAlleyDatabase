@@ -389,4 +389,6 @@
     <string name="alley_changelog_title_updated">UPDATED</string>
 
     <string name="alley_libraries_title">Libraries</string>
+
+    <string name="alley_artist_has_notes_content_description">Artist has notes</string>
 </resources>

@@ -134,6 +134,7 @@ class MapViewModel(
         } else {
             0
         }
+        val hasNotes = artists.any { it.hasNotes }
         return if (artists.size == 1) {
             Table.Single(
                 year = primaryArtist.year,
@@ -145,6 +146,7 @@ class MapViewModel(
                 favorite = primaryArtist.favorite,
                 gridX = gridX,
                 gridY = gridY,
+                hasNotes = hasNotes,
             )
         } else {
             Table.Shared(
@@ -157,6 +159,7 @@ class MapViewModel(
                 favorite = artists.any { it.favorite },
                 gridX = gridX,
                 gridY = gridY,
+                hasNotes = hasNotes,
             )
         }
     }

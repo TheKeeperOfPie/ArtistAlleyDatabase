@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -25,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ImageNotSupported
@@ -60,6 +62,7 @@ import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_notes_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -186,6 +189,16 @@ fun TableCell(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
+
+        if (table.hasNotes) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Default.Notes,
+                contentDescription = stringResource(Res.string.alley_artist_has_notes_content_description),
+                modifier = Modifier.align(Alignment.BottomEnd)
+                    .padding(4.dp)
+                    .size(12.dp)
+            )
+        }
     }
 }
 

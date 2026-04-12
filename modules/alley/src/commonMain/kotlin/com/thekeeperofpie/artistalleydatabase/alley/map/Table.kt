@@ -12,6 +12,7 @@ sealed interface Table {
     val gridY: Int
     val section: AnimeExpoSection?
     val image: CatalogImage?
+    val hasNotes: Boolean
 
     data class Single(
         override val year: DataYear,
@@ -23,6 +24,7 @@ sealed interface Table {
         override val favorite: Boolean,
         override val gridX: Int,
         override val gridY: Int,
+        override val hasNotes: Boolean,
     ) : Table
 
     data class Shared(
@@ -35,6 +37,7 @@ sealed interface Table {
         override val favorite: Boolean,
         override val gridX: Int,
         override val gridY: Int,
+        override val hasNotes: Boolean,
     ) : Table
 
     enum class AnimeExpoSection(val range: IntRange, val color: Color, val textColor: Color) {
