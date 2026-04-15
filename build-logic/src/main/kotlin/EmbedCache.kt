@@ -74,7 +74,7 @@ internal class EmbedCache(
         }
     }
 
-    suspend fun getEmbedCatalogImage(link: String): CatalogImage? {
+    suspend fun getEmbedCatalogImage(link: String): Pair<String, CatalogImage>? {
         val targetLink = link.lowercase()
         if (cache.contains(targetLink)) {
             val cached = cache[targetLink]
@@ -87,10 +87,10 @@ internal class EmbedCache(
                     val fetchResult = fetchEmbedImage(cached.link)
                     val embedImage = EmbedImage(link = cached.link, fetchResult = fetchResult)
                     cache[targetLink] = embedImage
-                    return embedImage.catalogImage
+                    return embedImage.linkAndCatalogImage
                 }
             }
-            return cached?.catalogImage
+            return cached?.linkAndCatalogImage
         }
 
         delay(REQUEST_THROTTLE)
@@ -127,7 +127,7 @@ internal class EmbedCache(
             }
             else -> null
         }
-        if (image == null) {
+        if (image == null || image.first.isBlank()) {
             cache[targetLink] = null
             return null
         }
@@ -149,7 +149,7 @@ internal class EmbedCache(
 
         val embedImage = EmbedImage(link = imageLink, fetchResult = fetchResult)
         cache[targetLink] = embedImage
-        return embedImage.catalogImage
+        return embedImage.linkAndCatalogImage
     }
 
     suspend fun finalizeCache(
@@ -232,14 +232,14 @@ internal class EmbedCache(
         val image = try {
             ImageIO.read(URI(imageLink).toURL())
         } catch (t: Throwable) {
-            logger.lifecycle("Failed to fetch embed $imageLink", t)
+            logger.lifecycle("Failed to fetch embed for $fileName: $imageLink", t)
             return@withContext FetchResult(failureReason = EmbedFailureReason.FETCH)
         }
 
         try {
             ImageIO.write(image, "webp", outputFile)
         } catch (t: Throwable) {
-            logger.lifecycle("Failed to write embed $imageLink", t)
+            logger.lifecycle("Failed to write embed for $fileName: $imageLink", t)
             return@withContext FetchResult(failureReason = EmbedFailureReason.WRITE)
         }
 
@@ -304,8 +304,8 @@ internal class EmbedCache(
         val resourceFileName =
             "embed-${fileName?.substringBeforeLast(".")}-${fileHash}.webp"
 
-        val catalogImage =
-            fileName?.let { CatalogImage(name = resourceFileName, width = width, height = height) }
+        val linkAndCatalogImage =
+            fileName?.let { link to CatalogImage(name = resourceFileName, width = width, height = height) }
     }
 
     @Serializable

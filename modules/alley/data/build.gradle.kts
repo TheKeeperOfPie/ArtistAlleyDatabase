@@ -45,7 +45,7 @@ val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlle
 val changelogTask = tasks.register<ArtistAlleyChangelogTask>("generateArtistAlleyChangelog")
 val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase") {
     inputImages.set(inputsTask.flatMap { it.outputImages })
-    inputCache.set(project.file("cache"))
+    inputEmbeds.set(project.file("inputs/embeds"))
     inputChangelog.set(changelogTask.flatMap { it.outputFile })
     mustRunAfter(changelogTask, inputsTask)
 }

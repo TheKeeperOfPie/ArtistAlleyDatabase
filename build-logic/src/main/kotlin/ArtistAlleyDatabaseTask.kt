@@ -55,7 +55,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val inputCache: DirectoryProperty
+    abstract val inputEmbeds: DirectoryProperty
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -116,7 +116,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                 val embedCache = EmbedCache(
                     logger = logger,
-                    inputFolder = inputCache.dir("embeds").get().asFile,
+                    inputFolder = inputEmbeds.get().asFile,
                     outputJsonFile = outputMetadata.get().asFile,
                     workingImagesFolder = outputMetadata.dir("embedImages")
                         .get().asFile.apply { mkdir() },
@@ -341,10 +341,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
                 val embeds = (artist.portfolioLinks + socialLinks + storeLinks + artist.commissions)
                     .mapNotNull {
-                        val image = embedCache.getEmbedCatalogImage(it) ?: return@mapNotNull null
-                        it to image
+                        val (link, catalogImage) = embedCache.getEmbedCatalogImage(it)
+                            ?: return@mapNotNull null
+                        Triple(it, link, catalogImage)
                     }
-                    .toMap()
+                    .distinctBy { it.second }
+                    .distinctBy { it.third.name }
+                    .associate { it.first to it.third }
 
                 database.mutationQueries.updateArtistEntryAnimeExpo2026(
                     artist.copy(
