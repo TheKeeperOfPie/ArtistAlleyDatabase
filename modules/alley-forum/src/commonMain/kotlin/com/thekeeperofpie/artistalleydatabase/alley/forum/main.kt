@@ -15,15 +15,19 @@ import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.then
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLocale
@@ -49,17 +53,34 @@ fun main() {
                             .padding(16.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
+                        var environment by remember { mutableStateOf(Environment.DEV) }
+                        val forumSyncer = remember(environment) { ForumSyncer(environment) }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text("PRODUCTION")
+                            Checkbox(
+                                checked = environment == Environment.PROD,
+                                onCheckedChange = {
+                                    environment = if (it) Environment.PROD else Environment.DEV
+                                },
+                            )
+                        }
+
                         val scope = rememberCoroutineScope()
-                        Button(onClick = { scope.launch { ForumSyncer.verifyChannel() } }) {
+                        Button(onClick = { scope.launch { forumSyncer.verifyChannel() } }) {
                             Text("Verify channel")
                         }
-                        Button(onClick = { scope.launch { ForumSyncer.deleteAllThreads() } }) {
+                        Button(onClick = { scope.launch { forumSyncer.deleteAllThreads() } }) {
                             Text("Delete all threads")
                         }
-                        Button(onClick = { scope.launch { ForumSyncer.syncPinned() } }) {
+                        Button(onClick = { scope.launch { forumSyncer.syncPinned() } }) {
                             Text("Sync pinned")
                         }
-                        Button(onClick = { scope.launch { ForumSyncer.syncThreads() } }) {
+                        Button(onClick = { scope.launch { forumSyncer.syncThreads() } }) {
                             Text("Sync threads")
                         }
 
@@ -102,7 +123,7 @@ fun main() {
                             Button(onClick = {
                                 if (range != null) {
                                     scope.launch {
-                                        ForumSyncer.syncThreads(range)
+                                        forumSyncer.syncThreads(range)
                                     }
                                 }
                             }) {
@@ -114,7 +135,7 @@ fun main() {
                             }
                         }
 
-                        val error = ForumSyncer.error
+                        val error = forumSyncer.error
                         if (error != null) {
                             Text(text = error, color = MaterialTheme.colorScheme.error)
                         }

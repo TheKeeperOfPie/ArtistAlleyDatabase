@@ -10,7 +10,6 @@ import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
@@ -36,27 +35,29 @@ import kotlin.uuid.Uuid
 import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
 
 @OptIn(ExperimentalSerializationApi::class)
-internal object ForumSyncer {
+internal class ForumSyncer(private val environment: Environment) {
 
     var error by mutableStateOf<String?>(null)
 
     private val THROTTLE_DELAY = 3.seconds
 
+    private val api = DiscordApi(environment)
+
     suspend fun verifyChannel() {
-        val channel = DiscordApi.getChannel(BuildKonfig.discordForumChannelId)
+        val channel = api.getChannel(environment.forumChannelId)
         if (channel.defaultForumLayout != ForumLayout.GALLERY_VIEW) {
             val errorMessage =
                 "Directory channel is not gallery layout, was ${channel.defaultForumLayout}"
             println(errorMessage)
             error = errorMessage
         }
-        val threads = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        val threads = api.getThreads(environment.forumChannelId)
         println("Threads = ${threads.threads.map { it.name }}")
     }
 
     suspend fun deleteAllThreads() {
         println("Deleting ALL threads")
-        val threads = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        val threads = api.getThreads(environment.forumChannelId)
         threads.threads
             .filter {
                 val flags = it.flags
@@ -65,12 +66,12 @@ internal object ForumSyncer {
             .forEach {
                 delay(THROTTLE_DELAY)
                 println("Deleting ${it.name}")
-                DiscordApi.deleteThread(it.id)
+                api.deleteThread(it.id)
             }
     }
 
     suspend fun syncPinned() = withContext(Dispatchers.IO) {
-        val existingPin = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        val existingPin = api.getThreads(environment.forumChannelId)
             .threads
             .find {
                 val flags = it.flags ?: return@find false
@@ -88,16 +89,16 @@ internal object ForumSyncer {
         |
         |You may also use the AA Directory bot via `/aa verify [convention] [booth]`, which will unlock the private artist only channel and give you a form access link.
         |## Questions, suggestions, concerns
-        |If you have any feedback for the directory itself, please visit us in<#${BuildKonfig.discordPublicArtistAlleyChannelId}> or contact <@${BuildKonfig.discordContactUserId}>.
+        |If you have any feedback for the directory itself, please visit us in<#${environment.publicArtistAlleyChannelId}> or contact <@${environment.contactUserId}>.
         """.trimMargin()
         if (existingPin == null) {
-            DiscordApi.createThread(
-                channelId = BuildKonfig.discordForumChannelId,
+            api.createThread(
+                channelId = environment.forumChannelId,
                 title = "What is this?",
                 firstMessage = CreateMessage(content = message),
             )
         } else {
-            DiscordApi.editMessage(
+            api.editMessage(
                 channelId = existingPin.id,
                 messageId = existingPin.id,
                 message = CreateMessage(content = message),
@@ -124,7 +125,7 @@ internal object ForumSyncer {
             .map { Artist.fromEntry(it, series) }
             .shuffled()
 
-        val threadsList = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        val threadsList = api.getThreads(environment.forumChannelId)
         println("Threads = ${threadsList.threads.map { it.name }}")
 
         val threads = threadsList.threads
@@ -152,7 +153,7 @@ internal object ForumSyncer {
             } else {
                 delay(THROTTLE_DELAY)
                 println("Fetching ${thread.thread.name}")
-                val (secondMessage, firstMessage) = DiscordApi.getOldestThreadMessages(thread.thread.id)
+                val (secondMessage, firstMessage) = api.getOldestThreadMessages(thread.thread.id)
                 changed += artist to ThreadWithContent(thread, firstMessage, secondMessage)
             }
         }
@@ -169,8 +170,8 @@ internal object ForumSyncer {
 
         missing.forEach {
             delay(THROTTLE_DELAY)
-            DiscordApi.createThread(
-                channelId = BuildKonfig.discordForumChannelId,
+            api.createThread(
+                channelId = environment.forumChannelId,
                 title = it.threadTitle,
                 firstMessage = it.threadContent.first,
                 secondMessage = it.threadContent.second,
@@ -181,7 +182,7 @@ internal object ForumSyncer {
 
         changed.forEach {
             delay(THROTTLE_DELAY)
-            DiscordApi.editMessage(
+            api.editMessage(
                 channelId = it.second.thread.thread.id,
                 messageId = it.second.firstMessage.id,
                 message = it.first.threadContent.first,
@@ -189,7 +190,7 @@ internal object ForumSyncer {
             )
             println("Edited ${it.second.firstMessage.id}")
             delay(THROTTLE_DELAY)
-//            DiscordApi.editMessage(
+//            api.editMessage(
 //                channelId = it.second.thread.thread.id,
 //                messageId = it.second.secondMessage.id,
 //                message = it.first.threadContent.second,
@@ -198,7 +199,7 @@ internal object ForumSyncer {
             println("Edited ${it.second.thread.thread.name}")
             if (it.second.thread.thread.name != it.first.threadTitle) {
                 delay(THROTTLE_DELAY)
-                DiscordApi.modifyThread(
+                api.modifyThread(
                     threadId = it.second.thread.thread.id,
                     name = it.first.threadTitle
                 )
@@ -209,7 +210,7 @@ internal object ForumSyncer {
         if (range == null) {
             threads.forEach {
                 delay(THROTTLE_DELAY)
-                DiscordApi.modifyThread(threadId = it.thread.id, archived = true)
+                api.modifyThread(threadId = it.thread.id, archived = true)
             }
         }
     }
@@ -454,5 +455,4 @@ internal object ForumSyncer {
         val firstMessage: Message,
         val secondMessage: Message,
     )
-
 }

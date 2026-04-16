@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.forum
 
-import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.discord.Channel
 import com.thekeeperofpie.artistalleydatabase.discord.CreateMessage
 import com.thekeeperofpie.artistalleydatabase.discord.CreateThread
@@ -38,10 +37,10 @@ import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalSerializationApi::class)
-internal object DiscordApi {
+private const val LOG = false
 
-    private const val LOG = false
+@OptIn(ExperimentalSerializationApi::class)
+internal class DiscordApi(private val environment: Environment) {
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -51,7 +50,7 @@ internal object DiscordApi {
         defaultRequest {
             url("https://discord.com/api/v10")
             headers {
-                this["Authorization"] = "Bot ${BuildKonfig.discordBotToken}"
+                this["Authorization"] = "Bot ${environment.botToken}"
                 this["Content-Type"] = "application/json"
             }
         }
