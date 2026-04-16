@@ -22,7 +22,9 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
+import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import io.ktor.client.request.takeFrom
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
@@ -34,6 +36,7 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalSerializationApi::class)
 internal object DiscordApi {
@@ -183,8 +186,14 @@ internal object DiscordApi {
             println("Failed request ${this.request.url}: $headers ${bodyAsText()}")
             val retryAfter = headers["Retry-After"]?.toIntOrNull()?.milliseconds
             if (retryAfter != null) {
-                println("Delaying by $retryAfter, this will not retry the request")
-                delay(retryAfter)
+                println("Delaying by $retryAfter")
+                delay(retryAfter + 3.seconds)
+                val retry = client.request { takeFrom(request) }
+                if (!retry.status.isSuccess()) {
+                    System.err.println(
+                        "Failed retry ${retry.request.url}: ${retry.headers} ${retry.bodyAsText()}"
+                    )
+                }
             }
         }
     }
