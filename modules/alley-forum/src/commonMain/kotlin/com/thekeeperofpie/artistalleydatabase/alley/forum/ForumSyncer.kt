@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.discord.Embed
 import com.thekeeperofpie.artistalleydatabase.discord.ForumLayout
 import com.thekeeperofpie.artistalleydatabase.discord.Message
 import com.thekeeperofpie.artistalleydatabase.discord.Thread
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import io.github.petertrr.diffutils.text.DiffRow
 import io.github.petertrr.diffutils.text.DiffRowGenerator
 import kotlinx.coroutines.Dispatchers
@@ -293,33 +294,32 @@ internal object ForumSyncer {
                     ?.let { "${Uuid.random()}${it.first}" to it }
 
                 val titleEmbed = Embed(
-                    title = entry.name,
                     thumbnail = thumbnailImage?.let {
                         Embed.Image(
                             url = "attachment://${it.first}",
                             flags = 0,
                         )
                     },
-                )
-
-                val summary = entry.summary
-                val descriptionEmbed = if (summary.isNullOrBlank()) {
-                    null
-                } else {
-                    Embed(
-                        fields = listOf(
-                            Embed.Field(
-                                name = "\uD83C\uDFA8 Description",
-                                value = summary,
+                    fields = entry.summary
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let {
+                            listOf(
+                                Embed.Field(
+                                    name = "\uD83C\uDFA8 ${entry.name}",
+                                    value = it,
+                                )
                             )
-                        )
-                    )
-                }
+                        },
+                )
 
                 suspend fun LinkModel.asMarkdownLink(): String {
                     val textRes = type?.textRes
                     val label = if (textRes == null) {
                         identifier
+                    } else if (type == Link.Type.X) {
+                        // TODO: Move this to resources
+                        // To make the link more clickable on mobile
+                        "X (Twitter)"
                     } else {
                         getString(textRes)
                     }
@@ -424,7 +424,6 @@ internal object ForumSyncer {
                     embeds = listOfNotNull(
                         imageEmbed,
                         titleEmbed,
-                        descriptionEmbed,
                         linksEmbed,
                         seriesEmbed,
                         merchEmbed,
