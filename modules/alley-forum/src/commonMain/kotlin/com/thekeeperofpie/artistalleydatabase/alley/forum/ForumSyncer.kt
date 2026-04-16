@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo202
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -28,11 +29,15 @@ import io.github.petertrr.diffutils.text.DiffRowGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import org.jetbrains.compose.resources.getString
 import java.nio.file.Files
 import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.Uuid
+import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
 
+@OptIn(ExperimentalSerializationApi::class)
 internal object ForumSyncer {
 
     var error by mutableStateOf<String?>(null)
@@ -156,7 +161,8 @@ internal object ForumSyncer {
                     val original =
                         firstMessage.content.trim().lines() + secondMessage.content.trim().lines()
                     val revised =
-                        artist.threadContent.first.content.lines() + artist.threadContent.second.content.lines()
+                        artist.threadContent.first.content?.lines()
+                            .orEmpty() + artist.threadContent.second.content?.lines().orEmpty()
                     val diff = DiffRowGenerator().generateDiffRows(original, revised)
                     println("Diff for ${thread.thread.name}: ")
                     diff.withIndex()
@@ -184,6 +190,7 @@ internal object ForumSyncer {
                 title = it.threadTitle,
                 firstMessage = it.threadContent.first,
                 secondMessage = it.threadContent.second,
+                imageAttachments = it.threadContent.imageAttachments,
             )
             println("Created ${it.threadTitle}")
         }
@@ -195,6 +202,7 @@ internal object ForumSyncer {
                     channelId = it.second.thread.thread.id,
                     messageId = it.second.firstMessage.id,
                     message = it.first.threadContent.first,
+                    imageAttachments = it.first.threadContent.imageAttachments,
                 )
                 println("Edited ${it.second.firstMessage.id}")
                 delay(THROTTLE_DELAY)
@@ -231,12 +239,18 @@ internal object ForumSyncer {
         JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
     }
 
+    private data class MessageData(
+        val first: CreateMessage,
+        val imageAttachments: List<Pair<String, ByteArray>>,
+        val second: CreateMessage,
+    )
+
     @ConsistentCopyVisibility
     private data class Artist private constructor(
         val entry: ArtistEntryAnimeExpo2026,
         val seriesInferred: List<String>,
         val seriesConfirmed: List<String>,
-        val threadContent: Pair<CreateMessage, CreateMessage>,
+        val threadContent: MessageData,
     ) {
         companion object {
             suspend fun fromEntry(
@@ -261,40 +275,45 @@ internal object ForumSyncer {
                 entry: ArtistEntryAnimeExpo2026,
                 seriesInferred: List<String>,
                 seriesConfirmed: List<String>,
-            ): Pair<CreateMessage, CreateMessage> {
-                val name = entry.name
-                val summary = buildString {
-                    if (!entry.summary.isNullOrBlank()) {
-                        appendLine(entry.summary)
-                    }
+            ): MessageData {
+                val headerImage = entry.embeds
+                    ?.let(AlleyImageUtils::getEmbedImagesMap)
+                    ?.firstOrNull()
+                    ?.let { "${Uuid.random()}${it.first}" to it }
+
+                val imageEmbed = headerImage?.let {
+                    Embed(
+                        type = Embed.Type.IMAGE,
+                        image = Embed.Image(url = "attachment://${it.first}", flags = 0),
+                    )
                 }
 
-                val series = buildString {
-                    if (seriesConfirmed.isNotEmpty()) {
-                        appendLine("### Series")
-                        seriesConfirmed.forEach {
-                            appendLine("- $it")
-                        }
-                    } else if (seriesInferred.isNotEmpty()) {
-                        appendLine("### Series - Unconfirmed")
-                        seriesInferred.forEach {
-                            appendLine("- $it")
-                        }
-                    }
-                }
+                val thumbnailImage = entry.embeds
+                    ?.let(AlleyImageUtils::getProfileImageWithPath)
+                    ?.let { "${Uuid.random()}${it.first}" to it }
 
-                val merch = buildString {
-                    if (entry.merchConfirmed.isNotEmpty()) {
-                        appendLine("### Merch")
-                        entry.merchConfirmed.forEach {
-                            appendLine("- $it")
-                        }
-                    } else if (entry.merchInferred.isNotEmpty()) {
-                        appendLine("### Merch - Unconfirmed")
-                        entry.merchInferred.forEach {
-                            appendLine("- $it")
-                        }
-                    }
+                val titleEmbed = Embed(
+                    title = entry.name,
+                    thumbnail = thumbnailImage?.let {
+                        Embed.Image(
+                            url = "attachment://${it.first}",
+                            flags = 0,
+                        )
+                    },
+                )
+
+                val summary = entry.summary
+                val descriptionEmbed = if (summary.isNullOrBlank()) {
+                    null
+                } else {
+                    Embed(
+                        fields = listOf(
+                            Embed.Field(
+                                name = "\uD83C\uDFA8 Description",
+                                value = summary,
+                            )
+                        )
+                    )
                 }
 
                 suspend fun LinkModel.asMarkdownLink(): String {
@@ -353,7 +372,7 @@ internal object ForumSyncer {
 
                 val linksEmbed =
                     Embed(
-                        title = "Links",
+                        title = "\uD83D\uDD17 Links",
                         fields = listOfNotNull(
                             portfolioLinksEmbed,
                             socialLinksEmbed,
@@ -362,32 +381,71 @@ internal object ForumSyncer {
                         )
                     ).takeUnless { it.fields.isNullOrEmpty() }
 
-                val parts = listOf(
-                    name,
-                    summary,
-                    series,
-                    merch,
-                )
-                var firstMessage = ""
-                var secondMessage = ""
-                parts.map { it.take(2000) }
-                    .forEach {
-                        if (secondMessage.isEmpty() && firstMessage.length + it.length < 2000) {
-                            firstMessage += it
-                        } else {
-                            secondMessage += it
-                        }
-                    }
-                if (secondMessage.length >= 2000) {
-                    throw IllegalStateException("Thread content too long for ${entry.name}: $secondMessage")
+                val (seriesTitle, series) = if (seriesConfirmed.isNotEmpty()) {
+                    "Series" to seriesConfirmed
+                } else if (seriesInferred.isNotEmpty()) {
+                    "Series - Unconfirmed" to seriesInferred
+                } else {
+                    null to emptyList()
+                }
+
+                val seriesEmbed = seriesTitle?.let {
+                    Embed(
+                        fields = listOf(
+                            Embed.Field(
+                                name = "\uD83C\uDFF7 $it",
+                                value = series.joinToString(prefix = "```", postfix = "```")
+                            )
+                        ),
+                    )
+                }
+
+                val (merchTitle, merch) = if (entry.merchConfirmed.isNotEmpty()) {
+                    "Merch" to entry.merchConfirmed
+                } else if (entry.merchInferred.isNotEmpty()) {
+                    "Merch - Unconfirmed" to entry.merchInferred
+                } else {
+                    null to emptyList()
+                }
+
+                val merchEmbed = merchTitle?.let {
+                    Embed(
+                        fields = listOf(
+                            Embed.Field(
+                                name = "\uD83D\uDCE6 $it",
+                                value = merch.joinToString(prefix = "```", postfix = "```")
+                            )
+                        ),
+                    )
                 }
 
                 val firstCreateMessage = CreateMessage(
-                    firstMessage,
-                    listOfNotNull(linksEmbed).ifEmpty { null }
+                    content = null,
+                    embeds = listOfNotNull(
+                        imageEmbed,
+                        titleEmbed,
+                        descriptionEmbed,
+                        linksEmbed,
+                        seriesEmbed,
+                        merchEmbed,
+                    ).ifEmpty { null }
                 )
-                val secondCreateMessage = CreateMessage(secondMessage.ifEmpty { "Reserved" })
-                return firstCreateMessage to secondCreateMessage
+                val messageLength = firstCreateMessage.embeds?.sumOf {
+                    (it.title?.length ?: 0) + (it.fields?.sumOf { it.name.length + it.value.length }
+                        ?: 0)
+                } ?: 0
+                if (messageLength > 4000) {
+                    throw IllegalStateException("Thread content too long for ${entry.name}: $firstCreateMessage")
+                }
+                val secondCreateMessage = CreateMessage("Reserved")
+                return MessageData(
+                    first = firstCreateMessage,
+                    imageAttachments = listOfNotNull(
+                        thumbnailImage?.let { it.first to AlleyDataRes.readBytes(it.second.first) },
+                        headerImage?.let { it.first to AlleyDataRes.readBytes(it.second.first) },
+                    ),
+                    second = secondCreateMessage,
+                )
             }
         }
 

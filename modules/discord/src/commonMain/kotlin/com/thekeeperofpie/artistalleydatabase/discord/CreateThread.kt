@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class CreateThread(
     val name: String,
     val message: CreateMessage,
+    val attachments: List<CreateMessage.Attachment>? = null,
 )

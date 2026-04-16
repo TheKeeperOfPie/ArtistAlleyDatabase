@@ -11,8 +11,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.delete
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
@@ -20,6 +26,8 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.jsonIo
 import kotlinx.coroutines.delay
@@ -29,6 +37,8 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalSerializationApi::class)
 internal object DiscordApi {
+
+    private const val LOG = false
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -44,6 +54,15 @@ internal object DiscordApi {
         }
         install(ContentNegotiation) {
             jsonIo(json)
+        }
+        if (LOG) {
+            install(Logging) {
+                logger = object : Logger {
+                    override fun log(message: String) = println(message)
+                }
+                level = LogLevel.ALL
+                sanitizeHeader { it == "Authorization" }
+            }
         }
     }
 
@@ -63,14 +82,39 @@ internal object DiscordApi {
         title: String,
         firstMessage: CreateMessage,
         secondMessage: CreateMessage? = null,
+        imageAttachments: List<Pair<String, ByteArray>> = emptyList(),
     ) {
         val threadChannel = client.post("channels/$channelId/threads") {
-            setBody(
-                CreateThread(
-                    name = title,
-                    message = firstMessage,
+            headers {
+                this["Content-Type"] = "multipart/form-data"
+            }
+            setBody(MultiPartFormDataContent(formData {
+                append(
+                    "payload_json",
+                    Json.encodeToString(
+                        CreateThread(
+                            name = title,
+                            message = firstMessage,
+                            attachments = imageAttachments.mapIndexed { index, attachment ->
+                                CreateMessage.Attachment(
+                                    id = index,
+                                    fileName = attachment.first,
+                                    ephemeral = true,
+                                )
+                            }.ifEmpty { null },
+                        )
+                    ),
+                    Headers.build {
+                        append(HttpHeaders.ContentType, "application/json")
+                    },
                 )
-            )
+                imageAttachments.forEachIndexed { index, attachment ->
+                    append("file[$index]", attachment.second, Headers.build {
+                        append(HttpHeaders.ContentType, "image/webp")
+                        append(HttpHeaders.ContentDisposition, "filename=\"${attachment.first}\"")
+                    })
+                }
+            }))
         }.assertSuccess().body<Channel>()
         if (secondMessage != null) {
             createMessage(threadChannel.id, secondMessage)
@@ -83,9 +127,37 @@ internal object DiscordApi {
         }.assertSuccess()
     }
 
-    suspend fun editMessage(channelId: String, messageId: String, message: CreateMessage) {
+    suspend fun editMessage(
+        channelId: String,
+        messageId: String,
+        message: CreateMessage,
+        imageAttachments: List<Pair<String, ByteArray>> = emptyList(),
+    ) {
         client.patch("channels/$channelId/messages/$messageId") {
-            setBody(message)
+            headers {
+                this["Content-Type"] = "multipart/form-data"
+            }
+            setBody(MultiPartFormDataContent(formData {
+                append(
+                    "payload_json",
+                    Json.encodeToString(
+                        message.copy(
+                            // Including the attachments doesn't work,
+                            // despite Discord claiming it's required
+                            attachments = emptyList(),
+                        )
+                    ),
+                    Headers.build {
+                        append(HttpHeaders.ContentType, "application/json")
+                    },
+                )
+                imageAttachments.forEachIndexed { index, attachment ->
+                    append("file[$index]", attachment.second, Headers.build {
+                        append(HttpHeaders.ContentType, "image/webp")
+                        append(HttpHeaders.ContentDisposition, "filename=\"${attachment.first}\"")
+                    })
+                }
+            }))
         }.assertSuccess()
     }
 

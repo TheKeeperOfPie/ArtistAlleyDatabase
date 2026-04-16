@@ -28,9 +28,9 @@ object AlleyImageUtils {
         }
     }
 
-    private const val EMBED_MIN_DIMENSION = 300
+    const val EMBED_MIN_DIMENSION = 300
 
-    fun getEmbedImages(embeds: Map<String, CatalogImage>) = embeds
+    fun getEmbedImagesMap(embeds: Map<String, CatalogImage>) = embeds
         .filter {
             val width = it.value.width
             val height = it.value.height
@@ -39,10 +39,10 @@ object AlleyImageUtils {
         }
         .mapNotNull {
             try {
-                it.key to CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/embeds/${it.value.name}")),
-                    width = it.value.width,
-                    height = it.value.height,
+                it.key to Triple(
+                    "files/embeds/${it.value.name}",
+                    it.value.width,
+                    it.value.height,
                 )
             } catch (t: Throwable) {
                 t.printStackTrace()
@@ -51,6 +51,16 @@ object AlleyImageUtils {
         }
         .sortedWith(embedComparator)
         .map { it.second }
+
+    fun getEmbedImages(embeds: Map<String, CatalogImage>) =
+        getEmbedImagesMap(embeds)
+            .map { (path, width, height) ->
+                CatalogImage(
+                    uri = Uri.parse(Res.getUri(path)),
+                    width = width,
+                    height = height,
+                )
+            }
 
     private val embedOrder = listOf(
         LinkCategory.PORTFOLIOS,
@@ -61,7 +71,7 @@ object AlleyImageUtils {
         LinkCategory.OTHER,
     )
     private val embedComparator =
-        compareBy<Pair<String, com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>(
+        compareBy<Pair<String, Triple<String, *, *>>>(
             { embedOrder.indexOf(LinkModel.parse(it.first).type.category) },
             { it.first },
         )
@@ -73,7 +83,7 @@ object AlleyImageUtils {
     ) = getArtistImages(year, images)
         .ifEmpty { getEmbedImages(embeds) }
 
-    fun getProfileImage(embeds: Map<String, CatalogImage>) =
+    fun getProfileImageWithPath(embeds: Map<String, CatalogImage>) =
         embeds.asSequence()
             .filter {
                 val width = it.value.width
@@ -83,10 +93,20 @@ object AlleyImageUtils {
             }
             .firstOrNull { LinkModel.parse(it.key).type.category == LinkCategory.SOCIALS }
             ?.let {
+                Triple(
+                    "files/embeds/${it.value.name}",
+                    it.value.width,
+                    it.value.height,
+                )
+            }
+
+    fun getProfileImage(embeds: Map<String, CatalogImage>) =
+        getProfileImageWithPath(embeds)
+            ?.let { (path, width, height) ->
                 CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/embeds/${it.value.name}")),
-                    width = it.value.width,
-                    height = it.value.height,
+                    uri = Uri.parse(Res.getUri(path)),
+                    width = width,
+                    height = height,
                 )
             }
 

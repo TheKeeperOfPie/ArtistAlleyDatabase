@@ -9,6 +9,8 @@ data class Embed(
     val description: String? = null,
     val url: String? = null,
     val fields: List<Field>? = null,
+    val image: Image? = null,
+    val thumbnail: Image? = null,
 ) {
     @Serializable(with = Type.Serializer::class)
     enum class Type(val value: String) {
@@ -34,5 +36,11 @@ data class Embed(
         val name: String,
         val value: String,
         val inline: Boolean? = null,
+    )
+
+    @Serializable
+    data class Image constructor(
+        val url: String,
+        val flags: Int? = null,
     )
 }
