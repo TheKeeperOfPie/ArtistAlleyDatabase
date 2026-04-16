@@ -161,13 +161,12 @@ internal object DiscordApi {
         }.assertSuccess()
     }
 
-    suspend fun getOldestThreadMessage(channelId: String) =
+    suspend fun getOldestThreadMessages(channelId: String) =
         client.get("channels/$channelId/messages") {
             parameter("after", "0")
             parameter("limit", "2")
         }
             .body<List<Message>>()
-            .first()
 
     suspend fun modifyThread(threadId: String, name: String? = null, archived: Boolean? = null) {
         client.patch("channels/$threadId") {

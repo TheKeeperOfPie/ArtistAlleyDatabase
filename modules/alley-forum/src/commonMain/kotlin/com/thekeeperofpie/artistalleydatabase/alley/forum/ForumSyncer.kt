@@ -25,15 +25,12 @@ import com.thekeeperofpie.artistalleydatabase.discord.ForumLayout
 import com.thekeeperofpie.artistalleydatabase.discord.Message
 import com.thekeeperofpie.artistalleydatabase.discord.Thread
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
-import io.github.petertrr.diffutils.text.DiffRow
-import io.github.petertrr.diffutils.text.DiffRowGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.jetbrains.compose.resources.getString
 import java.nio.file.Files
-import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
@@ -153,24 +150,10 @@ internal object ForumSyncer {
             if (thread == null) {
                 missing += artist
             } else {
-                if (thread.messageHash != artist.messageHash) {
-                    delay(THROTTLE_DELAY)
-                    println("Fetching ${thread.thread.name}")
-                    val firstMessage =
-                        DiscordApi.getChannelMessage(thread.thread.id, thread.thread.id)
-                    val secondMessage = DiscordApi.getOldestThreadMessage(thread.thread.id)
-                    val original =
-                        firstMessage.content.trim().lines() + secondMessage.content.trim().lines()
-                    val revised =
-                        artist.threadContent.first.content?.lines()
-                            .orEmpty() + artist.threadContent.second.content?.lines().orEmpty()
-                    val diff = DiffRowGenerator().generateDiffRows(original, revised)
-                    println("Diff for ${thread.thread.name}: ")
-                    diff.withIndex()
-                        .filter { it.value.tag != DiffRow.Tag.EQUAL }
-                        .forEach { println("\t ${it.index}: ${it.value}") }
-                    changed += artist to ThreadWithContent(thread, firstMessage, secondMessage)
-                }
+                delay(THROTTLE_DELAY)
+                println("Fetching ${thread.thread.name}")
+                val (secondMessage, firstMessage) = DiscordApi.getOldestThreadMessages(thread.thread.id)
+                changed += artist to ThreadWithContent(thread, firstMessage, secondMessage)
             }
         }
 
@@ -197,24 +180,22 @@ internal object ForumSyncer {
         }
 
         changed.forEach {
-            if (it.second.thread.messageHash != it.first.messageHash) {
-                delay(THROTTLE_DELAY)
-                DiscordApi.editMessage(
-                    channelId = it.second.thread.thread.id,
-                    messageId = it.second.firstMessage.id,
-                    message = it.first.threadContent.first,
-                    imageAttachments = it.first.threadContent.imageAttachments,
-                )
-                println("Edited ${it.second.firstMessage.id}")
-                delay(THROTTLE_DELAY)
-                DiscordApi.editMessage(
-                    channelId = it.second.thread.thread.id,
-                    messageId = it.second.secondMessage.id,
-                    message = it.first.threadContent.second,
-                )
-                println("Edited ${it.second.secondMessage.id}")
-                println("Edited ${it.second.thread.thread.name}")
-            }
+            delay(THROTTLE_DELAY)
+            DiscordApi.editMessage(
+                channelId = it.second.thread.thread.id,
+                messageId = it.second.firstMessage.id,
+                message = it.first.threadContent.first,
+                imageAttachments = it.first.threadContent.imageAttachments,
+            )
+            println("Edited ${it.second.firstMessage.id}")
+            delay(THROTTLE_DELAY)
+//            DiscordApi.editMessage(
+//                channelId = it.second.thread.thread.id,
+//                messageId = it.second.secondMessage.id,
+//                message = it.first.threadContent.second,
+//            )
+//            println("Edited ${it.second.secondMessage.id}")
+            println("Edited ${it.second.thread.thread.name}")
             if (it.second.thread.thread.name != it.first.threadTitle) {
                 delay(THROTTLE_DELAY)
                 DiscordApi.modifyThread(
@@ -450,28 +431,21 @@ internal object ForumSyncer {
 
         val booth = entry.booth?.let(Booth::fromStringOrNull)
 
-        val threadTitleWithoutHash = "${entry.booth} - ${entry.name}"
-
-        val messageHash = threadContent.hashCode().absoluteValue.toString()
-
-        val threadTitle =
-            "$threadTitleWithoutHash - $messageHash".also {
-                if (it.length > 100) {
-                    throw IllegalStateException("Thread title too long: $it")
-                }
+        val threadTitle = "${entry.booth} - ${entry.name}".also {
+            if (it.length > 100) {
+                throw IllegalStateException("Thread title too long: $it")
             }
+        }
     }
 
     private data class ThreadWrapper(val thread: Thread) {
         val booth: Booth?
         val artistName: String?
-        val messageHash: String?
 
         init {
             val pieces = thread.name?.split("-")?.map { it.trim() }
             booth = pieces?.firstOrNull()?.let(Booth::fromStringOrNull)
             artistName = pieces?.getOrNull(1)
-            messageHash = pieces?.getOrNull(2)
         }
     }
 
@@ -480,4 +454,5 @@ internal object ForumSyncer {
         val firstMessage: Message,
         val secondMessage: Message,
     )
+
 }
