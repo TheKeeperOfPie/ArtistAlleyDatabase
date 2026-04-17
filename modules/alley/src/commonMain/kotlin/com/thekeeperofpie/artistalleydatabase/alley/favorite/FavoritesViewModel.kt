@@ -322,7 +322,7 @@ class FavoritesViewModel(
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
         onOpenArtist: (ArtistEntry, Int) -> Unit,
-        onOpenArtistImageFullscreen: (ArtistEntry, Int) -> Unit,
+        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
@@ -370,7 +370,7 @@ class FavoritesViewModel(
             }
             is SearchScreen.Event.OpenImageFullscreen<*> -> when (searchEvent.entry) {
                 is ArtistEntryGridModel ->
-                    onOpenArtistImageFullscreen(searchEvent.entry.artist, searchEvent.imageIndex)
+                    onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex)
                 is StampRallyEntryGridModel ->
                     onOpenStampRallyImageFullscreen(
                         searchEvent.entry.stampRally,

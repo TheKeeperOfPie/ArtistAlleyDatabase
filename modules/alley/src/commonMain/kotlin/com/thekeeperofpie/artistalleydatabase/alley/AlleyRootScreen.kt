@@ -28,6 +28,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_favor
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_map
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
@@ -47,7 +48,7 @@ object AlleyRootScreen {
     operator fun invoke(
         graph: ArtistAlleyGraph,
         onOpenArtist: (ArtistEntry, Int?) -> Unit,
-        onOpenArtistImageFullscreen: (ArtistEntry, Int?) -> Unit,
+        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int?) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,

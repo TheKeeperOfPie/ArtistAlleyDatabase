@@ -22,6 +22,7 @@ import androidx.navigation3.scene.SinglePaneSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
@@ -104,26 +105,21 @@ object ArtistAlleyAppScreen {
                 AlleyDestination.ArtistDetails(entry, imageIndex)
             )
         }
-        val onOpenArtistImageFullscreen = { entry: ArtistEntry, imageIndex: Int? ->
+        val onOpenArtistImageFullscreen = { entry: ArtistEntryGridModel, imageIndex: Int? ->
+            val artist = entry.artist
+            val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty()
+            val images = if (showingFallback) entry.fallbackImages else entry.images
             navStack.navigate(
                 AlleyDestination.Images(
-                    year = entry.year,
-                    id = entry.id,
+                    year = artist.year,
+                    id = artist.id,
                     type = AlleyDestination.Images.Type.Artist(
-                        id = entry.id,
-                        booth = entry.booth.orEmpty(),
-                        profileImage = AlleyImageUtils.getProfileImage(entry.embeds),
-                        name = entry.name,
+                        id = artist.id,
+                        booth = artist.booth.orEmpty(),
+                        profileImage = AlleyImageUtils.getProfileImage(artist.embeds),
+                        name = artist.name,
                     ),
-                    images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
-                        year = entry.fallbackImageYear ?: entry.year,
-                        images = if (entry.fallbackImageYear == null) {
-                            entry.images
-                        } else {
-                            entry.fallbackImages
-                        },
-                        embeds = entry.embeds,
-                    ),
+                    images = images,
                     initialImageIndex = imageIndex,
                 )
             )

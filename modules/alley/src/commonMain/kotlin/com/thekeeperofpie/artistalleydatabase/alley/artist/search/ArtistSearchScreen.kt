@@ -110,7 +110,7 @@ object ArtistSearchScreen {
         lockedSerializedBooths: String?,
         onClickBack: (() -> Unit)?,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
-        onOpenArtistImageFullscreen: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
+        onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenExport: () -> Unit,
@@ -147,7 +147,7 @@ object ArtistSearchScreen {
                         is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
                             onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
                         is SearchScreen.Event.OpenImageFullscreen<ArtistEntryGridModel> ->
-                            onOpenArtistImageFullscreen(searchEvent.entry.artist, searchEvent.imageIndex)
+                            onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex)
                         is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
                     }
                     is Event.OpenMerch -> onOpenMerch(viewModel.year.value, it.merch)

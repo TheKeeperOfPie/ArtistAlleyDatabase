@@ -308,7 +308,9 @@ private fun BoxScope.ImagePagerActions(
         val fullscreenInteractionSource = remember { MutableInteractionSource() }
         IconButton(
             onClick = { onClickFullscreen(pagerState.currentPage) },
-            modifier = Modifier.hoverable(fullscreenInteractionSource)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .hoverable(fullscreenInteractionSource)
         ) {
             val fullscreenIsHovered by fullscreenInteractionSource.collectIsHoveredAsState()
             Box(

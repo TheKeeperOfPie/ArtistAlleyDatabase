@@ -124,7 +124,7 @@ object FavoritesScreen {
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
         onOpenArtist: (ArtistEntry, Int) -> Unit,
-        onOpenArtistImageFullscreen: (ArtistEntry, Int) -> Unit,
+        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
