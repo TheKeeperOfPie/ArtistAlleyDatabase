@@ -352,8 +352,8 @@ class MapViewModel(
                 randomSeed = randomSeed,
                 showOnlyConfirmedTags = false, // This shouldn't matter here
                 entry = it,
-                showOutdatedCatalogs = false,
-                showEmbeds = false,
+                showOutdatedCatalogs = settings.showOutdatedCatalogs.value,
+                showEmbeds = true,
             )
         }
 

@@ -7,11 +7,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,11 +25,8 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -63,9 +58,9 @@ import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_notes_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
@@ -364,44 +359,14 @@ fun SingleTablePopup(
             }
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .conditionally(images.size > 1) { fillMaxWidth() }
-        ) {
-            val booth = entry.artist.booth
-            if (booth != null) {
-                Text(
-                    text = booth,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 12.dp)
-                )
-            }
-
-            Text(
-                text = entry.artist.name,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 12.dp)
-            )
-
-            val favorite = entry.favorite
-            IconButton(onClick = { onFavoriteToggle(entry, !favorite) }) {
-                Icon(
-                    imageVector = if (favorite) {
-                        Icons.Filled.Favorite
-                    } else {
-                        Icons.Filled.FavoriteBorder
-                    },
-                    contentDescription = stringResource(
-                        Res.string.alley_favorite_icon_content_description
-                    ),
-                )
-            }
-        }
+        ArtistListRow(
+            entry = entry,
+            series = { emptyMap() },
+            onFavoriteToggle = { onFavoriteToggle(entry, it) },
+            onSeriesClick = {},
+            onMoreClick = {},
+            showSeries = false,
+            useSharedElements = false,
+        )
     }
 }

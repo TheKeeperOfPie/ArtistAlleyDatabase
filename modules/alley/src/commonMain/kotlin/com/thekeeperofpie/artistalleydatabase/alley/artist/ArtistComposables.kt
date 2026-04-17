@@ -133,6 +133,8 @@ fun ArtistListRow(
     onSeriesClick: (String) -> Unit,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showSeries: Boolean = true,
+    useSharedElements: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         val artist = entry.artist
@@ -140,7 +142,7 @@ fun ArtistListRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .height(IntrinsicSize.Min)
-                .sharedBounds("container", artist.id)
+                .conditionally(useSharedElements, Modifier.sharedBounds("container", artist.id))
         ) {
             val profileImage = entry.profileImage
             Spacer(Modifier.width(10.dp))
@@ -158,7 +160,10 @@ fun ArtistListRow(
                         .copy(fontFamily = FontFamily.Monospace),
                     maxLines = 1,
                     modifier = Modifier
-                        .sharedElement("booth", artist.id)
+                        .conditionally(
+                            useSharedElements,
+                            Modifier.sharedElement("booth", artist.id)
+                        )
                         .padding(12.dp)
                 )
             }
@@ -169,7 +174,7 @@ fun ArtistListRow(
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 modifier = Modifier
-                    .sharedElement("name", artist.id)
+                    .conditionally(useSharedElements, Modifier.sharedElement("name", artist.id))
                     .weight(1f)
                     .padding(
                         start = if (artist.booth.isNullOrBlank()) 16.dp else 0.dp,
@@ -208,7 +213,7 @@ fun ArtistListRow(
                 },
                 modifier = Modifier
                     .align(Alignment.Top)
-                    .sharedElement("favorite", artist.id)
+                    .conditionally(useSharedElements, Modifier.sharedElement("favorite", artist.id))
             ) {
                 Icon(
                     imageVector = if (favorite) {
@@ -229,7 +234,7 @@ fun ArtistListRow(
             )
         }
 
-        if (entry.series.isNotEmpty()) {
+        if (showSeries && entry.series.isNotEmpty()) {
             val series = series()
             SeriesRow(
                 series = entry.series.mapNotNull { series[it] },
@@ -246,6 +251,7 @@ private fun ArtistProfileImage(
     artistId: String,
     image: CatalogImage?,
     modifier: Modifier = Modifier,
+    useSharedElements: Boolean = false,
 ) {
     Box(
         modifier = modifier
@@ -257,7 +263,7 @@ private fun ArtistProfileImage(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .sharedElement("profile_image", artistId)
+                .conditionally(useSharedElements, Modifier.sharedElement("profile_image", artistId))
                 .matchParentSize()
                 .clip(RoundedCornerShape(8.dp))
                 .border(
