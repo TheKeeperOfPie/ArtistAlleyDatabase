@@ -155,19 +155,19 @@ val alleyFunctionsMiddlewareOutput by configurations.creating {
 }
 
 dependencies {
-    serviceWorkerOutput(projects.modules.alleyApp.serviceWorker) {
+    serviceWorkerOutput(project(":modules:alley-app:service-worker")) {
         targetConfiguration = "distribution"
     }
-    alleyEditOutput(projects.modules.alley.edit) {
+    alleyEditOutput(project(":modules:alley-edit")) {
         targetConfiguration = "distribution"
     }
-    alleyFormOutput(projects.modules.alley.form) {
+    alleyFormOutput(project(":modules:alley-form")) {
         targetConfiguration = "distribution"
     }
-    alleyFunctionsOutput(projects.modules.alleyFunctions) {
+    alleyFunctionsOutput(project(":modules:alley-functions")) {
         targetConfiguration = "distribution"
     }
-    alleyFunctionsMiddlewareOutput(projects.modules.alleyFunctions.middleware) {
+    alleyFunctionsMiddlewareOutput(project(":modules:alley-functions:middleware")) {
         targetConfiguration = "distribution"
     }
 }
