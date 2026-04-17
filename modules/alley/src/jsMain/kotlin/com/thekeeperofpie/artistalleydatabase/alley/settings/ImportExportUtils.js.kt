@@ -4,13 +4,13 @@ import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import io.github.vinceglb.filekit.utils.toBitsArray
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.dom.createElement
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.url.URL
 import org.w3c.files.File
+import kotlin.time.Clock
 
 // TODO: Share more code with wasmJs
 actual object ImportExportUtils {
@@ -31,5 +31,5 @@ actual object ImportExportUtils {
     }
 
     actual fun getImportUrl(exportPartial: String) =
-        "${window.location.origin}#import=$exportPartial"
+        "${window.location.origin}/import/$exportPartial"
 }
