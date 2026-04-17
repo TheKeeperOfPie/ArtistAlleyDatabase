@@ -3,10 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.alley.forum
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import artistalleydatabase.modules.alley.data.generated.resources.Res
+import com.kmpalette.color
+import com.kmpalette.palette.graphics.Palette
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
@@ -31,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
 import java.nio.file.Files
 import kotlin.time.Duration.Companion.seconds
@@ -271,6 +275,11 @@ internal class ForumSyncer(private val environment: Environment) {
                     ?.firstOrNull()
                     ?.let { "${Uuid.random()}${it.first}" to it }
 
+                val headerSwatches = headerImage?.second?.first
+                    ?.let { AlleyDataRes.readBytes(it) }
+                    ?.let { Palette.from(it.decodeToImageBitmap()).generate() }
+                    ?.swatches?.sortedByDescending { it.population }
+
                 val imageEmbed = headerImage?.let {
                     Embed(
                         type = Embed.Type.IMAGE,
@@ -281,6 +290,11 @@ internal class ForumSyncer(private val environment: Environment) {
                 val thumbnailImage = entry.embeds
                     ?.let(AlleyImageUtils::getProfileImageWithPath)
                     ?.let { "${Uuid.random()}${it.first}" to it }
+
+                val thumbnailSwatches = thumbnailImage?.second?.first
+                    ?.let { AlleyDataRes.readBytes(it) }
+                    ?.let { Palette.from(it.decodeToImageBitmap()).generate() }
+                    ?.swatches?.sortedByDescending { it.population }
 
                 val titleEmbed = Embed(
                     thumbnail = thumbnailImage?.let {
@@ -408,15 +422,24 @@ internal class ForumSyncer(private val environment: Environment) {
                     )
                 }
 
+                val allSwatches = headerSwatches.orEmpty() + thumbnailSwatches.orEmpty()
+                val embeds = listOfNotNull(
+                    imageEmbed,
+                    titleEmbed,
+                    linksEmbed,
+                    seriesEmbed,
+                    merchEmbed,
+                ).mapIndexed { index, embed ->
+                    embed.copy(
+                        color = allSwatches.getOrNull(index % allSwatches.size)
+                            ?.color
+                            ?.toArgb()
+                            ?.let { it and 0x00FFFFFF },
+                    )
+                }
                 val firstCreateMessage = CreateMessage(
                     content = null,
-                    embeds = listOfNotNull(
-                        imageEmbed,
-                        titleEmbed,
-                        linksEmbed,
-                        seriesEmbed,
-                        merchEmbed,
-                    ).ifEmpty { null },
+                    embeds = embeds.ifEmpty { null },
                     components = listOf(
                         MessageComponent.ActionRow(
                             MessageComponent.Button(

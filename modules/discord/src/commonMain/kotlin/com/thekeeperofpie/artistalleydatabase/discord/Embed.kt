@@ -11,6 +11,7 @@ data class Embed(
     val fields: List<Field>? = null,
     val image: Image? = null,
     val thumbnail: Image? = null,
+    val color: Int? = null,
 ) {
     @Serializable(with = Type.Serializer::class)
     enum class Type(val value: String) {
