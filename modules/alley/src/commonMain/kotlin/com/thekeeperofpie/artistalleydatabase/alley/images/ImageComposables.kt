@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
@@ -220,7 +221,9 @@ fun ImagePager(
                                         state = zoomableState,
                                         onClick = if (onClickPage == null) null else {
                                             {
-                                                onClickPage(pagerState.settledPage)
+                                                if (!pagerState.isScrollInProgress) {
+                                                    onClickPage(pagerState.settledPage)
+                                                }
                                             }
                                         },
                                         clipToBounds = false,
@@ -303,104 +306,88 @@ private fun BoxScope.ImagePagerActions(
 
     if (onClickFullscreen != null) {
         val fullscreenInteractionSource = remember { MutableInteractionSource() }
-        AnimatedVisibility(
-            visible = pagerState.currentPage != 0 && userScrollEnabled(),
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.BottomEnd)
+        IconButton(
+            onClick = { onClickFullscreen(pagerState.currentPage) },
+            modifier = Modifier.hoverable(fullscreenInteractionSource)
         ) {
-            IconButton(
-                onClick = { onClickFullscreen(pagerState.currentPage) },
-                modifier = Modifier.hoverable(fullscreenInteractionSource)
-            ) {
-                val fullscreenIsHovered by fullscreenInteractionSource.collectIsHoveredAsState()
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceDim
-                                .copy(alpha = if (fullscreenIsHovered) 0.15f else 0.5f),
-                            shape = CircleShape,
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Fullscreen,
-                        contentDescription = stringResource(
-                            Res.string.alley_image_fullscreen_content_description
-                        ),
+            val fullscreenIsHovered by fullscreenInteractionSource.collectIsHoveredAsState()
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceDim
+                            .copy(alpha = if (fullscreenIsHovered) 0.15f else 0.5f),
+                        shape = CircleShape,
                     )
-                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Fullscreen,
+                    contentDescription = stringResource(
+                        Res.string.alley_image_fullscreen_content_description
+                    ),
+                )
             }
         }
     }
 
     val scope = rememberCoroutineScope()
     val previousPageInteractionSource = remember { MutableInteractionSource() }
-    AnimatedVisibility(
-        visible = pagerState.pageCount > 1 && pagerState.currentPage != 0,
-        enter = fadeIn(),
-        exit = fadeOut(),
-        modifier = Modifier.align(Alignment.CenterStart)
+    IconButton(
+        onClick = {
+            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+        },
+        modifier = Modifier.sharedElement("previousPage", sharedElementId, zIndexInOverlay = 1f)
+            .align(Alignment.CenterStart)
+            .hoverable(previousPageInteractionSource)
+            .conditionally(pagerState.pageCount <= 1 || pagerState.currentPage == 0, Modifier.alpha(0f))
     ) {
-        IconButton(
-            onClick = {
-                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-            },
-            modifier = Modifier.sharedElement("previousPage", sharedElementId, zIndexInOverlay = 1f)
-                .hoverable(previousPageInteractionSource)
-        ) {
-            val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceDim
-                            .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
-                        shape = CircleShape,
-                    )
-            ) {
-                val willPageToGrid = images.size > 1 && pagerState.currentPage == 1
-                Icon(
-                    imageVector = if (willPageToGrid) {
-                        Icons.Default.GridView
-                    } else {
-                        Icons.AutoMirrored.Filled.ArrowLeft
-                    },
-                    contentDescription = stringResource(Res.string.alley_previous_page),
-                    modifier = Modifier.conditionally(willPageToGrid) { size(16.dp) }
+        val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(24.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceDim
+                        .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
+                    shape = CircleShape,
                 )
-            }
+        ) {
+            val willPageToGrid = images.size > 1 && pagerState.currentPage == 1
+            Icon(
+                imageVector = if (willPageToGrid) {
+                    Icons.Default.GridView
+                } else {
+                    Icons.AutoMirrored.Filled.ArrowLeft
+                },
+                contentDescription = stringResource(Res.string.alley_previous_page),
+                modifier = Modifier.conditionally(willPageToGrid) { size(16.dp) }
+            )
         }
     }
 
-    AnimatedVisibility(
-        visible = pagerState.currentPage < pagerState.pageCount - 1,
-        enter = fadeIn(),
-        exit = fadeOut(),
-        modifier = Modifier.align(Alignment.CenterEnd)
+    val nextPageInteractionSource = remember { MutableInteractionSource() }
+    IconButton(
+        onClick = {
+            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+        },
+        modifier = Modifier
+            .sharedElement("nextPage", sharedElementId, zIndexInOverlay = 1f)
+            .align(Alignment.CenterEnd)
+            .hoverable(nextPageInteractionSource)
+            .conditionally(pagerState.currentPage >= pagerState.pageCount - 1, Modifier.alpha(0f))
     ) {
-        val nextPageInteractionSource = remember { MutableInteractionSource() }
-        IconButton(
-            onClick = {
-                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-            },
-            modifier = Modifier.sharedElement("nextPage", sharedElementId, zIndexInOverlay = 1f)
-                .hoverable(nextPageInteractionSource)
-        ) {
-            val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
-                contentDescription = stringResource(Res.string.alley_next_page),
-                modifier = Modifier.padding(8.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceDim
-                            .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
-                        shape = CircleShape,
-                    )
-            )
-        }
+        val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+            contentDescription = stringResource(Res.string.alley_next_page),
+            modifier = Modifier.padding(8.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceDim
+                        .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
+                    shape = CircleShape,
+                )
+        )
     }
 }
 
