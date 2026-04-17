@@ -258,9 +258,6 @@ object FavoritesScreen {
                             )
                         }
                 ) {
-                    var unfavoriteDialogEntry by remember {
-                        mutableStateOf<SearchScreen.SearchEntryModel?>(null)
-                    }
                     val dataYearHeaderState = rememberDataYearHeaderState(state.year, null)
                     when (tab) {
                         EntryTab.ARTISTS -> ArtistContent(
@@ -273,7 +270,18 @@ object FavoritesScreen {
                             eventSink = eventSink,
                             scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
                             onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                            onUnfavoriteDialogEntryChange = { unfavoriteDialogEntry = it },
+                            onUnfavorite = {
+                                if (it != null) {
+                                    eventSink(
+                                        Event.SearchEvent(
+                                            SearchScreen.Event.FavoriteToggle(
+                                                entry = it,
+                                                favorite = false
+                                            )
+                                        )
+                                    )
+                                }
+                            },
                             header = {
                                 Header(
                                     tab = { tab },
@@ -294,7 +302,18 @@ object FavoritesScreen {
                             eventSink = eventSink,
                             scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
                             onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                            onUnfavoriteDialogEntryChange = { unfavoriteDialogEntry = it },
+                            onUnfavorite = {
+                                if (it != null) {
+                                    eventSink(
+                                        Event.SearchEvent(
+                                            SearchScreen.Event.FavoriteToggle(
+                                                entry = it,
+                                                favorite = false
+                                            )
+                                        )
+                                    )
+                                }
+                            },
                             header = {
                                 Header(
                                     tab = { tab },
@@ -336,21 +355,6 @@ object FavoritesScreen {
                             eventSink = eventSink,
                         )
                     }
-
-                    UnfavoriteDialog(
-                        entry = { unfavoriteDialogEntry },
-                        onClearEntry = { unfavoriteDialogEntry = null },
-                        onRemoveFavorite = {
-                            eventSink(
-                                Event.SearchEvent(
-                                    SearchScreen.Event.FavoriteToggle<SearchScreen.SearchEntryModel>(
-                                        entry = it,
-                                        favorite = false
-                                    )
-                                )
-                            )
-                        },
-                    )
                 }
 
                 if (PlatformSpecificConfig.scrollbarsAlwaysVisible) {
@@ -377,7 +381,7 @@ object FavoritesScreen {
         eventSink: (Event) -> Unit,
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
-        onUnfavoriteDialogEntryChange: (SearchScreen.SearchEntryModel?) -> Unit,
+        onUnfavorite: (SearchScreen.SearchEntryModel?) -> Unit,
         header: @Composable () -> Unit,
         noResultsItem: @Composable () -> Unit,
     ) {
@@ -402,7 +406,7 @@ object FavoritesScreen {
                         if (it) {
                             onFavoriteToggle(it)
                         } else {
-                            onUnfavoriteDialogEntryChange(entry)
+                            onUnfavorite(entry)
                         }
                     },
                     onSeriesClick = { eventSink(Event.OpenSeries(it)) },
@@ -455,7 +459,7 @@ object FavoritesScreen {
         eventSink: (Event) -> Unit,
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
-        onUnfavoriteDialogEntryChange: (SearchScreen.SearchEntryModel?) -> Unit,
+        onUnfavorite: (SearchScreen.SearchEntryModel?) -> Unit,
         header: @Composable () -> Unit,
         noResultsItem: @Composable () -> Unit,
     ) {
@@ -479,7 +483,7 @@ object FavoritesScreen {
                         if (it) {
                             onFavoriteToggle(it)
                         } else {
-                            onUnfavoriteDialogEntryChange(entry)
+                            onUnfavorite(entry)
                         }
                     },
                     modifier = modifier,

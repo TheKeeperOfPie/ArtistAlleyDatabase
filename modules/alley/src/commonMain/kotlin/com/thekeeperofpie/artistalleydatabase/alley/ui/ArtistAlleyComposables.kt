@@ -142,6 +142,7 @@ import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
@@ -313,8 +314,18 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                     )
                 }
 
+                var unfavoriteDialogEntry by remember {
+                    mutableStateOf<SearchEntryModel?>(null)
+                }
+                val favorite = entry.favorite
                 IconButton(
-                    onClick = { onFavoriteToggle(!entry.favorite) },
+                    onClick = {
+                        if (favorite) {
+                            unfavoriteDialogEntry = entry
+                        } else {
+                            onFavoriteToggle(true)
+                        }
+                    },
                     modifier = Modifier
                         .sharedElement("favorite", sharedElementId, zIndexInOverlay = 1f)
                 ) {
@@ -329,6 +340,12 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                         ),
                     )
                 }
+
+                UnfavoriteDialog(
+                    entry = { unfavoriteDialogEntry },
+                    onClearEntry = { unfavoriteDialogEntry = null },
+                    onRemoveFavorite = { onFavoriteToggle(false) },
+                )
             }
         }
     }
