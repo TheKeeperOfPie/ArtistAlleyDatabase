@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo202
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
@@ -86,13 +87,12 @@ internal class ForumSyncer(private val environment: Environment) {
             }
         val message = """
         |# Welcome to the AX AA Directory!
-        |This is a mirror of ${AlleyUtils.siteUrl}. We encourage you to use that site if possible as it offers a better UI, search by tags, and offline support.
+        |
+        |This is a mirror of ${AlleyUtils.siteUrl}, providing an easy way to view all of the artists that will be tabling at ${getString(DataYear.ANIME_EXPO_2026.fullName)}. We encourage you to use the site instead as it offers a better UI, search by tags, and offline support.
         |## Attendees
         |Please be respectful in artists' threads. This is a space to converse with artists, ask them questions about the stuff they're selling, and get excited about all of the amazing art.
-        |
-        |Artist threads will only be unlocked if the artist has allowed chatting.
         |## Artists
-        |If you would like to unlock your post for chatting or edit your data, see your page at ${AlleyUtils.siteUrl}. You can verify through the prompt at the bottom of that page.
+        |If you would like to edit your data, verify yourself at the bottom of your artist page at ${AlleyUtils.siteUrl}.
         |
         |You may also use the AA Directory bot via `/aa verify [convention] [booth]`, which will unlock the private artist only channel and give you a form access link.
         |## Questions, suggestions, concerns
