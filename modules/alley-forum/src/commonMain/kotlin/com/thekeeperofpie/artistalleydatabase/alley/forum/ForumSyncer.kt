@@ -7,12 +7,12 @@ import androidx.compose.ui.graphics.toArgb
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.kmpalette.color
 import com.kmpalette.palette.graphics.Palette
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.forum.alley_forum.generated.resources.Res
 import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
@@ -88,7 +88,11 @@ internal class ForumSyncer(private val environment: Environment) {
         val message = """
         |# Welcome to the AX AA Directory!
         |
-        |This is a mirror of ${AlleyUtils.siteUrl}, providing an easy way to view all of the artists that will be tabling at ${getString(DataYear.ANIME_EXPO_2026.fullName)}. We encourage you to use the site instead as it offers a better UI, search by tags, and offline support.
+        |This is a mirror of ${AlleyUtils.siteUrl}, providing an easy way to view all of the artists that will be tabling at ${
+            getString(
+                DataYear.ANIME_EXPO_2026.fullName
+            )
+        }. We encourage you to use the site instead as it offers a better UI, search by tags, and offline support.
         |## Attendees
         |Please be respectful in artists' threads. This is a space to converse with artists, ask them questions about the stuff they're selling, and get excited about all of the amazing art.
         |## Artists
@@ -98,17 +102,21 @@ internal class ForumSyncer(private val environment: Environment) {
         |## Questions, suggestions, concerns
         |If you have any feedback for the directory itself, please visit us in<#${environment.publicArtistAlleyChannelId}> or contact <@${environment.contactUserId}>.
         """.trimMargin()
+        val imageName = "files/forum_pin_banner.png"
+        val imageAttachments = listOf(imageName to Res.readBytes(imageName) )
         if (existingPin == null) {
             api.createThread(
                 channelId = environment.forumChannelId,
                 title = "What is this?",
                 firstMessage = CreateMessage(content = message),
+                imageAttachments = imageAttachments,
             )
         } else {
             api.editMessage(
                 channelId = existingPin.id,
                 messageId = existingPin.id,
                 message = CreateMessage(content = message),
+                imageAttachments = imageAttachments,
             )
         }
     }
@@ -229,7 +237,7 @@ internal class ForumSyncer(private val environment: Environment) {
     private suspend fun createDriver(): SqlDriver = withContext(Dispatchers.IO) {
         val file = Files.createTempFile(null, ".sqlite").toFile()
         file.deleteOnExit()
-        file.writeBytes(Res.readBytes("files/database.sqlite"))
+        file.writeBytes(AlleyDataRes.readBytes("files/database.sqlite"))
         JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
     }
 

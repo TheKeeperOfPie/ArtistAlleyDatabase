@@ -12,7 +12,7 @@ plugins {
     alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
-group = "com.thekeeperofpie.artistalleydatabase.alley.discord"
+group = "com.thekeeperofpie.artistalleydatabase.alley.forum"
 
 kotlin {
     compilerOptions {
