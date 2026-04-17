@@ -10,6 +10,7 @@ import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
@@ -22,7 +23,9 @@ import com.thekeeperofpie.artistalleydatabase.discord.CreateMessage
 import com.thekeeperofpie.artistalleydatabase.discord.Embed
 import com.thekeeperofpie.artistalleydatabase.discord.ForumLayout
 import com.thekeeperofpie.artistalleydatabase.discord.Message
+import com.thekeeperofpie.artistalleydatabase.discord.MessageComponent
 import com.thekeeperofpie.artistalleydatabase.discord.Thread
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -127,6 +130,10 @@ internal class ForumSyncer(private val environment: Environment) {
 
         val threadsList = api.getThreads(environment.forumChannelId)
         println("Threads = ${threadsList.threads.map { it.name }}")
+        if (threadsList.hasMore) {
+            // TODO: Not sure if this is required
+            throw UnsupportedOperationException("Threads has more, unhandled")
+        }
 
         val threads = threadsList.threads
             .filter {
@@ -409,7 +416,17 @@ internal class ForumSyncer(private val environment: Environment) {
                         linksEmbed,
                         seriesEmbed,
                         merchEmbed,
-                    ).ifEmpty { null }
+                    ).ifEmpty { null },
+                    components = listOf(
+                        MessageComponent.ActionRow(
+                            MessageComponent.Button(
+                                style = MessageComponent.Button.Style.LINK,
+                                label = "Open in Directory",
+                                url = BuildKonfig.directoryUrl +
+                                        "/artist/${DataYear.ANIME_EXPO_2026.serializedName}/${entry.id}",
+                            )
+                        )
+                    )
                 )
                 val messageLength = firstCreateMessage.embeds?.sumOf {
                     (it.title?.length ?: 0) + (it.fields?.sumOf { it.name.length + it.value.length }

@@ -8,6 +8,7 @@ data class CreateMessage(
     val content: String? = null,
     val embeds: List<Embed>? = null,
     val attachments: List<Attachment>? = null,
+    val components: List<MessageComponent>? = null,
 ) {
     @Serializable
     data class Attachment(
