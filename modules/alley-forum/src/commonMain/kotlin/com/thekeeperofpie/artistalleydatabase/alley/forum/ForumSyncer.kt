@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.discord.AllowedMentions
 import com.thekeeperofpie.artistalleydatabase.discord.ChannelFlag
 import com.thekeeperofpie.artistalleydatabase.discord.CreateMessage
 import com.thekeeperofpie.artistalleydatabase.discord.Embed
@@ -100,22 +101,28 @@ internal class ForumSyncer(private val environment: Environment) {
         |
         |You may also use the AA Directory bot via `/aa verify [convention] [booth]`, which will unlock the private artist only channel and give you a form access link.
         |## Questions, suggestions, concerns
-        |If you have any feedback for the directory itself, please visit us in<#${environment.publicArtistAlleyChannelId}> or contact <@${environment.contactUserId}>.
+        |If you have any feedback for the directory itself, please visit us in <#${environment.publicArtistAlleyChannelId}> or contact <@${environment.contactUserId}>.
+        |
+        |Banner provided by <@${BuildKonfig.pinBannerArtistUserId}>
         """.trimMargin()
         val imageName = "files/forum_pin_banner.png"
         val imageAttachments = listOf(imageName to Res.readBytes(imageName))
+        val createMessage = CreateMessage(
+            content = message,
+            allowedMentions = AllowedMentions(parse = emptyList()),
+        )
         if (existingPin == null) {
             api.createThread(
                 channelId = environment.forumChannelId,
                 title = "What is this?",
-                firstMessage = CreateMessage(content = message),
+                firstMessage = createMessage,
                 imageAttachments = imageAttachments,
             )
         } else {
             api.editMessage(
                 channelId = existingPin.id,
                 messageId = existingPin.id,
-                message = CreateMessage(content = message),
+                message = createMessage,
                 imageAttachments = imageAttachments,
             )
         }
@@ -441,7 +448,10 @@ internal class ForumSyncer(private val environment: Environment) {
                             fields = listOf(
                                 Embed.Field(
                                     name = "\uD83C\uDFF7 $it",
-                                    value = seriesThree.joinToString(prefix = "```", postfix = "```")
+                                    value = seriesThree.joinToString(
+                                        prefix = "```",
+                                        postfix = "```"
+                                    )
                                 )
                             ),
                         )

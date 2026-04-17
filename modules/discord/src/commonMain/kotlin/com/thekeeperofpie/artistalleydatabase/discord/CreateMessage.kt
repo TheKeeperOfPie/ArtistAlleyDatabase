@@ -9,6 +9,8 @@ data class CreateMessage(
     val embeds: List<Embed>? = null,
     val attachments: List<Attachment>? = null,
     val components: List<MessageComponent>? = null,
+    @SerialName("allowed_mentions")
+    val allowedMentions: AllowedMentions? = null,
 ) {
     @Serializable
     data class Attachment(
