@@ -103,7 +103,7 @@ internal class ForumSyncer(private val environment: Environment) {
         |If you have any feedback for the directory itself, please visit us in<#${environment.publicArtistAlleyChannelId}> or contact <@${environment.contactUserId}>.
         """.trimMargin()
         val imageName = "files/forum_pin_banner.png"
-        val imageAttachments = listOf(imageName to Res.readBytes(imageName) )
+        val imageAttachments = listOf(imageName to Res.readBytes(imageName))
         if (existingPin == null) {
             api.createThread(
                 channelId = environment.forumChannelId,
@@ -177,12 +177,11 @@ internal class ForumSyncer(private val environment: Environment) {
             }
         }
 
-        println("Missing = ${missing.sortedBy { it.entry.booth }.map { it.threadTitle }}")
-        println(
-            "Changed = ${
-                changed.sortedBy { it.first.entry.booth }.map { it.first.threadTitle }
-            }"
-        )
+        missing.sortBy { it.entry.booth }
+        changed.sortBy { it.first.booth }
+
+        println("Missing = ${missing.map { it.threadTitle }}")
+        println("Changed = ${changed.map { it.first.threadTitle }}")
         if (range == null) {
             println("Removed = ${threads.map { it.thread.name }}")
         }
@@ -232,6 +231,7 @@ internal class ForumSyncer(private val environment: Environment) {
                 api.modifyThread(threadId = it.thread.id, archived = true)
             }
         }
+        println("Finished syncing threads")
     }
 
     private suspend fun createDriver(): SqlDriver = withContext(Dispatchers.IO) {
@@ -311,16 +311,8 @@ internal class ForumSyncer(private val environment: Environment) {
                             flags = 0,
                         )
                     },
-                    fields = entry.summary
-                        ?.takeIf { it.isNotBlank() }
-                        ?.let {
-                            listOf(
-                                Embed.Field(
-                                    name = "\uD83C\uDFA8 ${entry.name}",
-                                    value = it,
-                                )
-                            )
-                        },
+                    title = "\uD83C\uDFA8 ${entry.name}",
+                    description = entry.summary?.takeIf { it.isNotBlank() }
                 )
 
                 suspend fun LinkModel.asMarkdownLink(): String {
@@ -400,16 +392,60 @@ internal class ForumSyncer(private val environment: Environment) {
                     null to emptyList()
                 }
 
-                val seriesEmbed = seriesTitle?.let {
+                val seriesOne = mutableListOf<String>()
+                val seriesTwo = mutableListOf<String>()
+                val seriesThree = mutableListOf<String>()
+
+                var seriesOneCharCount = 0
+                var seriesTwoCharCount = 0
+                series.forEach {
+                    if ((seriesOneCharCount + it.length + 2) < 1000) {
+                        seriesOneCharCount += it.length + 2
+                        seriesOne += it
+                    } else if ((seriesTwoCharCount + it.length + 2) < 1000) {
+                        seriesTwoCharCount += it.length + 2
+                        seriesTwo += it
+                    } else {
+                        seriesThree += it
+                    }
+                }
+
+                val seriesOneEmbed = seriesTitle?.let {
                     Embed(
                         fields = listOf(
                             Embed.Field(
                                 name = "\uD83C\uDFF7 $it",
-                                value = series.joinToString(prefix = "```", postfix = "```")
+                                value = seriesOne.joinToString(prefix = "```", postfix = "```")
                             )
                         ),
                     )
                 }
+
+                val seriesTwoEmbed = seriesTitle
+                    ?.takeIf { seriesTwo.isNotEmpty() }
+                    ?.let {
+                        Embed(
+                            fields = listOf(
+                                Embed.Field(
+                                    name = "\uD83C\uDFF7 $it",
+                                    value = seriesTwo.joinToString(prefix = "```", postfix = "```")
+                                )
+                            ),
+                        )
+                    }
+
+                val seriesThreeEmbed = seriesTitle
+                    ?.takeIf { seriesThree.isNotEmpty() }
+                    ?.let {
+                        Embed(
+                            fields = listOf(
+                                Embed.Field(
+                                    name = "\uD83C\uDFF7 $it",
+                                    value = seriesThree.joinToString(prefix = "```", postfix = "```")
+                                )
+                            ),
+                        )
+                    }
 
                 val (merchTitle, merch) = if (entry.merchConfirmed.isNotEmpty()) {
                     "Merch" to entry.merchConfirmed
@@ -435,11 +471,13 @@ internal class ForumSyncer(private val environment: Environment) {
                     imageEmbed,
                     titleEmbed,
                     linksEmbed,
-                    seriesEmbed,
+                    seriesOneEmbed,
+                    seriesTwoEmbed,
+                    seriesThreeEmbed,
                     merchEmbed,
                 ).mapIndexed { index, embed ->
                     embed.copy(
-                        color = allSwatches.getOrNull(index % allSwatches.size)
+                        color = allSwatches.getOrNull(index % allSwatches.size.coerceAtLeast(1))
                             ?.color
                             ?.toArgb()
                             ?.let { it and 0x00FFFFFF },
@@ -466,6 +504,14 @@ internal class ForumSyncer(private val environment: Environment) {
                 if (messageLength > 4000) {
                     throw IllegalStateException("Thread content too long for ${entry.name}: $firstCreateMessage")
                 }
+
+                val violatingFields = firstCreateMessage.embeds?.flatMap {
+                    it.fields?.filter { it.value.length > 1024 }.orEmpty()
+                }
+                if (!violatingFields.isNullOrEmpty()) {
+                    throw IllegalStateException("Field values too long for ${entry.name}: $violatingFields")
+                }
+
                 val secondCreateMessage = CreateMessage("Reserved")
                 return MessageData(
                     first = firstCreateMessage,

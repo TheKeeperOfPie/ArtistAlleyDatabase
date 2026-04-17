@@ -180,10 +180,12 @@ internal class DiscordApi(private val environment: Environment) {
         client.delete("channels/$threadId").assertSuccess()
     }
 
-    private suspend fun HttpResponse.assertSuccess() = apply {
+    private suspend fun HttpResponse.assertSuccess() = run {
         if (!status.isSuccess()) {
             println("Failed request ${this.request.url}: $headers ${bodyAsText()}")
-            val retryAfter = headers["Retry-After"]?.toIntOrNull()?.milliseconds
+            val retryAfterValue = headers["Retry-After"]
+            println("Retry-After = $retryAfterValue")
+            val retryAfter = retryAfterValue?.toIntOrNull()?.milliseconds
             if (retryAfter != null) {
                 println("Delaying by $retryAfter")
                 delay(retryAfter + 3.seconds)
@@ -192,8 +194,11 @@ internal class DiscordApi(private val environment: Environment) {
                     System.err.println(
                         "Failed retry ${retry.request.url}: ${retry.headers} ${retry.bodyAsText()}"
                     )
+                } else {
+                    return@run retry
                 }
             }
         }
+        this
     }
 }
