@@ -44,6 +44,7 @@
 
     <string name="alley_form_catalog_header">Catalog</string>
     <string name="alley_form_catalog_subtitle_megabytes">Max of %1$d images at %2$d MB each</string>
+    <string name="alley_form_catalog_links_placeholder">Social media post, link to image folder/PDF, or web page for your catalog</string>
 
     <string name="alley_form_stamp_rallies_header">Stamp rallies</string>
     <string name="alley_form_stamp_rallies_action_add">Add new rally</string>

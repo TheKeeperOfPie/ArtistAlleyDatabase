@@ -78,6 +78,7 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_art
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_summary_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_header
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_subtitle_megabytes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_action
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_prompt
@@ -413,6 +414,7 @@ object ArtistFormScreen {
 
                                 CatalogSection(
                                     state = state.artistFormState,
+                                    errorState = errorState,
                                     initialArtist = initialArtist,
                                     seriesById = seriesById,
                                     seriesPredictions = seriesPredictions,
@@ -902,11 +904,13 @@ object ArtistFormScreen {
         val socialLinksErrorMessage by rememberLinkValidator(state.links.stateSocialLinks)
         val storeLinksErrorMessage by rememberLinkValidator(state.links.stateStoreLinks)
         val portfolioLinksErrorMessage by rememberLinkValidator(state.links.statePortfolioLinks)
+        val catalogLinksErrorMessage by rememberLinkValidator(state.links.stateCatalogLinks)
         return ErrorState(
             boothErrorMessage = { boothErrorMessage },
             socialLinksErrorMessage = { socialLinksErrorMessage },
             storeLinksErrorMessage = { storeLinksErrorMessage },
             portfolioLinksErrorMessage = { portfolioLinksErrorMessage },
+            catalogLinksErrorMessage = { catalogLinksErrorMessage },
         )
     }
 
@@ -1027,6 +1031,7 @@ object ArtistFormScreen {
     @Composable
     private fun CatalogSection(
         state: State.FormState,
+        errorState: ErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
@@ -1085,6 +1090,7 @@ object ArtistFormScreen {
 
             val focusState = rememberFocusState(
                 listOf(
+                    state.links.stateCatalogLinks,
                     state.series.stateConfirmed,
                     state.merch.stateConfirmed,
                 )
@@ -1107,6 +1113,12 @@ object ArtistFormScreen {
                 )
 
                 if (state.images.isNotEmpty()) {
+                    CatalogLinksSection(
+                        state = state.links.stateCatalogLinks,
+                        catalogLinks = state.links.catalogLinks,
+                        label = { Text(stringResource(Res.string.alley_form_catalog_links_placeholder)) },
+                        pendingErrorMessage = errorState.catalogLinksErrorMessage,
+                    )
                     SeriesConfirmedSection(
                         state = state.series.stateConfirmed,
                         confirmed = state.series.confirmed,
@@ -1259,12 +1271,14 @@ object ArtistFormScreen {
             val socialLinksErrorMessage: () -> String?,
             val storeLinksErrorMessage: () -> String?,
             val portfolioLinksErrorMessage: () -> String?,
+            val catalogLinksErrorMessage: () -> String?,
         ) {
             val hasAnyError by derivedStateOf {
                 boothErrorMessage() != null ||
                         socialLinksErrorMessage() != null ||
                         storeLinksErrorMessage() != null ||
-                        portfolioLinksErrorMessage() != null
+                        portfolioLinksErrorMessage() != null ||
+                        catalogLinksErrorMessage() != null
             }
         }
     }

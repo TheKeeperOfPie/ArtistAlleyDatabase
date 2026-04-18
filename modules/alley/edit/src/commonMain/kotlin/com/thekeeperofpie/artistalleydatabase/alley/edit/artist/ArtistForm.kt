@@ -198,7 +198,7 @@ interface ArtistFormScope : EntryFormScope {
     @Composable
     fun CatalogLinksSection(
         state: EntryForm2.SingleTextState,
-        catalogLinks: SnapshotStateList<String>,
+        catalogLinks: SnapshotStateList<LinkModel>,
         label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
     )
@@ -556,35 +556,24 @@ private abstract class ArtistFormScopeImpl(
     @Composable
     override fun CatalogLinksSection(
         state: EntryForm2.SingleTextState,
-        catalogLinks: SnapshotStateList<String>,
+        catalogLinks: SnapshotStateList<LinkModel>,
         label: @Composable (() -> Unit)?,
         pendingErrorMessage: () -> String?,
     ) {
-        val listRevertDialogState = rememberListRevertDialogState(initialArtist?.catalogLinks)
-        BasicMultiTextSection(
+        LinksSection(
             state = state,
+            title = Res.string.alley_edit_artist_edit_catalog_links,
             header = {
                 FormHeaderIconAndTitle(
                     CustomIcons.Browse,
                     Res.string.alley_edit_artist_edit_catalog_links
                 )
             },
-            initialItems = initialArtist?.catalogLinks,
+            listRevertDialogState =
+                rememberListRevertDialogState(initialArtist?.catalogLinks?.map(LinkModel::parse)),
             items = catalogLinks,
-            itemToText = { it },
-            itemToSubText = { null },
-            itemToSerializedValue = { it },
-            itemToCommitted = { it },
             label = label,
             pendingErrorMessage = pendingErrorMessage,
-            listRevertDialogState = listRevertDialogState,
-        )
-
-        ListFieldRevertDialog(
-            dialogState = listRevertDialogState,
-            label = Res.string.alley_edit_artist_edit_catalog_links,
-            items = catalogLinks,
-            itemsToText = { it.joinToString() },
         )
     }
 

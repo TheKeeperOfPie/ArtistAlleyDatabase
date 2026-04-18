@@ -254,14 +254,14 @@ class ArtistFormState(
         val socialLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
         val storeLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
         val portfolioLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
-        val catalogLinks: SnapshotStateList<String> = SnapshotStateList(),
+        val catalogLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
         val commissions: SnapshotStateList<CommissionModel> = SnapshotStateList(),
     ) {
         fun applyValues(
             socialLinks: List<LinkModel>,
             storeLinks: List<LinkModel>,
             portfolioLinks: List<LinkModel>,
-            catalogLinks: List<String>,
+            catalogLinks: List<LinkModel>,
             commissions: List<CommissionModel>,
             mergeBehavior: FormMergeBehavior,
         ) {
@@ -283,7 +283,7 @@ class ArtistFormState(
             socialLinks = socialLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
             storeLinks = storeLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
             portfolioLinks = portfolioLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
-            catalogLinks = catalogLinks,
+            catalogLinks = catalogLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
             commissions = commissions.map(CommissionModel.Companion::parse),
             mergeBehavior = mergeBehavior,
         )
@@ -301,7 +301,7 @@ class ArtistFormState(
                 .plus(statePortfolioLinks.value.text.toString().takeIf { it.isNotBlank() })
                 .filterNotNull()
                 .distinct()
-            val catalogLinks = catalogLinks.toList()
+            val catalogLinks = catalogLinks.toList().map { it.link }
                 .plus(stateCatalogLinks.value.text.toString().takeIf { it.isNotBlank() })
                 .filterNotNull()
                 .distinct()
@@ -336,7 +336,7 @@ class ArtistFormState(
                 with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.socialLinks) },
                 with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.storeLinks) },
                 with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.portfolioLinks) },
-                with(StateUtils.snapshotListJsonSaver<String>()) { save(value.catalogLinks) },
+                with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.catalogLinks) },
                 with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { save(value.commissions) },
             )
 
@@ -349,7 +349,7 @@ class ArtistFormState(
                 socialLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[5] as String) },
                 storeLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[6] as String) },
                 portfolioLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[7] as String) },
-                catalogLinks = with(StateUtils.snapshotListJsonSaver<String>()) { restore(value[8] as String) },
+                catalogLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[8] as String) },
                 commissions = with(StateUtils.snapshotListJsonSaver<CommissionModel>()) {
                     restore(value[9] as String)
                 },

@@ -75,7 +75,7 @@ class ArtistInference(
             matchingLinks(data, data.socialLinks, input.socialLinks) +
                     matchingLinks(data, data.storeLinks, input.storeLinks) +
                     matchingLinks(data, data.portfolioLinks, input.portfolioLinks) +
-                    matchingCatalogLinks(data, data.catalogLinks, input.catalogLinks) +
+                    matchingLinks(data, data.catalogLinks, input.catalogLinks) +
                     data.names.map {
                         MatchResult.Name(data, StringUtils.compareSimilarity(it, input.name))
                     }
@@ -125,28 +125,6 @@ class ArtistInference(
         return results
     }
 
-    private fun matchingCatalogLinks(
-        data: ArtistData,
-        artistLinks: Set<String>,
-        inputLinks: List<String>,
-    ): List<MatchResult.Link> {
-        val results = mutableListOf<MatchResult.Link>()
-        artistLinks.forEach { artistLink ->
-            inputLinks.forEach { inputLink ->
-                val score = StringUtils.compareSimilarity(
-                    artistLink.removePrefix("https"),
-                    inputLink.removePrefix("https"),
-                )
-                val result = MatchResult.Link(data, score, artistLink, inputLink)
-
-                // If any high score, just exit and return
-                if (score >= 0.8f) return listOf(result)
-                results += result
-            }
-        }
-        return results
-    }
-
     sealed interface MatchResult {
         val data: ArtistData
         val score: Float
@@ -173,7 +151,7 @@ class ArtistInference(
         val socialLinks: Set<LinkModel>,
         val storeLinks: Set<LinkModel>,
         val portfolioLinks: Set<LinkModel>,
-        val catalogLinks: Set<String>,
+        val catalogLinks: Set<LinkModel>,
     ) {
         constructor(entry: Map.Entry<Uuid, List<ArtistInferenceData>>) : this(
             id = entry.key,
@@ -185,7 +163,9 @@ class ArtistInference(
             portfolioLinks = entry.value.flatMap { it.portfolioLinks }
                 .map(LinkModel.Companion::parse)
                 .toSet(),
-            catalogLinks = entry.value.flatMap { it.catalogLinks }.toSet(),
+            catalogLinks = entry.value.flatMap { it.catalogLinks }
+                .map(LinkModel.Companion::parse)
+                .toSet(),
         )
     }
 
@@ -194,7 +174,7 @@ class ArtistInference(
         val socialLinks: List<LinkModel>,
         val storeLinks: List<LinkModel>,
         val portfolioLinks: List<LinkModel>,
-        val catalogLinks: List<String>,
+        val catalogLinks: List<LinkModel>,
     ) {
         companion object {
             fun captureState(state: ArtistFormState) = Input(
@@ -206,7 +186,7 @@ class ArtistInference(
                 portfolioLinks = state.links.portfolioLinks.toList() +
                         LinkModel.parse(state.links.statePortfolioLinks.value.text.toString()),
                 catalogLinks = state.links.catalogLinks.toList() +
-                        state.links.stateCatalogLinks.value.text.toString(),
+                        LinkModel.parse(state.links.stateCatalogLinks.value.text.toString()),
             )
         }
     }
