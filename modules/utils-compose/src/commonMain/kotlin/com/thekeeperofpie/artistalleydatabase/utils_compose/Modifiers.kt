@@ -186,6 +186,11 @@ inline fun <T> Modifier.conditionallyNonNull(
     block: @Composable Modifier.(T) -> Modifier,
 ) = if (target != null) block(target) else this
 
+@Suppress("NOTHING_TO_INLINE")
+@Composable
+inline fun <T> Modifier.conditionallyNonNull(target: T?, modifier: Modifier) =
+    if (target != null) then(modifier) else this
+
 fun Modifier.topBorder(color: Color, width: Dp = Dp.Hairline): Modifier = border(
     width,
     color,

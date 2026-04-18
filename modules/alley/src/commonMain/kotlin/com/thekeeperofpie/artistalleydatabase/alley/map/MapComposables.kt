@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_showing_fallback_short
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_notes_content_description
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -290,7 +291,9 @@ fun SingleTablePopup(
     modifier: Modifier = Modifier,
 ) {
     val ignored = entry.ignored
-    val imagesSize = entry.images.size
+    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty()
+    val images = if (showingFallback) entry.fallbackImages else entry.images
+    val imagesSize = images.size
     val pagerState = rememberPagerState(
         initialPage = imageIndex?.coerceAtMost(imagesSize) ?: 0,
         pageCount = { imagesSize },
@@ -308,7 +311,6 @@ fun SingleTablePopup(
                 onLongClick = { onIgnoredToggle(entry, !ignored) }
             )
     ) {
-        val images = entry.images
         if (images.isNotEmpty()) {
             var minHeight by remember { mutableIntStateOf(0) }
             Box(
@@ -356,6 +358,24 @@ fun SingleTablePopup(
                             .padding(8.dp)
                     )
                 }
+            }
+        }
+
+        if (showingFallback) {
+            Box(
+                contentAlignment = Alignment.BottomCenter,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(vertical = 2.dp, horizontal = 16.dp)
+            ) {
+                Text(
+                    text = stringResource(
+                        Res.string.alley_artist_catalog_image_showing_fallback_short,
+                    ),
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.labelSmallEmphasized,
+                )
             }
         }
 
