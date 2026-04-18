@@ -145,6 +145,7 @@ class FavoritesViewModel(
                         exhibitorTagsIn = emptySet(),
                         showOnlyWithCatalog = false,
                         showOnlyConfirmedTags = false,
+                        showOnlyVerifiedArtists = false,
                         showOutdatedCatalogs = false,
                         hideFavorited = false,
                         hideIgnored = false,

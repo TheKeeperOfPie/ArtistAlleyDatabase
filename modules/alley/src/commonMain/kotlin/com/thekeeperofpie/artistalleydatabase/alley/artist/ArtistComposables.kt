@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatPaint
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
@@ -43,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_commissions
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import coil3.compose.AsyncImage
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -170,18 +173,34 @@ fun ArtistListRow(
 
             Text(
                 text = artist.name,
-                color = MaterialTheme.colorScheme.primary,
+                color = if (entry.artist.verifiedArtist) {
+                    MaterialTheme.colorScheme.tertiary
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 modifier = Modifier
                     .conditionally(useSharedElements, Modifier.sharedElement("name", artist.id))
-                    .weight(1f)
                     .padding(
                         start = if (artist.booth.isNullOrBlank()) 16.dp else 0.dp,
                         top = 12.dp,
                         bottom = 12.dp,
                     )
             )
+
+            if (entry.artist.verifiedArtist) {
+                Spacer(Modifier.width(4.dp))
+                IconWithTooltip(
+                    imageVector = Icons.Default.Verified,
+                    tooltipText = stringResource(Res.string.alley_artist_verified),
+                    contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(Modifier.weight(1f))
             Spacer(Modifier.width(16.dp))
 
             if (entry.artist.commissionModels.isNotEmpty()) {

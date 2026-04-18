@@ -30,6 +30,7 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val showRandomCatalogImage = MutableStateFlow(false)
     override val showOnlyConfirmedTags = MutableStateFlow(false)
     override val showOnlyWithCatalog = MutableStateFlow(false)
+    override val showOnlyVerifiedArtists = MutableStateFlow(false)
     override val forceOneDisplayColumn = MutableStateFlow(false)
     override val dataYear = MutableStateFlow(DataYear.LATEST)
     override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)

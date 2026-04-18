@@ -12,9 +12,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
+import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
+import com.thekeeperofpie.artistalleydatabase.build_logic.form.BuildLogicFormDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -129,15 +131,15 @@ internal object Utils {
         return success
     }
 
-    fun createDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicDatabase> {
+    fun createEditDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicEditDatabase> {
         val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
         try {
-            BuildLogicDatabase.Schema.create(driver)
+            BuildLogicEditDatabase.Schema.create(driver)
         } catch (_: Throwable) {
             Thread.sleep(5000)
-            BuildLogicDatabase.Schema.create(driver)
+            BuildLogicEditDatabase.Schema.create(driver)
         }
-        val database = BuildLogicDatabase(
+        val database = BuildLogicEditDatabase(
             driver = driver,
             artistEntry2023Adapter = ArtistEntry2023.Adapter(
                 artistNamesAdapter = listStringAdapter,
@@ -257,6 +259,45 @@ internal object Utils {
                     override fun encode(value: SeriesSource) = value.name
                 },
                 synonymsAdapter = listStringAdapter,
+            )
+        )
+        return driver to database
+    }
+
+    fun createFormDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicFormDatabase> {
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
+        try {
+            BuildLogicFormDatabase.Schema.create(driver)
+        } catch (_: Throwable) {
+            Thread.sleep(5000)
+            BuildLogicFormDatabase.Schema.create(driver)
+        }
+        val database = BuildLogicFormDatabase(
+            driver = driver,
+            artistFormEntryHistoryAdapter = ArtistFormEntryHistory.Adapter(
+                artistIdAdapter = uuidAdapter,
+                dataYearAdapter = dataYearAdapter,
+                beforeSocialLinksAdapter = listStringAdapter,
+                beforeStoreLinksAdapter = listStringAdapter,
+                beforePortfolioLinksAdapter = listStringAdapter,
+                beforeCatalogLinksAdapter = listStringAdapter,
+                beforeCommissionsAdapter = listStringAdapter,
+                beforeSeriesInferredAdapter = listStringAdapter,
+                beforeSeriesConfirmedAdapter = listStringAdapter,
+                beforeMerchInferredAdapter = listStringAdapter,
+                beforeMerchConfirmedAdapter = listStringAdapter,
+                beforeImagesAdapter = listCatalogImageAdapter,
+                afterSocialLinksAdapter = listStringAdapter,
+                afterStoreLinksAdapter = listStringAdapter,
+                afterPortfolioLinksAdapter = listStringAdapter,
+                afterCatalogLinksAdapter = listStringAdapter,
+                afterCommissionsAdapter = listStringAdapter,
+                afterSeriesInferredAdapter = listStringAdapter,
+                afterSeriesConfirmedAdapter = listStringAdapter,
+                afterMerchInferredAdapter = listStringAdapter,
+                afterMerchConfirmedAdapter = listStringAdapter,
+                afterImagesAdapter = listCatalogImageAdapter,
+                timestampAdapter = instantAdapter,
             )
         )
         return driver to database

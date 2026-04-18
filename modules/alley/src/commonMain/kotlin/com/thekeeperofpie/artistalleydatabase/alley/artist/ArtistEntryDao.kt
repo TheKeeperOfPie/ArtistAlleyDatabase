@@ -732,6 +732,20 @@ class ArtistEntryDao(
                 }
             }
 
+            if (filterParams.showOnlyVerifiedArtists) {
+                when (year) {
+                    DataYear.ANIME_EXPO_2023,
+                    DataYear.ANIME_EXPO_2024,
+                    DataYear.ANIME_EXPO_2025,
+                    DataYear.ANIME_NYC_2024,
+                    DataYear.ANIME_NYC_2025,
+                        -> Unit // Didn't track form submissions
+                    DataYear.ANIME_EXPO_2026 -> {
+                        this += "$tableName.verifiedArtist = 1"
+                    }
+                }
+            }
+
             if (year != DataYear.ANIME_EXPO_2023 && year != DataYear.ANIME_EXPO_2024) {
                 val commissionFlags = filterParams.commissionsIn.fold(0) { flags, type ->
                     val index = CommissionType.entries.indexOf(type)

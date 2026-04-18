@@ -64,7 +64,8 @@
     <string name="alley_image_fullscreen_content_description">Fullscreen image</string>
     <string name="alley_filter_show_grid_by_default">Grid by default</string>
     <string name="alley_filter_show_random_catalog_image">Random catalog image</string>
-    <string name="alley_filter_show_only_confirmed_tags">Only confirmed tags</string>
+    <string name="alley_filter_show_only_confirmed_tags">Show only confirmed tags</string>
+    <string name="alley_filter_show_only_verified_artists">Show only verified artists</string>
     <string name="alley_filter_show_outdated_catalogs">Show outdated catalogs</string>
     <string name="alley_filter_hide_favorited">Hide favorited</string>
     <string name="alley_filter_hide_ignored">Hide ignored (long press)</string>
@@ -150,6 +151,10 @@
     <string name="alley_artist_commission_online">Online</string>
     <string name="alley_artist_commission_online_tooltip">Artist may take online commissions, usually for pickup at con, but has not specified details</string>
     <string name="alley_artist_commission_icon_content_description">Commissions</string>
+
+    <string name="alley_artist_verified">Verified artist</string>
+    <string name="alley_artist_verified_content_description">Verified artist icon</string>
+    <string name="alley_artist_verified_explanation">Artist has verified and submitted their own data.\nThank you so much!</string>
 
     <string name="alley_stamp_rally_column_booth">Booth</string>
     <string name="alley_stamp_rally_column_fandom">Fandom</string>

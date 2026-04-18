@@ -48,6 +48,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_i
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_verified_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_outdated_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_chip_state_content_description
@@ -419,6 +420,14 @@ class ArtistSortFilterController(
         allowClear = true,
     )
 
+    val showOnlyVerifiedArtists = settings.showOnlyVerifiedArtists
+    val showOnlyVerifiedArtistsSection = SortFilterSectionState.SwitchBySetting(
+        title = Res.string.alley_filter_show_only_verified_artists,
+        property = showOnlyVerifiedArtists,
+        default = false,
+        allowClear = true,
+    )
+
     val showOutdatedCatalogs = settings.showOutdatedCatalogs
     val showOutdatedCatalogsSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_show_outdated_catalogs,
@@ -461,6 +470,7 @@ class ArtistSortFilterController(
                 gridByDefaultSection,
                 randomCatalogImageSection,
                 showOnlyConfirmedTagsSection.takeIf { allowSettingsBasedToggles },
+                showOnlyVerifiedArtistsSection,
                 showOutdatedCatalogsSection,
                 hideFavoritedSection.takeIf { allowHideFavorited },
                 hideIgnoredSection,
@@ -493,6 +503,7 @@ class ArtistSortFilterController(
         exhibitorTagsIn,
         showOnlyWithCatalog,
         showOnlyConfirmedTags,
+        showOnlyVerifiedArtists,
         showOutdatedCatalogs,
         hideFavorited,
         hideIgnored,
@@ -508,9 +519,10 @@ class ArtistSortFilterController(
             exhibitorTagsIn = it[7] as Set<String>,
             showOnlyWithCatalog = it[8] as Boolean,
             showOnlyConfirmedTags = it[9] as Boolean,
-            showOutdatedCatalogs = it[10] as Boolean,
-            hideFavorited = it[11] as Boolean,
-            hideIgnored = it[12] as Boolean,
+            showOnlyVerifiedArtists = it[10] as Boolean,
+            showOutdatedCatalogs = it[11] as Boolean,
+            hideFavorited = it[12] as Boolean,
+            hideIgnored = it[13] as Boolean,
         )
     }
 
@@ -523,6 +535,7 @@ class ArtistSortFilterController(
     fun clear() {
         sections.value.forEach { it.clear() }
         showOnlyConfirmedTagsSection.clear()
+        showOnlyVerifiedArtistsSection.clear()
         hideFavoritedSection.clear()
     }
 
@@ -536,6 +549,7 @@ class ArtistSortFilterController(
         val exhibitorTagsIn: Set<String>,
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
+        val showOnlyVerifiedArtists: Boolean,
         val showOutdatedCatalogs: Boolean,
         val hideFavorited: Boolean,
         val hideIgnored: Boolean,

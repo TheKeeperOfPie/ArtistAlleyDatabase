@@ -140,6 +140,7 @@ class ArtistSearchViewModel(
                         exhibitorTagsIn = emptySet(),
                         showOnlyWithCatalog = false,
                         showOnlyConfirmedTags = false,
+                        showOnlyVerifiedArtists = false,
                         showOutdatedCatalogs = false,
                         hideFavorited = false,
                         hideIgnored = false,

@@ -18,6 +18,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -69,6 +70,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.RadioButton
@@ -521,17 +523,26 @@ fun IconWithTooltip(
     imageVector: ImageVector,
     tooltipText: String,
     contentDescription: String? = tooltipText,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
 ) {
+    val tooltipState = rememberTooltipState()
+    val scope = rememberCoroutineScope()
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(tooltipText) } },
-        state = rememberTooltipState(),
+        tooltip = { PlainTooltip { Text(tooltipText, textAlign = TextAlign.Center) } },
+        state = tooltipState,
         modifier = modifier,
     ) {
         Icon(
             imageVector = imageVector,
             contentDescription = contentDescription,
+            tint = tint,
+            modifier = Modifier.clickable {
+                scope.launch {
+                    tooltipState.show(MutatePriority.UserInput)
+                }
+            }
         )
     }
 }

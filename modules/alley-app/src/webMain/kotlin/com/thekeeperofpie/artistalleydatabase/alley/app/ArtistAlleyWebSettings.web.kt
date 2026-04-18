@@ -86,6 +86,7 @@ class ArtistAlleyWebSettings(
     override val showRandomCatalogImage by registerBoolean(false)
     override val showOnlyConfirmedTags by registerBoolean(false)
     override val showOnlyWithCatalog by registerBoolean(false)
+    override val showOnlyVerifiedArtists by registerBoolean(false)
     override val forceOneDisplayColumn by registerBoolean(false)
     override val dataYear by register(
         serialize = { it.serializedName },

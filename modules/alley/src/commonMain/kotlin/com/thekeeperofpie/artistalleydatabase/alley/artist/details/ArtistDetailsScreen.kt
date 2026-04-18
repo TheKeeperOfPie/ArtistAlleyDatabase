@@ -68,6 +68,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_action_is_this_you
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_year
@@ -97,6 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
@@ -276,11 +279,25 @@ object ArtistDetailsScreen {
             } else {
                 item("artistName") {
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        SelectableInfoText(
-                            stringResource(Res.string.alley_artist_details_artist_name),
-                            artist.name,
-                            showDividerAbove = false,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            SelectableInfoText(
+                                stringResource(Res.string.alley_artist_details_artist_name),
+                                artist.name,
+                                showDividerAbove = false,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            if (artist.verifiedArtist) {
+                                Box(Modifier.padding(16.dp)) {
+                                    IconWithTooltip(
+                                        imageVector = Icons.Default.Verified,
+                                        tooltipText = stringResource(Res.string.alley_artist_verified_explanation),
+                                        contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -574,9 +591,10 @@ object ArtistDetailsScreen {
     private fun SelectableInfoText(
         label: String,
         body: String?,
+        modifier: Modifier = Modifier,
         showDividerAbove: Boolean = true,
     ) {
-        SelectionContainer {
+        SelectionContainer(modifier = modifier) {
             Column {
                 InfoText(label, body, showDividerAbove)
             }

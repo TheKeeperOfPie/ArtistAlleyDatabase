@@ -1,0 +1,2 @@
+getVerifiedArtistIds:
+SELECT DISTINCT artistId FROM artistFormEntryHistory;

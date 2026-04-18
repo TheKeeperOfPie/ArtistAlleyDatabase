@@ -24,8 +24,8 @@ tasks.withType<KotlinCompile>().configureEach {
 
 sqldelight {
     databases {
-        create("BuildLogicDatabase") {
-            packageName.set("com.thekeeperofpie.artistalleydatabase.build_logic")
+        create("BuildLogicEditDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.build_logic.edit")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             srcDirs(
                 project.layout.projectDirectory
@@ -35,7 +35,17 @@ sqldelight {
                 project.layout.projectDirectory
                     .dir("../modules/alley/user/src/commonMain/sqldelight"),
                 project.layout.projectDirectory
-                    .dir("src/main/sqldelight"),
+                    .dir("src/main/sqldelight/edit"),
+            )
+        }
+        create("BuildLogicFormDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.build_logic.form")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
+            srcDirs(
+                project.layout.projectDirectory
+                    .dir("../modules/alley/form/data/src/commonMain/sqldelight"),
+                project.layout.projectDirectory
+                    .dir("src/main/sqldelight/form"),
             )
         }
     }

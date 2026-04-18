@@ -31,7 +31,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     abstract val outputFile: RegularFileProperty
 
     init {
-        snapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/animeExpo2026"))
+        snapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/animeExpo2026/edit"))
         outputFile.convention(layout.buildDirectory.file("generated/changelog.json"))
     }
 
@@ -43,6 +43,12 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         val beforeDatabaseFile = temporaryDir.resolve("before.sqlite")
         val afterDatabaseFile = temporaryDir.resolve("after.sqlite")
         val diffs = snapshotsDirectory.get().asFileTree.files
+            .sortedBy {
+                it.nameWithoutExtension
+                    .replace("_", ":")
+                    .replace(";", ":")
+                    .let(Instant::parse)
+            }
             .windowed(size = 2, step = 1)
             .flatMap { (beforeSnapshot, afterSnapshot) ->
                 try {
@@ -59,8 +65,8 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     ).forEach(::verifyDelete)
 
                     // First, create and immediately close the databases to initialize the schemas
-                    Utils.createDatabase(beforeDatabaseFile).first.close()
-                    Utils.createDatabase(afterDatabaseFile).first.close()
+                    Utils.createEditDatabase(beforeDatabaseFile).first.close()
+                    Utils.createEditDatabase(afterDatabaseFile).first.close()
 
                     fun filterSnapshot(source: File, target: File) {
                         target.writer().use { writer ->
@@ -84,10 +90,10 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                         return@flatMap emptyList()
                     }
                     val beforeDatabase =
-                        Utils.createDatabase(beforeDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                        Utils.createEditDatabase(beforeDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
                             .executeAsList()
                     val afterDatabase =
-                        Utils.createDatabase(afterDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                        Utils.createEditDatabase(afterDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
                             .executeAsList()
 
                     val date = afterSnapshot.nameWithoutExtension

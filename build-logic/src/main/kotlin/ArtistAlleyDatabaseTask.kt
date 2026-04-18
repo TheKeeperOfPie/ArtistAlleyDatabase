@@ -1,12 +1,12 @@
-import Utils.createDatabase
+import Utils.createEditDatabase
 import app.cash.sqldelight.Query
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
-import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
-import com.thekeeperofpie.artistalleydatabase.buildlogic.MutationQueries
+import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -35,9 +35,12 @@ import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlin.io.copyTo
 import kotlin.io.inputStream
+import kotlin.io.nameWithoutExtension
 import kotlin.io.resolve
 import kotlin.io.writeText
+import kotlin.time.Instant
 import kotlin.use
+import kotlin.uuid.Uuid
 
 @CacheableTask
 abstract class ArtistAlleyDatabaseTask : DefaultTask() {
@@ -91,7 +94,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 "Failed to delete $databaseFile, manually delete to re-process inputs"
             )
         } else {
-            var (driver, database) = createDatabase(databaseFile)
+            var (driver, database) = createEditDatabase(databaseFile)
             driver.close()
 
             listOf("artists", "stampRallies")
@@ -106,7 +109,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
             }
 
-            val pair = createDatabase(databaseFile)
+            val pair = createEditDatabase(databaseFile)
             driver = pair.first
             database = pair.second
 
@@ -312,10 +315,37 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private suspend fun finalizeAnimeExpo2026(
-        database: BuildLogicDatabase,
+        database: BuildLogicEditDatabase,
         imageCacheDir: File,
         embedCache: EmbedCache,
     ) {
+        val verifiedArtistIds =
+            inputsDirectory.dir("snapshots/animeExpo2026/form").get().asFile.listFiles()
+                .maxByOrNull {
+                    Instant.parse(
+                        it.nameWithoutExtension
+                            .replace("_", ":")
+                            .replace(";", ":")
+                    )
+                }
+                ?.let { snapshotFile ->
+                    val file = temporaryDir.resolve("animeExpo2026Form.sqlite")
+                    // First, create and immediately close the databases to initialize the schemas
+                    Utils.createFormDatabase(file).first.close()
+
+                    if (!Utils.readSqlFile(file, snapshotFile)) {
+                        logger.error("Failed to apply before ${snapshotFile.absolutePath}")
+                        return@let emptyList()
+                    }
+                    val (driver, database) = Utils.createFormDatabase(file)
+                    driver.use {
+                        database.verifiedQueries.getVerifiedArtistIds().executeAsList()
+                    }.also {
+                        file.delete()
+                    }
+                }
+                .orEmpty()
+
         database.mutationQueries.getAllArtistEntryAnimeExpo2026()
             .executeAsList()
             .forEach { artist ->
@@ -339,7 +369,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 val updatedImages = artist.images.map { original ->
                     images.first { it.name.contains(original.name) }
                 }
-                val embeds = (artist.portfolioLinks + socialLinks + storeLinks + artist.commissions)
+                val embeds = (artist.portfolioLinks + socialLinks + storeLinks +
+                        artist.commissions.filter { it.startsWith("http") })
                     .mapNotNull {
                         val (link, catalogImage) = embedCache.getEmbedCatalogImage(it)
                             ?: return@mapNotNull null
@@ -360,6 +391,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         commissionFlags = commissionFlags,
                         images = updatedImages,
                         embeds = embeds,
+                        verifiedArtist = verifiedArtistIds.contains(Uuid.parse(artist.id)),
                     )
                 ).await()
             }
@@ -389,7 +421,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
 
     private fun <T : Any> fixLegacyArtistImages(
-        database: BuildLogicDatabase,
+        database: BuildLogicEditDatabase,
         imageCacheDir: File,
         dataYear: DataYear,
         entries: Query<T>,
@@ -405,7 +437,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun <T : Any> fixLegacyRallyImages(
-        database: BuildLogicDatabase,
+        database: BuildLogicEditDatabase,
         imageCacheDir: File,
         dataYear: DataYear,
         entries: Query<T>,
@@ -428,7 +460,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
     }
 
-    private fun addArtistChangelog(database: BuildLogicDatabase) {
+    private fun addArtistChangelog(database: BuildLogicEditDatabase) {
         val file = inputChangelog.get().asFile
         if (!file.exists()) return
         val diffs = file.inputStream().use {
@@ -453,7 +485,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun fixLegacyArtistImages(database: BuildLogicDatabase, imageCacheDir: File) {
+    private fun fixLegacyArtistImages(database: BuildLogicEditDatabase, imageCacheDir: File) {
         fixLegacyArtistImages(
             database = database,
             imageCacheDir = imageCacheDir,
@@ -631,7 +663,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun buildArtistConnections(database: BuildLogicDatabase): ArtistTagConnections {
+    private fun buildArtistConnections(database: BuildLogicEditDatabase): ArtistTagConnections {
         val connections = ArtistTagConnections()
 
         // ANIME_EXPO_2023 skipped because it didn't have tags
@@ -746,7 +778,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun buildStampRallyConnections(database: BuildLogicDatabase) {
+    private fun buildStampRallyConnections(database: BuildLogicEditDatabase) {
         database.stampRallyEntry2023Queries.getAllEntries().executeAsList().forEach {
             val stampRallyId = it.id
             it.tables
@@ -780,7 +812,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun updateSeriesInferredConfirmedCounts(
-        database: BuildLogicDatabase,
+        database: BuildLogicEditDatabase,
         artistTagConnections: ArtistTagConnections,
     ) {
         database.seriesQueries.getSeries().executeAsList().forEach {
@@ -860,7 +892,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun updateMerchYearFlags(
-        database: BuildLogicDatabase,
+        database: BuildLogicEditDatabase,
         artistTagConnections: ArtistTagConnections,
     ) {
         database.merchQueries.getMerch().executeAsList().forEach {
@@ -873,7 +905,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     // Copied from ArtistInference since it isn't accessible here
-    private class ArtistInferenceProvider(database: BuildLogicDatabase, artistId: String) {
+    private class ArtistInferenceProvider(database: BuildLogicEditDatabase, artistId: String) {
         private val animeExpo2023 by lazy {
             database.artistEntry2023Queries.getEntry(artistId).executeAsOneOrNull()
         }

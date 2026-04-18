@@ -25,6 +25,7 @@ interface ArtistAlleySettings {
     val showRandomCatalogImage: MutableStateFlow<Boolean>
     val showOnlyConfirmedTags: MutableStateFlow<Boolean>
     val showOnlyWithCatalog: MutableStateFlow<Boolean>
+    val showOnlyVerifiedArtists: MutableStateFlow<Boolean>
     val forceOneDisplayColumn: MutableStateFlow<Boolean>
     val dataYear: MutableStateFlow<DataYear>
     val languageOption: MutableStateFlow<AniListLanguageOption>

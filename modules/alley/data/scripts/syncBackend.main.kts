@@ -43,7 +43,7 @@ if (PULL_REMOTE) {
             .resolve("$snapshotTime.sql")
     )
     editExportFile.copyTo(
-        dataDir.resolve("inputs/snapshots/animeExpo2026")
+        dataDir.resolve("inputs/snapshots/animeExpo2026/edit")
             .apply { mkdirs() }
             .resolve("$snapshotTime.sql")
     )
@@ -58,6 +58,11 @@ if (PULL_REMOTE) {
     )
     formExportFile.copyTo(
         buildDir.resolve("snapshots/form")
+            .apply { mkdirs() }
+            .resolve("$snapshotTime.sql")
+    )
+    formExportFile.copyTo(
+        dataDir.resolve("inputs/snapshots/animeExpo2026/form")
             .apply { mkdirs() }
             .resolve("$snapshotTime.sql")
     )
