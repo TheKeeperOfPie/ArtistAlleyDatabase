@@ -54,6 +54,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_catalog
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_last_updated
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed_icon_content_description
@@ -109,6 +110,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHea
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
@@ -538,6 +540,38 @@ object ArtistDetailsScreen {
                         state = userNotesTextState,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
+                }
+
+                item("artistFooter") {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.animateItem()
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    ) {
+                        val lastEditTime = artist.lastEditTime
+                        if (lastEditTime != null) {
+                            TooltipBox(
+                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                    TooltipAnchorPosition.Above
+                                ),
+                                state = rememberTooltipState(),
+                                tooltip = {
+                                    Text(LocalDateTimeFormatter.current.formatDateTime(lastEditTime))
+                                },
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        Res.string.alley_artist_details_last_updated,
+                                        LocalDateTimeFormatter.current.formatRemainingTime(
+                                            lastEditTime
+                                        ),
+                                    ),
+                                    style = MaterialTheme.typography.labelSmallEmphasized,
+                                )
+                            }
+                        }
+                    }
                 }
 
                 item("artistButtons") {

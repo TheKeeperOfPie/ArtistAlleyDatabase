@@ -16,6 +16,8 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import org.gradle.api.DefaultTask
@@ -114,7 +116,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             database = pair.second
 
             runBlocking {
-                addArtistChangelog(database)
+                val artistLastEditDates = addArtistChangelog(database)
                 fixLegacyArtistImages(database, imageCacheDir)
 
                 val embedCache = EmbedCache(
@@ -124,7 +126,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     workingImagesFolder = outputMetadata.dir("embedImages")
                         .get().asFile.apply { mkdir() },
                 )
-                finalizeAnimeExpo2026(database, imageCacheDir, embedCache)
+                finalizeAnimeExpo2026(
+                    database = database,
+                    imageCacheDir = imageCacheDir,
+                    embedCache = embedCache,
+                    artistLastEditTimes = artistLastEditDates[DataYear.ANIME_EXPO_2026].orEmpty()
+                )
 
                 @Suppress("NewApi")
                 Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
@@ -318,6 +325,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         database: BuildLogicEditDatabase,
         imageCacheDir: File,
         embedCache: EmbedCache,
+        artistLastEditTimes: Map<Uuid, LocalDate>,
     ) {
         val verifiedArtistIds =
             inputsDirectory.dir("snapshots/animeExpo2026/form").get().asFile.listFiles()
@@ -380,6 +388,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     .distinctBy { it.third.name }
                     .associate { it.first to it.third }
 
+                val artistId = Uuid.parse(artist.id)
+
+                // Don't expose raw edit times from backend, just mirror the changelog dates
+                val lastEditTime = artistLastEditTimes[artistId]?.atStartOfDayIn(TimeZone.UTC)
                 database.mutationQueries.updateArtistEntryAnimeExpo2026(
                     artist.copy(
                         socialLinks = socialLinks,
@@ -391,7 +403,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         commissionFlags = commissionFlags,
                         images = updatedImages,
                         embeds = embeds,
-                        verifiedArtist = verifiedArtistIds.contains(Uuid.parse(artist.id)),
+                        lastEditTime = lastEditTime,
+                        verifiedArtist = verifiedArtistIds.contains(artistId),
                     )
                 ).await()
             }
@@ -460,9 +473,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
     }
 
-    private fun addArtistChangelog(database: BuildLogicEditDatabase) {
+    private fun addArtistChangelog(database: BuildLogicEditDatabase): Map<DataYear, Map<Uuid, LocalDate>> {
         val file = inputChangelog.get().asFile
-        if (!file.exists()) return
+        if (!file.exists()) return emptyMap()
         val diffs = file.inputStream().use {
             Json.decodeFromStream<List<ArtistDiff>>(it)
         }
@@ -483,6 +496,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 )
             }
         }
+
+        return mapOf(DataYear.ANIME_EXPO_2026 to diffs.groupBy { it.artistId }
+            .mapValues { it.value.maxBy { it.date }.date })
     }
 
     private fun fixLegacyArtistImages(database: BuildLogicEditDatabase, imageCacheDir: File) {
