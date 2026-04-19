@@ -1,3 +1,4 @@
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
@@ -42,6 +43,9 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         val afterSnapshotFilteredFile = temporaryDir.resolve("after.sql")
         val beforeDatabaseFile = temporaryDir.resolve("before.sqlite")
         val afterDatabaseFile = temporaryDir.resolve("after.sqlite")
+
+        val lastEditTimes = mutableMapOf<Uuid, Instant>()
+
         val diffs = snapshotsDirectory.get().asFileTree.files
             .sortedBy {
                 it.nameWithoutExtension
@@ -90,16 +94,17 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                         return@flatMap emptyList()
                     }
                     val beforeDatabase =
-                        Utils.createEditDatabase(beforeDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                        Utils.createEditDatabase(beforeDatabaseFile).second.mutationQueries.getAllArtistEntryAnimeExpo2026()
                             .executeAsList()
                     val afterDatabase =
-                        Utils.createEditDatabase(afterDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                        Utils.createEditDatabase(afterDatabaseFile).second.mutationQueries.getAllArtistEntryAnimeExpo2026()
                             .executeAsList()
 
-                    val date = afterSnapshot.nameWithoutExtension
+                    val instant = afterSnapshot.nameWithoutExtension
                         .replace("_", ":")
                         .replace(";", ":")
                         .let(Instant::parse)
+                    val date = instant
                         .toLocalDateTime(TimeZone.UTC)
                         .date
 
@@ -107,6 +112,9 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                         .map { afterArtist -> beforeDatabase.find { it.id == afterArtist.id } to afterArtist }
                         .mapNotNull { (beforeArtist, afterArtist) ->
                             val artistId = Uuid.parse(afterArtist.id)
+                            if (beforeArtist != afterArtist) {
+                                lastEditTimes[artistId] = instant
+                            }
                             val seriesInferred = afterArtist.seriesInferred.toMutableSet()
                             val seriesConfirmed = afterArtist.seriesConfirmed.toMutableSet()
                             val merchInferred = afterArtist.merchInferred.toMutableSet()
@@ -141,7 +149,13 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             }
 
         outputFile.get().asFile.outputStream().use {
-            Json.encodeToStream(diffs, it)
+            Json.encodeToStream(
+                value = ArtistChangelog(
+                    additions = diffs,
+                    lastEditTimes = mapOf(DataYear.ANIME_EXPO_2026 to lastEditTimes)
+                ),
+                stream = it,
+            )
         }
     }
 }

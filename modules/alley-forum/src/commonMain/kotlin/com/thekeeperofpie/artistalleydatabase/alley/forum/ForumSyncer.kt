@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.toArgb
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.hoc081098.flowext.flowFromSuspend
 import com.kmpalette.color
 import com.kmpalette.palette.graphics.Palette
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
@@ -32,14 +33,21 @@ import com.thekeeperofpie.artistalleydatabase.discord.MessageComponent
 import com.thekeeperofpie.artistalleydatabase.discord.Thread
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
 import java.nio.file.Files
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
 
@@ -51,6 +59,15 @@ internal class ForumSyncer(private val environment: Environment) {
     private val THROTTLE_DELAY = 3.seconds
 
     private val api = DiscordApi(environment)
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private val database = flowFromSuspend {
+        AlleySqlDatabase(
+            driver = createDriver(),
+            artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
+            seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
+        )
+    }.stateIn(GlobalScope, SharingStarted.Eagerly, null)
 
     suspend fun verifyChannel() {
         val channel = api.getChannel(environment.forumChannelId)
@@ -128,14 +145,18 @@ internal class ForumSyncer(private val environment: Environment) {
         }
     }
 
+    suspend fun artistsChangedSince(date: Instant) = withContext(Dispatchers.IO) {
+        database.filterNotNull().first()
+            .artistEntryAnimeExpo2026Queries
+            .getArtists()
+            .awaitAsList()
+            .filter { it.lastEditTime?.let { it >= date } == true }
+            .mapNotNull { it.booth }
+            .mapNotNull(Booth::fromStringOrNull)
+    }
+
     suspend fun syncThreads(range: ClosedRange<Booth>? = null) = withContext(Dispatchers.IO) {
-        val database = AlleySqlDatabase(
-            driver = createDriver(),
-            artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
-            seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
-        )
-        val series = database.seriesEntryQueries.getSeries().awaitAsList()
-            .associate { it.id to it.toSeriesInfo() }
+        val database = database.filterNotNull().first()
         val artists = database.artistEntryAnimeExpo2026Queries.getArtists()
             .awaitAsList()
             .filterNot { it.booth.isNullOrBlank() }
@@ -144,102 +165,105 @@ internal class ForumSyncer(private val environment: Environment) {
                 val booth = it.booth?.let(Booth::fromStringOrNull)
                 booth != null && booth in range
             }
-            .map { Artist.fromEntry(it, series) }
-            .shuffled()
+        syncThreads(artists)
+    }
 
-        val threadsList = api.getThreads(environment.forumChannelId)
-        println("Threads = ${threadsList.threads.map { it.name }}")
-        if (threadsList.hasMore) {
-            // TODO: Not sure if this is required
-            throw UnsupportedOperationException("Threads has more, unhandled")
-        }
-
-        val threads = threadsList.threads
+    suspend fun syncThreads(booths: Set<Booth>) = withContext(Dispatchers.IO) {
+        val database = database.filterNotNull().first()
+        val artists = database.artistEntryAnimeExpo2026Queries.getArtists()
+            .awaitAsList()
+            .filterNot { it.booth.isNullOrBlank() }
             .filter {
-                val flags = it.flags
-                flags == null || (flags.flags and ChannelFlag.PINNED.flag) == 0
+                val booth = it.booth?.let(Booth::fromStringOrNull)
+                booth != null && booth in booths
             }
-            .filter {
-                val threadBooth = it.name?.substringBefore("-")?.trim()
-                    ?.let(Booth::fromStringOrNull)
-                threadBooth == null || range == null || threadBooth in range
-            }
-            .map(::ThreadWrapper)
-            .toMutableSet()
+        syncThreads(artists)
+    }
 
-        val missing = mutableListOf<Artist>()
-        val changed = mutableListOf<Pair<Artist, ThreadWithContent>>()
-        artists.forEach { artist ->
-            val thread = threads.find {
-                it.booth == artist.booth && it.artistName == artist.entry.name
+    private suspend fun syncThreads(artistEntries: List<ArtistEntryAnimeExpo2026>) =
+        withContext(Dispatchers.IO) {
+            val database = database.filterNotNull().first()
+            val series = database.seriesEntryQueries.getSeries().awaitAsList()
+                .associate { it.id to it.toSeriesInfo() }
+            val artists = artistEntries.map { Artist.fromEntry(it, series) }
+
+            val threadsList = api.getThreads(environment.forumChannelId)
+            println("Threads = ${threadsList.threads.map { it.name }}")
+            if (threadsList.hasMore) {
+                // TODO: Not sure if this is required
+                throw UnsupportedOperationException("Threads has more, unhandled")
             }
-            threads.remove(thread)
-            if (thread == null) {
-                missing += artist
-            } else {
+
+            val threads = threadsList.threads
+                .filter {
+                    val flags = it.flags
+                    flags == null || (flags.flags and ChannelFlag.PINNED.flag) == 0
+                }
+                .map(::ThreadWrapper)
+                .toMutableSet()
+
+            val missing = mutableListOf<Artist>()
+            val changed = mutableListOf<Pair<Artist, ThreadWithContent>>()
+            artists.forEach { artist ->
+                val thread = threads.find { it.booth == artist.booth }
+                threads.remove(thread)
+                if (thread == null) {
+                    missing += artist
+                } else {
+                    delay(THROTTLE_DELAY)
+                    println("Fetching ${thread.thread.name}")
+                    val (secondMessage, firstMessage) = api.getOldestThreadMessages(thread.thread.id)
+                    changed += artist to ThreadWithContent(thread, firstMessage, secondMessage)
+                }
+            }
+
+            missing.sortBy { it.entry.booth }
+            changed.sortBy { it.first.booth }
+
+            println("Missing = ${missing.map { it.threadTitle }}")
+            println("Changed = ${changed.map { it.first.threadTitle }}")
+
+            missing.forEach {
                 delay(THROTTLE_DELAY)
-                println("Fetching ${thread.thread.name}")
-                val (secondMessage, firstMessage) = api.getOldestThreadMessages(thread.thread.id)
-                changed += artist to ThreadWithContent(thread, firstMessage, secondMessage)
+                api.createThread(
+                    channelId = environment.forumChannelId,
+                    title = it.threadTitle,
+                    firstMessage = it.threadContent.first,
+                    secondMessage = it.threadContent.second,
+                    imageAttachments = it.threadContent.imageAttachments,
+                )
+                println("Created ${it.threadTitle}")
             }
-        }
 
-        missing.sortBy { it.entry.booth }
-        changed.sortBy { it.first.booth }
-
-        println("Missing = ${missing.map { it.threadTitle }}")
-        println("Changed = ${changed.map { it.first.threadTitle }}")
-        if (range == null) {
-            println("Removed = ${threads.map { it.thread.name }}")
-        }
-
-        missing.forEach {
-            delay(THROTTLE_DELAY)
-            api.createThread(
-                channelId = environment.forumChannelId,
-                title = it.threadTitle,
-                firstMessage = it.threadContent.first,
-                secondMessage = it.threadContent.second,
-                imageAttachments = it.threadContent.imageAttachments,
-            )
-            println("Created ${it.threadTitle}")
-        }
-
-        changed.forEach {
-            delay(THROTTLE_DELAY)
-            api.editMessage(
-                channelId = it.second.thread.thread.id,
-                messageId = it.second.firstMessage.id,
-                message = it.first.threadContent.first,
-                imageAttachments = it.first.threadContent.imageAttachments,
-            )
-            println("Edited ${it.second.firstMessage.id}")
-            delay(THROTTLE_DELAY)
+            changed.forEach {
+                delay(THROTTLE_DELAY)
+                api.editMessage(
+                    channelId = it.second.thread.thread.id,
+                    messageId = it.second.firstMessage.id,
+                    message = it.first.threadContent.first,
+                    imageAttachments = it.first.threadContent.imageAttachments,
+                )
+                println("Edited ${it.second.firstMessage.id}")
+                delay(THROTTLE_DELAY)
 //            api.editMessage(
 //                channelId = it.second.thread.thread.id,
 //                messageId = it.second.secondMessage.id,
 //                message = it.first.threadContent.second,
 //            )
 //            println("Edited ${it.second.secondMessage.id}")
-            println("Edited ${it.second.thread.thread.name}")
-            if (it.second.thread.thread.name != it.first.threadTitle) {
-                delay(THROTTLE_DELAY)
-                api.modifyThread(
-                    threadId = it.second.thread.thread.id,
-                    name = it.first.threadTitle
-                )
-                println("Updated ${it.second.thread.thread.name} -> ${it.first.threadTitle}")
+                println("Edited ${it.second.thread.thread.name}")
+                if (it.second.thread.thread.name != it.first.threadTitle) {
+                    delay(THROTTLE_DELAY)
+                    api.modifyThread(
+                        threadId = it.second.thread.thread.id,
+                        name = it.first.threadTitle
+                    )
+                    println("Updated ${it.second.thread.thread.name} -> ${it.first.threadTitle}")
+                }
             }
-        }
 
-        if (range == null) {
-            threads.forEach {
-                delay(THROTTLE_DELAY)
-                api.modifyThread(threadId = it.thread.id, archived = true)
-            }
+            println("Finished syncing threads")
         }
-        println("Finished syncing threads")
-    }
 
     private suspend fun createDriver(): SqlDriver = withContext(Dispatchers.IO) {
         val file = Files.createTempFile(null, ".sqlite").toFile()
@@ -544,14 +568,9 @@ internal class ForumSyncer(private val environment: Environment) {
     }
 
     private data class ThreadWrapper(val thread: Thread) {
-        val booth: Booth?
-        val artistName: String?
-
-        init {
-            val pieces = thread.name?.split("-")?.map { it.trim() }
-            booth = pieces?.firstOrNull()?.let(Booth::fromStringOrNull)
-            artistName = pieces?.getOrNull(1)
-        }
+        val booth = thread.name?.split("-")?.first()
+            ?.trim()
+            ?.let(Booth::fromStringOrNull)
     }
 
     private data class ThreadWithContent(

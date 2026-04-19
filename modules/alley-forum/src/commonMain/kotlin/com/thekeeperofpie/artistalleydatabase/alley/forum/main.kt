@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.thekeeperofpie.artistalleydatabase.alley.forum
 
 import androidx.compose.foundation.layout.Arrangement
@@ -18,16 +20,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLocale
@@ -35,7 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.time.Instant
 
 fun main() {
     application {
@@ -132,6 +141,33 @@ fun main() {
                                 } else {
                                     CircularProgressIndicator()
                                 }
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            val dateState = rememberDatePickerState()
+                            val artistsChanged by produceState(emptyList()) {
+                                snapshotFlow { dateState.selectedDateMillis }
+                                    .collectLatest {
+                                        dateState.selectedDateMillis
+                                            ?.let(Instant::fromEpochMilliseconds)
+                                            ?.let { forumSyncer.artistsChangedSince(it) }
+                                            ?.let { value = it }
+                                    }
+                            }
+                            Column(modifier = Modifier.widthIn(max = 400.dp)) {
+                                DatePicker(state = dateState)
+                                Text("Changed: $artistsChanged")
+                            }
+                            Button(onClick = {
+                                scope.launch {
+                                    forumSyncer.syncThreads(artistsChanged.toSet())
+                                }
+                            }) {
+                                Text("Sync artists")
                             }
                         }
 
