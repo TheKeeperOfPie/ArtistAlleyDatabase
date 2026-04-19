@@ -46,10 +46,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,6 +62,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_showing_fallback_short
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_notes_content_description
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
@@ -81,13 +85,9 @@ fun TableCell(
     }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
-    textColor: Color = if (table.image != null) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        table.section?.textColor?.copy(alpha = 0.33f)
-            ?.compositeOver(MaterialTheme.colorScheme.onSurface)
-            ?: MaterialTheme.colorScheme.onPrimaryContainer
-    },
+    textColor: Color = table.section?.textColor?.copy(alpha = 0.33f)
+        ?.compositeOver(MaterialTheme.colorScheme.onSurface)
+        ?: MaterialTheme.colorScheme.onPrimaryContainer,
     showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
@@ -106,19 +106,26 @@ fun TableCell(
             .clickable { showPopup = true }
     ) {
         val imageUri = table.image?.uri
-        if (showImages && imageUri != null) {
-            BoxWithConstraints {
-                val minSize = LocalDensity.current.run { 80.dp }
-                if (maxWidth > minSize && maxHeight > minSize) {
-                    AsyncImage(
-                        model = imageUri,
-                        contentScale = ContentScale.FillWidth,
-                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                        modifier = Modifier.fillMaxSize()
+        val showingImage = showImages && imageUri != null
+        if (showingImage) {
+            val density = LocalDensity.current
+            AsyncImage(
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(imageUri)
+                    .size(
+                        width = with(density) {
+                            (MapScreen.ITEM_WIDTH * MapScreen.MAX_ZOOM).roundToPx()
+                        },
+                        height = with(density) {
+                            (MapScreen.ITEM_HEIGHT * MapScreen.MAX_ZOOM).roundToPx()
+                        }
                     )
-                }
-            }
+                    .build(),
+                contentScale = ContentScale.Crop,
+                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
         var unfavoriteDialogEntry by remember {
@@ -137,7 +144,6 @@ fun TableCell(
                             mapViewModel.tableEntry(table.year, it)
                         }.ifEmpty { null }
                     }
-
                 }
             }
             Popup(
@@ -174,17 +180,36 @@ fun TableCell(
             },
         )
 
-        Text(
-            autoSize = TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = MaterialTheme.typography.titleLarge.fontSize,
-                stepSize = 1.sp,
-            ),
-            text = table.booth,
-            color = textColor,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 4.dp)
+        val autoSize = TextAutoSize.StepBased(
+            minFontSize = 8.sp,
+            maxFontSize = MaterialTheme.typography.titleLarge.fontSize,
+            stepSize = 1.sp,
         )
+        if (showingImage) {
+            val style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+            Text(
+                autoSize = autoSize,
+                text = table.booth,
+                color = Color.Black,
+                style = style.copy(drawStyle = Stroke(width = with(LocalDensity.current) { 2.sp.toPx() })),
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+            Text(
+                autoSize = autoSize,
+                text = table.booth,
+                color = Color.White,
+                style = style,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        } else {
+            Text(
+                autoSize = autoSize,
+                text = table.booth,
+                color = textColor,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        }
 
         if (table.hasNotes) {
             Icon(
@@ -208,7 +233,7 @@ fun HighlightedTableCell(
     } else {
         table.section?.color ?: MaterialTheme.colorScheme.primaryContainer
     }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
-    showImages: Boolean = true,
+    showImages: Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
     val borderWidth = if (highlight) 2.dp else 1.dp

@@ -23,8 +23,8 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -46,18 +46,38 @@ class MapViewModel(
         viewModelScope.launch(CustomDispatchers.Main) {
             // TODO: This is very inefficient to respond to favorites updates
             // TODO: Pass in DataYear
-            userEntryDao.getBoothsWithFavorites()
-                .map { (dataYear, booths) ->
-                    when (dataYear) {
-                        DataYear.ANIME_EXPO_2023,
-                        DataYear.ANIME_EXPO_2024,
-                        DataYear.ANIME_EXPO_2025,
-                            -> mapBooths(booths)
-                        DataYear.ANIME_EXPO_2026 -> mapAnimeExpo2026Booths(booths)
-                        DataYear.ANIME_NYC_2024 -> mapAnimeNyc2024Booths(booths)
-                        DataYear.ANIME_NYC_2025 -> mapAnimeNyc2025Booths(booths)
-                    }
+            combine(
+                userEntryDao.getBoothsWithFavorites(),
+                settings.showOutdatedCatalogs,
+                settings.showRandomCatalogImage,
+            ) { boothsWithFavorites, showOutdatedCatalogs, showRandomCatalogImage ->
+                val (dataYear, booths) = boothsWithFavorites
+                when (dataYear) {
+                    DataYear.ANIME_EXPO_2023,
+                    DataYear.ANIME_EXPO_2024,
+                    DataYear.ANIME_EXPO_2025,
+                        -> mapBooths(
+                        booths = booths,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
+                    DataYear.ANIME_EXPO_2026 -> mapAnimeExpo2026Booths(
+                        booths = booths,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
+                    DataYear.ANIME_NYC_2024 -> mapAnimeNyc2024Booths(
+                        booths = booths,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
+                    DataYear.ANIME_NYC_2025 -> mapAnimeNyc2025Booths(
+                        booths = booths,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
                 }
+            }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { tables ->
                     gridData = LoadingResult.success(
@@ -77,14 +97,17 @@ class MapViewModel(
         }
     }
 
-    private fun mapBooths(booths: List<BoothWithFavorite>): List<Table> {
+    private fun mapBooths(
+        booths: List<BoothWithFavorite>,
+        showOutdatedCatalogs: Boolean,
+        showRandomCatalogImage: Boolean,
+    ): List<Table> {
         @Suppress("UNCHECKED_CAST")
         val letterToBooths = (booths.groupBy { it.booth?.take(1) }
             .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
             .toList()
             .sortedBy { it.first }
         var currentIndex = 0
-        val showRandomCatalogImage = settings.showRandomCatalogImage.value
         return letterToBooths.mapIndexed { letterIndex, pair ->
             pair.second.groupBy { it.booth }
                 .mapNotNull { (booth, artists) ->
@@ -96,6 +119,7 @@ class MapViewModel(
                         // There's a physical gap not accounted for in the numbers between 41 and 42
                         gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
                         artists = artists,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
                         showRandomCatalogImage = showRandomCatalogImage,
                         section = Table.AnimeExpoSection.fromTableNumber(tableNumber),
                     )
@@ -117,18 +141,26 @@ class MapViewModel(
         gridX: Int,
         gridY: Int,
         artists: List<BoothWithFavorite>,
+        showOutdatedCatalogs: Boolean,
         showRandomCatalogImage: Boolean,
         section: Table.AnimeExpoSection? = null,
     ): Table {
         val primaryArtist = artists.first()
-        val images = if (primaryArtist.fallbackImageYear != null) {
-            emptyList()
-        } else {
+        val images = if (primaryArtist.fallbackImageYear != null && showOutdatedCatalogs) {
             AlleyImageUtils.getArtistImages(
-                year = primaryArtist.year,
+                year = primaryArtist.fallbackImageYear,
                 images = primaryArtist.images,
             )
+        } else {
+            AlleyImageUtils.getArtistImagesWithEmbedFallback(
+                year = primaryArtist.year,
+                images = primaryArtist.images
+                    .takeIf { primaryArtist.fallbackImageYear == null }
+                    .orEmpty(),
+                embeds = primaryArtist.embeds,
+            )
         }
+
         val imageIndex = if (showRandomCatalogImage) {
             images.indices.randomOrNull()
         } else {
@@ -200,13 +232,16 @@ class MapViewModel(
         return (letter - 'A') * 3 + offset - 1
     }
 
-    private fun mapAnimeNyc2024Booths(booths: List<BoothWithFavorite>): List<Table> {
+    private fun mapAnimeNyc2024Booths(
+        booths: List<BoothWithFavorite>,
+        showOutdatedCatalogs: Boolean,
+        showRandomCatalogImage: Boolean,
+    ): List<Table> {
         @Suppress("UNCHECKED_CAST")
         val letterToBooths = (booths.groupBy { it.booth?.take(1) }
             .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
             .toList()
             .sortedBy { it.first }
-        val showRandomCatalogImage = settings.showRandomCatalogImage.value
         return letterToBooths.mapIndexed { _, pair ->
             pair.second.groupBy { it.booth }
                 .mapNotNull { (booth, artists) ->
@@ -218,7 +253,8 @@ class MapViewModel(
                         gridX = animeNyc2024IndexX(letter, tableNumber),
                         gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1,
                         artists = artists,
-                        showRandomCatalogImage = showRandomCatalogImage
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        showRandomCatalogImage = showRandomCatalogImage,
                     )
                 }
         }.flatten()
@@ -263,13 +299,16 @@ class MapViewModel(
         return (letter - 'A') * 3 + offset - 1
     }
 
-    private fun mapAnimeNyc2025Booths(booths: List<BoothWithFavorite>): List<Table> {
+    private fun mapAnimeNyc2025Booths(
+        booths: List<BoothWithFavorite>,
+        showOutdatedCatalogs: Boolean,
+        showRandomCatalogImage: Boolean,
+    ): List<Table> {
         @Suppress("UNCHECKED_CAST")
         val letterToBooths = (booths.groupBy { it.booth?.take(1) }
             .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
             .toList()
             .sortedBy { it.first }
-        val showRandomCatalogImage = settings.showRandomCatalogImage.value
         return letterToBooths.mapIndexed { _, pair ->
             pair.second.groupBy { it.booth }
                 .mapNotNull { (booth, artists) ->
@@ -282,6 +321,7 @@ class MapViewModel(
                         gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) +
                                 (if (tableNumber > 16) 2 else 1),
                         artists = artists,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
                         showRandomCatalogImage = showRandomCatalogImage,
                     )
                 }
@@ -314,13 +354,16 @@ class MapViewModel(
         else -> 37
     }
 
-    private fun mapAnimeExpo2026Booths(booths: List<BoothWithFavorite>): List<Table> {
+    private fun mapAnimeExpo2026Booths(
+        booths: List<BoothWithFavorite>,
+        showOutdatedCatalogs: Boolean,
+        showRandomCatalogImage: Boolean,
+    ): List<Table> {
         @Suppress("UNCHECKED_CAST")
         val letterToBooths = (booths.groupBy { it.booth?.take(1) }
             .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
             .toList()
             .sortedBy { it.first }
-        val showRandomCatalogImage = settings.showRandomCatalogImage.value
         return letterToBooths.mapIndexed { _, pair ->
             pair.second.groupBy { it.booth }
                 .mapNotNull { (booth, artists) ->
@@ -332,6 +375,7 @@ class MapViewModel(
                         gridX = animeExpo2026IndexX(letter),
                         gridY = tableNumber,
                         artists = artists,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
                         showRandomCatalogImage = showRandomCatalogImage,
                     )
                 }

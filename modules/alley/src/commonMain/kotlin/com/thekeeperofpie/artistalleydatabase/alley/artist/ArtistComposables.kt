@@ -174,45 +174,48 @@ fun ArtistListRow(
                 )
             }
 
-            Text(
-                text = artist.name,
-                color = if (entry.artist.verifiedArtist) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                modifier = Modifier
-                    .conditionally(useSharedElements, Modifier.sharedElement("name", artist.id))
-                    .padding(
-                        start = if (artist.booth.isNullOrBlank()) 16.dp else 0.dp,
-                        top = 12.dp,
-                        bottom = 12.dp,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = artist.name,
+                    color = if (entry.artist.verifiedArtist) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .conditionally(useSharedElements, Modifier.sharedElement("name", artist.id))
+                        .padding(
+                            start = if (artist.booth.isNullOrBlank()) 16.dp else 0.dp,
+                            top = 12.dp,
+                            bottom = 12.dp,
+                        )
+                        .weight(1f, fill = false)
+                )
+
+                if (entry.artist.newArtist) {
+                    IconWithTooltip(
+                        imageVector = Icons.Default.FiberNew,
+                        tooltipText = stringResource(Res.string.alley_artist_new),
+                        contentDescription = stringResource(Res.string.alley_artist_new_content_description),
+                        modifier = Modifier.size(20.dp)
                     )
-            )
-
-            if (entry.artist.newArtist) {
-                Spacer(Modifier.width(4.dp))
-                IconWithTooltip(
-                    imageVector = Icons.Default.FiberNew,
-                    tooltipText = stringResource(Res.string.alley_artist_new),
-                    contentDescription = stringResource(Res.string.alley_artist_new_content_description),
-                    modifier = Modifier.size(20.dp)
-                )
-            } else if (entry.artist.verifiedArtist) {
-                Spacer(Modifier.width(4.dp))
-                IconWithTooltip(
-                    imageVector = Icons.Default.Verified,
-                    tooltipText = stringResource(Res.string.alley_artist_verified),
-                    contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(20.dp)
-                )
+                } else if (entry.artist.verifiedArtist) {
+                    IconWithTooltip(
+                        imageVector = Icons.Default.Verified,
+                        tooltipText = stringResource(Res.string.alley_artist_verified),
+                        contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
-
-            Spacer(Modifier.weight(1f))
-            Spacer(Modifier.width(16.dp))
 
             if (entry.artist.commissionModels.isNotEmpty()) {
                 IconWithTooltip(

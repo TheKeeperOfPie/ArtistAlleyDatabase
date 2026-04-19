@@ -71,7 +71,7 @@ object FavoritesMapScreen {
                     mapViewModel = mapViewModel,
                     table = table,
                     highlight = table.favorite,
-                    showImages = table.favorite,
+                    showImages = mapTransformState.showImages,
                     onArtistClick = onArtistClick,
                 )
             }

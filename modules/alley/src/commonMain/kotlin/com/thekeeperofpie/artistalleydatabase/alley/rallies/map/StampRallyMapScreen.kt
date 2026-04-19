@@ -57,6 +57,7 @@ object StampRallyMapScreen {
                     mapViewModel = mapViewModel,
                     table = it,
                     highlight = viewModel.artistTables.contains(it.booth),
+                    showImages = transformState.showImages,
                     onArtistClick = onArtistClick,
                 )
             }

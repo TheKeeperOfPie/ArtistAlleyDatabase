@@ -64,8 +64,10 @@ import kotlin.math.abs
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 object MapScreen {
 
-    private val itemWidth = 80.dp
-    private val itemHeight = 64.dp
+    const val MAX_ZOOM: Float = 5f
+
+    val ITEM_WIDTH = 80.dp
+    val ITEM_HEIGHT = 64.dp
 
     @Composable
     operator fun invoke(
@@ -141,15 +143,16 @@ object MapScreen {
             val contentPaddingPixels = density.run { 32.dp.toPx() }
             val bottomContentPaddingPixels = density.run { bottomContentPadding.toPx() }
 
-            val baseItemWidth = density.run { itemWidth.toPx() }
-            val baseItemHeight = density.run { itemHeight.toPx() }
+            val baseItemWidth = density.run { ITEM_WIDTH.toPx() }
+            val baseItemHeight = density.run { ITEM_HEIGHT.toPx() }
             val (width, height) = transformState.size
             val baseMaxX = ((gridData.maxX + 1) * baseItemWidth)
                 .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
             val baseMaxY = ((gridData.maxY + 1) * baseItemHeight + bottomContentPaddingPixels)
                 .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
             val newScale = Snapshot.withMutableSnapshot {
-                transformState.scaleRange = (width / baseMaxX).coerceAtLeast(height / baseMaxY)..3f
+                transformState.scaleRange =
+                    (width / baseMaxX).coerceAtLeast(height / baseMaxY)..transformState.scaleRange.endInclusive
                 transformState.scale.coerceIn(transformState.scaleRange)
                     .also { transformState.scale = it }
             }
@@ -392,8 +395,7 @@ object MapScreen {
             .filter { (index, table) ->
                 val offsetX = table.gridX * itemWidthPixels
                 val offsetY = -table.gridY * itemHeightPixels
-                // Couldn't get X laziness to work
-                /*boundaries.rangeX.contains(offsetX) && */boundaries.rangeY.contains(offsetY)
+                boundaries.rangeX.contains(offsetX) && boundaries.rangeY.contains(offsetY)
             }
             .toList()
     }
@@ -414,8 +416,8 @@ object MapScreen {
         val extraWidth = itemWidthPixels * 2f
         val extraHeight = itemHeightPixels * 2f
         return LayoutBounds(
-            offset.x - extraWidth..maxWidth + extraWidth,
-            offset.y - extraHeight..maxHeight + extraHeight,
+            offset.x - extraWidth..offset.x + maxWidth + extraWidth,
+            offset.y - extraHeight..offset.y + maxHeight + extraHeight,
         )
     }
 
@@ -429,7 +431,7 @@ object MapScreen {
         initialTranslationX: Float = 0f,
         initialTranslationY: Float = 0f,
         initialScale: Float = 1f,
-        initialScaleRange: ClosedFloatingPointRange<Float> = 0.5f..3f,
+        initialScaleRange: ClosedFloatingPointRange<Float> = 0.5f..MAX_ZOOM,
     ) {
         var scaleRange by mutableStateOf(initialScaleRange)
         var size by mutableStateOf(IntSize(0, 0))
@@ -440,6 +442,8 @@ object MapScreen {
         var scale by mutableFloatStateOf(initialScale)
 
         var initialized = initialTranslationY != 0f
+
+        val showImages get() = scale > 3f
 
         suspend fun updateScale(
             newRawScale: Float,
