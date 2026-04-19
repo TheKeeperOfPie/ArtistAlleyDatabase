@@ -133,6 +133,7 @@ internal class ForumSyncer(private val environment: Environment) {
                 channelId = environment.forumChannelId,
                 title = "What is this?",
                 firstMessage = createMessage,
+                appliedTags = emptyList(),
                 imageAttachments = imageAttachments,
             )
         } else {
@@ -230,6 +231,11 @@ internal class ForumSyncer(private val environment: Environment) {
                     title = it.threadTitle,
                     firstMessage = it.threadContent.first,
                     secondMessage = it.threadContent.second,
+                    appliedTags = if (it.entry.verifiedArtist) {
+                        listOf(environment.verifiedArtistTagId.toLong())
+                    } else {
+                        emptyList()
+                    },
                     imageAttachments = it.threadContent.imageAttachments,
                 )
                 println("Created ${it.threadTitle}")

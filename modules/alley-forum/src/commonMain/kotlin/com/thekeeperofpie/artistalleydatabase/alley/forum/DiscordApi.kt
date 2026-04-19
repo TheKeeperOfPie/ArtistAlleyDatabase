@@ -84,6 +84,7 @@ internal class DiscordApi(private val environment: Environment) {
         title: String,
         firstMessage: CreateMessage,
         secondMessage: CreateMessage? = null,
+        appliedTags: List<Long>,
         imageAttachments: List<Pair<String, ByteArray>> = emptyList(),
     ) {
         val threadChannel = client.post("channels/$channelId/threads") {
@@ -97,6 +98,7 @@ internal class DiscordApi(private val environment: Environment) {
                         CreateThread(
                             name = title,
                             message = firstMessage,
+                            appliedTags = appliedTags,
                             attachments = imageAttachments.mapIndexed { index, attachment ->
                                 CreateMessage.Attachment(
                                     id = index,
