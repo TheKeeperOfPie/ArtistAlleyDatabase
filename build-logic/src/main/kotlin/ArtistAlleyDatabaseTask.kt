@@ -240,17 +240,27 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     merchConnections.values.forEach(mutationQueries::insertMerchConnection)
                 }
 
+                var shouldFail = false
+
+                fun logTagError(tagId: String, error: String) {
+                    // Split in future years and there is no valid fallback default
+                    if (tagId != "Honkai") {
+                        shouldFail = true
+                        logger.error(error)
+                    }
+                }
+
                 val allEnteredSeriesIds = seriesConnections.map { it.value.seriesId }.toSet()
                 val allValidSeriesIds =
                     database.seriesQueries.getSeries().executeAsList().map { it.id }.toSet()
                 val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
                 if (seriesDiff.isNotEmpty()) {
                     seriesDiff.forEach { badSeries ->
-                        logger.warn("Entered series does not match valid series: $badSeries")
+                        logTagError(badSeries, "Entered series does not match valid series: $badSeries")
                         val brokenArtists = seriesConnections
                             .filter { it.value.seriesId == badSeries }
                             .map { it.value.artistId }
-                        logger.warn("Broken artists: $brokenArtists")
+                        logTagError(badSeries, "Broken artists: $brokenArtists")
                     }
                 }
                 val seriesWithExtraSpaces = allValidSeriesIds.filter { it.endsWith(" ") }
@@ -263,17 +273,21 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     database.merchQueries.getMerch().executeAsList().map { it.name }.toSet()
                 val merchDiff = allEnteredMerchIds - allValidMerchIds
                 if (merchDiff.isNotEmpty()) {
-                    merchDiff.forEach { badSeries ->
-                        logger.warn("Entered merch does not match valid merch: $badSeries")
+                    merchDiff.forEach { badMerch ->
+                        logTagError(badMerch, "Entered merch does not match valid merch: $badMerch")
                         val brokenArtists = merchConnections
-                            .filter { it.value.merchId == badSeries }
+                            .filter { it.value.merchId == badMerch }
                             .map { it.value.artistId }
-                        logger.warn("Broken artists: $brokenArtists")
+                        logTagError(badMerch, "Broken artists: $brokenArtists")
                     }
                 }
                 val merchWithExtraSpaces = allValidMerchIds.filter { it.endsWith(" ") }
                 if (merchWithExtraSpaces.isNotEmpty()) {
                     logger.error("Merch with extra spaces: $merchWithExtraSpaces")
+                }
+
+                if (shouldFail) {
+                    throw IllegalStateException("Broken tags must be resolved")
                 }
 
                 database.mutationQueries.cleanUpForRelease().await()
