@@ -4,6 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -77,6 +78,7 @@ class SeriesAutocompleteSection(
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     savedStateHandle: SavedStateHandle,
+    private val showOnlyConfirmedTagsSection: (@Composable (SortFilterExpandedState) -> Unit)? = null,
 ) {
 
     private var query by mutableStateOf("")
@@ -122,6 +124,11 @@ class SeriesAutocompleteSection(
             ) {
                 Column(modifier = Modifier.animateContentSize()) {
                     if (expanded) {
+                        if (showOnlyConfirmedTagsSection != null) {
+                            Box(modifier = Modifier.padding(start = 32.dp)) {
+                                showOnlyConfirmedTagsSection(state)
+                            }
+                        }
                         var dropdownExpanded by remember { mutableStateOf(false) }
                         ExposedDropdownMenuBox(
                             expanded = dropdownExpanded,

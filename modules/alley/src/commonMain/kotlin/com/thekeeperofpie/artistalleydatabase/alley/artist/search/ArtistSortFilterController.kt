@@ -130,6 +130,21 @@ class ArtistSortFilterController(
         allowClear = false,
     )
 
+    val showOnlyConfirmedTags = if (allowSettingsBasedToggles) {
+        settings.showOnlyConfirmedTags
+    } else {
+        savedStateHandle.getMutableStateFlow(
+            key = "showOnlyConfirmedTags",
+            initialValue = settings.showOnlyConfirmedTags.value,
+        )
+    }
+    val showOnlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
+        title = Res.string.alley_filter_show_only_confirmed_tags,
+        property = showOnlyConfirmedTags,
+        default = false,
+        allowClear = true,
+    )
+
     private val seriesAutocompleteSection = SeriesAutocompleteSection(
         scope = scope,
         dispatchers = dispatchers,
@@ -137,6 +152,9 @@ class ArtistSortFilterController(
         seriesEntryDao = seriesEntryDao,
         seriesImagesStore = seriesImagesStore,
         savedStateHandle = savedStateHandle,
+        showOnlyConfirmedTagsSection = { state ->
+            showOnlyConfirmedTagsSection.Content(state, false)
+        }
     )
 
     // TODO: Consider storing this in a singleton instead?
@@ -175,6 +193,14 @@ class ArtistSortFilterController(
                 onExpandedChange = { state.expandedState[id] = it },
                 titleRes = Res.string.alley_merch_filter_label,
                 titleDropdownContentDescriptionRes = Res.string.alley_merch_filter_content_description,
+                header = {
+                    if (state.expandedState[id] == true) {
+                        // TODO: This padding isn't completely correct
+                        Box(modifier = Modifier.padding(start = 32.dp)) {
+                            showOnlyConfirmedTagsSection.Content(state, false)
+                        }
+                    }
+                },
                 tags = merchData.tags,
                 tagIdIn = merchIdIn,
                 tagIdNotIn = emptySet(),
@@ -398,21 +424,6 @@ class ArtistSortFilterController(
     private val randomCatalogImageSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_show_random_catalog_image,
         property = settings.showRandomCatalogImage,
-        default = false,
-        allowClear = true,
-    )
-
-    val showOnlyConfirmedTags = if (allowSettingsBasedToggles) {
-        settings.showOnlyConfirmedTags
-    } else {
-        savedStateHandle.getMutableStateFlow(
-            key = "showOnlyConfirmedTags",
-            initialValue = settings.showOnlyConfirmedTags.value,
-        )
-    }
-    val showOnlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
-        title = Res.string.alley_filter_show_only_confirmed_tags,
-        property = showOnlyConfirmedTags,
         default = false,
         allowClear = true,
     )
