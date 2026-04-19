@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
@@ -24,11 +25,12 @@ interface ArtistAlleySettings {
     val showGridByDefault: MutableStateFlow<Boolean>
     val showRandomCatalogImage: MutableStateFlow<Boolean>
     val showOnlyConfirmedTags: MutableStateFlow<Boolean>
-    val showOnlyWithCatalog: MutableStateFlow<Boolean>
-    val showOnlyVerifiedArtists: MutableStateFlow<Boolean>
     val forceOneDisplayColumn: MutableStateFlow<Boolean>
     val dataYear: MutableStateFlow<DataYear>
     val languageOption: MutableStateFlow<AniListLanguageOption>
     val showOutdatedCatalogs: MutableStateFlow<Boolean>
     val easterEggEnabled: MutableStateFlow<Boolean>
+
+    val artistTagsIn: MutableStateFlow<Set<ArtistTag>>
+    val artistTagsNotIn: MutableStateFlow<Set<ArtistTag>>
 }

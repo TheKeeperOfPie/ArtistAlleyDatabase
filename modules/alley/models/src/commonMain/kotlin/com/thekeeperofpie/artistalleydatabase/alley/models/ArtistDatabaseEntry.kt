@@ -33,6 +33,7 @@ interface ArtistDatabaseEntry {
     val lastEditor: String?
     val lastEditTime: Instant?
     val verifiedArtist: Boolean
+    val newArtist: Boolean
 
     @Serializable
     data class Impl(
@@ -60,6 +61,7 @@ interface ArtistDatabaseEntry {
         override val lastEditor: String?,
         override val lastEditTime: Instant?,
         override val verifiedArtist: Boolean,
+        override val newArtist: Boolean,
     ) : ArtistDatabaseEntry {
         override val images: List<CatalogImage>
             get() = _images.takeIf { fallbackImageYear == null }.orEmpty()
@@ -74,11 +76,13 @@ interface ArtistDatabaseEntry {
             before?.copy(
                 embeds = emptyMap(),
                 verifiedArtist = false,
+                newArtist = false,
                 lastEditTime = null,
                 lastEditor = null
             ) != after.copy(
                 embeds = emptyMap(),
                 verifiedArtist = false,
+                newArtist = false,
                 lastEditTime = null,
                 lastEditor = null
             )
@@ -101,6 +105,7 @@ interface ArtistDatabaseEntry {
             merchConfirmed: List<String>,
             images: List<CatalogImage>,
             fallbackImageYear: DataYear?,
+            newArtist: Boolean,
         ) = Impl(
             year = year,
             id = id,
@@ -126,6 +131,7 @@ interface ArtistDatabaseEntry {
             lastEditor = null,
             lastEditTime = null,
             verifiedArtist = false,
+            newArtist = newArtist,
         )
     }
 }

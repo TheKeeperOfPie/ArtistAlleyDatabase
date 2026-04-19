@@ -120,9 +120,9 @@ enum class DataYear(
         get() = this.stampRallyTableName
             ?: throw IllegalStateException("$serializedName shouldn't have rallies")
 
-    enum class Convention {
-        ANIME_EXPO,
-        ANIME_NYC,
+    enum class Convention(val firstRecordedYear: Int) {
+        ANIME_EXPO(2023),
+        ANIME_NYC(2024),
     }
 
     // :modules:alley-functions's build fails to import js-joda correctly, so instead of using

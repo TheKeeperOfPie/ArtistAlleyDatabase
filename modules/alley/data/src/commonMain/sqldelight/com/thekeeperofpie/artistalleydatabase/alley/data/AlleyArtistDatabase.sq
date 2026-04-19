@@ -50,6 +50,7 @@ CREATE TABLE
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
         fallbackImageYear TEXT AS DataYear DEFAULT NULL,
+        newArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
 
@@ -87,6 +88,7 @@ CREATE TABLE
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
         fallbackImageYear TEXT AS DataYear DEFAULT NULL,
+        newArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
 
@@ -131,6 +133,7 @@ CREATE TABLE
         lastEditor TEXT,
         lastEditTime TEXT AS Instant,
         verifiedArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
+        newArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
 
@@ -184,6 +187,7 @@ CREATE TABLE
         exhibitorTagFlags INTEGER NOT NULL DEFAULT 0,
         images TEXT AS List<CatalogImage> NOT NULL,
         fallbackImageYear TEXT AS DataYear DEFAULT NULL,
+        newArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
 

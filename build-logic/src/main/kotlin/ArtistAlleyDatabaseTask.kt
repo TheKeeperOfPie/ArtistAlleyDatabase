@@ -134,6 +134,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     artistLastEditTimes =
                         artistChangelog?.lastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
                 )
+                calculateNewArtists(database)
 
                 @Suppress("NewApi")
                 Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
@@ -256,7 +257,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
                 if (seriesDiff.isNotEmpty()) {
                     seriesDiff.forEach { badSeries ->
-                        logTagError(badSeries, "Entered series does not match valid series: $badSeries")
+                        logTagError(
+                            badSeries,
+                            "Entered series does not match valid series: $badSeries"
+                        )
                         val brokenArtists = seriesConnections
                             .filter { it.value.seriesId == badSeries }
                             .map { it.value.artistId }
@@ -427,6 +431,48 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 ).await()
             }
+    }
+
+    private fun calculateNewArtists(database: BuildLogicEditDatabase) {
+        val mutationQueries = database.mutationQueries
+        val animeExpo2023 = mutationQueries.getAllArtistEntryAnimeExpo2023().executeAsList()
+        val animeExpo2024 = mutationQueries.getAllArtistEntryAnimeExpo2024().executeAsList()
+        val animeExpo2025 = mutationQueries.getAllArtistEntryAnimeExpo2025().executeAsList()
+        val animeExpo2026 = mutationQueries.getAllArtistEntryAnimeExpo2026().executeAsList()
+
+        animeExpo2024.forEach { artist ->
+            val isNewArtist = animeExpo2023.none { it.id == artist.id }
+            if (isNewArtist) {
+                mutationQueries.updateArtistEntryAnimeExpo2024(artist.copy(newArtist = true))
+            }
+        }
+
+        animeExpo2025.forEach { artist ->
+            val isNewArtist = animeExpo2023.none { it.id == artist.id } &&
+                    animeExpo2024.none { it.id == artist.id }
+            if (isNewArtist) {
+                mutationQueries.updateArtistEntryAnimeExpo2025(artist.copy(newArtist = true))
+            }
+        }
+
+        animeExpo2026.forEach { artist ->
+            val isNewArtist = animeExpo2023.none { it.id == artist.id } &&
+                    animeExpo2024.none { it.id == artist.id } &&
+                    animeExpo2025.none { it.id == artist.id }
+            if (isNewArtist) {
+                mutationQueries.updateArtistEntryAnimeExpo2026(artist.copy(newArtist = true))
+            }
+        }
+
+        val animeNyc2024 = mutationQueries.getAllArtistEntryAnimeNyc2024().executeAsList()
+        val animeNyc2025 = mutationQueries.getAllArtistEntryAnimeNyc2025().executeAsList()
+
+        animeNyc2025.forEach { artist ->
+            val isNewArtist = animeExpo2024.none { it.id == artist.id }
+            if (isNewArtist) {
+                mutationQueries.updateArtistEntryAnimeNyc2025(artist.copy(newArtist = true))
+            }
+        }
     }
 
     private val DataYear.Dates.start

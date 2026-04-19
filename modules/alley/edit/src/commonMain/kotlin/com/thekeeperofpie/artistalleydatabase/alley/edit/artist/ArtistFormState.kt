@@ -141,6 +141,7 @@ class ArtistFormState(
             lastEditor = null, // This is filled on the backend
             lastEditTime = Clock.System.now(),
             verifiedArtist = verifiedArtist,
+            newArtist = false,
         )
     }
 

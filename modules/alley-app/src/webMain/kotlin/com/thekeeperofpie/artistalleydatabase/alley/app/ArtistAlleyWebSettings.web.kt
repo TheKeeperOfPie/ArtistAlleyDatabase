@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.w3c.dom.StorageEvent
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -33,6 +35,12 @@ class ArtistAlleyWebSettings(
 ) : ArtistAlleySettings {
 
     val updates = MutableSharedFlow<Pair<String, String?>>(extraBufferCapacity = 20)
+
+    // Separate instance to ensure app changes don't affect persistent settings
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
 
     init {
         window.addEventListener("storage") {
@@ -85,8 +93,6 @@ class ArtistAlleyWebSettings(
     override val showGridByDefault by registerBoolean(false)
     override val showRandomCatalogImage by registerBoolean(false)
     override val showOnlyConfirmedTags by registerBoolean(false)
-    override val showOnlyWithCatalog by registerBoolean(false)
-    override val showOnlyVerifiedArtists by registerBoolean(false)
     override val forceOneDisplayColumn by registerBoolean(false)
     override val dataYear by register(
         serialize = { it.serializedName },
@@ -104,6 +110,29 @@ class ArtistAlleyWebSettings(
     )
     override val showOutdatedCatalogs by registerBoolean(false)
     override val easterEggEnabled by registerBoolean(false)
+
+    override val artistTagsIn by register(
+        serialize = { json.encodeToString<Set<String>>(it.map { it.name }.toSet()) },
+        deserialize = { value ->
+            value?.let { json.decodeFromString<Set<String>>(it) }
+                .orEmpty()
+                .mapNotNull { target ->
+                    ArtistTag.entries.find { it.name == target }
+                }
+                .toSet()
+        },
+    )
+    override val artistTagsNotIn by register(
+        serialize = { json.encodeToString<Set<String>>(it.map { it.name }.toSet()) },
+        deserialize = { value ->
+            value?.let { json.decodeFromString<Set<String>>(it) }
+                .orEmpty()
+                .mapNotNull { target ->
+                    ArtistTag.entries.find { it.name == target }
+                }
+                .toSet()
+        },
+    )
 
     private fun <T> register(serialize: (T) -> String, deserialize: (String?) -> T) =
         object : ReadOnlyProperty<Any?, MutableStateFlow<T>> {

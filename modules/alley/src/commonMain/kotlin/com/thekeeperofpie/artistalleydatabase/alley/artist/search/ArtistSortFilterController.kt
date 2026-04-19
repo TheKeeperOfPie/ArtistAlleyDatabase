@@ -32,6 +32,9 @@ import androidx.compose.ui.window.Popup
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_chip_state_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_label
@@ -45,10 +48,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanc
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_favorited
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_verified_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_outdated_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_chip_state_content_description
@@ -377,18 +378,14 @@ class ArtistSortFilterController(
         selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE,
     )
 
-    val showOnlyWithCatalog = if (allowSettingsBasedToggles) {
-        settings.showOnlyWithCatalog
-    } else {
-        savedStateHandle.getMutableStateFlow(
-            key = "showOnlyWithCatalog",
-            initialValue = settings.showOnlyWithCatalog.value,
-        )
-    }
-    private val showOnlyWithCatalogSection = SortFilterSectionState.Switch(
-        title = Res.string.alley_filter_only_catalogs,
-        defaultEnabled = false,
-        enabled = showOnlyWithCatalog,
+    private val artistTagSection = SortFilterSectionState.Filter(
+        title = Res.string.alley_artist_tags_filter_label,
+        titleDropdownContentDescription = Res.string.alley_artist_tags_filter_content_description,
+        includeExcludeIconContentDescription = Res.string.alley_artist_tags_filter_chip_state_content_description,
+        options = ReadOnlyStateFlow(ArtistTag.entries),
+        filterIn = settings.artistTagsIn,
+        filterNotIn = settings.artistTagsNotIn,
+        valueToText = { stringResource(it.textRes) },
     )
 
     private val gridByDefaultSection = SortFilterSectionState.SwitchBySetting(
@@ -416,14 +413,6 @@ class ArtistSortFilterController(
     val showOnlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_show_only_confirmed_tags,
         property = showOnlyConfirmedTags,
-        default = false,
-        allowClear = true,
-    )
-
-    val showOnlyVerifiedArtists = settings.showOnlyVerifiedArtists
-    val showOnlyVerifiedArtistsSection = SortFilterSectionState.SwitchBySetting(
-        title = Res.string.alley_filter_show_only_verified_artists,
-        property = showOnlyVerifiedArtists,
         default = false,
         allowClear = true,
     )
@@ -466,11 +455,9 @@ class ArtistSortFilterController(
         titleDropdownContentDescription = Res.string.alley_filter_advanced_expand_content_description,
         children = MutableStateFlow(
             listOfNotNull(
-                showOnlyWithCatalogSection,
                 gridByDefaultSection,
                 randomCatalogImageSection,
                 showOnlyConfirmedTagsSection.takeIf { allowSettingsBasedToggles },
-                showOnlyVerifiedArtistsSection,
                 showOutdatedCatalogsSection,
                 hideFavoritedSection.takeIf { allowHideFavorited },
                 hideIgnoredSection,
@@ -486,6 +473,7 @@ class ArtistSortFilterController(
             merchSection,
             commissionsSection,
             exhibitorTagsSection.takeIf { year == DataYear.ANIME_NYC_2025 },
+            artistTagSection,
             linkTypeSection,
             advancedSection,
         )
@@ -501,9 +489,9 @@ class ArtistSortFilterController(
         commissionsIn,
         linkTypeIdIn,
         exhibitorTagsIn,
-        showOnlyWithCatalog,
+        settings.artistTagsIn,
+        settings.artistTagsNotIn,
         showOnlyConfirmedTags,
-        showOnlyVerifiedArtists,
         showOutdatedCatalogs,
         hideFavorited,
         hideIgnored,
@@ -517,9 +505,9 @@ class ArtistSortFilterController(
             commissionsIn = it[5] as Set<CommissionType>,
             linkTypesIn = (it[6] as Set<String>).map(Link.Type::valueOf).toSet(),
             exhibitorTagsIn = it[7] as Set<String>,
-            showOnlyWithCatalog = it[8] as Boolean,
-            showOnlyConfirmedTags = it[9] as Boolean,
-            showOnlyVerifiedArtists = it[10] as Boolean,
+            artistTagsIn = it[8] as Set<ArtistTag>,
+            artistTagsNotIn = it[9] as Set<ArtistTag>,
+            showOnlyConfirmedTags = it[10] as Boolean,
             showOutdatedCatalogs = it[11] as Boolean,
             hideFavorited = it[12] as Boolean,
             hideIgnored = it[13] as Boolean,
@@ -535,7 +523,6 @@ class ArtistSortFilterController(
     fun clear() {
         sections.value.forEach { it.clear() }
         showOnlyConfirmedTagsSection.clear()
-        showOnlyVerifiedArtistsSection.clear()
         hideFavoritedSection.clear()
     }
 
@@ -547,9 +534,9 @@ class ArtistSortFilterController(
         val commissionsIn: Set<CommissionType>,
         val linkTypesIn: Set<Link.Type>,
         val exhibitorTagsIn: Set<String>,
-        val showOnlyWithCatalog: Boolean,
+        val artistTagsIn: Set<ArtistTag>,
+        val artistTagsNotIn: Set<ArtistTag>,
         val showOnlyConfirmedTags: Boolean,
-        val showOnlyVerifiedArtists: Boolean,
         val showOutdatedCatalogs: Boolean,
         val hideFavorited: Boolean,
         val hideIgnored: Boolean,

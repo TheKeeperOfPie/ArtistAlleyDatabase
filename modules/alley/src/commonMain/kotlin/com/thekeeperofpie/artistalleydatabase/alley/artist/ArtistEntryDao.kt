@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryEditQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
@@ -84,6 +85,7 @@ private fun SqlCursor.toArtistWithUserData2023(
                 merchConfirmed = emptyList(),
                 images = getString(7)!!.let(Json::decodeFromString),
                 fallbackImageYear = null,
+                newArtist = false,
             )
         ),
         userEntry = ArtistUserEntry(
@@ -119,13 +121,14 @@ private fun SqlCursor.toArtistWithUserData2024(
                 merchConfirmed = getString(12)!!.let(Json::decodeFromString),
                 images = getString(13)!!.let(Json::decodeFromString),
                 fallbackImageYear = getString(14)?.let(ColumnAdapters.dataYearAdapter::decode),
+                newArtist = getBooleanFixed(15),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2024,
-            favorite = getBooleanFixed(15),
-            ignored = getBooleanFixed(16),
+            favorite = getBooleanFixed(16),
+            ignored = getBooleanFixed(17),
         )
     )
 }
@@ -155,13 +158,14 @@ private fun SqlCursor.toArtistWithUserData2025(
                 merchConfirmed = getString(13)!!.let(Json::decodeFromString),
                 images = getString(14)!!.let(Json::decodeFromString),
                 fallbackImageYear = getString(15)?.let(ColumnAdapters.dataYearAdapter::decode),
+                newArtist = getBooleanFixed(16),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2025,
-            favorite = getBooleanFixed(16),
-            ignored = getBooleanFixed(17),
+            favorite = getBooleanFixed(17),
+            ignored = getBooleanFixed(18),
         )
     )
 }
@@ -195,6 +199,7 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(
                 merchConfirmed = getString(13)!!.let(Json::decodeFromString),
                 images = getString(14)!!.let(Json::decodeFromString),
                 fallbackImageYear = getString(15)?.let(ColumnAdapters.dataYearAdapter::decode),
+                newArtist = false,
             )
         ),
         userEntry = ArtistUserEntry(
@@ -230,13 +235,14 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(
                 merchConfirmed = getString(13)!!.let(Json::decodeFromString),
                 images = getString(14)!!.let(Json::decodeFromString),
                 fallbackImageYear = getString(15)?.let(ColumnAdapters.dataYearAdapter::decode),
+                newArtist = getBooleanFixed(16),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2025,
-            favorite = getBooleanFixed(16),
-            ignored = getBooleanFixed(17),
+            favorite = getBooleanFixed(17),
+            ignored = getBooleanFixed(18),
         )
     )
 }
@@ -261,6 +267,7 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = emptyList(),
             images = emptyList(),
             fallbackImageYear = null,
+            newArtist = false,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -291,6 +298,7 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = merchConfirmed,
             images = images,
             fallbackImageYear = fallbackImageYear,
+            newArtist = DaoUtils.coerceBooleanForJs(newArtist),
         )
     ),
     userEntry = ArtistUserEntry(
@@ -321,6 +329,7 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = merchConfirmed,
             images = images,
             fallbackImageYear = fallbackImageYear,
+            newArtist = DaoUtils.coerceBooleanForJs(newArtist),
         )
     ),
     userEntry = ArtistUserEntry(
@@ -358,6 +367,7 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
             lastEditor = lastEditor,
             lastEditTime = lastEditTime,
             verifiedArtist = verifiedArtist,
+            newArtist = DaoUtils.coerceBooleanForJs(newArtist),
         )
     ),
     userEntry = ArtistUserEntry(
@@ -388,6 +398,7 @@ private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = merchConfirmed,
             images = images,
             fallbackImageYear = fallbackImageYear,
+            newArtist = false,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -418,6 +429,7 @@ private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = merchConfirmed,
             images = images,
             fallbackImageYear = fallbackImageYear,
+            newArtist = DaoUtils.coerceBooleanForJs(newArtist),
         )
     ),
     userEntry = ArtistUserEntry(
@@ -447,6 +459,7 @@ fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
         merchConfirmed = emptyList(),
         images = images,
         fallbackImageYear = null,
+        newArtist = false,
     )
 )
 
@@ -469,6 +482,7 @@ fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
         merchConfirmed = merchConfirmed,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        newArtist = DaoUtils.coerceBooleanForJs(newArtist),
     )
 )
 
@@ -491,6 +505,7 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
         merchConfirmed = merchConfirmed,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        newArtist = DaoUtils.coerceBooleanForJs(newArtist),
     )
 )
 
@@ -515,6 +530,7 @@ fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
         merchConfirmed = merchConfirmed,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        newArtist = false,
     )
 )
 
@@ -537,6 +553,7 @@ fun ArtistEntryAnimeNyc2025.toArtistEntry() = ArtistEntry(
         merchConfirmed = merchConfirmed,
         images = images,
         fallbackImageYear = fallbackImageYear,
+        newArtist = DaoUtils.coerceBooleanForJs(newArtist),
     )
 )
 
@@ -711,37 +728,65 @@ class ArtistEntryDao(
                         ) { "'$it'" }
             }
 
-            // Search for "http" as a simplification of logic, since checking
-            // not empty would require a separate query template
-            if (filterParams.showOnlyWithCatalog) {
-                when (year) {
-                    DataYear.ANIME_EXPO_2023,
-                    DataYear.ANIME_EXPO_2024,
-                    DataYear.ANIME_EXPO_2025,
-                    DataYear.ANIME_NYC_2024,
-                    DataYear.ANIME_NYC_2025,
-                        ->
+            when (year) {
+                DataYear.ANIME_EXPO_2023,
+                DataYear.ANIME_EXPO_2024,
+                DataYear.ANIME_EXPO_2025,
+                DataYear.ANIME_NYC_2024,
+                DataYear.ANIME_NYC_2025,
+                    -> {
+                    // Search for "http" as a simplification of logic, since checking
+                    // not empty would require a separate query template
+                    if (ArtistTag.HAS_CATALOG in filterParams.artistTagsIn) {
                         this += "$tableName.driveLink LIKE 'http%'"
-                    DataYear.ANIME_EXPO_2026 -> {
-                        // TODO: This will include embeds
+                    } else if (ArtistTag.HAS_CATALOG in filterParams.artistTagsNotIn) {
+                        this += "$tableName.driveLink NOT LIKE 'http%'"
+                    }
+                }
+                DataYear.ANIME_EXPO_2026 -> {
+                    // TODO: This will include embeds
+                    if (ArtistTag.HAS_CATALOG in filterParams.artistTagsIn) {
                         this += "$tableName.images != '[]'"
                         if (!filterParams.showOutdatedCatalogs) {
                             this += "$tableName.fallbackImageYear != NULL"
+                        }
+                    } else if (ArtistTag.HAS_CATALOG in filterParams.artistTagsNotIn) {
+                        this += "$tableName.images == '[]'"
+                        if (!filterParams.showOutdatedCatalogs) {
+                            this += "$tableName.fallbackImageYear == NULL"
                         }
                     }
                 }
             }
 
-            if (filterParams.showOnlyVerifiedArtists) {
-                when (year) {
-                    DataYear.ANIME_EXPO_2023,
-                    DataYear.ANIME_EXPO_2024,
-                    DataYear.ANIME_EXPO_2025,
-                    DataYear.ANIME_NYC_2024,
-                    DataYear.ANIME_NYC_2025,
-                        -> Unit // Didn't track form submissions
-                    DataYear.ANIME_EXPO_2026 -> {
+            when (year) {
+                DataYear.ANIME_EXPO_2023,
+                DataYear.ANIME_EXPO_2024,
+                DataYear.ANIME_EXPO_2025,
+                DataYear.ANIME_NYC_2024,
+                DataYear.ANIME_NYC_2025,
+                    -> Unit // Didn't track form submissions
+                DataYear.ANIME_EXPO_2026 -> {
+                    if (ArtistTag.VERIFIED in filterParams.artistTagsIn) {
                         this += "$tableName.verifiedArtist = 1"
+                    } else if (ArtistTag.VERIFIED in filterParams.artistTagsNotIn) {
+                        this += "$tableName.verifiedArtist = 0"
+                    }
+                }
+            }
+
+            when (year) {
+                DataYear.ANIME_EXPO_2023,
+                DataYear.ANIME_NYC_2024,
+                    -> Unit // First respective years, no data
+                DataYear.ANIME_EXPO_2024,
+                DataYear.ANIME_EXPO_2025,
+                DataYear.ANIME_NYC_2025,
+                DataYear.ANIME_EXPO_2026 -> {
+                    if (ArtistTag.NEW in filterParams.artistTagsIn) {
+                        this += "$tableName.newArtist = 1"
+                    } else if (ArtistTag.NEW in filterParams.artistTagsNotIn) {
+                        this += "$tableName.newArtist = 0"
                     }
                 }
             }
@@ -882,6 +927,7 @@ class ArtistEntryDao(
                 "merchConfirmed",
                 "images",
                 "fallbackImageYear",
+                "newArtist",
             )
             DataYear.ANIME_EXPO_2025 -> listOf(
                 "id",
@@ -900,6 +946,7 @@ class ArtistEntryDao(
                 "merchConfirmed",
                 "images",
                 "fallbackImageYear",
+                "newArtist",
             )
             DataYear.ANIME_EXPO_2026 -> listOf(
                 "id",
@@ -927,6 +974,7 @@ class ArtistEntryDao(
                 "lastEditor",
                 "lastEditTime",
                 "verifiedArtist",
+                "newArtist",
             )
             DataYear.ANIME_NYC_2024 -> listOf(
                 "id",
@@ -963,6 +1011,7 @@ class ArtistEntryDao(
                 "merchConfirmed",
                 "images",
                 "fallbackImageYear",
+                "newArtist",
             )
         }.joinToString { "$tableName.$it" }
 

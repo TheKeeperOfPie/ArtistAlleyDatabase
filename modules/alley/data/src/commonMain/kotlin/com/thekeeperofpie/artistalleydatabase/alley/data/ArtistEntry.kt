@@ -29,6 +29,7 @@ fun ArtistEntryAnimeExpo2026.toArtistDatabaseEntry() =
         lastEditor = lastEditor,
         lastEditTime = lastEditTime,
         verifiedArtist = verifiedArtist,
+        newArtist = newArtist,
     )
 
 fun ArtistDatabaseEntry.Impl.toArtistEntryAnimeExpo2026() =
@@ -58,4 +59,5 @@ fun ArtistDatabaseEntry.Impl.toArtistEntryAnimeExpo2026() =
         lastEditor = lastEditor,
         lastEditTime = lastEditTime,
         verifiedArtist = verifiedArtist,
+        newArtist = newArtist,
     )

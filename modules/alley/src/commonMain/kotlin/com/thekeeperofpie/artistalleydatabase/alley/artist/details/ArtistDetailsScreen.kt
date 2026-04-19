@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Map
@@ -40,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +71,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_new_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_new_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_action_is_this_you
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified_explanation
@@ -84,6 +89,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
+import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
@@ -115,6 +121,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCa
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -289,13 +296,42 @@ object ArtistDetailsScreen {
                                 modifier = Modifier.weight(1f)
                             )
 
+                            val scope = rememberCoroutineScope()
+                            if (artist.newArtist) {
+                                Box(Modifier.padding(16.dp)) {
+                                    val tooltipState = rememberTooltipState()
+                                    IconWithTooltip(
+                                        imageVector = Icons.Default.FiberNew,
+                                        tooltipText = stringResource(
+                                            Res.string.alley_artist_new_explanation,
+                                            stringResource(artist.year.convention.fullName),
+                                            artist.year.convention.firstRecordedYear,
+                                        ),
+                                        contentDescription = stringResource(Res.string.alley_artist_new_content_description),
+                                        tooltipState = tooltipState,
+                                        modifier = Modifier.clickable {
+                                            scope.launch {
+                                                tooltipState.show(MutatePriority.UserInput)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
                             if (artist.verifiedArtist) {
                                 Box(Modifier.padding(16.dp)) {
+                                    val tooltipState = rememberTooltipState()
                                     IconWithTooltip(
                                         imageVector = Icons.Default.Verified,
                                         tooltipText = stringResource(Res.string.alley_artist_verified_explanation),
                                         contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
+                                        tooltipState = tooltipState,
                                         tint = MaterialTheme.colorScheme.tertiary,
+                                        modifier = Modifier.clickable {
+                                            scope.launch {
+                                                tooltipState.show(MutatePriority.UserInput)
+                                            }
+                                        }
                                     )
                                 }
                             }

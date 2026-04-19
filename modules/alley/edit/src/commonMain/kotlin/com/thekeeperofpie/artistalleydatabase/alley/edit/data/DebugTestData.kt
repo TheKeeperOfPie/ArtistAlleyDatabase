@@ -159,6 +159,7 @@ object DebugTestData {
                 lastEditor = "fakeemail@example.com",
                 lastEditTime = Clock.System.now() - 1.hours,
                 verifiedArtist = false,
+                newArtist = false,
             )
         database.saveArtist(dataYear = DataYear.ANIME_EXPO_2026, initial = null, updated = previous)
         database.saveArtist(

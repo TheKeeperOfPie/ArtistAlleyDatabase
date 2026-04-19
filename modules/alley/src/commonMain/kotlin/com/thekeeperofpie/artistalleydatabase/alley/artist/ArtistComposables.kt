@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material.icons.filled.FormatPaint
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.AssistChip
@@ -44,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_commissions
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_new
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_new_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
@@ -189,7 +192,15 @@ fun ArtistListRow(
                     )
             )
 
-            if (entry.artist.verifiedArtist) {
+            if (entry.artist.newArtist) {
+                Spacer(Modifier.width(4.dp))
+                IconWithTooltip(
+                    imageVector = Icons.Default.FiberNew,
+                    tooltipText = stringResource(Res.string.alley_artist_new),
+                    contentDescription = stringResource(Res.string.alley_artist_new_content_description),
+                    modifier = Modifier.size(20.dp)
+                )
+            } else if (entry.artist.verifiedArtist) {
                 Spacer(Modifier.width(4.dp))
                 IconWithTooltip(
                     imageVector = Icons.Default.Verified,

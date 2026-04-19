@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
@@ -44,13 +45,14 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
         override val showGridByDefault = MutableStateFlow(false)
         override val showRandomCatalogImage = MutableStateFlow(false)
         override val showOnlyConfirmedTags = MutableStateFlow(false)
-        override val showOnlyWithCatalog = MutableStateFlow(false)
-        override val showOnlyVerifiedArtists = MutableStateFlow(false)
         override val forceOneDisplayColumn = MutableStateFlow(false)
         override val dataYear = MutableStateFlow(DataYear.LATEST)
         override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
         override val showOutdatedCatalogs = MutableStateFlow(false)
         override val easterEggEnabled = MutableStateFlow(false)
+
+        override val artistTagsIn = MutableStateFlow(emptySet<ArtistTag>())
+        override val artistTagsNotIn = MutableStateFlow(emptySet<ArtistTag>())
     }
 
     @DependencyGraph.Factory

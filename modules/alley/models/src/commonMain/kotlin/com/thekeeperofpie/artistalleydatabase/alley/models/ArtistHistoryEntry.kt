@@ -128,6 +128,7 @@ data class ArtistHistoryEntry(
                 lastEditor = lastEditor,
                 lastEditTime = Clock.System.now(),
                 verifiedArtist = list.any { it.formTimestamp != null },
+                newArtist = false,
             )
         }
 

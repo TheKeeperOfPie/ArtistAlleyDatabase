@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.edit.admin.AdminViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditViewModel
@@ -92,12 +93,13 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
         override val showGridByDefault = MutableStateFlow(false)
         override val showRandomCatalogImage = MutableStateFlow(false)
         override val showOnlyConfirmedTags = MutableStateFlow(false)
-        override val showOnlyWithCatalog = MutableStateFlow(false)
-        override val showOnlyVerifiedArtists = MutableStateFlow(false)
         override val forceOneDisplayColumn = MutableStateFlow(false)
         override val dataYear = MutableStateFlow(DataYear.LATEST)
         override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
         override val showOutdatedCatalogs = MutableStateFlow(false)
         override val easterEggEnabled = MutableStateFlow(false)
+
+        override val artistTagsIn = MutableStateFlow(emptySet<ArtistTag>())
+        override val artistTagsNotIn = MutableStateFlow(emptySet<ArtistTag>())
     }
 }

@@ -501,7 +501,6 @@ object ArtistSearchScreen {
         val query: MutableStateFlow<String>,
         val results: StateFlow<PagingData<ArtistEntryGridModel>>,
         val unfilteredCount: StateFlow<Int>,
-        val showOnlyWithCatalog: StateFlow<Boolean>,
         val sortOption: MutableStateFlow<ArtistSearchSortOption>,
         val sortAscending: MutableStateFlow<Boolean>,
         val searchState: SearchScreen.State<ArtistColumn>,
@@ -518,7 +517,6 @@ object ArtistSearchScreen {
             query = viewModel.query,
             results = viewModel.results,
             unfilteredCount = viewModel.unfilteredCount,
-            showOnlyWithCatalog = sortFilterController.showOnlyWithCatalog,
             sortOption = sortFilterController.sortOption,
             sortAscending = sortFilterController.sortAscending,
             searchState = viewModel.searchState,
@@ -553,7 +551,6 @@ object ArtistSearchScreen {
             query = MutableStateFlow(""),
             results = MutableStateFlow(PagingData.from(results)),
             unfilteredCount = MutableStateFlow(1000),
-            showOnlyWithCatalog = MutableStateFlow(false),
             sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
             sortAscending = MutableStateFlow(false),
             searchState = SearchScreen.State<ArtistColumn>(

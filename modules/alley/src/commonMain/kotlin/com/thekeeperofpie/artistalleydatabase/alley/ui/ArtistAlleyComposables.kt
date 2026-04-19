@@ -18,7 +18,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -78,6 +77,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TooltipState
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -524,10 +524,9 @@ fun IconWithTooltip(
     tooltipText: String,
     contentDescription: String? = tooltipText,
     modifier: Modifier = Modifier,
+    tooltipState: TooltipState = rememberTooltipState(),
     tint: Color = LocalContentColor.current,
 ) {
-    val tooltipState = rememberTooltipState()
-    val scope = rememberCoroutineScope()
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
         tooltip = { PlainTooltip { Text(tooltipText, textAlign = TextAlign.Center) } },
@@ -538,11 +537,6 @@ fun IconWithTooltip(
             imageVector = imageVector,
             contentDescription = contentDescription,
             tint = tint,
-            modifier = Modifier.clickable {
-                scope.launch {
-                    tooltipState.show(MutatePriority.UserInput)
-                }
-            }
         )
     }
 }

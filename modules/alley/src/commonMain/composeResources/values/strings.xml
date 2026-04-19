@@ -62,12 +62,10 @@
     <string name="alley_sort_prize_limit">Prize limit</string>
     <string name="alley_sort_total_cost">Total cost</string>
     <string name="alley_filter_favorites">Only favorites</string>
-    <string name="alley_filter_only_catalogs">Only with catalog images</string>
     <string name="alley_image_fullscreen_content_description">Fullscreen image</string>
     <string name="alley_filter_show_grid_by_default">Grid by default</string>
     <string name="alley_filter_show_random_catalog_image">Random catalog image</string>
     <string name="alley_filter_show_only_confirmed_tags">Show only confirmed tags</string>
-    <string name="alley_filter_show_only_verified_artists">Show only verified artists</string>
     <string name="alley_filter_show_outdated_catalogs">Show outdated catalogs</string>
     <string name="alley_filter_hide_favorited">Hide favorited</string>
     <string name="alley_filter_hide_ignored">Hide ignored (long press)</string>
@@ -157,6 +155,10 @@
     <string name="alley_artist_verified">Verified artist</string>
     <string name="alley_artist_verified_content_description">Verified artist icon</string>
     <string name="alley_artist_verified_explanation">Artist has verified and submitted their own data.\nThank you so much!</string>
+
+    <string name="alley_artist_new">New artist</string>
+    <string name="alley_artist_new_content_description">New artist icon</string>
+    <string name="alley_artist_new_explanation">Artist is new for %1$s since data was recorded (%2$d)</string>
 
     <string name="alley_stamp_rally_column_booth">Booth</string>
     <string name="alley_stamp_rally_column_fandom">Fandom</string>
@@ -371,6 +373,13 @@
     <string name="alley_exhibitor_tags_filter_chip_state_content_description">Exhibitor tags chip state</string>
     <string name="alley_exhibitor_tags_icon_content_description">Exhibitor tags info</string>
     <string name="alley_exhibitor_tags_explanation">Provided by ANYC, not validated</string>
+
+    <string name="alley_artist_tags_filter_label">Artist tags</string>
+    <string name="alley_artist_tags_filter_content_description">Artist tags filter expand</string>
+    <string name="alley_artist_tags_filter_chip_state_content_description">Artist tags chip state</string>
+    <string name="alley_artist_tag_has_catalog">Catalog</string>
+    <string name="alley_artist_tag_verified">Verified</string>
+    <string name="alley_artist_tag_new">New</string>
 
     <string name="alley_con_upcoming_suffix">, export data to your phone so your favorites are available at con</string>
     <string name="alley_con_upcoming_show_qr">Show QR</string>
