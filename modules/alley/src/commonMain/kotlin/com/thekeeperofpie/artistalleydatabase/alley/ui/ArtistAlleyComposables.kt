@@ -114,6 +114,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -873,21 +874,21 @@ fun DisplayTypeSearchBar(
             onQueryChange = { query = it },
             placeholder = {
                 val title = title()
-                if (title != null) {
-                    Text(title)
+                val text = if (title != null) {
+                    title
                 } else {
                     val itemCount = itemCount()
-                    Text(
-                        if (itemCount > 0) {
-                            stringResource(
-                                EntryRes.string.entry_search_hint_with_entry_count,
-                                itemCount,
-                            )
-                        } else {
-                            stringResource(EntryRes.string.entry_search_hint)
-                        }
-                    )
+                    if (itemCount > 0) {
+                        stringResource(
+                            EntryRes.string.entry_search_hint_with_entry_count,
+                            itemCount,
+                        )
+                    } else {
+                        stringResource(EntryRes.string.entry_search_hint)
+                    }
                 }
+
+                Text(text = text, maxLines = 1, overflow = TextOverflow.MiddleEllipsis)
             },
             trailingIcon = {
                 Row {
