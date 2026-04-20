@@ -31,7 +31,10 @@ import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 internal fun ArtistDatabaseEntry.Impl.fixForJs() =
-    copy(verifiedArtist = coerceBooleanForJs(verifiedArtist))
+    copy(
+        verifiedArtist = coerceBooleanForJs(verifiedArtist),
+        newArtist = coerceBooleanForJs(newArtist),
+    )
 
 internal fun StampRallyDatabaseEntry.fixForJs() =
     copy(confirmed = coerceBooleanForJs(confirmed))

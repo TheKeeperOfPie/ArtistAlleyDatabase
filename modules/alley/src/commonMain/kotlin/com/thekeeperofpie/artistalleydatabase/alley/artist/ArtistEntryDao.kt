@@ -85,7 +85,7 @@ private fun SqlCursor.toArtistWithUserData2023(
                 merchConfirmed = emptyList(),
                 images = getString(7)!!.let(Json::decodeFromString),
                 fallbackImageYear = null,
-                newArtist = false,
+                newArtist = DaoUtils.coerceBooleanForJs(false),
             )
         ),
         userEntry = ArtistUserEntry(
@@ -199,7 +199,7 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(
                 merchConfirmed = getString(13)!!.let(Json::decodeFromString),
                 images = getString(14)!!.let(Json::decodeFromString),
                 fallbackImageYear = getString(15)?.let(ColumnAdapters.dataYearAdapter::decode),
-                newArtist = false,
+                newArtist = DaoUtils.coerceBooleanForJs(false),
             )
         ),
         userEntry = ArtistUserEntry(
@@ -267,7 +267,7 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = emptyList(),
             images = emptyList(),
             fallbackImageYear = null,
-            newArtist = false,
+            newArtist = DaoUtils.coerceBooleanForJs(false),
         )
     ),
     userEntry = ArtistUserEntry(
@@ -398,7 +398,7 @@ private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = merchConfirmed,
             images = images,
             fallbackImageYear = fallbackImageYear,
-            newArtist = false,
+            newArtist = DaoUtils.coerceBooleanForJs(false),
         )
     ),
     userEntry = ArtistUserEntry(
@@ -459,7 +459,7 @@ fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
         merchConfirmed = emptyList(),
         images = images,
         fallbackImageYear = null,
-        newArtist = false,
+        newArtist = DaoUtils.coerceBooleanForJs(false),
     )
 )
 
@@ -530,7 +530,7 @@ fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
         merchConfirmed = merchConfirmed,
         images = images,
         fallbackImageYear = fallbackImageYear,
-        newArtist = false,
+        newArtist = DaoUtils.coerceBooleanForJs(false),
     )
 )
 
