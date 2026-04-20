@@ -112,6 +112,7 @@ object DaoUtils {
         }
 
     fun buildSearchCountStatement(
+        tableName: String,
         ftsTableName: String,
         idField: String,
         matchQuery: String,
@@ -136,8 +137,8 @@ object DaoUtils {
                     )
                 )
             )
-            JOIN $ftsTableName
-            ON idAsKey = $ftsTableName.$idField
+            JOIN $tableName
+            ON idAsKey = $tableName.$idField
             $additionalJoinStatement
             $andStatement
             GROUP BY idAsKey

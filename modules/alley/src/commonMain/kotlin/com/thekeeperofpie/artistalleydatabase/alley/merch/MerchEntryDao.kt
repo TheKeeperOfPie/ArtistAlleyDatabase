@@ -162,6 +162,7 @@ class MerchEntryDao(
             .takeIf { favoriteOnly }.orEmpty()
 
         val countStatement = DaoUtils.buildSearchCountStatement(
+            tableName = "merchEntry",
             ftsTableName = "merchEntry_fts",
             idField = "name",
             matchQuery = matchQuery,

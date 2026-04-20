@@ -1067,12 +1067,13 @@ class ArtistEntryDao(
         }
 
         val countStatement = DaoUtils.buildSearchCountStatement(
+            tableName = tableName,
             ftsTableName = "${tableName}_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
             additionalJoinStatement = joinStatement,
-            andStatement = andStatement.replace(tableName, "${tableName}_fts"),
+            andStatement = andStatement,
         )
 
         val statement = DaoUtils.buildSearchStatement(

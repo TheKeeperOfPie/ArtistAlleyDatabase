@@ -285,6 +285,7 @@ class SeriesEntryDao(
         """.trimIndent()
 
         val countStatement = DaoUtils.buildSearchCountStatement(
+            tableName = "seriesEntry",
             ftsTableName = "seriesEntry_fts",
             idField = "id",
             matchQuery = matchQuery,
