@@ -9,7 +9,7 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.time.Clock
 
-val RELEASE_FLAG = false
+val RELEASE_FLAG = true
 val PROD = false || RELEASE_FLAG
 val PULL_REMOTE = false || RELEASE_FLAG
 val WRITE_BACKUP = false || RELEASE_FLAG
