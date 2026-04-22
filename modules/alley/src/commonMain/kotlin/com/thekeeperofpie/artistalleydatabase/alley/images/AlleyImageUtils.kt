@@ -128,7 +128,7 @@ object AlleyImageUtils {
     }
 
     suspend fun artistImageExists(artistEntryDao: ArtistEntryDao, path: String): Boolean {
-        val parts = path.substringAfter("generated.resources/files/").split("/")
+        val parts = path.substringAfter("generated.resources/files/images/").split("/")
         if (parts.size < 3) return false
         val yearFolderName = parts[0]
         val name = parts[2]
