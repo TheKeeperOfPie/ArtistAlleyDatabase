@@ -10,7 +10,7 @@ import javax.imageio.stream.FileCacheImageInputStream
 
 internal object ImageUtils {
     val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp", "webp")
-    const val RESIZE_TARGET = 1200
+    const val RESIZE_TARGET = 1500
     const val WEBP_TARGET_QUALITY = 80
     const val WEBP_METHOD = 6
 
@@ -95,6 +95,7 @@ internal object ImageUtils {
             WEBP_TARGET_QUALITY.toString(),
             "-m",
             WEBP_METHOD.toString(),
+            "-noalpha",
             input.absolutePath,
             "-o",
             target.absolutePath,
