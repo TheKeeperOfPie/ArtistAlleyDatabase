@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +56,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save_and_edit
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_timestamp_prefix
@@ -105,6 +107,7 @@ internal object ArtistFormMergeScreen {
         artistId: Uuid,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
+        onClickBackAndEditArtist: (artistId: Uuid) -> Unit,
         viewModel: ArtistFormMergeViewModel = viewModel {
             graph.artistFormMergeViewModelFactory.create(dataYear, artistId)
         },
@@ -124,7 +127,20 @@ internal object ArtistFormMergeScreen {
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickSave = viewModel::onClickSave,
+            onClickSave = { images, entry ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = entry,
+                    openArtistEditAfter = false,
+                )
+            },
+            onClickSaveAndEdit = { images, entry ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = entry,
+                    openArtistEditAfter = true,
+                )
+            },
         )
 
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)
@@ -133,7 +149,8 @@ internal object ArtistFormMergeScreen {
         LaunchedEffect(navigationResults, saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .filterNotNull()
-                .collectLatest { (_, result) ->
+                .collectLatest { (_, pair) ->
+                    val (result, artistId) = pair
                     when (result) {
                         is BackendRequest.ArtistCommitForm.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
@@ -146,7 +163,11 @@ internal object ArtistFormMergeScreen {
                         is BackendRequest.ArtistCommitForm.Response.Success -> {
                             saveTaskState.clearResult()
                             navigationResults[REQUEST_KEY] = Unit
-                            onClickBack(true)
+                            if (artistId == null) {
+                                onClickBack(true)
+                            } else {
+                                onClickBackAndEditArtist(artistId)
+                            }
                         }
                     }
                 }
@@ -165,6 +186,7 @@ internal object ArtistFormMergeScreen {
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
+        onClickSaveAndEdit: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit?,
     ) {
         val entry = entry()
         val fieldState = rememberFieldState(entry()?.second)
@@ -206,6 +228,15 @@ internal object ArtistFormMergeScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
                     actions = {
+                        TooltipIconButton(
+                            icon = Icons.Default.SaveAs,
+                            tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save_and_edit),
+                            onClick = {
+                                artistFormState?.captureDatabaseEntry(dataYear, true)?.let {
+                                    onClickSaveAndEdit(it.first, it.second)
+                                }
+                            },
+                        )
                         TooltipIconButton(
                             icon = Icons.Default.Save,
                             tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save),

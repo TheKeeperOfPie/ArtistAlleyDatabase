@@ -9,7 +9,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -36,16 +35,25 @@ class ArtistFormHistoryViewModel(
     @Assisted formTimestamp: Instant,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val entry = flowFromSuspend { database.loadArtistWithHistoricalFormEntry(dataYear, artistId, formTimestamp) }
+    val entry = flowFromSuspend {
+        database.loadArtistWithHistoricalFormEntry(
+            dataYear,
+            artistId,
+            formTimestamp
+        )
+    }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
-    private val saveTask: ExclusiveTask<SaveData, BackendRequest.ArtistCommitForm.Response> =
-        ExclusiveTask(viewModelScope, ::save)
+    private val saveTask = ExclusiveTask(viewModelScope, ::save)
     val saveTaskState get() = saveTask.state
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
-    fun onClickSave(images: List<EditImage>, updated: ArtistDatabaseEntry.Impl) {
+    fun onClickSave(
+        images: List<EditImage>,
+        updated: ArtistDatabaseEntry.Impl,
+        openArtistEditAfter: Boolean,
+    ) {
         val entry = entry.value ?: return
         saveTask.triggerManual {
             SaveData(
@@ -53,6 +61,7 @@ class ArtistFormHistoryViewModel(
                 initial = entry.artist,
                 updated = updated,
                 formEntryTimestamp = entry.formDiff.timestamp,
+                openArtistEditAfter = openArtistEditAfter,
             )
         }
     }
@@ -66,7 +75,7 @@ class ArtistFormHistoryViewModel(
                 // deleted to save storage space
                 updated = data.updated.copy(_images = data.initial.images),
                 formEntryTimestamp = data.formEntryTimestamp,
-            )
+            ) to data.updated.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
         }
 
     private data class SaveData(
@@ -74,6 +83,7 @@ class ArtistFormHistoryViewModel(
         val initial: ArtistDatabaseEntry.Impl,
         val updated: ArtistDatabaseEntry.Impl,
         val formEntryTimestamp: Instant,
+        val openArtistEditAfter: Boolean,
     )
 
     @AssistedFactory

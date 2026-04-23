@@ -220,6 +220,7 @@
     <string name="alley_edit_artist_form_merge_title_booth_name">Merging %1$s - %2$s - %3$s</string>
     <string name="alley_edit_artist_form_merge_notes">Notes from submission</string>
     <string name="alley_edit_artist_form_merge_action_save">Apply form merge</string>
+    <string name="alley_edit_artist_form_merge_action_save_and_edit">Apply and open artist edit</string>
     <string name="alley_edit_artist_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>
 
     <string name="alley_edit_artist_add_potential_same_artists">Potential same artists</string>

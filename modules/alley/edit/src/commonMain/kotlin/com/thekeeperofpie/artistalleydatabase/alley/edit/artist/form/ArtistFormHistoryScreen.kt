@@ -31,6 +31,7 @@ object ArtistFormHistoryScreen {
         formTimestamp: Instant,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
+        onClickBackAndEditArtist: (artistId: Uuid) -> Unit,
         viewModel: ArtistFormHistoryViewModel = viewModel {
             graph.artistFormHistoryViewModelFactory.create(
                 dataYear = dataYear,
@@ -55,7 +56,20 @@ object ArtistFormHistoryScreen {
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickSave = viewModel::onClickSave,
+            onClickSave = { images, entry ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = entry,
+                    openArtistEditAfter = false,
+                )
+            },
+            onClickSaveAndEdit = { images, entry ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = entry,
+                    openArtistEditAfter = true,
+                )
+            },
         )
 
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)
@@ -64,7 +78,8 @@ object ArtistFormHistoryScreen {
         LaunchedEffect(navigationResults, saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .filterNotNull()
-                .collectLatest { (_, result) ->
+                .collectLatest { (_, pair) ->
+                    val (result, artistId) = pair
                     when (result) {
                         is BackendRequest.ArtistCommitForm.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
@@ -76,7 +91,11 @@ object ArtistFormHistoryScreen {
                         }
                         is BackendRequest.ArtistCommitForm.Response.Success -> {
                             saveTaskState.clearResult()
-                            onClickBack(true)
+                            if (artistId == null) {
+                                onClickBack(true)
+                            } else {
+                                onClickBackAndEditArtist(artistId)
+                            }
                         }
                     }
                 }

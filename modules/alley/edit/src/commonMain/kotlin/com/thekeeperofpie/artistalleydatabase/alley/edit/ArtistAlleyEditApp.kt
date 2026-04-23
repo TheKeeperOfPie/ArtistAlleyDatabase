@@ -222,6 +222,10 @@ private fun entryProvider(
             formTimestamp = route.formTimestamp,
             graph = graph,
             onClickBack = onClickBack,
+            onClickBackAndEditArtist = { artistId ->
+                onClickBack(true)
+                navStack.navigate(AlleyEditDestination.ArtistEdit(route.dataYear, artistId))
+            },
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistFormMerge> { route ->
@@ -230,6 +234,10 @@ private fun entryProvider(
             artistId = route.artistId,
             graph = graph,
             onClickBack = onClickBack,
+            onClickBackAndEditArtist = { artistId ->
+                onClickBack(true)
+                navStack.navigate(AlleyEditDestination.ArtistEdit(route.dataYear, artistId))
+            },
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistFormQueue> {
