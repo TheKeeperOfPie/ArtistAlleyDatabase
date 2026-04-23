@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchVi
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
@@ -34,6 +35,7 @@ interface ArtistAlleyGraph {
     val changelogViewModelFactory: ChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory
     val favoritesSortFilterViewModelFactory: FavoritesSortFilterViewModel.Factory
+    val imagesViewModel: Provider<ImagesViewModel>
     val importViewModelFactory: ImportViewModel.Factory
     val mapViewModelFactory: MapViewModel.Factory
     val stampRallyDetailsViewModelFactory: StampRallyDetailsViewModel.Factory

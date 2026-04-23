@@ -14,7 +14,7 @@ sealed interface AlleyDestination : NavKey {
     data object Home : AlleyDestination
 
     @Serializable
-    data object AboutLibraries: AlleyDestination
+    data object AboutLibraries : AlleyDestination
 
     @Serializable
     data class ArtistDetails(
@@ -52,7 +52,7 @@ sealed interface AlleyDestination : NavKey {
         val year: DataYear,
         val id: String,
         val type: Type,
-        val images: List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>,
+        val images: List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>?,
         val initialImageIndex: Int?,
     ) : AlleyDestination {
 
@@ -61,9 +61,10 @@ sealed interface AlleyDestination : NavKey {
             @Serializable
             data class Artist(
                 val id: String,
-                val booth: String,
+                val booth: String?,
                 val name: String?,
-                val profileImage: com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage?
+                val profileImage: com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage?,
+                val showingFallback: Boolean,
             ) : Type
 
             @Serializable
@@ -128,7 +129,7 @@ sealed interface AlleyDestination : NavKey {
         Home -> ""
         is Images -> {
             val typePath = when (type) {
-                is Images.Type.Artist -> "artist/${type.id}"
+                is Images.Type.Artist -> "artist/${type.id}/${type.showingFallback}"
                 is Images.Type.StampRally -> "stamp_rally/${type.id}"
             }
             "images/${year.serializedName}/$typePath"
@@ -151,12 +152,12 @@ sealed interface AlleyDestination : NavKey {
 
         private fun String?.toDataYearOrNull() =
             if (this == "all") null else this?.let(DataYear::deserialize) ?: DataYear.LATEST
+
         fun parseRoute(route: String): AlleyDestination? = try {
             val parts = route.trim('/').split('/')
             if (parts.isEmpty() || (parts.size == 1 && parts.first().isEmpty())) {
                 Home
             } else {
-
                 when (parts.first()) {
                     "artist" -> when (parts.size) {
                         3 if parts[1] == "map" -> ArtistMap(id = parts[2])
@@ -176,6 +177,37 @@ sealed interface AlleyDestination : NavKey {
                     } else null
                     "changelog" -> Changelog
                     "export" -> Export
+                    "images" -> {
+                        val dataYear = parts.getOrNull(1).toDataYearOrNull() ?: return null
+                        val isStampRally = when (parts.getOrNull(2)) {
+                            "artist" -> false
+                            "stamp_rally" -> true
+                            else -> return null
+                        }
+                        val id = parts.getOrNull(3) ?: return null
+                        val showingFallback = parts.getOrNull(4).toBoolean()
+                        Images(
+                            year = dataYear,
+                            id = id,
+                            type = if (isStampRally) {
+                                Images.Type.StampRally(
+                                    id = id,
+                                    hostTable = null,
+                                    fandom = null,
+                                )
+                            } else {
+                                Images.Type.Artist(
+                                    id = id,
+                                    booth = null,
+                                    name = null,
+                                    profileImage = null,
+                                    showingFallback = showingFallback,
+                                )
+                            },
+                            images = null,
+                            initialImageIndex = null,
+                        )
+                    }
                     "import" -> Import(parts.getOrNull(1).orEmpty())
                     "libraries" -> AboutLibraries
                     "merch" -> when (parts.size) {

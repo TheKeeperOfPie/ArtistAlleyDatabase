@@ -115,9 +115,10 @@ object ArtistAlleyAppScreen {
                     id = artist.id,
                     type = AlleyDestination.Images.Type.Artist(
                         id = artist.id,
-                        booth = artist.booth.orEmpty(),
+                        booth = artist.booth,
                         profileImage = AlleyImageUtils.getProfileImage(artist.embeds),
                         name = artist.name,
+                        showingFallback = showingFallback,
                     ),
                     images = images,
                     initialImageIndex = imageIndex,
@@ -216,7 +217,7 @@ object ArtistAlleyAppScreen {
                             AlleyDestination.ArtistMap(route.id)
                         )
                     },
-                    onOpenImages = { year, artistId, booth, name, images, imageIndex, profileImage ->
+                    onOpenImages = { year, artistId, booth, name, showingFallback, images, imageIndex, profileImage ->
                         navStack.navigate(
                             AlleyDestination.Images(
                                 year = year,
@@ -227,6 +228,7 @@ object ArtistAlleyAppScreen {
                                     booth = booth,
                                     profileImage = profileImage,
                                     name = name,
+                                    showingFallback = showingFallback,
                                 ),
                                 images = images,
                                 initialImageIndex = imageIndex,
@@ -303,6 +305,7 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.Images> {
                 ImagesScreen(
+                    graph = graph,
                     route = it,
                     onNavigateBack = navStack::onBack,
                 )

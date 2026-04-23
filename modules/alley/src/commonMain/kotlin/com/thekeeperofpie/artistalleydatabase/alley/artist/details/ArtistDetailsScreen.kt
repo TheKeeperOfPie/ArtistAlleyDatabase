@@ -139,7 +139,7 @@ object ArtistDetailsScreen {
         onOpenStampRally: (StampRallyDatabaseEntry) -> Unit,
         onOpenOtherYear: (DataYear) -> Unit,
         onOpenMap: () -> Unit,
-        onOpenImages: (DataYear, artistId: String, booth: String, name: String, images: List<CatalogImage>, imageIndex: Int, profileImage: CatalogImage?) -> Unit,
+        onOpenImages: (DataYear, artistId: String, booth: String, name: String, showingFallback: Boolean, images: List<CatalogImage>, imageIndex: Int, profileImage: CatalogImage?) -> Unit,
         onNavigateUp: () -> Unit,
         viewModel: ArtistDetailsViewModel = viewModel {
             graph.artistDetailsViewModelFactory.create(
@@ -211,6 +211,7 @@ object ArtistDetailsScreen {
                                             .takeUnless { showingOutdatedCatalogs }
                                             .orEmpty(),
                                         artist.name,
+                                        showingOutdatedCatalogs,
                                         images,
                                         event.imageIndex,
                                         profileImage,

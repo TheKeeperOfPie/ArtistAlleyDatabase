@@ -14,18 +14,22 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
@@ -40,12 +44,41 @@ object ImagesScreen {
 
     @Composable
     operator fun invoke(
+        graph: ArtistAlleyGraph,
         route: AlleyDestination.Images,
+        onNavigateBack: () -> Unit,
+        viewModel: ImagesViewModel = viewModel { graph.imagesViewModel() },
+    ) {
+        val data by produceState(route.type to route.images.orEmpty(), route, viewModel) {
+            if (route.images.isNullOrEmpty()) {
+                viewModel.load(route)?.let {
+                    value = it
+                }
+            }
+        }
+        val (type, images) = data
+        ImagesScreen(
+            year = route.year,
+            id = route.id,
+            initialImageIndex = route.initialImageIndex ?: 1,
+            type = type,
+            images = images,
+            onNavigateBack = onNavigateBack,
+        )
+    }
+
+    @Composable
+    operator fun invoke(
+        year: DataYear,
+        id: String,
+        initialImageIndex: Int?,
+        type: AlleyDestination.Images.Type,
+        images: List<CatalogImage>,
         onNavigateBack: () -> Unit,
     ) {
         val imagePagerState = rememberImagePagerState(
-            images = route.images,
-            initialImageIndex = route.initialImageIndex ?: 0,
+            images = images,
+            initialImageIndex = initialImageIndex ?: 0,
         )
         val navigationResults = LocalNavigationResults.current
         LaunchedEffect(imagePagerState, navigationResults) {
@@ -58,11 +91,11 @@ object ImagesScreen {
             topBar = {
                 TopAppBar(
                     title = {
-                        when (val type = route.type) {
+                        when (type) {
                             is AlleyDestination.Images.Type.Artist ->
                                 ArtistTitle(
-                                    year = route.year,
-                                    id = route.id,
+                                    year = year,
+                                    id = id,
                                     booth = type.booth,
                                     profileImage = type.profileImage,
                                     name = type.name,
@@ -70,8 +103,8 @@ object ImagesScreen {
                                 )
                             is AlleyDestination.Images.Type.StampRally ->
                                 StampRallyTitle(
-                                    year = route.year,
-                                    id = route.id,
+                                    year = year,
+                                    id = id,
                                     hostTable = type.hostTable,
                                     fandom = type.fandom,
                                     useSharedElement = false,
@@ -87,17 +120,16 @@ object ImagesScreen {
                         }
                     },
                     modifier = Modifier
-                        .sharedBounds("container", route.id, zIndexInOverlay = 1f)
+                        .sharedBounds("container", id, zIndexInOverlay = 1f)
                 )
             }
         ) {
             Column(Modifier.padding(it)) {
-                val images = route.images
                 val multiZoomableState = rememberMultiZoomableState(images.size)
                 ImagePager(
                     images = images,
                     pagerState = imagePagerState,
-                    sharedElementId = route.id,
+                    sharedElementId = id,
                     onClickPage = null,
                     onClickFullscreen = null,
                     clipCorners = false,
