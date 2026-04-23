@@ -941,6 +941,7 @@ object ArtistForm {
         showImages: Boolean = false,
         showEditorNotes: Boolean = true,
         forceLocked: Boolean = false,
+        showUnknownIndicator: Boolean = true,
         onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
     ) {
         val focusState = rememberFocusState(
@@ -1010,7 +1011,7 @@ object ArtistForm {
                 seriesImage = seriesImage,
                 merchById = merchById,
                 merchPredictions = merchPredictions,
-                showUnknownIndicator = false,
+                showUnknownIndicator = showUnknownIndicator,
             )
 
             NotesSection(state.info.notes, this@ArtistFormScope.initialArtist?.notes)
