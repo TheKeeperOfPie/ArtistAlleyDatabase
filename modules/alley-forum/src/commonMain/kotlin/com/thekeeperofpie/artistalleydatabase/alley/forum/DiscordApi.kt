@@ -172,9 +172,14 @@ internal class DiscordApi(private val environment: Environment) {
         }
             .body<List<Message>>()
 
-    suspend fun modifyThread(threadId: String, name: String? = null, archived: Boolean? = null) {
+    suspend fun modifyThread(
+        threadId: String,
+        name: String? = null,
+        archived: Boolean? = null,
+        appliedTags: List<Long>? = null,
+    ) {
         client.patch("channels/$threadId") {
-            setBody(ModifyThread(name = name, archived = archived))
+            setBody(ModifyThread(name = name, archived = archived, appliedTags = appliedTags))
         }.assertSuccess()
     }
 

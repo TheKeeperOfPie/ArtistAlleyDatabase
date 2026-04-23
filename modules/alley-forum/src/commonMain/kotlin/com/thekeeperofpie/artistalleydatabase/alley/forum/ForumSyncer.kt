@@ -258,11 +258,18 @@ internal class ForumSyncer(private val environment: Environment) {
 //            )
 //            println("Edited ${it.second.secondMessage.id}")
                 println("Edited ${it.second.thread.thread.name}")
-                if (it.second.thread.thread.name != it.first.threadTitle) {
+                val expectedTags = if (it.first.entry.verifiedArtist) {
+                    listOf(environment.verifiedArtistTagId.toLong())
+                } else {
+                    emptyList()
+                }
+                if (it.second.thread.thread.name != it.first.threadTitle ||
+                    it.second.thread.thread.appliedTags.orEmpty() != expectedTags) {
                     delay(THROTTLE_DELAY)
                     api.modifyThread(
                         threadId = it.second.thread.thread.id,
-                        name = it.first.threadTitle
+                        name = it.first.threadTitle,
+                        appliedTags = expectedTags,
                     )
                     println("Updated ${it.second.thread.thread.name} -> ${it.first.threadTitle}")
                 }
