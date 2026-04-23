@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Approval
+import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,12 +26,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
+import artistalleydatabase.modules.alley.generated.resources.alley_images_open_artist
+import artistalleydatabase.modules.alley.generated.resources.alley_images_open_rally
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
@@ -47,6 +52,7 @@ object ImagesScreen {
         graph: ArtistAlleyGraph,
         route: AlleyDestination.Images,
         onNavigateBack: () -> Unit,
+        onClickOpen: () -> Unit,
         viewModel: ImagesViewModel = viewModel { graph.imagesViewModel() },
     ) {
         val data by produceState(route.type to route.images.orEmpty(), route, viewModel) {
@@ -64,6 +70,7 @@ object ImagesScreen {
             type = type,
             images = images,
             onNavigateBack = onNavigateBack,
+            onClickOpen = onClickOpen.takeIf { route.showOpenButton },
         )
     }
 
@@ -75,6 +82,7 @@ object ImagesScreen {
         type: AlleyDestination.Images.Type,
         images: List<CatalogImage>,
         onNavigateBack: () -> Unit,
+        onClickOpen: (() -> Unit)?,
     ) {
         val imagePagerState = rememberImagePagerState(
             images = images,
@@ -116,6 +124,28 @@ object ImagesScreen {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = stringResource(Res.string.alley_details_close_image),
+                            )
+                        }
+                    },
+                    actions = {
+                        if (onClickOpen != null) {
+                            val text = stringResource(
+                                when (type) {
+                                    is AlleyDestination.Images.Type.Artist ->
+                                        Res.string.alley_images_open_artist
+                                    is AlleyDestination.Images.Type.StampRally ->
+                                        Res.string.alley_images_open_rally
+                                }
+                            )
+                            val icon = when (type) {
+                                is AlleyDestination.Images.Type.Artist -> Icons.Default.Brush
+                                is AlleyDestination.Images.Type.StampRally -> Icons.Default.Approval
+                            }
+                            TooltipIconButton(
+                                icon = icon,
+                                tooltipText = text,
+                                contentDescription = text,
+                                onClick = onClickOpen,
                             )
                         }
                     },

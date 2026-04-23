@@ -407,4 +407,7 @@
     <string name="alley_libraries_title">Libraries</string>
 
     <string name="alley_artist_has_notes_content_description">Artist has notes</string>
+
+    <string name="alley_images_open_artist">Open artist</string>
+    <string name="alley_images_open_rally">Open rally</string>
 </resources>

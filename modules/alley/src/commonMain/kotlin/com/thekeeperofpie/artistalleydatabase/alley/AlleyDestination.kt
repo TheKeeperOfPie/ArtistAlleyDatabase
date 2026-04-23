@@ -54,6 +54,7 @@ sealed interface AlleyDestination : NavKey {
         val type: Type,
         val images: List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>?,
         val initialImageIndex: Int?,
+        val showOpenButton: Boolean,
     ) : AlleyDestination {
 
         @Serializable
@@ -206,6 +207,7 @@ sealed interface AlleyDestination : NavKey {
                             },
                             images = null,
                             initialImageIndex = null,
+                            showOpenButton = true,
                         )
                     }
                     "import" -> Import(parts.getOrNull(1).orEmpty())

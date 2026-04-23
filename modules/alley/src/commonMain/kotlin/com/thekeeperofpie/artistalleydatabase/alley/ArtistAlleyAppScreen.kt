@@ -122,6 +122,7 @@ object ArtistAlleyAppScreen {
                     ),
                     images = images,
                     initialImageIndex = imageIndex,
+                    showOpenButton = true,
                 )
             )
         }
@@ -159,6 +160,7 @@ object ArtistAlleyAppScreen {
                             images = entry.images,
                         ),
                         initialImageIndex = initialImageIndex,
+                        showOpenButton = true,
                     )
                 )
             }
@@ -232,6 +234,7 @@ object ArtistAlleyAppScreen {
                                 ),
                                 images = images,
                                 initialImageIndex = imageIndex,
+                                showOpenButton = false,
                             )
                         )
                     },
@@ -308,6 +311,24 @@ object ArtistAlleyAppScreen {
                     graph = graph,
                     route = it,
                     onNavigateBack = navStack::onBack,
+                    onClickOpen = {
+                        val destination = when (it.type) {
+                            is AlleyDestination.Images.Type.Artist -> AlleyDestination.ArtistDetails(
+                                year = it.year,
+                                id = it.id,
+                                booth = null,
+                                name = null,
+                            )
+                            is AlleyDestination.Images.Type.StampRally -> AlleyDestination.StampRallyDetails(
+                                year = it.year,
+                                id = it.id,
+                                hostTable = null,
+                                fandom = null,
+                                images = null,
+                            )
+                        }
+                        navStack.navigate(destination)
+                    },
                 )
             }
 
@@ -363,6 +384,7 @@ object ArtistAlleyAppScreen {
                                 ),
                                 images = images,
                                 initialImageIndex = imageIndex,
+                                showOpenButton = false,
                             )
                         )
                     },
