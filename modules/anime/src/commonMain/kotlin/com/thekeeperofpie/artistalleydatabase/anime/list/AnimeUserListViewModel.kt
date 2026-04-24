@@ -31,9 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -56,8 +54,8 @@ class AnimeUserListViewModel(
     val ignoreController: IgnoreController,
     private val userMediaListController: UserMediaListController,
     private val mediaListStatusController: MediaListStatusController,
-    @Assisted("userId") val userId: String?,
-    @Assisted("userName") userName: String?,
+    @Assisted val userId: String?,
+    @Assisted userName: String?,
     @Assisted val mediaType: MediaType,
     @Assisted val mediaListStatus: MediaListStatus?,
     @Assisted val mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
@@ -380,15 +378,4 @@ class AnimeUserListViewModel(
         val all: List<MediaEntry>,
         val lists: List<ListEntry>,
     )
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            @Assisted("userId") userId: String?,
-            @Assisted("userName") userName: String?,
-            mediaType: MediaType,
-            mediaListStatus: MediaListStatus?,
-            mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
-        ): AnimeUserListViewModel
-    }
 }

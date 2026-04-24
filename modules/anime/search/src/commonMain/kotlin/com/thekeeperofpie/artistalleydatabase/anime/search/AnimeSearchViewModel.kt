@@ -54,7 +54,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -616,13 +615,13 @@ class AnimeSearchViewModel<MediaPreviewEntry : Any, MediaWithListStatusEntry, Ch
         private val ignoreController: IgnoreController,
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
-        @Assisted("unlocked") private val unlocked: StateFlow<Boolean>,
-        @Assisted("animeSortFilterParams") private val animeSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
-        @Assisted("mangaSortFilterParams") private val mangaSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
-        @Assisted("characterSortFilterParams") private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
-        @Assisted("staffSortFilterParams") private val staffSortFilterParams: StateFlow<StaffSortFilterParams>,
-        @Assisted("studiosSortFilterParams") private val studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
-        @Assisted("usersSortFilterParams") private val usersSortFilterParams: StateFlow<UsersSortFilterParams>,
+        @Assisted private val unlocked: StateFlow<Boolean>,
+        @Assisted private val animeSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
+        @Assisted private val mangaSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
+        @Assisted private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
+        @Assisted private val staffSortFilterParams: StateFlow<StaffSortFilterParams>,
+        @Assisted private val studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
+        @Assisted private val usersSortFilterParams: StateFlow<UsersSortFilterParams>,
     ) {
         fun <MediaPreviewEntry : Any, MediaWithListStatusEntry, CharacterEntry, StaffEntry, StudioEntry, UserEntry> create(
             animeFilterMedia: (
@@ -662,19 +661,5 @@ class AnimeSearchViewModel<MediaPreviewEntry : Any, MediaWithListStatusEntry, Ch
             studioEntryProvider = studioEntryProvider,
             userEntryProvider = userEntryProvider,
         )
-
-        @AssistedFactory
-        interface Factory {
-            fun create(
-                savedStateHandle: SavedStateHandle,
-                @Assisted("unlocked") unlocked: StateFlow<Boolean>,
-                @Assisted("animeSortFilterParams") animeSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
-                @Assisted("mangaSortFilterParams") mangaSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
-                @Assisted("characterSortFilterParams") characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
-                @Assisted("staffSortFilterParams") staffSortFilterParams: StateFlow<StaffSortFilterParams>,
-                @Assisted("studiosSortFilterParams") studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
-                @Assisted("usersSortFilterParams") usersSortFilterParams: StateFlow<UsersSortFilterParams>,
-            ): TypedFactory
-        }
     }
 }

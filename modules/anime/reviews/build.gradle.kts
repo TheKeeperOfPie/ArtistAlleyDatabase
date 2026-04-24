@@ -11,6 +11,7 @@ kotlin {
             api(projects.modules.anilist)
             api(projects.modules.anilist.data)
             implementation(projects.modules.anime.media.data)
+            implementation(projects.modules.anime.ignore.data)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(libs.coil3.coil.compose)

@@ -15,6 +15,7 @@ kotlin {
             api(projects.modules.anime.forums)
             api(projects.modules.anime.history)
             api(projects.modules.anime.ignore)
+            api(projects.modules.anime.ignore.data)
             api(projects.modules.anime.media.data)
             api(projects.modules.anime.news)
             api(projects.modules.anime.notifications)
@@ -37,6 +38,7 @@ kotlin {
             implementation(projects.modules.markdown)
             implementation(projects.modules.media)
             implementation(projects.modules.monetization)
+            implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsNetwork)
 

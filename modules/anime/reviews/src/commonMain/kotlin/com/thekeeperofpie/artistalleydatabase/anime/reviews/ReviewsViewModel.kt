@@ -19,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -114,8 +113,8 @@ class ReviewsViewModel<MediaEntry>(
         private val featureOverrideProvider: FeatureOverrideProvider,
         private val mediaListStatusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
-        @Assisted("anime") private val animeSortFilterViewModel: ReviewsSortFilterViewModel,
-        @Assisted("manga") private val mangaSortFilterViewModel: ReviewsSortFilterViewModel,
+        @Assisted private val animeSortFilterViewModel: ReviewsSortFilterViewModel,
+        @Assisted private val mangaSortFilterViewModel: ReviewsSortFilterViewModel,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
@@ -129,13 +128,5 @@ class ReviewsViewModel<MediaEntry>(
             animeSortFilterViewModel = animeSortFilterViewModel,
             mangaSortFilterViewModel = mangaSortFilterViewModel,
         )
-
-        @AssistedFactory
-        interface Factory {
-            fun create(
-                @Assisted("anime") animeSortFilterViewModel: ReviewsSortFilterViewModel,
-                @Assisted("manga") mangaSortFilterViewModel: ReviewsSortFilterViewModel,
-            ): TypedFactory
-        }
     }
 }
