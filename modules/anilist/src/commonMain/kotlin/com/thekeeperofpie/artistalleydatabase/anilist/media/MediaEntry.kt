@@ -16,20 +16,20 @@ data class MediaEntry(
     val synonyms: List<String>? = null
 ) {
 
-    data class Title(
-        val romaji: String? = null,
-        val english: String? = null,
-        val native: String? = null,
-    )
-
     enum class Type {
         ANIME, MANGA
     }
-
-    data class CoverImage(
-        val extraLarge: String? = null,
-        val large: String? = null,
-        val medium: String? = null,
-        val color: String? = null,
-    )
 }
+
+data class Title(
+    val romaji: String? = null,
+    val english: String? = null,
+    val native: String? = null,
+)
+
+data class CoverImage(
+    val extraLarge: String? = null,
+    val large: String? = null,
+    val medium: String? = null,
+    val color: String? = null,
+)

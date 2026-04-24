@@ -61,7 +61,7 @@ object CharacterUtils {
                 CharacterEntry.VoiceActor(
                     id = it.id.toString(),
                     language = language,
-                    name = CharacterEntry.Name(
+                    name = Name(
                         first = it.name?.first,
                         middle = it.name?.middle,
                         last = it.name?.last,
@@ -69,7 +69,7 @@ object CharacterUtils {
                         native = it.name?.native,
                         alternative = it.name?.alternative?.filterNotNull(),
                     ),
-                    image = CharacterEntry.Image(
+                    image = Image(
                         large = it.image?.large,
                         medium = it.image?.medium,
                     ),

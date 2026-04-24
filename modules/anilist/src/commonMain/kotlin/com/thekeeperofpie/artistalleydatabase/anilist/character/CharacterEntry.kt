@@ -81,22 +81,6 @@ data class CharacterEntry(
     }
 
     @Serializable
-    data class Name(
-        val first: String? = null,
-        val middle: String? = null,
-        val last: String? = null,
-        val full: String? = null,
-        val native: String? = null,
-        val alternative: List<String>? = null,
-    )
-
-    @Serializable
-    data class Image(
-        val large: String? = null,
-        val medium: String? = null,
-    )
-
-    @Serializable
     data class VoiceActor(
         val id: String,
         val language: String?,
@@ -104,6 +88,22 @@ data class CharacterEntry(
         val image: Image?,
     )
 }
+
+@Serializable
+data class Name(
+    val first: String? = null,
+    val middle: String? = null,
+    val last: String? = null,
+    val full: String? = null,
+    val native: String? = null,
+    val alternative: List<String>? = null,
+)
+
+@Serializable
+data class Image(
+    val large: String? = null,
+    val medium: String? = null,
+)
 
 @Entity(tableName = "character_entries_fts")
 @Fts4(contentEntity = CharacterEntry::class)
@@ -113,9 +113,9 @@ data class CharacterEntryFts(
     val rowId: Int? = null,
     val id: String,
     @Embedded(prefix = "name_")
-    val name: CharacterEntry.Name?,
+    val name: Name?,
     @Embedded(prefix = "image_")
-    val image: CharacterEntry.Image?,
+    val image: Image?,
     val mediaIds: List<String>?,
     val mediaTitle: String?,
     val voiceActors: Map<String, String>?,

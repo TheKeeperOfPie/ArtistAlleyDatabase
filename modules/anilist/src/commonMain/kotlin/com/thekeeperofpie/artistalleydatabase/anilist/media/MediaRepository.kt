@@ -37,13 +37,13 @@ class MediaRepository(
 
     private fun makeEntry(media: AniListMedia) = MediaEntry(
         id = media.id.toString(),
-        title = MediaEntry.Title(
+        title = Title(
             romaji = media.title?.romaji?.trim(),
             english = media.title?.english?.trim(),
             native = media.title?.native?.trim(),
         ),
         type = media.type?.rawValue?.let(MediaEntry.Type::valueOf),
-        image = MediaEntry.CoverImage(
+        image = CoverImage(
             extraLarge = media.coverImage?.extraLarge,
             large = media.coverImage?.large,
             medium = media.coverImage?.medium,
