@@ -77,8 +77,8 @@ dependencyResolutionManagement {
 plugins {
     id("com.autonomousapps.build-health").version("2.16.0")
     id("com.android.application").version("8.13.2").apply(false)
-    id("org.jetbrains.kotlin.android").version("2.3.20").apply(false)
-    id("org.jetbrains.kotlin.jvm").version("2.3.20").apply(false)
+    id("org.jetbrains.kotlin.android").version("2.3.21").apply(false)
+    id("org.jetbrains.kotlin.jvm").version("2.3.21").apply(false)
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
