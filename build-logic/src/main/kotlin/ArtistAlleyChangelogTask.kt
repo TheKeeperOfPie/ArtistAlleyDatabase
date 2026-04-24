@@ -57,8 +57,8 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             .flatMap { (beforeSnapshot, afterSnapshot) ->
                 try {
                     fun verifyDelete(file: File) {
-                        if (!file.delete()) {
-                            logger.error("Failed to delete ${file.absolutePath}")
+                        if (file.exists() && !file.delete()) {
+                            throw IllegalStateException("Failed to delete ${file.absolutePath}")
                         }
                     }
                     listOf(
