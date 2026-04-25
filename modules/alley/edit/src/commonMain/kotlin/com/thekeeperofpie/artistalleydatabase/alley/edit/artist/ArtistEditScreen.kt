@@ -392,6 +392,9 @@ object ArtistEditScreen {
                                 onClickSameArtist = onClickSameArtist,
                                 onConfirmDelete = onConfirmDelete,
                                 forceLocked = { !sameArtist.isEmpty() || showMergingArtist },
+                                onClickAddImages = {
+                                    onClickEditImages(imagesRequestKey, emptyList())
+                                },
                             )
                         }
                     },
@@ -420,7 +423,12 @@ object ArtistEditScreen {
                                     if (initialArtist != null && artistProgress !is JobProgress.Loading) {
                                         EditImagesButton(
                                             images = state.artistFormState.images,
-                                            onClickEdit = { onClickEditImages(imagesRequestKey, state.artistFormState.images.toList()) },
+                                            onClickEdit = {
+                                                onClickEditImages(
+                                                    imagesRequestKey,
+                                                    state.artistFormState.images.toList()
+                                                )
+                                            },
                                             modifier = Modifier.align(Alignment.CenterHorizontally)
                                         )
                                     }
@@ -441,7 +449,12 @@ object ArtistEditScreen {
                             Column {
                                 EditImagesButton(
                                     images = state.artistFormState.images,
-                                    onClickEdit = { onClickEditImages(imagesRequestKey, state.artistFormState.images.toList()) },
+                                    onClickEdit = {
+                                        onClickEditImages(
+                                            imagesRequestKey,
+                                            state.artistFormState.images.toList()
+                                        )
+                                    },
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                                 ImageGrid(
@@ -633,6 +646,7 @@ object ArtistEditScreen {
         onClickMerge: () -> Unit,
         onClickSameArtist: (artistId: Uuid) -> Unit,
         onConfirmDelete: () -> Unit,
+        onClickAddImages: () -> Unit,
         forceLocked: () -> Boolean,
     ) {
         Column {
@@ -656,6 +670,15 @@ object ArtistEditScreen {
                     inferredArtists = inferredArtists,
                     onClickSameArtist = onClickSameArtist,
                 )
+
+                if (state.artistFormState.images.isEmpty()) {
+                    EditImagesButton(
+                        images = state.artistFormState.images,
+                        onClickEdit = onClickAddImages,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+
                 ArtistForm(
                     initialArtist = { initialArtist },
                     state = artistFormState,
