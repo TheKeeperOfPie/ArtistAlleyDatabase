@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLink
+import androidx.compose.material.icons.filled.CopyAll
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material.icons.filled.Warning
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,6 +58,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_copy_form
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_generate_link_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_request_merge_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
@@ -129,6 +132,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
@@ -290,11 +294,24 @@ object ArtistEditScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {
+                        val clipboardManager = LocalClipboardManager.current
                         AppBarActions(
                             errorState = errorState,
                             saveTaskState = saveTaskState,
                             hasPendingChanges = hasPendingChanges,
                             hasPreviousYearData = { previousYearData != null },
+                            onClickCopyForm = {
+                                clipboardManager.setText(buildAnnotatedString {
+                                    append(
+                                        Json.encodeToString(
+                                            state.artistFormState.captureDatabaseEntry(
+                                                dataYear = dataYear,
+                                                verifiedArtist = false,
+                                            )
+                                        )
+                                    )
+                                })
+                            },
                             onClickRefresh = onClickRefresh,
                             onClickGenerateFormLink = { showFormLinkDialog = true },
                             onClickHistory = onClickHistory,
@@ -591,6 +608,7 @@ object ArtistEditScreen {
         saveTaskState: TaskState<BackendRequest.ArtistSave.Response>,
         hasPendingChanges: () -> Boolean,
         hasPreviousYearData: () -> Boolean,
+        onClickCopyForm: () -> Unit,
         onClickRefresh: () -> Unit,
         onClickGenerateFormLink: () -> Unit,
         onClickHistory: () -> Unit,
@@ -605,6 +623,11 @@ object ArtistEditScreen {
                 onClick = onClickRequestMerge,
             )
         }
+        TooltipIconButton(
+            icon = Icons.Default.CopyAll,
+            tooltipText = stringResource(Res.string.alley_edit_artist_action_copy_form),
+            onClick = onClickCopyForm,
+        )
 
         FormRefreshButton(hasPendingChanges, onClickRefresh)
 

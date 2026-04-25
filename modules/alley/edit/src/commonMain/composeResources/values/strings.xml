@@ -86,6 +86,7 @@
     <string name="alley_edit_artist_action_save_and_exit_tooltip">Save and exit</string>
     <string name="alley_edit_artist_action_generate_link_tooltip">Generate form link</string>
     <string name="alley_edit_artist_action_request_merge_tooltip">Merge previous year data</string>
+    <string name="alley_edit_artist_action_copy_form">Copy form JSON</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
 
     <string name="alley_edit_artist_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>

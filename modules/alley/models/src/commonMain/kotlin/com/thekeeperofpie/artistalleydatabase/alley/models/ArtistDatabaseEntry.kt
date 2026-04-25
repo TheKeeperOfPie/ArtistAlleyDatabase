@@ -67,19 +67,20 @@ interface ArtistDatabaseEntry {
             get() = _images.takeIf { fallbackImageYear == null }.orEmpty()
         override val fallbackImages: List<CatalogImage>
             get() = _images.takeIf { fallbackImageYear != null }.orEmpty()
+
     }
 
     companion object {
 
         // Need to ignore metadata for equality
-        fun hasChanged(before: Impl?, after: Impl) =
+        fun hasChanged(before: Impl?, after: Impl?) =
             before?.copy(
                 embeds = emptyMap(),
                 verifiedArtist = false,
                 newArtist = false,
                 lastEditTime = null,
                 lastEditor = null
-            ) != after.copy(
+            ) != after?.copy(
                 embeds = emptyMap(),
                 verifiedArtist = false,
                 newArtist = false,

@@ -383,7 +383,11 @@ object AlleyEditBackend {
                     .awaitAsOneOrNull()
                     ?.toArtistDatabaseEntry()
                     ?.fixForJs()
-            if (currentArtist != null && currentArtist != request.initial) {
+            if (currentArtist != null && ArtistDatabaseEntry.hasChanged(
+                    before = currentArtist,
+                    after = request.initial,
+                )
+            ) {
                 BackendRequest.ArtistSave.Response.Outdated(currentArtist)
             } else {
                 val updatedArtist = request.updated.copy(

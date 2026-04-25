@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
@@ -222,7 +223,8 @@ class ArtistEditViewModel(
         withContext(dispatchers.io) {
             val (images, databaseEntry, isManual) = triple
 
-            val hasChanged = ArtistDatabaseEntry.hasChanged(artist.value, databaseEntry)
+            val initialArtist = artist.value
+            val hasChanged = ArtistDatabaseEntry.hasChanged(initialArtist, databaseEntry)
             if (!isManual && !hasChanged && images.none { it is EditImage.LocalImage }) {
                 // Don't save if no data has changed
                 return@withContext BackendRequest.ArtistSave.Response.Success
@@ -249,19 +251,28 @@ class ArtistEditViewModel(
             val updatedArtist = databaseEntry.copy(_images = artistCatalogImages)
             database.saveArtist(
                 dataYear = dataYear,
-                initial = artist.value,
+                initial = initialArtist,
                 updated = updatedArtist,
             ).also {
-                if (it is BackendRequest.ArtistSave.Response.Success) {
-                    hasLoaded = false
-                    artist.value = updatedArtist
-                    if (!isManual) {
-                        state.artistFormState.applyDatabaseEntry(
-                            artist = updatedArtist,
-                            seriesById = tagAutocomplete.seriesById.first(),
-                            merchById = tagAutocomplete.merchById.first(),
-                        )
+                when (it) {
+                    is BackendRequest.ArtistSave.Response.Success -> {
+                        hasLoaded = false
+                        artist.value = updatedArtist
+                        if (!isManual) {
+                            state.artistFormState.applyDatabaseEntry(
+                                artist = updatedArtist,
+                                seriesById = tagAutocomplete.seriesById.first(),
+                                merchById = tagAutocomplete.merchById.first(),
+                            )
+                        }
                     }
+                    is BackendRequest.ArtistSave.Response.Failed -> Unit
+                    is BackendRequest.ArtistSave.Response.Outdated ->
+                        ConsoleLogger.log(
+                            "initial = ${Json.encodeToString(initialArtist)}, " +
+                                    "updated = ${Json.encodeToString(updatedArtist)}, " +
+                                    "expected = ${Json.encodeToString(it.current)}"
+                        )
                 }
             }
         }
