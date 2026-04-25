@@ -13,6 +13,7 @@
     <string name="alley_edit_artist_list_tab_all">All</string>
     <string name="alley_edit_artist_list_tab_missing_links">Missing links</string>
     <string name="alley_edit_artist_list_tab_missing_inferred">Missing inferred</string>
+    <string name="alley_edit_artist_list_tab_missing_updated_inferred">Missing updated inferred</string>
     <string name="alley_edit_artist_list_tab_missing_confirmed">Missing confirmed</string>
 
     <string name="alley_edit_artist_list_search_placeholder">Search %1$d entries...</string>

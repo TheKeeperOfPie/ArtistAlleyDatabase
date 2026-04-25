@@ -6,6 +6,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
@@ -23,6 +25,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @AssistedInject
 class ArtistListViewModel(
     private val artistCache: ArtistCache,
+    private val artistEntryDao: ArtistEntryDao,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
@@ -39,12 +42,29 @@ class ArtistListViewModel(
         it.filter { it.socialLinks.isEmpty() && it.storeLinks.isEmpty() && it.portfolioLinks.isEmpty() && it.catalogLinks.isEmpty() }
     }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
 
-    private val missingInferred = artistEntries.mapLatest {
+    private val ArtistSummary.missingTags
+        get() = (seriesInferred.isEmpty() || merchInferred.isEmpty()) &&
+                (seriesConfirmed.isEmpty() && merchConfirmed.isEmpty())
+
+    private val missingUpdatedInferred = artistEntries.mapLatest {
         it.filter {
             (it.seriesInferred.isEmpty() || it.merchInferred.isEmpty()) &&
                     (it.seriesConfirmed.isEmpty() && it.merchConfirmed.isEmpty())
         }
     }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
+
+    private val missingInferred =
+        combine(
+            missingUpdatedInferred,
+            dataYear.mapLatest {
+                artistEntryDao.getAllEntries(it).associateBy { it.id }
+            },
+        ) { remoteEntries, databaseEntries ->
+            remoteEntries.filter { remoteEntry ->
+                val databaseEntry = databaseEntries[remoteEntry.id]
+                databaseEntry == null || databaseEntry.missingTags
+            }
+        }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
 
     private val missingConfirmed = artistEntries.mapLatest {
         it.filter { it.images.isNotEmpty() && (it.seriesConfirmed.isEmpty() || it.merchConfirmed.isEmpty()) }
@@ -57,6 +77,7 @@ class ArtistListViewModel(
                     ArtistListTab.ALL -> artistEntries
                     ArtistListTab.MISSING_LINKS -> missingLinks
                     ArtistListTab.MISSING_INFERRED -> missingInferred
+                    ArtistListTab.MISSING_UPDATED_INFERRED -> missingUpdatedInferred
                     ArtistListTab.MISSING_CONFIRMED -> missingConfirmed
                 },
                 debouncedQuery,
@@ -70,7 +91,7 @@ class ArtistListViewModel(
 
             entries.filter {
                 it.id.toString().contains(query, ignoreCase = true) ||
-                        it.name?.contains(query, ignoreCase = true) == true ||
+                        it.name.contains(query, ignoreCase = true) ||
                         it.booth?.contains(query, ignoreCase = true) == true
             }
         }
