@@ -151,7 +151,7 @@ class MerchEntryDao(
         }
         val likeAndQuery = yearFilter + DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)
 
-        val matchQuery = "'{ name } : $matchOrQuery'"
+        val matchQuery = "'{ name notes } : $matchOrQuery'"
 
         val joinStatement = """
             LEFT OUTER JOIN merchUserEntry

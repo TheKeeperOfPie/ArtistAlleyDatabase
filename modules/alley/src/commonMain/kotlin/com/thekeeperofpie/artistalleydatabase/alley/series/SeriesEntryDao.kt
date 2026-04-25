@@ -169,6 +169,8 @@ class SeriesEntryDao(
             "titleEnglish",
             "titleRomaji",
             "titleNative",
+            "titlePreferred",
+            "synonyms",
         )
         val matchQuery = buildString {
             append("'{ ${targetColumns.joinToString(separator = " ")} } : $matchOrQuery'")
