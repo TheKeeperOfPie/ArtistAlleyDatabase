@@ -585,21 +585,25 @@ object ArtistFormScreen {
                 label = { Text(stringResource(Res.string.alley_form_artist_commissions_placeholder)) },
             )
 
-            SeriesSection(
-                state = formState.series,
+            SeriesInferredSection(
+                state = formState.series.stateInferred,
+                inferred = formState.series.inferred,
                 seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
-                showConfirmed = false,
+                initiallyHide = false,
                 showUnknownIndicator = false,
             )
-            MerchSection(
-                state = formState.merch,
+
+            MerchInferredSection(
+                state = formState.merch.stateInferred,
+                inferred = formState.merch.inferred,
                 merchById = merchById,
                 merchPredictions = merchPredictions,
-                showConfirmed = false,
+                initiallyHide = false,
                 showUnknownIndicator = false,
             )
+
             NotesSection(
                 state = formState.notes,
                 initialValue = this@ArtistForm.initialArtist?.notes,

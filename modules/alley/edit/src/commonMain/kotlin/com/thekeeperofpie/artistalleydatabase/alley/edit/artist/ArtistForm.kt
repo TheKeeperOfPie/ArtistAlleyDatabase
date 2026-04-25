@@ -211,24 +211,24 @@ interface ArtistFormScope : EntryFormScope {
     )
 
     @Composable
-    fun TagSections(
-        series: ArtistFormState.SeriesState,
-        merch: ArtistFormState.MerchState,
-        seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
-        merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        showUnknownIndicator: Boolean = false,
-    )
-
-    @Composable
     fun SeriesSection(
         state: ArtistFormState.SeriesState,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        hideInferred: Boolean = false,
         showConfirmed: Boolean = true,
+        showUnknownIndicator: Boolean = true,
+    )
+
+    @Composable
+    fun SeriesInferredSection(
+        state: EntryForm2.SingleTextState,
+        inferred: SnapshotStateList<SeriesInfo>,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+        initiallyHide: Boolean = false,
         showUnknownIndicator: Boolean = true,
     )
 
@@ -247,7 +247,18 @@ interface ArtistFormScope : EntryFormScope {
         state: ArtistFormState.MerchState,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        hideInferred: Boolean = false,
         showConfirmed: Boolean = true,
+        showUnknownIndicator: Boolean = true,
+    )
+
+    @Composable
+    fun MerchInferredSection(
+        state: EntryForm2.SingleTextState,
+        inferred: SnapshotStateList<MerchInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        initiallyHide: Boolean,
         showUnknownIndicator: Boolean = true,
     )
 
@@ -655,44 +666,48 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun TagSections(
-        series: ArtistFormState.SeriesState,
-        merch: ArtistFormState.MerchState,
-        seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
-        merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        showUnknownIndicator: Boolean,
-    ) {
-        SeriesSection(
-            state = series,
-            seriesById = seriesById,
-            seriesPredictions = seriesPredictions,
-            seriesImage = seriesImage,
-            showUnknownIndicator = showUnknownIndicator,
-        )
-        MerchSection(
-            state = merch,
-            merchById = merchById,
-            merchPredictions = merchPredictions,
-            showUnknownIndicator = showUnknownIndicator,
-        )
-    }
-
-    @Composable
     override fun SeriesSection(
         state: ArtistFormState.SeriesState,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        hideInferred: Boolean,
         showConfirmed: Boolean,
         showUnknownIndicator: Boolean,
     ) {
-        val hasConfirmedSeries by derivedStateOf { state.confirmed.isNotEmpty() }
-        var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
-        val showSeriesInferred =
-            forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred || !showConfirmed
+        SeriesInferredSection(
+            state = state.stateInferred,
+            inferred = state.inferred,
+            seriesById = seriesById,
+            seriesPredictions = seriesPredictions,
+            seriesImage = seriesImage,
+            initiallyHide = hideInferred,
+            showUnknownIndicator = showUnknownIndicator,
+        )
+
+        if (forceLocked || showConfirmed || state.confirmed.isNotEmpty()) {
+            SeriesConfirmedSection(
+                state = state.stateConfirmed,
+                confirmed = state.confirmed,
+                seriesById = seriesById,
+                seriesPredictions = seriesPredictions,
+                seriesImage = seriesImage,
+                showUnknownIndicator = showUnknownIndicator,
+            )
+        }
+    }
+
+    @Composable
+    override fun SeriesInferredSection(
+        state: EntryForm2.SingleTextState,
+        inferred: SnapshotStateList<SeriesInfo>,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+        initiallyHide: Boolean,
+        showUnknownIndicator: Boolean,
+    ) {
+        var showItems by rememberSaveable { mutableStateOf(!initiallyHide) }
 
         val seriesByIdMap = seriesById()
         val initialInferred = remember(seriesByIdMap, initialArtist?.seriesInferred) {
@@ -703,7 +718,7 @@ private abstract class ArtistFormScopeImpl(
         val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
 
         SeriesSection(
-            state = state.stateInferred,
+            state = state,
             title = Res.string.alley_edit_artist_edit_series_inferred,
             header = {
                 FormHeaderIconAndTitle(
@@ -712,32 +727,20 @@ private abstract class ArtistFormScopeImpl(
                 )
             },
             listRevertDialogState = revertDialogStateInferred,
-            items = state.inferred,
-            showItems = { showSeriesInferred },
+            items = inferred,
+            showItems = { forceLocked || showItems },
             predictions = seriesPredictions,
             image = seriesImage,
             showUnknownIndicator = showUnknownIndicator,
             additionalHeaderActions = {
-                if (!this@ArtistFormScopeImpl.forceLocked && showConfirmed) {
+                if (!this@ArtistFormScopeImpl.forceLocked && (!showItems || initiallyHide)) {
                     ArtistForm.ShowInferredButton(
-                        hasConfirmed = hasConfirmedSeries,
-                        showingInferred = showSeriesInferred,
-                        onClick = { requestedShowSeriesInferred = it },
+                        showingInferred = showItems,
+                        onClick = { showItems = it },
                     )
                 }
             },
         )
-
-        if (showConfirmed) {
-            SeriesConfirmedSection(
-                state = state.stateConfirmed,
-                confirmed = state.confirmed,
-                seriesById = seriesById,
-                seriesPredictions = seriesPredictions,
-                seriesImage = seriesImage,
-                showUnknownIndicator = showUnknownIndicator,
-            )
-        }
     }
 
     @Composable
@@ -778,13 +781,40 @@ private abstract class ArtistFormScopeImpl(
         state: ArtistFormState.MerchState,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        hideInferred: Boolean,
         showConfirmed: Boolean,
         showUnknownIndicator: Boolean,
     ) {
-        val hasConfirmedMerch by derivedStateOf { state.confirmed.isNotEmpty() }
-        var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
-        val showMerchInferred =
-            forceLocked || !hasConfirmedMerch || requestedShowMerchInferred || !showConfirmed
+        MerchInferredSection(
+            state = state.stateInferred,
+            inferred = state.inferred,
+            merchById = merchById,
+            merchPredictions = merchPredictions,
+            initiallyHide = hideInferred,
+            showUnknownIndicator = showUnknownIndicator,
+        )
+
+        if (forceLocked || showConfirmed || state.confirmed.isNotEmpty()) {
+            MerchConfirmedSection(
+                state = state.stateConfirmed,
+                confirmed = state.confirmed,
+                merchById = merchById,
+                merchPredictions = merchPredictions,
+                showUnknownIndicator = showUnknownIndicator,
+            )
+        }
+    }
+
+    @Composable
+    override fun MerchInferredSection(
+        state: EntryForm2.SingleTextState,
+        inferred: SnapshotStateList<MerchInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        initiallyHide: Boolean,
+        showUnknownIndicator: Boolean,
+    ) {
+        var showItems by rememberSaveable { mutableStateOf(!initiallyHide) }
 
         val merchByIdMap = merchById()
         val initialInferred = remember(merchByIdMap, initialArtist?.merchInferred) {
@@ -792,7 +822,7 @@ private abstract class ArtistFormScopeImpl(
         }
         val listRevertDialogStateInferred = rememberListRevertDialogState(initialInferred)
         BasicMultiTextSection(
-            state = state.stateInferred,
+            state = state,
             header = {
                 FormHeaderIconAndTitle(
                     CustomIcons.Package2,
@@ -801,8 +831,8 @@ private abstract class ArtistFormScopeImpl(
             },
             initialItems = initialInferred,
             equalsComparison = { it.name },
-            items = state.inferred,
-            showItems = { showMerchInferred },
+            items = inferred,
+            showItems = { forceLocked || showItems },
             predictions = merchPredictions,
             itemToCommitted = MerchInfo::fake,
             itemToText = { it.name },
@@ -822,11 +852,10 @@ private abstract class ArtistFormScopeImpl(
             },
             listRevertDialogState = listRevertDialogStateInferred,
             additionalHeaderActions = {
-                if (!this@ArtistFormScopeImpl.forceLocked && showConfirmed) {
+                if (!this@ArtistFormScopeImpl.forceLocked && (!showItems || initiallyHide)) {
                     ArtistForm.ShowInferredButton(
-                        hasConfirmed = hasConfirmedMerch,
-                        showingInferred = showMerchInferred,
-                        onClick = { requestedShowMerchInferred = it },
+                        showingInferred = showItems,
+                        onClick = { showItems = it },
                     )
                 }
             },
@@ -835,19 +864,9 @@ private abstract class ArtistFormScopeImpl(
         ListFieldRevertDialog(
             dialogState = listRevertDialogStateInferred,
             label = Res.string.alley_edit_artist_edit_merch_inferred,
-            items = state.inferred,
+            items = inferred,
             itemsToText = { it.joinToString { it.name } },
         )
-
-        if (showConfirmed) {
-            MerchConfirmedSection(
-                state = state.stateConfirmed,
-                confirmed = state.confirmed,
-                merchById = merchById,
-                merchPredictions = merchPredictions,
-                showUnknownIndicator = showUnknownIndicator,
-            )
-        }
     }
 
     @Composable
@@ -1003,14 +1022,24 @@ object ArtistForm {
                 catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
             )
 
-            TagSections(
-                series = state.series,
-                merch = state.merch,
+            val hasImages by remember { derivedStateOf { state.images.isNotEmpty() } }
+
+            SeriesSection(
+                state = state.series,
                 seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
+                hideInferred = hasImages,
+                showConfirmed = hasImages,
+                showUnknownIndicator = showUnknownIndicator,
+            )
+
+            MerchSection(
+                state = state.merch,
                 merchById = merchById,
                 merchPredictions = merchPredictions,
+                hideInferred = hasImages,
+                showConfirmed = hasImages,
                 showUnknownIndicator = showUnknownIndicator,
             )
 
@@ -1091,27 +1120,24 @@ object ArtistForm {
 
     @Composable
     internal fun ShowInferredButton(
-        hasConfirmed: Boolean,
         showingInferred: Boolean,
         onClick: (requestShowInferred: Boolean) -> Unit,
     ) {
-        if (hasConfirmed) {
-            TooltipIconButton(
-                icon = if (showingInferred) {
-                    Icons.Default.Visibility
+        TooltipIconButton(
+            icon = if (showingInferred) {
+                Icons.Default.Visibility
+            } else {
+                Icons.Default.VisibilityOff
+            },
+            tooltipText = stringResource(
+                if (showingInferred) {
+                    Res.string.alley_edit_artist_edit_action_hide_inferred
                 } else {
-                    Icons.Default.VisibilityOff
-                },
-                tooltipText = stringResource(
-                    if (showingInferred) {
-                        Res.string.alley_edit_artist_edit_action_hide_inferred
-                    } else {
-                        Res.string.alley_edit_artist_edit_action_show_inferred
-                    }
-                ),
-                onClick = { onClick(!showingInferred) },
-            )
-        }
+                    Res.string.alley_edit_artist_edit_action_show_inferred
+                }
+            ),
+            onClick = { onClick(!showingInferred) },
+        )
     }
 
     @Stable
