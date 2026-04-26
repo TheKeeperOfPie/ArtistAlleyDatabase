@@ -211,17 +211,6 @@ interface ArtistFormScope : EntryFormScope {
     )
 
     @Composable
-    fun SeriesSection(
-        state: ArtistFormState.SeriesState,
-        seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
-        hideInferred: Boolean = false,
-        showConfirmed: Boolean = true,
-        showUnknownIndicator: Boolean = true,
-    )
-
-    @Composable
     fun SeriesInferredSection(
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<SeriesInfo>,
@@ -239,16 +228,6 @@ interface ArtistFormScope : EntryFormScope {
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
-        showUnknownIndicator: Boolean = true,
-    )
-
-    @Composable
-    fun MerchSection(
-        state: ArtistFormState.MerchState,
-        merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        hideInferred: Boolean = false,
-        showConfirmed: Boolean = true,
         showUnknownIndicator: Boolean = true,
     )
 
@@ -666,38 +645,6 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun SeriesSection(
-        state: ArtistFormState.SeriesState,
-        seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
-        hideInferred: Boolean,
-        showConfirmed: Boolean,
-        showUnknownIndicator: Boolean,
-    ) {
-        SeriesInferredSection(
-            state = state.stateInferred,
-            inferred = state.inferred,
-            seriesById = seriesById,
-            seriesPredictions = seriesPredictions,
-            seriesImage = seriesImage,
-            initiallyHide = hideInferred,
-            showUnknownIndicator = showUnknownIndicator,
-        )
-
-        if (forceLocked || showConfirmed || state.confirmed.isNotEmpty()) {
-            SeriesConfirmedSection(
-                state = state.stateConfirmed,
-                confirmed = state.confirmed,
-                seriesById = seriesById,
-                seriesPredictions = seriesPredictions,
-                seriesImage = seriesImage,
-                showUnknownIndicator = showUnknownIndicator,
-            )
-        }
-    }
-
-    @Composable
     override fun SeriesInferredSection(
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<SeriesInfo>,
@@ -707,7 +654,7 @@ private abstract class ArtistFormScopeImpl(
         initiallyHide: Boolean,
         showUnknownIndicator: Boolean,
     ) {
-        var showItems by rememberSaveable { mutableStateOf(!initiallyHide) }
+        var showItems by rememberSaveable(initiallyHide) { mutableStateOf(!initiallyHide) }
 
         val seriesByIdMap = seriesById()
         val initialInferred = remember(seriesByIdMap, initialArtist?.seriesInferred) {
@@ -777,35 +724,6 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun MerchSection(
-        state: ArtistFormState.MerchState,
-        merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        hideInferred: Boolean,
-        showConfirmed: Boolean,
-        showUnknownIndicator: Boolean,
-    ) {
-        MerchInferredSection(
-            state = state.stateInferred,
-            inferred = state.inferred,
-            merchById = merchById,
-            merchPredictions = merchPredictions,
-            initiallyHide = hideInferred,
-            showUnknownIndicator = showUnknownIndicator,
-        )
-
-        if (forceLocked || showConfirmed || state.confirmed.isNotEmpty()) {
-            MerchConfirmedSection(
-                state = state.stateConfirmed,
-                confirmed = state.confirmed,
-                merchById = merchById,
-                merchPredictions = merchPredictions,
-                showUnknownIndicator = showUnknownIndicator,
-            )
-        }
-    }
-
-    @Composable
     override fun MerchInferredSection(
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<MerchInfo>,
@@ -814,7 +732,7 @@ private abstract class ArtistFormScopeImpl(
         initiallyHide: Boolean,
         showUnknownIndicator: Boolean,
     ) {
-        var showItems by rememberSaveable { mutableStateOf(!initiallyHide) }
+        var showItems by rememberSaveable(initiallyHide) { mutableStateOf(!initiallyHide) }
 
         val merchByIdMap = merchById()
         val initialInferred = remember(merchByIdMap, initialArtist?.merchInferred) {
@@ -963,6 +881,13 @@ object ArtistForm {
         showUnknownIndicator: Boolean = true,
         onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
     ) {
+        val hasImages by remember { derivedStateOf { state.images.isNotEmpty() } }
+        val showSeriesConfirmed by remember(forceLocked) {
+            derivedStateOf { forceLocked || hasImages || state.series.confirmed.isNotEmpty() }
+        }
+        val showMerchConfirmed by remember(forceLocked) {
+            derivedStateOf { forceLocked || hasImages || state.merch.confirmed.isNotEmpty() }
+        }
         val focusState = rememberFocusState(
             listOfNotNull(
                 state.editorState.status.takeIf { showStatus },
@@ -976,9 +901,9 @@ object ArtistForm {
                 state.links.stateCatalogLinks,
                 state.links.stateCommissions,
                 state.series.stateInferred,
-                state.series.stateConfirmed,
+                state.series.stateConfirmed.takeIf { showSeriesConfirmed },
                 state.merch.stateInferred,
-                state.merch.stateConfirmed,
+                state.merch.stateConfirmed.takeIf { showMerchConfirmed },
                 state.info.notes,
                 state.editorState.editorNotes.takeIf { showEditorNotes },
             )
@@ -1022,26 +947,45 @@ object ArtistForm {
                 catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
             )
 
-            val hasImages by remember { derivedStateOf { state.images.isNotEmpty() } }
-
-            SeriesSection(
-                state = state.series,
+            SeriesInferredSection(
+                state = state.series.stateInferred,
+                inferred = state.series.inferred,
                 seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
-                hideInferred = hasImages,
-                showConfirmed = hasImages,
+                initiallyHide = hasImages,
                 showUnknownIndicator = showUnknownIndicator,
             )
 
-            MerchSection(
-                state = state.merch,
+            if (showSeriesConfirmed) {
+                SeriesConfirmedSection(
+                    state = state.series.stateConfirmed,
+                    confirmed = state.series.confirmed,
+                    seriesById = seriesById,
+                    seriesPredictions = seriesPredictions,
+                    seriesImage = seriesImage,
+                    showUnknownIndicator = showUnknownIndicator,
+                )
+            }
+
+            MerchInferredSection(
+                state = state.merch.stateInferred,
+                inferred = state.merch.inferred,
                 merchById = merchById,
                 merchPredictions = merchPredictions,
-                hideInferred = hasImages,
-                showConfirmed = hasImages,
+                initiallyHide = hasImages,
                 showUnknownIndicator = showUnknownIndicator,
             )
+
+            if (showMerchConfirmed) {
+                MerchConfirmedSection(
+                    state = state.merch.stateConfirmed,
+                    confirmed = state.merch.confirmed,
+                    merchById = merchById,
+                    merchPredictions = merchPredictions,
+                    showUnknownIndicator = showUnknownIndicator,
+                )
+            }
 
             NotesSection(state.info.notes, this@ArtistFormScope.initialArtist?.notes)
             if (showEditorNotes) {
