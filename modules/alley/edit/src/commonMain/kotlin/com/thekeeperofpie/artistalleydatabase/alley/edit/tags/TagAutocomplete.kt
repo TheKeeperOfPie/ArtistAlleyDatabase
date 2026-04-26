@@ -45,11 +45,12 @@ open class TagAutocomplete(
 
     fun seriesPredictions(query: String, allowCustom: Boolean = true) = when {
         query.isBlank() -> flowOf(emptyList())
-        query.length < 3  -> flowOf(listOfNotNull(SeriesInfo.fake(query).takeIf { allowCustom }))
+        query.length < 3 -> flowOf(listOfNotNull(SeriesInfo.fake(query).takeIf { allowCustom }))
         else -> seriesById.flatMapLatest {
             flow {
                 SearchUtils.incrementallyPartition(
                     values = it.values,
+                    { it.id.contains(query, ignoreCase = true) },
                     { it.titlePreferred.contains(query, ignoreCase = true) },
                     { it.titleRomaji.contains(query, ignoreCase = true) },
                     { it.titleEnglish.contains(query, ignoreCase = true) },
@@ -66,7 +67,10 @@ open class TagAutocomplete(
         merchById
             .mapLatest {
                 it.values
-                    .filter { it.name.contains(query, ignoreCase = true) }
+                    .filter {
+                        it.name.contains(query, ignoreCase = true) ||
+                                (it.notes?.contains(query, ignoreCase = true) != false)
+                    }
                     .sortedBy { it.name } +
                         listOfNotNull(query.takeIf { it.isNotBlank() }
                             .takeIf { allowCustom }
