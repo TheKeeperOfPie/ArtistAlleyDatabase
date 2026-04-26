@@ -6,6 +6,9 @@ insertMerchConnection:
 INSERT OR REPLACE INTO artistMerchConnection
 VALUES ?;
 
+getSeries:
+SELECT * FROM seriesEntry;
+
 insertArtistConnection:
 INSERT OR REPLACE INTO stampRallyArtistConnection
 VALUES ?;

@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
@@ -36,6 +37,14 @@ class SeriesEditViewModel(
     private val deleteJob = ExclusiveProgressJob(viewModelScope, ::delete)
     val initialSeries = editInfo?.series
     val state = SeriesEditScreen.State(
+        seriesType = if (initialSeries == null) {
+            savedStateHandle.saveable(
+                key = "seriesType",
+                saver = EntryForm2.DropdownState.Saver,
+            ) { EntryForm2.DropdownState() }
+        } else {
+            null
+        },
         id = savedStateHandle.saveable(
             key = "id",
             saver = EntryForm2.SingleTextState.Saver,
@@ -157,8 +166,11 @@ class SeriesEditViewModel(
         )
     }
 
-    private fun captureSeriesInfo(): SeriesInfo {
+    private fun captureSeriesInfo(): Pair<SeriesType?, SeriesInfo> {
         // TODO: Apply error validation from UI
+        val seriesType = state.seriesType?.selectedIndex?.let {
+            SeriesType.entries.getOrElse(it) { SeriesType.OTHER }
+        }
         val id = state.id.value.text.toString()
         val uuid = state.uuid.value.text.toString()
         val notes = state.notes.value.text.toString()
@@ -172,7 +184,7 @@ class SeriesEditViewModel(
         val titleNative = state.titleNative.value.text.toString()
         val synonyms = state.synonyms.toList()
         val link = state.link.value.text.toString()
-        return SeriesInfo(
+        return seriesType to SeriesInfo(
             id = id,
             uuid = Uuid.parse(uuid),
             notes = notes,
@@ -189,8 +201,73 @@ class SeriesEditViewModel(
         )
     }
 
-    private suspend fun save(seriesInfo: SeriesInfo) = withContext(dispatchers.io) {
-        database.saveSeries(initial = initialSeries, updated = seriesInfo)
+    private suspend fun save(data: Pair<SeriesType?, SeriesInfo>) = withContext(dispatchers.io) {
+        val (seriesType, seriesInfo) = data
+        val coercedSeriesType = seriesType ?: run {
+            when {
+                seriesInfo.aniListId != null -> SeriesType.ANILIST
+                seriesInfo.wikipediaId != null -> SeriesType.WIKIPEDIA
+                else -> SeriesType.OTHER
+            }
+        }
+        val updatedSeriesInfo = seriesInfo.copy(
+            titlePreferred = seriesInfo.titlePreferred
+                .ifBlank { seriesInfo.titleRomaji }
+                .ifBlank { seriesInfo.titleEnglish }
+                .ifBlank { seriesInfo.titleNative },
+            titleEnglish = seriesInfo.titleEnglish
+                .ifBlank { seriesInfo.titlePreferred }
+                .ifBlank { seriesInfo.titleRomaji },
+            titleRomaji = seriesInfo.titleRomaji
+                .ifBlank { seriesInfo.titlePreferred }
+                .ifBlank { seriesInfo.titleEnglish },
+            titleNative = seriesInfo.titleNative
+                .ifBlank { seriesInfo.titlePreferred }
+                .ifBlank { seriesInfo.titleEnglish }
+                .ifBlank { seriesInfo.titleRomaji },
+        )
+
+        // Should validation be in the UI?
+        val errorMessage = when {
+            updatedSeriesInfo.id.isBlank() -> "Canonical name cannot be empty"
+            updatedSeriesInfo.titlePreferred.isBlank() -> "Preferred title cannot be empty"
+            updatedSeriesInfo.source == SeriesSource.NONE -> "Source must be specified"
+            else -> null
+        }
+        if (errorMessage != null) {
+            return@withContext BackendRequest.SeriesSave.Response.Failed(errorMessage)
+        }
+
+        val typeErrorMessage = when (coercedSeriesType) {
+            SeriesType.ANILIST ->
+                when {
+                    updatedSeriesInfo.wikipediaId != null -> "cannot have a Wikipedia ID"
+                    updatedSeriesInfo.aniListId == null -> "must have an AniList ID"
+                    updatedSeriesInfo.aniListType == AniListType.NONE -> "must have an AniList type"
+                    else -> null
+                }
+            SeriesType.WIKIPEDIA ->
+                when {
+                    updatedSeriesInfo.aniListId != null -> "cannot have an AniList ID"
+                    updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
+                    updatedSeriesInfo.wikipediaId == null -> "must have a Wikipedia ID"
+                    updatedSeriesInfo.link.isNullOrBlank() -> "must have a Wikipedia or external link"
+                    else -> null
+                }
+            SeriesType.OTHER ->
+                when {
+                    updatedSeriesInfo.aniListId != null -> "cannot have an AniList ID"
+                    updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
+                    updatedSeriesInfo.wikipediaId != null -> "cannot have a Wikipedia ID"
+                    updatedSeriesInfo.link.isNullOrBlank() -> "must have an external link"
+                    else -> null
+                }
+        }
+        if (typeErrorMessage != null) {
+            return@withContext BackendRequest.SeriesSave.Response.Failed("Series $typeErrorMessage")
+        }
+
+        database.saveSeries(initial = initialSeries, updated = updatedSeriesInfo)
     }
 
     private suspend fun delete() = withContext(dispatchers.io) {

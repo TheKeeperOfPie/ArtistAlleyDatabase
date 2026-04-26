@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -64,6 +65,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_native
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_preferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_romaji
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_uuid
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_wikipedia_id
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
@@ -76,15 +78,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
-import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLongValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OneTimeEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -200,136 +203,17 @@ object SeriesEditScreen {
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
-                    EntryForm2(
-                        focusState = EntryForm2.rememberFocusState(
-                            listOf(
-                                state.id,
-                                state.uuid,
-                                state.aniListId,
-                                state.aniListType,
-                                state.wikipediaId,
-                                state.source,
-                                state.titleEnglish,
-                                state.titleRomaji,
-                                state.titleNative,
-                                state.titlePreferred,
-                                state.synonymsValue,
-                                state.link,
-                                state.notes,
-                            )
-                        ),
-                        modifier = Modifier.width(600.dp)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        SingleTextSection(
-                            state = state.id,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_canonical)) },
-                        )
-
-                        val uuidErrorMessage by rememberUuidValidator(state.uuid)
-                        SingleTextSection(
-                            state = state.uuid,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_uuid)) },
-                            errorText = { uuidErrorMessage },
-                        )
-
-                        val aniListIdErrorMessage by rememberLongValidator(state.aniListId)
-                        SingleTextSection(
-                            state = state.aniListId,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_aniList_id)) },
-                            errorText = { aniListIdErrorMessage },
-                        )
-
-                        // TODO: Previous/next focus
-                        val aniListTypeErrorMessage by rememberAniListTypeValidator(
-                            aniListIdState = state.aniListId,
-                            aniListTypeState = state.aniListType,
-                        )
-                        DropdownSection(
-                            state = state.aniListType,
-                            headerText = {
-                                Text(stringResource(Res.string.alley_edit_series_header_aniList_type))
-                            },
-                            options = AniListType.entries,
-                            optionToText = { stringResource(it.textRes) },
-                            errorText = { aniListTypeErrorMessage },
-                        )
-
-                        val wikipediaIdErrorMessage by rememberLongValidator(state.wikipediaId)
-                        SingleTextSection(
-                            state = state.wikipediaId,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_wikipedia_id)) },
-                            errorText = { wikipediaIdErrorMessage },
-                        )
-                        DropdownSection(
-                            state = state.source,
-                            headerText = {
-                                Text(stringResource(Res.string.alley_edit_series_header_source_type))
-                            },
-                            options = SeriesSource.entries,
-                            optionToText = { stringResource(it.textRes) },
-                        )
-                        SingleTextSection(
-                            state = state.titleEnglish,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_english)) },
-                        )
-                        SingleTextSection(
-                            state = state.titleRomaji,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_romaji)) },
-                        )
-                        SingleTextSection(
-                            state = state.titleNative,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_native)) },
-                        )
-                        SingleTextSection(
-                            state = state.titlePreferred,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_preferred)) },
-                        )
-                        MultiTextSection(
-                            state = state.synonymsValue,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_synonyms)) },
-                            items = state.synonyms,
-                            onItemCommitted = {
-                                state.synonyms.add(it)
-                                state.synonymsValue.value.clearText()
-                            },
-                            removeLastItem = { state.synonyms.removeLastOrNull() },
-                            item = { _, synonym ->
-                                Text(
-                                    text = synonym,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                            },
-                        )
-
-                        val linkErrorMessage by rememberLinkValidator(state.link)
-                        SingleTextSection(
-                            state = state.link,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_external_link)) },
-                            trailingIcon = {
-                                AnimatedVisibility(visible = linkErrorMessage == null) {
-                                    val uriHandler = LocalUriHandler.current
-                                    IconButton(onClick = {
-                                        try {
-                                            uriHandler.openUri(state.link.value.text.toString())
-                                        } catch (_: Throwable) {
-                                        }
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Default.OpenInNew,
-                                            contentDescription = stringResource(Res.string.alley_edit_open_link_content_description),
-                                        )
-                                    }
-                                }
-                            },
-                            errorText = { linkErrorMessage },
-                        )
-                        SingleTextSection(
-                            state = state.notes,
-                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_notes)) },
-                        )
+                    val modifier = Modifier.width(600.dp)
+                        .verticalScroll(rememberScrollState())
+                    val seriesType = state.seriesType
+                    if (seriesType == null) {
+                        AllForm(state, modifier)
+                    } else {
+                        when (seriesType.selectedIndex) {
+                            0 -> AniListForm(state, modifier)
+                            1 -> WikipediaForm(state, modifier)
+                            else -> OtherForm(state, modifier) // TODO
+                        }
                     }
                 }
             }
@@ -357,6 +241,267 @@ object SeriesEditScreen {
                 }
             }
         }
+    }
+
+    @Composable
+    private fun AllForm(state: State, modifier: Modifier = Modifier) {
+        EntryForm2(
+            focusState = EntryForm2.rememberFocusState(
+                listOf(
+                    state.id,
+                    state.uuid,
+                    state.aniListId,
+                    state.aniListType,
+                    state.wikipediaId,
+                    state.source,
+                    state.titleEnglish,
+                    state.titleRomaji,
+                    state.titleNative,
+                    state.titlePreferred,
+                    state.synonymsValue,
+                    state.link,
+                    state.notes,
+                )
+            ),
+            modifier = modifier
+        ) {
+            SharedHeader(state)
+
+            SingleTextSection(
+                state = state.aniListId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_aniList_id)) },
+                inputTransformation = InputTransformation.digits(),
+            )
+
+            // TODO: Previous/next focus
+            val aniListTypeErrorMessage by rememberAniListTypeValidator(
+                aniListIdState = state.aniListId,
+                aniListTypeState = state.aniListType,
+            )
+            DropdownSection(
+                state = state.aniListType,
+                headerText = {
+                    Text(stringResource(Res.string.alley_edit_series_header_aniList_type))
+                },
+                options = AniListType.entries,
+                optionToText = { stringResource(it.textRes) },
+                errorText = { aniListTypeErrorMessage },
+            )
+
+            SingleTextSection(
+                state = state.wikipediaId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_wikipedia_id)) },
+                inputTransformation = InputTransformation.digits(),
+            )
+
+            SharedFooter(state)
+        }
+    }
+
+    @Composable
+    private fun AniListForm(state: State, modifier: Modifier = Modifier) {
+        EntryForm2(
+            focusState = EntryForm2.rememberFocusState(
+                listOf(
+                    state.id,
+                    state.uuid,
+                    state.aniListId,
+                    state.aniListType,
+                    state.source,
+                    state.titleEnglish,
+                    state.titleRomaji,
+                    state.titleNative,
+                    state.titlePreferred,
+                    state.synonymsValue,
+                    state.link,
+                    state.notes,
+                )
+            ),
+            modifier = modifier
+        ) {
+            SharedHeader(state)
+
+            SingleTextSection(
+                state = state.aniListId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_aniList_id)) },
+                inputTransformation = InputTransformation.digits(),
+            )
+
+            // TODO: Previous/next focus
+            val aniListTypeErrorMessage by rememberAniListTypeValidator(
+                aniListIdState = state.aniListId,
+                aniListTypeState = state.aniListType,
+            )
+            DropdownSection(
+                state = state.aniListType,
+                headerText = {
+                    Text(stringResource(Res.string.alley_edit_series_header_aniList_type))
+                },
+                options = AniListType.entries,
+                optionToText = { stringResource(it.textRes) },
+                errorText = { aniListTypeErrorMessage },
+            )
+
+            SharedFooter(state)
+        }
+    }
+
+    @Composable
+    private fun WikipediaForm(state: State, modifier: Modifier = Modifier) {
+        EntryForm2(
+            focusState = EntryForm2.rememberFocusState(
+                listOf(
+                    state.id,
+                    state.uuid,
+                    state.wikipediaId,
+                    state.source,
+                    state.titleEnglish,
+                    state.titleRomaji,
+                    state.titleNative,
+                    state.titlePreferred,
+                    state.synonymsValue,
+                    state.link,
+                    state.notes,
+                )
+            ),
+            modifier = modifier
+        ) {
+            SharedHeader(state)
+
+            SingleTextSection(
+                state = state.wikipediaId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_wikipedia_id)) },
+                inputTransformation = InputTransformation.digits(),
+            )
+
+            SharedFooter(state)
+        }
+    }
+
+    @Composable
+    private fun OtherForm(state: State, modifier: Modifier = Modifier) {
+        EntryForm2(
+            focusState = EntryForm2.rememberFocusState(
+                listOf(
+                    state.id,
+                    state.uuid,
+                    state.link,
+                    state.source,
+                    state.titleEnglish,
+                    state.titleRomaji,
+                    state.titleNative,
+                    state.titlePreferred,
+                    state.synonymsValue,
+                    state.link,
+                    state.notes,
+                )
+            ),
+            modifier = modifier
+        ) {
+            SharedHeader(state)
+            SharedFooter(state)
+        }
+    }
+
+    context(formScope: EntryFormScope)
+    @Composable
+    private fun SharedHeader(state: State) = with(formScope) {
+        if (state.seriesType != null) {
+            DropdownSection(
+                state = state.seriesType,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_type)) },
+                options = SeriesType.entries,
+                optionToText = { stringResource(it.textRes) },
+            )
+        }
+
+        SingleTextSection(
+            state = state.id,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_canonical)) },
+        )
+
+        val uuidErrorMessage by rememberUuidValidator(state.uuid)
+        SingleTextSection(
+            state = state.uuid,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_uuid)) },
+            errorText = { uuidErrorMessage },
+        )
+    }
+
+    context(formScope: EntryFormScope)
+    @Composable
+    private fun SharedFooter(state: State) = with(formScope) {
+        DropdownSection(
+            state = state.source,
+            headerText = {
+                Text(stringResource(Res.string.alley_edit_series_header_source_type))
+            },
+            options = SeriesSource.entries,
+            optionToText = { stringResource(it.textRes) },
+        )
+
+        SingleTextSection(
+            state = state.titleEnglish,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_english)) },
+        )
+        SingleTextSection(
+            state = state.titleRomaji,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_romaji)) },
+        )
+        SingleTextSection(
+            state = state.titleNative,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_native)) },
+        )
+        SingleTextSection(
+            state = state.titlePreferred,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_preferred)) },
+        )
+        MultiTextSection(
+            state = state.synonymsValue,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_synonyms)) },
+            items = state.synonyms,
+            onItemCommitted = {
+                state.synonyms.add(it)
+                state.synonymsValue.value.clearText()
+            },
+            removeLastItem = { state.synonyms.removeLastOrNull() },
+            item = { _, synonym ->
+                Text(
+                    text = synonym,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+            },
+        )
+
+        val linkErrorMessage by rememberLinkValidator(state.link)
+        SingleTextSection(
+            state = state.link,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_external_link)) },
+            trailingIcon = {
+                AnimatedVisibility(visible = linkErrorMessage == null) {
+                    val uriHandler = LocalUriHandler.current
+                    IconButton(onClick = {
+                        try {
+                            uriHandler.openUri(state.link.value.text.toString())
+                        } catch (_: Throwable) {
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.OpenInNew,
+                            contentDescription = stringResource(Res.string.alley_edit_open_link_content_description),
+                        )
+                    }
+                }
+            },
+            errorText = { linkErrorMessage },
+        )
+
+        SingleTextSection(
+            state = state.notes,
+            headerText = { Text(stringResource(Res.string.alley_edit_series_header_notes)) },
+        )
     }
 
     @Composable
@@ -397,6 +542,7 @@ object SeriesEditScreen {
                                 text = stringResource(Res.string.alley_edit_series_edit_delete_action_confirm),
                                 modifier = Modifier.graphicsLayer { alpha = textAlpha }
                             )
+                            @Suppress("RemoveRedundantQualifierName")
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = countdown > 0,
                                 enter = fadeIn(),
@@ -404,6 +550,7 @@ object SeriesEditScreen {
                             ) {
                                 Text(countdown.toString())
                             }
+                            @Suppress("RemoveRedundantQualifierName")
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = loading,
                                 enter = fadeIn(),
@@ -454,6 +601,7 @@ object SeriesEditScreen {
 
     @Stable
     class State(
+        val seriesType: EntryForm2.DropdownState?,
         val id: EntryForm2.SingleTextState,
         val uuid: EntryForm2.SingleTextState,
         val aniListId: EntryForm2.SingleTextState,

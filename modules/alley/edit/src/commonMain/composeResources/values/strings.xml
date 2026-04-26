@@ -118,6 +118,10 @@
 
     <string name="alley_edit_series_header_image">Image</string>
     <string name="alley_edit_series_header_canonical">Series</string>
+    <string name="alley_edit_series_header_type">Type</string>
+    <string name="alley_edit_series_header_type_aniList">AniList</string>
+    <string name="alley_edit_series_header_type_wikipedia">Wikipedia</string>
+    <string name="alley_edit_series_header_type_other">Other</string>
     <string name="alley_edit_series_header_notes">Notes</string>
     <string name="alley_edit_series_header_aniList_id">AniList ID</string>
     <string name="alley_edit_series_header_aniList_type">AniList Type</string>

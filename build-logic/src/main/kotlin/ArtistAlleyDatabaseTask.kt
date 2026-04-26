@@ -117,6 +117,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             database = pair.second
 
             runBlocking {
+                verifySeries(database)
+
                 val artistChangelog = addArtistChangelog(database)
                 fixLegacyArtistImages(database, imageCacheDir)
 
@@ -338,6 +340,20 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             databaseFile.delete()
 
             outputDatabaseHashFile.get().asFile.writeText(hash.toString())
+        }
+    }
+
+    private fun verifySeries(database: BuildLogicEditDatabase) {
+        val series = database.mutationQueries.getSeries().executeAsList()
+        val brokenSeries = series
+            .filter {
+                listOf(it.titleRomaji, it.titleNative, it.titleEnglish, it.titlePreferred)
+                    .any { it.isBlank() }
+            }
+            .map { it.id }
+        if (brokenSeries.isNotEmpty()) {
+            logger.error("Broken series missing titles: $brokenSeries")
+            throw IllegalStateException("Broken series missing titles")
         }
     }
 

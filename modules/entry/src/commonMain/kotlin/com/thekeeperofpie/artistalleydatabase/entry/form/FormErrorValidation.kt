@@ -7,7 +7,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.entry_error_invalid_link
-import artistalleydatabase.modules.entry.generated.resources.entry_error_invalid_number
 import artistalleydatabase.modules.entry.generated.resources.entry_error_invalid_uuid
 import com.eygraber.uri.Uri
 import org.jetbrains.compose.resources.stringResource
@@ -23,22 +22,6 @@ fun rememberUuidValidator(state: EntryForm2.SingleTextState): State<String?> {
             when {
                 text.isEmpty() -> null
                 Uuid.parseOrNull(text.toString()) == null -> errorMessage
-                else -> null
-            }
-        }
-    }
-}
-
-@Stable
-@Composable
-fun rememberLongValidator(state: EntryForm2.SingleTextState): State<String?> {
-    val errorMessage = stringResource(Res.string.entry_error_invalid_number)
-    return remember(state) {
-        derivedStateOf {
-            val text = state.value.text
-            when {
-                text.isEmpty() -> null
-                text.toString().toLongOrNull() == null -> errorMessage
                 else -> null
             }
         }
