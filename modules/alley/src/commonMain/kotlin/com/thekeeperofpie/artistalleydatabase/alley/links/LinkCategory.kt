@@ -12,7 +12,6 @@ import org.jetbrains.compose.resources.StringResource
 
 val Link.Type?.category: LinkCategory
     get() = when (this) {
-        Link.Type.AO3,
         Link.Type.ART_STATION,
         Link.Type.CARA,
         Link.Type.CARRD,
@@ -23,6 +22,7 @@ val Link.Type?.category: LinkCategory
         Link.Type.WEEBLY,
             -> LinkCategory.PORTFOLIOS
 
+        Link.Type.AO3,
         Link.Type.BLUESKY,
         Link.Type.DISCORD,
         Link.Type.FACEBOOK,
