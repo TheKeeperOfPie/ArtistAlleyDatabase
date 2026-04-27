@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 
 object AlleyImageUtils {
 
@@ -49,6 +50,7 @@ object AlleyImageUtils {
                 null
             }
         }
+        .map { LinkModel.parse(it.first) to it.second }
         .sortedWith(embedComparator)
         .map { it.second }
 
@@ -71,9 +73,16 @@ object AlleyImageUtils {
         LinkCategory.OTHER,
     )
     private val embedComparator =
-        compareBy<Pair<String, Triple<String, *, *>>>(
-            { embedOrder.indexOf(LinkModel.parse(it.first).type.category) },
-            { it.first },
+        compareBy<Pair<LinkModel, Triple<String, *, *>>>(
+            {
+                // Sort Linktree last because the embed is not very useful
+                when (it.first.type) {
+                    Link.Type.LINKTREE -> 1
+                    else -> 0
+                }
+            },
+            { embedOrder.indexOf(it.first.type.category) },
+            { it.first.link },
         )
 
     fun getArtistImagesWithEmbedFallback(

@@ -326,7 +326,7 @@ internal class EmbedCache(
     }
 
     enum class EmbedFailureReason {
-        FETCH, READ, WRITE, DIMENSIONS
+        FETCH, READ, WRITE, DIMENSIONS, EXCLUDED
     }
 
     @Serializable

@@ -471,6 +471,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
                 val embeds = (artist.portfolioLinks + socialLinks + storeLinks +
                         artist.commissions.filter { it.startsWith("http") })
+                    .sortedBy {
+                        // Sort Linktree last because the embed is not very useful
+                        when (Link.parse(it)?.type) {
+                            Link.Type.LINKTREE -> 1
+                            else -> 0
+                        }
+                    }
                     .mapNotNull {
                         val (link, catalogImage) = embedCache.getEmbedCatalogImage(it)
                             ?: return@mapNotNull null
