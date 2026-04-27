@@ -69,6 +69,11 @@ data class Link(
         val parsePath: (path: String) -> String? = { it },
         val parseHost: (host: String) -> String? = { null },
     ) {
+        AO3("archiveofourown.org", parsePath = {
+            it.substringAfter("pseuds/").substringBefore("/").ifBlank {
+                it.substringAfter("users/").substringBefore("/")
+            }
+        }),
         ART_STATION("artstation.com", parseHost = { it.substringBefore(".artstation.com") }),
         BIG_CARTEL("bigcartel.com", parseHost = { it.substringBefore(".bigcartel.com") }),
         BLUESKY(
@@ -97,6 +102,7 @@ data class Link(
         KO_FI("ko-fi.com"),
         LINKTREE("linktr.ee"),
         PATREON("patreon.com"),
+        PICARTO("picarto.tv"),
         PIXIV(
             "pixiv.me", "pixiv.net",
             parseHost = { it.substringAfter("users/").substringBefore("/") },
@@ -115,6 +121,7 @@ data class Link(
             parseHost = { it.substringBefore(".tumblr.com") },
         ),
         TWITCH("twitch.tv"),
+        UNVALE("unvale.io"),
         VGEN("vgen.co"),
         WEEBLY("weebly.com", parseHost = { it.substringBefore(".weebly.com") }),
         X("x.com", "twitter.com"),

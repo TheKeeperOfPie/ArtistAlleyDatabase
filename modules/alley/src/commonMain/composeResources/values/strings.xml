@@ -163,6 +163,7 @@
     <string name="alley_stamp_rally_column_booth">Booth</string>
     <string name="alley_stamp_rally_column_fandom">Fandom</string>
 
+    <string name="alley_link_label_ao3">AO3</string>
     <string name="alley_link_label_art_station">ArtStation</string>
     <string name="alley_link_label_big_cartel">Big Cartel</string>
     <string name="alley_link_label_bluesky">Bluesky</string>
@@ -184,6 +185,7 @@
     <string name="alley_link_label_ko_fi">Ko-fi</string>
     <string name="alley_link_label_linktree">Linktree</string>
     <string name="alley_link_label_patreon">Patreon</string>
+    <string name="alley_link_label_picarto">Picarto</string>
     <string name="alley_link_label_pixiv">Pixiv</string>
     <string name="alley_link_label_redbubble">Redbubble</string>
     <string name="alley_link_label_shopify">Shopify</string>
@@ -195,6 +197,7 @@
     <string name="alley_link_label_toyhouse">Toyhouse</string>
     <string name="alley_link_label_tumblr">Tumblr</string>
     <string name="alley_link_label_twitch">Twitch</string>
+    <string name="alley_link_label_unvale">Unvale</string>
     <string name="alley_link_label_vgen">VGen</string>
     <string name="alley_link_label_weebly">Weebly</string>
     <string name="alley_link_label_x">X</string>

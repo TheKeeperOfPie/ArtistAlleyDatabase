@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.links
 
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ao3
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_art_station
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_big_cartel
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_bluesky
@@ -23,6 +24,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_li
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_other_non_store
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_other_store
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_patreon
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_picarto
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_pixiv
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_redbubble
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_shopify
@@ -34,6 +36,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ti
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_toyhouse
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tumblr
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_twitch
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_unvale
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_vgen
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_weebly
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_x
@@ -44,6 +47,7 @@ import org.jetbrains.compose.resources.StringResource
 
 val Link.Type.textRes: StringResource
     get() = when (this) {
+        Link.Type.AO3 -> Res.string.alley_link_label_ao3
         Link.Type.ART_STATION -> Res.string.alley_link_label_art_station
         Link.Type.BIG_CARTEL -> Res.string.alley_link_label_big_cartel
         Link.Type.BLUESKY -> Res.string.alley_link_label_bluesky
@@ -64,6 +68,7 @@ val Link.Type.textRes: StringResource
         Link.Type.KO_FI -> Res.string.alley_link_label_ko_fi
         Link.Type.LINKTREE -> Res.string.alley_link_label_linktree
         Link.Type.PATREON -> Res.string.alley_link_label_patreon
+        Link.Type.PICARTO -> Res.string.alley_link_label_picarto
         Link.Type.PIXIV -> Res.string.alley_link_label_pixiv
         Link.Type.REDBUBBLE -> Res.string.alley_link_label_redbubble
         Link.Type.SHOPIFY -> Res.string.alley_link_label_shopify
@@ -75,6 +80,7 @@ val Link.Type.textRes: StringResource
         Link.Type.TOYHOUSE -> Res.string.alley_link_label_toyhouse
         Link.Type.TUMBLR -> Res.string.alley_link_label_tumblr
         Link.Type.TWITCH -> Res.string.alley_link_label_twitch
+        Link.Type.UNVALE -> Res.string.alley_link_label_unvale
         Link.Type.VGEN -> Res.string.alley_link_label_vgen
         Link.Type.WEEBLY -> Res.string.alley_link_label_weebly
         Link.Type.X -> Res.string.alley_link_label_x
@@ -101,6 +107,7 @@ data class LinkModel(
                     .removeSuffix("/")
             )
             val logo = when (link.type) {
+                Link.Type.AO3 -> Logo.AO3
                 Link.Type.ART_STATION -> Logo.ART_STATION
                 Link.Type.BIG_CARTEL -> Logo.BIG_CARTEL
                 Link.Type.BLUESKY -> Logo.BLUESKY
@@ -121,6 +128,7 @@ data class LinkModel(
                 Link.Type.KO_FI -> Logo.KO_FI
                 Link.Type.LINKTREE -> Logo.LINKTREE
                 Link.Type.PATREON -> Logo.PATREON
+                Link.Type.PICARTO -> Logo.PICARTO
                 Link.Type.PIXIV -> Logo.PIXIV
                 Link.Type.REDBUBBLE -> Logo.REDBUBBLE
                 Link.Type.SHOPIFY -> Logo.SHOPIFY
@@ -132,6 +140,7 @@ data class LinkModel(
                 Link.Type.TOYHOUSE -> Logo.TOYHOUSE
                 Link.Type.TUMBLR -> Logo.TUMBLR
                 Link.Type.TWITCH -> Logo.TWITCH
+                Link.Type.UNVALE -> Logo.UNVALE
                 Link.Type.WEEBLY -> Logo.WEEBLY
                 Link.Type.VGEN -> Logo.VGEN
                 Link.Type.X -> Logo.X

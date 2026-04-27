@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.links
 
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_link_type_category_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_category_other
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_category_portfolios
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_category_socials
@@ -11,6 +12,7 @@ import org.jetbrains.compose.resources.StringResource
 
 val Link.Type?.category: LinkCategory
     get() = when (this) {
+        Link.Type.AO3,
         Link.Type.ART_STATION,
         Link.Type.CARA,
         Link.Type.CARRD,
@@ -26,11 +28,13 @@ val Link.Type?.category: LinkCategory
         Link.Type.FACEBOOK,
         Link.Type.GAME_JOLT,
         Link.Type.INSTAGRAM,
+        Link.Type.PICARTO,
         Link.Type.SUBSTACK,
         Link.Type.THREADS,
         Link.Type.TIK_TOK,
         Link.Type.TUMBLR,
         Link.Type.TWITCH,
+        Link.Type.UNVALE,
         Link.Type.X,
         Link.Type.YOU_TUBE,
             -> LinkCategory.SOCIALS
@@ -65,6 +69,6 @@ enum class LinkCategory(val textRes: StringResource) {
     SOCIALS(Res.string.alley_link_type_category_socials),
     STORES(Res.string.alley_link_type_category_stores),
     SUPPORT(Res.string.alley_link_type_category_support),
-    COMMISSIONS(Res.string.alley_link_type_category_support),
+    COMMISSIONS(Res.string.alley_link_type_category_commissions),
     OTHER(Res.string.alley_link_type_category_other),
 }

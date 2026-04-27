@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ao3
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_art_station
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_big_cartel
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_bluesky
@@ -34,6 +35,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ki
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ko_fi
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_linktree
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_patreon
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_picarto
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_pixiv
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_redbubble
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_shopify
@@ -45,6 +47,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ti
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_toyhouse
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tumblr
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_twitch
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_unvale
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_vgen
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_weebly
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_x
@@ -55,6 +58,79 @@ enum class Logo(
     val label: StringResource,
     val icon: ImageVector,
 ) {
+
+    // https://commons.wikimedia.org/wiki/File:Logo_Archive_of_Our_Own.svg
+    AO3(
+        label = Res.string.alley_link_label_ao3,
+        icon = ImageVector.Builder(
+            name = "AO3",
+            defaultWidth = 24.dp,
+            defaultHeight = (415f / 600f * 24f).dp,
+            viewportWidth = 600f,
+            viewportHeight = 415f
+        ).apply {
+            materialPath {
+                moveToRelative(370.16f, 10.811f)
+                curveToRelative(-54.019f, 0f, -97.816f, 42.648f, -97.816f, 95.266f)
+                curveToRelative(0f, 52.608f, 43.797f, 95.244f, 97.816f, 95.244f)
+                reflectiveCurveToRelative(97.816f, -42.636f, 97.816f, -95.244f)
+                curveToRelative(0f, -52.618f, -43.797f, -95.266f, -97.816f, -95.266f)
+                close()
+                moveToRelative(-355.28f, 4.582f)
+                curveToRelative(-2.9356f, 0.1201f, -4.0242f, 0.92857f, -4.8105f, 1.7188f)
+                curveToRelative(0f, 0f, -1.2608f, 5.0412f, 7.9844f, 6.7148f)
+                curveToRelative(9.2351f, 1.6837f, 62.165f, 17.231f, 134.85f, 74.355f)
+                curveToRelative(72.671f, 57.135f, 112.16f, 107.96f, 140.3f, 137.79f)
+                curveToRelative(0f, 0f, -85.697f, 30.246f, -186.09f, 96.615f)
+                curveToRelative(0f, 0f, 35.286f, -42.426f, 49.148f, -147.87f)
+                curveToRelative(2.0265f, -15.415f, 5.7679f, -34.651f, 7.5625f, -52.93f)
+                curveToRelative(0f, 0f, 2.0969f, -14.699f, -3.3574f, -14.699f)
+                curveToRelative(-5.4644f, 0f, -14.287f, 73.517f, -29.41f, 119.3f)
+                curveToRelative(-8.237f, 24.933f, -18.48f, 55.875f, -47.889f, 96.203f)
+                curveToRelative(-18.188f, 24.953f, -36.366f, 43.665f, -32.344f, 52.094f)
+                curveToRelative(8.8217f, 18.48f, 27.303f, 0.41407f, 27.303f, 0.41407f)
+                reflectiveCurveToRelative(117.63f, -77.712f, 241.13f, -115.94f)
+                curveToRelative(0f, 0f, 30.074f, 32.897f, 35.428f, 39.229f)
+                curveToRelative(16.121f, 19.055f, 27.686f, 40.117f, 41.438f, 39.754f)
+                curveToRelative(11.171f, -0.30246f, 15.124f, -6.3012f, 21.012f, -38.654f)
+                curveToRelative(5.8778f, -32.343f, 18.902f, -64.273f, 18.902f, -64.273f)
+                reflectiveCurveToRelative(74.033f, -3.5589f, 77.713f, 20.164f)
+                curveToRelative(2.46f, 15.849f, -8.549f, 24.016f, -17.32f, 26.93f)
+                curveToRelative(-4.2748f, 1.4316f, -17.432f, 5.2615f, -22.896f, 6.8242f)
+                curveToRelative(-10.223f, 2.9137f, -12.834f, 18.44f, 4.0938f, 25.9f)
+                curveToRelative(27.625f, 12.169f, 55.945f, 18.229f, 53.344f, 39.492f)
+                curveToRelative(-2.5205f, 20.577f, -36.588f, 30.852f, -60.492f, 25.619f)
+                curveToRelative(-44.109f, -9.6586f, -46.226f, -30.206f, -53.768f, -27.303f)
+                curveToRelative(-5.4644f, 2.097f, 10.082f, 18.903f, 18.48f, 24.367f)
+                curveToRelative(8.4084f, 5.4544f, 70.161f, 36.549f, 102.5f, -2.1055f)
+                curveToRelative(36.557f, -43.675f, -33.604f, -70.988f, -33.604f, -70.988f)
+                reflectiveCurveToRelative(43.262f, -19.328f, 35.287f, -55.875f)
+                curveToRelative(-7.985f, -36.547f, -55.039f, -42.011f, -89.902f, -44.945f)
+                curveToRelative(0f, 0f, 15.123f, -38.23f, 49.986f, -78.135f)
+                curveToRelative(18.127f, -20.749f, 46.75f, -44.3f, 63.859f, -57.135f)
+                curveToRelative(16.797f, -12.602f, 29.743f, -14.851f, 26.043f, -22.262f)
+                curveToRelative(-4.2042f, -8.3983f, -72.258f, 40.752f, -85.273f, 52.508f)
+                curveToRelative(-13.026f, 11.766f, -50.834f, 48.726f, -82.34f, 105.02f)
+                curveToRelative(0f, 0f, -50.824f, 2.5208f, -89.479f, 11.756f)
+                curveToRelative(0f, 0f, -55.028f, -59.644f, -119.3f, -109.64f)
+                curveToRelative(-64.273f, -49.987f, -124.34f, -80.234f, -160.89f, -91.576f)
+                curveToRelative(-22.287f, -6.9188f, -32.309f, -8.6338f, -37.201f, -8.4336f)
+                close()
+                moveToRelative(355.28f, 20.654f)
+                curveToRelative(39.713f, 0f, 71.904f, 31.345f, 71.904f, 70.029f)
+                curveToRelative(0f, 38.664f, -32.191f, 70.02f, -71.904f, 70.02f)
+                reflectiveCurveToRelative(-71.904f, -31.355f, -71.904f, -70.02f)
+                curveToRelative(0f, -38.685f, 32.191f, -70.029f, 71.904f, -70.029f)
+                close()
+                moveToRelative(34.158f, 212.75f)
+                reflectiveCurveToRelative(-10.688f, 21.141f, -15.709f, 42.031f)
+                curveToRelative(-8.8419f, -11.191f, -29.621f, -33.824f, -29.621f, -33.824f)
+                reflectiveCurveToRelative(15.77f, -4.0532f, 45.33f, -8.207f)
+                close()
+            }
+        }.build(),
+    ),
+
     // https://www.artstation.com/about/logo
     ART_STATION(
         label = Res.string.alley_link_label_art_station,
@@ -2630,7 +2706,53 @@ enum class Logo(
         }.build()
     ),
 
-    // Converted with Inkscape from https://www.pixiv.co.jp/news/press-kit/
+    // Converted using Inkscape from https://picarto.tv/site/press
+    PICARTO(
+        label = Res.string.alley_link_label_picarto,
+        icon = ImageVector.Builder(
+            name = "Picarto",
+            defaultWidth = 24.dp,
+            defaultHeight = (183.51 / 182.124 * 24).dp,
+            viewportWidth = 48.187f,
+            viewportHeight = 48.554f
+        ).apply {
+            materialPath {
+                moveTo(24.07f, 0f)
+                quadToRelative(-1.069f, 0.006f, -2.126f, 0.143f)
+                curveToRelative(-4.46f, 0.593f, -8.491f, 1.923f, -12.17f, 4.583f)
+                curveToRelative(-2.428f, 1.754f, -4.366f, 3.913f, -5.995f, 6.417f)
+                curveTo(-7.12f, 27.89f, 7.077f, 50.817f, 26.97f, 48.373f)
+                curveToRelative(3.705f, -0.454f, 7.167f, -1.636f, 10.319f, -3.642f)
+                curveTo(54.608f, 33.707f, 50.527f, 5.91f, 30.41f, 0.858f)
+                curveTo(28.36f, 0.342f, 26.208f, -0.012f, 24.07f, 0f)
+                moveToRelative(-6.623f, 8.302f)
+                curveToRelative(1.404f, 0.04f, 2.751f, 0.274f, 3.014f, 0.808f)
+                curveToRelative(0.78f, 1.585f, 0.16f, 4.778f, 0.16f, 6.531f)
+                verticalLineToRelative(21.96f)
+                curveToRelative(-0.001f, 0.716f, 0.164f, 1.84f, -0.613f, 2.222f)
+                curveToRelative(-0.981f, 0.483f, -5.845f, 0.616f, -6.371f, -0.454f)
+                curveToRelative(-0.78f, -1.584f, -0.16f, -4.776f, -0.16f, -6.53f)
+                verticalLineTo(10.88f)
+                curveToRelative(0.002f, -0.716f, -0.164f, -1.84f, 0.614f, -2.222f)
+                curveToRelative(0.49f, -0.241f, 1.951f, -0.395f, 3.356f, -0.355f)
+                moveToRelative(6.358f, 0.312f)
+                curveToRelative(1.24f, -0.039f, 2.728f, 1.26f, 3.695f, 1.841f)
+                curveToRelative(3.344f, 2.006f, 6.71f, 3.974f, 10.054f, 5.98f)
+                curveToRelative(0.992f, 0.595f, 3.536f, 1.52f, 3.536f, 2.91f)
+                curveToRelative(0f, 1.425f, -2.516f, 2.41f, -3.536f, 3.016f)
+                curveToRelative(-3.259f, 1.932f, -6.498f, 3.914f, -9.79f, 5.79f)
+                curveToRelative(-1.127f, 0.643f, -2.602f, 1.945f, -3.957f, 1.946f)
+                curveToRelative(-1.931f, 0.001f, -1.543f, -4.245f, -1.161f, -5.46f)
+                curveToRelative(0.711f, -2.265f, 3.391f, -3.058f, 5.383f, -3.796f)
+                curveToRelative(0.728f, -0.27f, 1.901f, -0.735f, 1.653f, -1.736f)
+                curveToRelative(-0.486f, -1.969f, -5.47f, -2.19f, -6.717f, -4.259f)
+                curveToRelative(-0.688f, -1.139f, -1.227f, -5.863f, 0.595f, -6.205f)
+                quadToRelative(0.12f, -0.022f, 0.245f, -0.027f)
+            }
+        }.build()
+    ),
+
+    // Converted using Inkscape from https://www.pixiv.co.jp/news/press-kit/
     PIXIV(
         label = Res.string.alley_link_label_pixiv,
         ImageVector.Builder(
@@ -3988,6 +4110,67 @@ enum class Logo(
                 close()
             }
         }.build()
+    ),
+
+    // https://unvale.io/assets/logo/unvale-logo-white.svg
+    UNVALE(
+        label = Res.string.alley_link_label_unvale,
+        icon = ImageVector.Builder(
+            name = "Unvale",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 256f,
+            viewportHeight = 256f
+        ).apply {
+            materialPath {
+                moveTo(219.127f, 82.7797f)
+                curveTo(185.659f, 76.5261f, 156.19f, 56.0308f, 138.68f, 26.8317f)
+                curveTo(127.678f, 8.48451f, 115.756f, -1.69175f, 105.051f, 0.230917f)
+                curveTo(94.3468f, 2.15359f, 86.7112f, 15.8427f, 82.7816f, 36.8718f)
+                curveTo(76.5278f, 70.339f, 56.0323f, 99.8087f, 26.833f, 117.318f)
+                curveTo(8.48508f, 128.32f, -1.69157f, 140.243f, 0.231169f, 150.948f)
+                curveTo(2.1539f, 161.653f, 15.8434f, 169.289f, 36.8731f, 173.218f)
+                curveTo(70.3405f, 179.472f, 99.8104f, 199.967f, 117.32f, 229.166f)
+                curveTo(128.322f, 247.514f, 140.244f, 257.691f, 150.949f, 255.768f)
+                curveTo(161.654f, 253.845f, 169.289f, 240.156f, 173.219f, 219.126f)
+                curveTo(179.472f, 185.659f, 199.968f, 156.189f, 229.167f, 138.68f)
+                curveTo(247.515f, 127.677f, 257.691f, 115.754f, 255.769f, 105.05f)
+                curveTo(253.846f, 94.3452f, 240.157f, 86.7093f, 219.127f, 82.7797f)
+                close()
+            }
+            materialPath {
+                moveTo(196.839f, 86.4466f)
+                curveTo(173.813f, 81.8954f, 153.55f, 67.8033f, 141.271f, 47.8008f)
+                curveTo(134.002f, 35.9606f, 126.171f, 29.4368f, 119.124f, 30.7025f)
+                curveTo(112.077f, 31.9682f, 107.006f, 40.8094f, 104.312f, 54.439f)
+                curveTo(99.7606f, 77.4646f, 85.6684f, 97.7272f, 65.6658f, 110.007f)
+                curveTo(53.8251f, 117.276f, 47.301f, 125.107f, 48.5667f, 132.154f)
+                curveTo(49.8325f, 139.201f, 58.674f, 144.273f, 72.304f, 146.967f)
+                curveTo(95.3297f, 151.518f, 115.593f, 165.61f, 127.872f, 185.613f)
+                curveTo(135.141f, 197.453f, 142.972f, 203.977f, 150.019f, 202.712f)
+                curveTo(157.066f, 201.446f, 162.137f, 192.604f, 164.831f, 178.974f)
+                curveTo(169.382f, 155.949f, 183.475f, 135.686f, 203.477f, 123.406f)
+                curveTo(215.318f, 116.137f, 221.842f, 108.306f, 220.576f, 101.259f)
+                curveTo(219.31f, 94.2119f, 210.469f, 89.1407f, 196.839f, 86.4466f)
+                close()
+            }
+            materialPath {
+                moveTo(114.506f, 119.16f)
+                curveTo(121.202f, 117.958f, 125.112f, 108.533f, 123.24f, 98.1095f)
+                curveTo(121.368f, 87.6862f, 114.422f, 80.2113f, 107.727f, 81.4139f)
+                curveTo(101.031f, 82.6165f, 97.1209f, 92.0412f, 98.9931f, 102.465f)
+                curveTo(100.865f, 112.888f, 107.811f, 120.363f, 114.506f, 119.16f)
+                close()
+            }
+            materialPath {
+                moveTo(170.539f, 109.66f)
+                curveTo(177.235f, 108.458f, 181.145f, 99.0331f, 179.273f, 88.6097f)
+                curveTo(177.401f, 78.1864f, 170.455f, 70.7115f, 163.76f, 71.9141f)
+                curveTo(157.064f, 73.1167f, 153.154f, 82.5414f, 155.026f, 92.9648f)
+                curveTo(156.898f, 103.388f, 163.844f, 110.863f, 170.539f, 109.66f)
+                close()
+            }
+        }.build(),
     ),
 
     // Converted using Inkscape from https://help.vgen.co/hc/en-us/articles/12884824880663-VGen-Brand-Assets

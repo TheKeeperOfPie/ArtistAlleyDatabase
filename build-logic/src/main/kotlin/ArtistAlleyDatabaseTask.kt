@@ -122,6 +122,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 val artistChangelog = addArtistChangelog(database)
                 fixLegacyArtistImages(database, imageCacheDir)
 
+                finalizeLegacyLinkFlags(database)
+
                 val embedCache = EmbedCache(
                     logger = logger,
                     inputFolder = inputEmbeds.get().asFile,
@@ -355,6 +357,60 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             logger.error("Broken series missing titles: $brokenSeries")
             throw IllegalStateException("Broken series missing titles")
         }
+    }
+
+    private suspend fun finalizeLegacyLinkFlags(database: BuildLogicEditDatabase) {
+        database.mutationQueries.getAllArtistEntryAnimeExpo2025()
+            .executeAsList()
+            .forEach { artist ->
+                val (linkFlags, linkFlags2) = Link.parseFlags(
+                    socialLinks = artist.links,
+                    storeLinks = artist.storeLinks,
+                    portfolioLinks = emptyList(),
+                    catalogLinks = artist.catalogLinks,
+                )
+
+                database.mutationQueries.updateArtistEntryAnimeExpo2025(
+                    artist.copy(
+                        linkFlags = linkFlags,
+                        linkFlags2 = linkFlags2,
+                    )
+                ).await()
+            }
+        database.mutationQueries.getAllArtistEntryAnimeNyc2024()
+            .executeAsList()
+            .forEach { artist ->
+                val (linkFlags, linkFlags2) = Link.parseFlags(
+                    socialLinks = artist.links,
+                    storeLinks = artist.storeLinks,
+                    portfolioLinks = emptyList(),
+                    catalogLinks = artist.catalogLinks,
+                )
+
+                database.mutationQueries.updateArtistEntryAnimeNyc2024(
+                    artist.copy(
+                        linkFlags = linkFlags,
+                        linkFlags2 = linkFlags2,
+                    )
+                ).await()
+            }
+        database.mutationQueries.getAllArtistEntryAnimeNyc2025()
+            .executeAsList()
+            .forEach { artist ->
+                val (linkFlags, linkFlags2) = Link.parseFlags(
+                    socialLinks = artist.links,
+                    storeLinks = artist.storeLinks,
+                    portfolioLinks = emptyList(),
+                    catalogLinks = artist.catalogLinks,
+                )
+
+                database.mutationQueries.updateArtistEntryAnimeNyc2025(
+                    artist.copy(
+                        linkFlags = linkFlags,
+                        linkFlags2 = linkFlags2,
+                    )
+                ).await()
+            }
     }
 
     private suspend fun finalizeAnimeExpo2026(
