@@ -31,7 +31,11 @@ class ChangelogViewModel(
                 .sortedByDescending { it.first }
                 .map {
                     val (added, updated) = it.second.partition { it.isBrandNew }
-                    ChangelogScreen.DayChange(date = it.first, added = added, updated = updated)
+                    ChangelogScreen.DayChange(
+                        date = it.first,
+                        added = added.sortedBy { it.booth },
+                        updated = updated.sortedBy { it.booth },
+                    )
                 }
         }
         .flowOn(dispatchers.io)
