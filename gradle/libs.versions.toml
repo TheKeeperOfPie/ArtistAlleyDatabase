@@ -134,6 +134,7 @@ jetBrainsAndroidX-navigationevent-compose = { group = "org.jetbrains.androidx.na
 jetBrainsCompose-compose-gradle-plugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "jetbrains-compose-multiplatform-plugin" }
 jetBrainsCompose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "jetbrains-compose-material3" }
 jetBrainsCompose-material3-windowSizeClass = { group = "org.jetbrains.compose.material3", name = "material3-window-size-class", version.ref = "jetbrains-compose-multiplatform-window-sizeclass" }
+jetBrainsCompose-multiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jimfs = { group = "com.google.jimfs", name = "jimfs", version.ref = "jimfs" }

@@ -6,8 +6,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.category
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 
 object AlleyImageUtils {
@@ -102,20 +102,17 @@ object AlleyImageUtils {
             }
             .firstOrNull { LinkModel.parse(it.key).type.category == LinkCategory.SOCIALS }
             ?.let {
-                Triple(
-                    "files/embeds/${it.value.name}",
-                    it.value.width,
-                    it.value.height,
-                )
+                "files/embeds/${it.value.name}" to it.value
             }
 
     fun getProfileImage(embeds: Map<String, DatabaseImage>) =
         getProfileImageWithPath(embeds)
-            ?.let { (path, width, height) ->
+            ?.let { (path, image) ->
                 CatalogImage(
                     uri = Uri.parse(Res.getUri(path)),
-                    width = width,
-                    height = height,
+                    width = image.width,
+                    height = image.height,
+                    color = image.color,
                 )
             }
 

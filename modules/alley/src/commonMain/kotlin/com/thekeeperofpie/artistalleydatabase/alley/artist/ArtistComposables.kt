@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -301,7 +302,7 @@ private fun ArtistProfileImage(
                 .clip(RoundedCornerShape(8.dp))
                 .border(
                     1.dp,
-                    MaterialTheme.colorScheme.primary,
+                    image?.color?.let(::Color) ?: MaterialTheme.colorScheme.primary,
                     RoundedCornerShape(8.dp)
                 )
         )

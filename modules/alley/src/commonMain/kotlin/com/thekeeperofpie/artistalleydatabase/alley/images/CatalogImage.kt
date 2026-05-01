@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.images
 
+import androidx.annotation.ColorInt
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import kotlinx.serialization.Serializable
@@ -10,6 +11,8 @@ data class CatalogImage(
     val uri: Uri,
     override val width: Int?,
     override val height: Int?,
+    @ColorInt
+    val color: Int? = null,
 ) : ImageWithDimensions {
     override val coilImageModel: Uri get() = uri
 }

@@ -11,6 +11,8 @@ plugins {
     kotlin("jvm") version "2.3.21"
     `kotlin-dsl`
     alias(libs.plugins.app.cash.sqldelight).version("2.2.1")
+    alias(libs.plugins.org.jetbrains.compose)
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.compose)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
@@ -53,20 +55,24 @@ sqldelight {
 
 dependencies {
     implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
-    implementation(libs.burst.gradle.plugin)
-    implementation(libs.com.google.devtools.ksp.gradle.plugin)
+    implementation(compose.desktop.currentOs)
+    implementation(libs.androidx.annotation)
     implementation(libs.apache.commons.csv)
     implementation(libs.apache.commons.io)
+    implementation(libs.burst.gradle.plugin)
+    implementation(libs.com.google.devtools.ksp.gradle.plugin)
     implementation(libs.com.mikepenz.aboutlibraries.plugin.gradle.plugin)
     implementation(libs.compose.compiler.gradle.plugin)
     implementation(libs.dev.zacsweers.metro.gradle.plugin)
     implementation(libs.gradle)
     implementation(libs.jetBrainsCompose.compose.gradle.plugin)
+    implementation(libs.jetBrainsCompose.multiplatform.ui)
     implementation(libs.jsoup)
+    implementation(libs.kmpalette.core)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.io.core)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.ksoup.network)
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)

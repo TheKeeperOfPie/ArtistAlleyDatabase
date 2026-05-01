@@ -1,9 +1,13 @@
-
 import ImageUtils.parseScaledImageWidthHeight
+import androidx.annotation.ColorInt
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.parseInputStream
+import com.kmpalette.color
+import com.kmpalette.palette.graphics.Palette
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +36,10 @@ internal class EmbedCache(
 ) {
     private val cache: MutableMap<String, EmbedImage?>
     private val ignored: MutableSet<String>
-    private val json = Json { prettyPrint = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
 
     init {
         val initialFile = inputFolder.resolve("embeds.json")
@@ -223,6 +230,8 @@ internal class EmbedCache(
                     fileHash = ImageUtils.hash(outputFile),
                     width = image.width,
                     height = image.height,
+                    color = Palette.from(image.toComposeImageBitmap())
+                        .generate().dominantSwatch?.color?.toArgb(),
                     failureReason = null,
                 )
             }
@@ -248,6 +257,8 @@ internal class EmbedCache(
             fileHash = ImageUtils.hash(outputFile),
             width = image.width,
             height = image.height,
+            color = Palette.from(image.toComposeImageBitmap())
+                .generate().dominantSwatch?.color?.toArgb(),
         )
     }
 
@@ -290,6 +301,8 @@ internal class EmbedCache(
         val fileHash: String?,
         val width: Int?,
         val height: Int?,
+        @ColorInt
+        val color: Int? = null,
         val failureReason: EmbedFailureReason? = null,
     ) {
         internal constructor(link: String, fetchResult: FetchResult) : this(
@@ -298,6 +311,7 @@ internal class EmbedCache(
             fileHash = fetchResult.fileHash,
             width = fetchResult.width,
             height = fetchResult.height,
+            color = fetchResult.color,
             failureReason = fetchResult.failureReason,
         )
 
@@ -305,7 +319,14 @@ internal class EmbedCache(
             "embed-${fileName?.substringBeforeLast(".")}-${fileHash}.webp"
 
         val linkAndCatalogImage =
-            fileName?.let { link to DatabaseImage(name = resourceFileName, width = width, height = height) }
+            fileName?.let {
+                link to DatabaseImage(
+                    name = resourceFileName,
+                    width = width,
+                    height = height,
+                    color = color,
+                )
+            }
     }
 
     @Serializable
@@ -314,6 +335,8 @@ internal class EmbedCache(
         val fileHash: String?,
         val width: Int?,
         val height: Int?,
+        @ColorInt
+        val color: Int? = null,
         val failureReason: EmbedFailureReason? = null,
     ) {
         constructor(failureReason: EmbedFailureReason) : this(
@@ -321,6 +344,7 @@ internal class EmbedCache(
             fileHash = null,
             width = null,
             height = null,
+            color = null,
             failureReason = failureReason,
         )
     }
