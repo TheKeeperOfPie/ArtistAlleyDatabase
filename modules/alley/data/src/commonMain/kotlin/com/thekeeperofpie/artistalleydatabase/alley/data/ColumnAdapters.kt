@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.data
 
 import app.cash.sqldelight.ColumnAdapter
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
@@ -19,11 +19,11 @@ object ColumnAdapters {
         override fun encode(value: List<String>) = Json.encodeToString(value)
     }
 
-    val listCatalogImageAdapter = object : ColumnAdapter<List<CatalogImage>, String> {
+    val listCatalogImageAdapter = object : ColumnAdapter<List<DatabaseImage>, String> {
         override fun decode(databaseValue: String) =
-            Json.decodeFromString<List<CatalogImage>>(databaseValue)
+            Json.decodeFromString<List<DatabaseImage>>(databaseValue)
 
-        override fun encode(value: List<CatalogImage>) = Json.encodeToString(value)
+        override fun encode(value: List<DatabaseImage>) = Json.encodeToString(value)
     }
 
     val artistStatusAdapter = object : ColumnAdapter<ArtistStatus, String> {
@@ -62,11 +62,11 @@ object ColumnAdapters {
         override fun encode(value: TableMin) = value.serializedValue.toLong()
     }
 
-    private val embedsAdapter = object : ColumnAdapter<Map<String, CatalogImage>, String> {
+    private val embedsAdapter = object : ColumnAdapter<Map<String, DatabaseImage>, String> {
         override fun decode(databaseValue: String) =
-            Json.decodeFromString<Map<String, CatalogImage>>(databaseValue)
+            Json.decodeFromString<Map<String, DatabaseImage>>(databaseValue)
 
-        override fun encode(value: Map<String, CatalogImage>) = Json.encodeToString(value)
+        override fun encode(value: Map<String, DatabaseImage>) = Json.encodeToString(value)
     }
 
     val artistEntry2023Adapter = ArtistEntry2023.Adapter(

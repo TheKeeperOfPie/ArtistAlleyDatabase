@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 import androidx.navigation3.runtime.NavKey
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 
@@ -22,7 +22,7 @@ sealed interface AlleyDestination : NavKey {
         val id: String,
         val booth: String?,
         val name: String?,
-        val images: List<CatalogImage>? = null,
+        val images: List<DatabaseImage>? = null,
         val imageIndex: Int? = null,
     ) : AlleyDestination {
         constructor(entry: ArtistEntry, imageIndex: Int? = null) : this(
@@ -104,7 +104,7 @@ sealed interface AlleyDestination : NavKey {
         val id: String,
         val hostTable: String?,
         val fandom: String?,
-        val images: List<CatalogImage>?,
+        val images: List<DatabaseImage>?,
         val initialImageIndex: Int? = null,
     ) : AlleyDestination {
         constructor(entry: StampRallyDatabaseEntry, initialImageIndex: Int? = null) : this(

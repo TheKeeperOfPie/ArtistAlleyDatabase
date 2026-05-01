@@ -2,7 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.serialization.Serializable
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -20,5 +20,5 @@ data class ArtistSummary(
     val seriesConfirmed: List<String>,
     val merchInferred: List<String>,
     val merchConfirmed: List<String>,
-    val images: List<CatalogImage>,
+    val images: List<DatabaseImage>,
 )

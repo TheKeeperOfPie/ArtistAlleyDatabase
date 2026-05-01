@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
@@ -18,13 +18,13 @@ sealed interface EditImage : ImageWithDimensions {
     override val height: Int? get() = null
 
     fun toCatalogImage() = if (this is LocalImage) {
-        CatalogImage(
+        DatabaseImage(
             name = key.value.toString(),
             width = width,
             height = height,
         )
     } else {
-        CatalogImage(name, width, height)
+        DatabaseImage(name, width, height)
     }
 
     @Serializable

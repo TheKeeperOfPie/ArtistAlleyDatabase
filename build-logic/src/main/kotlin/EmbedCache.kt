@@ -4,7 +4,7 @@ import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.parseInputStream
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -74,7 +74,7 @@ internal class EmbedCache(
         }
     }
 
-    suspend fun getEmbedCatalogImage(link: String): Pair<String, CatalogImage>? {
+    suspend fun getEmbedCatalogImage(link: String): Pair<String, DatabaseImage>? {
         val targetLink = link.lowercase()
         if (cache.contains(targetLink)) {
             val cached = cache[targetLink]
@@ -305,7 +305,7 @@ internal class EmbedCache(
             "embed-${fileName?.substringBeforeLast(".")}-${fileHash}.webp"
 
         val linkAndCatalogImage =
-            fileName?.let { link to CatalogImage(name = resourceFileName, width = width, height = height) }
+            fileName?.let { link to DatabaseImage(name = resourceFileName, width = width, height = height) }
     }
 
     @Serializable

@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
@@ -24,7 +24,7 @@ data class ArtistHistoryEntry(
     val seriesConfirmed: List<String>?,
     val merchInferred: List<String>?,
     val merchConfirmed: List<String>?,
-    val images: List<CatalogImage>?,
+    val images: List<DatabaseImage>?,
     val editorNotes: String?,
     val lastEditor: String?,
     val timestamp: Instant,
@@ -79,7 +79,7 @@ data class ArtistHistoryEntry(
             var seriesConfirmed: List<String>? = null
             var merchInferred: List<String>? = null
             var merchConfirmed: List<String>? = null
-            var images: List<CatalogImage>? = null
+            var images: List<DatabaseImage>? = null
             var editorNotes: String? = null
             var lastEditor: String? = null
 

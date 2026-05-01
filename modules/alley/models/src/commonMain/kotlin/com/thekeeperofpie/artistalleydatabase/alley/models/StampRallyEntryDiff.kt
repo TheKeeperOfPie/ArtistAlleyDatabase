@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -8,7 +8,7 @@ import kotlin.time.Instant
 @Serializable
 data class StampRallyEntryDiff(
     val id: String,
-    val images: ListDiff<CatalogImage>?,
+    val images: ListDiff<DatabaseImage>?,
     val fandom: String?,
     val tables: ListDiff<String>?,
     val links: ListDiff<String>?,

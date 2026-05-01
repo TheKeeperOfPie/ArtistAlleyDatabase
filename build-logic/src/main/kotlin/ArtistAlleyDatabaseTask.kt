@@ -7,7 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyArtistConnect
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
@@ -560,7 +560,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     private fun MutationQueries.getFallbackImages(
         year: DataYear,
         id: String,
-    ): Pair<DataYear, List<CatalogImage>>? =
+    ): Pair<DataYear, List<DatabaseImage>>? =
         DataYear.entries
             .filter { it.dates.start < year.dates.start }
             .sortedByDescending { it.dates.start }
@@ -583,7 +583,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         dataYear: DataYear,
         entries: Query<T>,
         artistId: (T) -> String,
-        updateImages: MutationQueries.(List<CatalogImage>, id: String) -> Unit,
+        updateImages: MutationQueries.(List<DatabaseImage>, id: String) -> Unit,
     ) {
         entries.executeAsList()
             .forEach {
@@ -601,7 +601,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         rallyId: (T) -> String,
         hostTable: (T) -> String,
         fandom: (T) -> String,
-        updateImages: MutationQueries.(List<CatalogImage>, id: String) -> Unit,
+        updateImages: MutationQueries.(List<DatabaseImage>, id: String) -> Unit,
     ) {
         entries.executeAsList()
             .forEach {
@@ -728,7 +728,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         imageCacheDir: File,
         year: DataYear,
         id: String,
-    ): List<CatalogImage> {
+    ): List<DatabaseImage> {
         val folder = inputImages.get()
             .dir(year.folderName)
             .dir("catalogs")
@@ -746,7 +746,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     imageCacheDir = imageCacheDir,
                     file = it,
                 )
-                CatalogImage("${folder.name}/${it.name}", width, height)
+                DatabaseImage("${folder.name}/${it.name}", width, height)
             }
     }
 
@@ -759,7 +759,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         id: String,
         hostTable: String?,
         fandom: String?,
-    ): List<CatalogImage> {
+    ): List<DatabaseImage> {
         hostTable ?: fandom ?: return emptyList()
         val file = "$hostTable$fandom"
         val targetName = when (year) {
@@ -789,7 +789,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     imageCacheDir = imageCacheDir,
                     file = it,
                 )
-                CatalogImage("${folder.name}/${it.name}", width, height)
+                DatabaseImage("${folder.name}/${it.name}", width, height)
             }
     }
 

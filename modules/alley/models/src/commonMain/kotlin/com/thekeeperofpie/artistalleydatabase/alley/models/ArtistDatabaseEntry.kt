@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -25,10 +25,10 @@ interface ArtistDatabaseEntry {
     val seriesConfirmed: List<String>
     val merchInferred: List<String>
     val merchConfirmed: List<String>
-    val images: List<CatalogImage>
-    val fallbackImages: List<CatalogImage>
+    val images: List<DatabaseImage>
+    val fallbackImages: List<DatabaseImage>
     val fallbackImageYear: DataYear?
-    val embeds: Map<String, CatalogImage>
+    val embeds: Map<String, DatabaseImage>
     val editorNotes: String?
     val lastEditor: String?
     val lastEditTime: Instant?
@@ -54,18 +54,18 @@ interface ArtistDatabaseEntry {
         override val seriesConfirmed: List<String>,
         override val merchInferred: List<String>,
         override val merchConfirmed: List<String>,
-        val _images: List<CatalogImage>,
+        val _images: List<DatabaseImage>,
         override val fallbackImageYear: DataYear?,
-        override val embeds: Map<String, CatalogImage>,
+        override val embeds: Map<String, DatabaseImage>,
         override val editorNotes: String?,
         override val lastEditor: String?,
         override val lastEditTime: Instant?,
         override val verifiedArtist: Boolean,
         override val newArtist: Boolean,
     ) : ArtistDatabaseEntry {
-        override val images: List<CatalogImage>
+        override val images: List<DatabaseImage>
             get() = _images.takeIf { fallbackImageYear == null }.orEmpty()
-        override val fallbackImages: List<CatalogImage>
+        override val fallbackImages: List<DatabaseImage>
             get() = _images.takeIf { fallbackImageYear != null }.orEmpty()
 
     }
@@ -104,7 +104,7 @@ interface ArtistDatabaseEntry {
             seriesConfirmed: List<String>,
             merchInferred: List<String>,
             merchConfirmed: List<String>,
-            images: List<CatalogImage>,
+            images: List<DatabaseImage>,
             fallbackImageYear: DataYear?,
             newArtist: Boolean,
         ) = Impl(

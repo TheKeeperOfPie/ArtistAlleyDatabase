@@ -23,7 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -237,7 +237,7 @@ class ArtistEditViewModel(
             )
 
             val (artistCatalogImages, uploadedImages) = when (imagesResult) {
-                ImageUploader.UploadResult.Empty -> emptyList<CatalogImage>() to emptyMap()
+                ImageUploader.UploadResult.Empty -> emptyList<DatabaseImage>() to emptyMap()
                 is ImageUploader.UploadResult.Error ->
                     return@withContext BackendRequest.ArtistSave.Response.Failed(imagesResult.message)
                 is ImageUploader.UploadResult.Success ->

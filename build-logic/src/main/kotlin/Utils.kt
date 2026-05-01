@@ -18,7 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.build_logic.form.BuildLogicFormDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
@@ -48,11 +48,11 @@ internal object Utils {
         override fun encode(value: DataYear) = value.serializedName
     }
 
-    private val listCatalogImageAdapter = object : ColumnAdapter<List<CatalogImage>, String> {
+    private val listCatalogImageAdapter = object : ColumnAdapter<List<DatabaseImage>, String> {
         override fun decode(databaseValue: String) =
-            Json.decodeFromString<List<CatalogImage>>(databaseValue)
+            Json.decodeFromString<List<DatabaseImage>>(databaseValue)
 
-        override fun encode(value: List<CatalogImage>) = Json.encodeToString(value)
+        override fun encode(value: List<DatabaseImage>) = Json.encodeToString(value)
     }
 
     private val artistStatusAdapter = object : ColumnAdapter<ArtistStatus, String> {
@@ -84,11 +84,11 @@ internal object Utils {
         override fun encode(value: TableMin) = value.serializedValue.toLong()
     }
 
-    private val embedsAdapter = object : ColumnAdapter<Map<String, CatalogImage>, String> {
+    private val embedsAdapter = object : ColumnAdapter<Map<String, DatabaseImage>, String> {
         override fun decode(databaseValue: String) =
-            Json.decodeFromString<Map<String, CatalogImage>>(databaseValue)
+            Json.decodeFromString<Map<String, DatabaseImage>>(databaseValue)
 
-        override fun encode(value: Map<String, CatalogImage>) = Json.encodeToString(value)
+        override fun encode(value: Map<String, DatabaseImage>) = Json.encodeToString(value)
     }
 
     fun hash(file: File, vararg inputs: Any): Long {

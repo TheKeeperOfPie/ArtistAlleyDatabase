@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.shared.alley.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CatalogImage(
+data class DatabaseImage(
     val name: String,
     val width: Int?,
     val height: Int?,

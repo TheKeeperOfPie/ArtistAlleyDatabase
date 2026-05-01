@@ -6,7 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.category
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 
@@ -14,7 +14,7 @@ object AlleyImageUtils {
 
     fun getArtistImages(
         year: DataYear,
-        images: List<CatalogImage>,
+        images: List<DatabaseImage>,
     ) = images.mapNotNull {
         try {
             val path = "files/images/${year.folderName}/catalogs/${it.name}"
@@ -31,7 +31,7 @@ object AlleyImageUtils {
 
     const val EMBED_MIN_DIMENSION = 300
 
-    fun getEmbedImagesMap(embeds: Map<String, CatalogImage>) = embeds
+    fun getEmbedImagesMap(embeds: Map<String, DatabaseImage>) = embeds
         .filter {
             val width = it.value.width
             val height = it.value.height
@@ -54,7 +54,7 @@ object AlleyImageUtils {
         .sortedWith(embedComparator)
         .map { it.second }
 
-    fun getEmbedImages(embeds: Map<String, CatalogImage>) =
+    fun getEmbedImages(embeds: Map<String, DatabaseImage>) =
         getEmbedImagesMap(embeds)
             .map { (path, width, height) ->
                 CatalogImage(
@@ -87,12 +87,12 @@ object AlleyImageUtils {
 
     fun getArtistImagesWithEmbedFallback(
         year: DataYear,
-        images: List<CatalogImage>,
-        embeds: Map<String, CatalogImage>,
+        images: List<DatabaseImage>,
+        embeds: Map<String, DatabaseImage>,
     ) = getArtistImages(year, images)
         .ifEmpty { getEmbedImages(embeds) }
 
-    fun getProfileImageWithPath(embeds: Map<String, CatalogImage>) =
+    fun getProfileImageWithPath(embeds: Map<String, DatabaseImage>) =
         embeds.asSequence()
             .filter {
                 val width = it.value.width
@@ -109,7 +109,7 @@ object AlleyImageUtils {
                 )
             }
 
-    fun getProfileImage(embeds: Map<String, CatalogImage>) =
+    fun getProfileImage(embeds: Map<String, DatabaseImage>) =
         getProfileImageWithPath(embeds)
             ?.let { (path, width, height) ->
                 CatalogImage(
@@ -121,7 +121,7 @@ object AlleyImageUtils {
 
     fun getRallyImages(
         year: DataYear,
-        images: List<CatalogImage>,
+        images: List<DatabaseImage>,
     ) = images.mapNotNull {
         try {
             val path = "files/images/${year.folderName}/rallies/${it.name}"

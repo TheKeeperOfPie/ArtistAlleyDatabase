@@ -4,7 +4,7 @@ import kotlin.collections.List;
 import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin;
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntry (
     beforeSeriesConfirmed TEXT AS List<String>,
     beforeMerchInferred TEXT AS List<String>,
     beforeMerchConfirmed TEXT AS List<String>,
-    beforeImages TEXT AS List<CatalogImage>,
+    beforeImages TEXT AS List<DatabaseImage>,
     afterBooth TEXT,
     afterName TEXT,
     afterSummary TEXT,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntry (
     afterSeriesConfirmed TEXT AS List<String>,
     afterMerchInferred TEXT AS List<String>,
     afterMerchConfirmed TEXT AS List<String>,
-    afterImages TEXT AS List<CatalogImage>,
+    afterImages TEXT AS List<DatabaseImage>,
     formNotes TEXT,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId)
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntryHistory (
     beforeSeriesConfirmed TEXT AS List<String>,
     beforeMerchInferred TEXT AS List<String>,
     beforeMerchConfirmed TEXT AS List<String>,
-    beforeImages TEXT AS List<CatalogImage>,
+    beforeImages TEXT AS List<DatabaseImage>,
     afterBooth TEXT,
     afterName TEXT,
     afterSummary TEXT,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntryHistory (
     afterSeriesConfirmed TEXT AS List<String>,
     afterMerchInferred TEXT AS List<String>,
     afterMerchConfirmed TEXT AS List<String>,
-    afterImages TEXT AS List<CatalogImage>,
+    afterImages TEXT AS List<DatabaseImage>,
     formNotes TEXT,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId, timestamp)
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntry (
     beforeSeries TEXT AS List<String>,
     beforeMerch TEXT AS List<String>,
     beforeNotes TEXT,
-    beforeImages TEXT AS List<CatalogImage>,
+    beforeImages TEXT AS List<DatabaseImage>,
     afterFandom TEXT,
     afterTables TEXT AS List<String>,
     afterLinks TEXT AS List<String>,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntry (
     afterSeries TEXT AS List<String>,
     afterMerch TEXT AS List<String>,
     afterNotes TEXT,
-    afterImages TEXT AS List<CatalogImage>,
+    afterImages TEXT AS List<DatabaseImage>,
     deleted INTEGER AS Boolean NOT NULL DEFAULT 0,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, stampRallyId)
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntryHistory (
     beforeSeries TEXT AS List<String>,
     beforeMerch TEXT AS List<String>,
     beforeNotes TEXT,
-    beforeImages TEXT AS List<CatalogImage>,
+    beforeImages TEXT AS List<DatabaseImage>,
     afterFandom TEXT,
     afterTables TEXT AS List<String>,
     afterLinks TEXT AS List<String>,
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntryHistory (
     afterSeries TEXT AS List<String>,
     afterMerch TEXT AS List<String>,
     afterNotes TEXT,
-    afterImages TEXT AS List<CatalogImage>,
+    afterImages TEXT AS List<DatabaseImage>,
     deleted INTEGER AS Boolean NOT NULL DEFAULT 0,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId, stampRallyId, timestamp)

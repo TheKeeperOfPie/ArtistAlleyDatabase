@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.Serializable
@@ -19,7 +19,7 @@ data class StampRallyHistoryEntry(
     val series: List<String>?,
     val merch: List<String>?,
     val notes: String?,
-    val images: List<CatalogImage>?,
+    val images: List<DatabaseImage>?,
     val editorNotes: String?,
     val lastEditor: String?,
     val timestamp: Instant,
@@ -63,7 +63,7 @@ data class StampRallyHistoryEntry(
             var series: List<String>? = null
             var merch: List<String>? = null
             var notes: String? = null
-            var images: List<CatalogImage>? = null
+            var images: List<DatabaseImage>? = null
             var editorNotes: String? = null
             var lastEditor: String? = null
 

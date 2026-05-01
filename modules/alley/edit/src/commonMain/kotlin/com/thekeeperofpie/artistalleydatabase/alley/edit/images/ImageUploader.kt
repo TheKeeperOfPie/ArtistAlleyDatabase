@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
@@ -62,7 +62,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                     is UploadImageResult.NotUploaded -> uploadResult.catalogImage
                     is UploadImageResult.Success -> {
                         val localImage = uploadResult.localImage
-                        val catalogImage = CatalogImage(uploadResult.finalKey, localImage.width, localImage.height)
+                        val catalogImage = DatabaseImage(uploadResult.finalKey, localImage.width, localImage.height)
                         uploadedImages[localImage] = ImageUtils.toEditImage(catalogImage)
                         catalogImage
                     }
@@ -80,7 +80,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                     is UploadImageResult.NotUploaded -> uploadResult.catalogImage
                     is UploadImageResult.Success -> {
                         val localImage = uploadResult.localImage
-                        val catalogImage = CatalogImage(uploadResult.finalKey, localImage.width, localImage.height)
+                        val catalogImage = DatabaseImage(uploadResult.finalKey, localImage.width, localImage.height)
                         uploadedImages[localImage] = ImageUtils.toEditImage(catalogImage)
                         catalogImage
                     }
@@ -268,7 +268,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
     }
 
     private sealed interface UploadImageResult {
-        data class NotUploaded(val catalogImage: CatalogImage) : UploadImageResult
+        data class NotUploaded(val catalogImage: DatabaseImage) : UploadImageResult
         data class Error(val message: String) : UploadImageResult
         data class Success(
             val localImage: EditImage.LocalImage,
@@ -284,8 +284,8 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         ) : UploadResult
 
         data class Success(
-            val artistCatalogImages: List<CatalogImage>,
-            val stampRallyCatalogImages: Map<String, List<CatalogImage>>,
+            val artistCatalogImages: List<DatabaseImage>,
+            val stampRallyCatalogImages: Map<String, List<DatabaseImage>>,
             val uploadedImages: Map<EditImage, EditImage>,
         ) : UploadResult
     }

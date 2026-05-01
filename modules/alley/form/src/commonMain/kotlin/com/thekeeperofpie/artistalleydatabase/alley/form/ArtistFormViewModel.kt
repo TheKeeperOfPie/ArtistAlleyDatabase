@@ -27,7 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -427,7 +427,7 @@ class ArtistFormViewModel(
         )
 
         val (reattachedStampRallyCatalogImages, reattachedUploadedImages) = when (reattachedImagesResult) {
-            ImageUploader.UploadResult.Empty -> emptyMap<String, List<CatalogImage>>() to emptyMap()
+            ImageUploader.UploadResult.Empty -> emptyMap<String, List<DatabaseImage>>() to emptyMap()
             is ImageUploader.UploadResult.Error -> return null to reattachedImagesResult.message
             is ImageUploader.UploadResult.Success ->
                 reattachedImagesResult.stampRallyCatalogImages to reattachedImagesResult.uploadedImages

@@ -1,12 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
 @Serializable
 data class ArtistEntryDiff(
-    val images: ListDiff<CatalogImage>?,
+    val images: ListDiff<DatabaseImage>?,
     val booth: String?,
     val name: String?,
     val summary: String?,
