@@ -1,3 +1,4 @@
+
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
@@ -18,8 +19,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.build_logic.form.BuildLogicFormDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.json.Json
@@ -30,7 +31,15 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.zip.CRC32
 import kotlin.time.Instant
+import kotlin.time.measureTimedValue
 import kotlin.uuid.Uuid
+
+context(task: Task)
+internal inline fun <T> trackStage(name: String, block: () -> T): T {
+    val (value, duration) = measureTimedValue { block() }
+    task.logger.lifecycle("${task.name} $name took $duration")
+    return value
+}
 
 internal object Utils {
 

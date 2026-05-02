@@ -1,9 +1,8 @@
-
 import ImageUtils.parseScaledImageWidthHeight
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
@@ -94,68 +93,86 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     "$booth - $uuid"
                 }
 
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "2023/catalogs",
-                    transformName = transformCatalogName,
-                    transformId = transformCatalogId,
-                )
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "2023/rallies",
-                    transformName = {
-                        val parts = it.split("-").map { it.trim() }
-                        "${parts[1]}${parts[0]}${parts[2]}"
-                    },
-                )
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "2024/catalogs",
-                    transformName = transformCatalogName,
-                    transformId = transformCatalogId,
-                )
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "2024/rallies",
-                    transformName = { it.replace(" - ", "").replace("'", "_") },
-                )
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "2025/catalogs",
-                    transformName = transformCatalogName,
-                    transformId = transformCatalogId,
-                )
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "2025/rallies",
-                    transformName = { it.replace(" - ", "").replace("'", "_") },
-                )
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "animeNyc2024/catalogs",
-                    transformName = transformCatalogName,
-                    transformId = transformCatalogId,
-                )
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "animeNyc2025/catalogs",
-                    transformName = transformCatalogName,
-                    transformId = transformCatalogId,
-                )
+                trackStage("AnimeExpo2023Catalogs") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "2023/catalogs",
+                        transformName = transformCatalogName,
+                        transformId = transformCatalogId,
+                    )
+                }
+                trackStage("AnimeExpo2023Rallies") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "2023/rallies",
+                        transformName = {
+                            val parts = it.split("-").map { it.trim() }
+                            "${parts[1]}${parts[0]}${parts[2]}"
+                        },
+                    )
+                }
+                trackStage("AnimeExpo2024Catalogs") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "2024/catalogs",
+                        transformName = transformCatalogName,
+                        transformId = transformCatalogId,
+                    )
+                }
+                trackStage("AnimeExpo2024Rallies") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "2024/rallies",
+                        transformName = { it.replace(" - ", "").replace("'", "_") },
+                    )
+                }
+                trackStage("AnimeExpo2025Catalogs") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "2025/catalogs",
+                        transformName = transformCatalogName,
+                        transformId = transformCatalogId,
+                    )
+                }
+                trackStage("AnimeExpo2025Rallies") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "2025/rallies",
+                        transformName = { it.replace(" - ", "").replace("'", "_") },
+                    )
+                }
+                trackStage("AnimeNyc2024Catalogs") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "animeNyc2024/catalogs",
+                        transformName = transformCatalogName,
+                        transformId = transformCatalogId,
+                    )
+                }
+                trackStage("AnimeNyc2025Catalogs") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "animeNyc2025/catalogs",
+                        transformName = transformCatalogName,
+                        transformId = transformCatalogId,
+                    )
+                }
 
-                processFolder(
-                    imageCacheDir = imageCacheDir,
-                    path = "animeExpo2026/catalogs",
-                    transformName = { it },
-                    transformImageName = { index, hash, name ->
-                        "${index.toString().padStart(2, '0')}-$name-$hash.webp"
-                    },
-                )
+                trackStage("AnimeExpo2026Catalogs") {
+                    processFolder(
+                        imageCacheDir = imageCacheDir,
+                        path = "animeExpo2026/catalogs",
+                        transformName = { it },
+                        transformImageName = { index, hash, name ->
+                            "${index.toString().padStart(2, '0')}-$name-$hash.webp"
+                        },
+                    )
+                }
             }
         }
     }
 
-    private suspend fun CoroutineScope.processFolder(
+    private suspend fun processFolder(
         imageCacheDir: File,
         path: String,
         transformName: (String) -> String,
@@ -176,14 +193,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         )
     }
 
-    private suspend fun CoroutineScope.processFolders(
+    private suspend fun processFolders(
         imageCacheDir: File,
         inputFolder: File,
         outputFolder: File,
         transformName: (String) -> String,
         transformId: (String) -> String = transformName,
         transformImageName: (index: Int, hash: String, name: String) -> String,
-    ): List<CatalogFolder> {
+    ): List<CatalogFolder> = coroutineScope {
         val folders = inputFolder.listFiles()
             .orEmpty()
             .flatMap { it.listFiles().filter { it.isDirectory }.ifEmpty { listOf(it) } }
@@ -262,7 +279,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             }
             .awaitAll()
 
-        return folders
+        folders
     }
 
     data class CatalogFolder(

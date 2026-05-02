@@ -7,12 +7,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyArtistConnect
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
@@ -117,221 +120,198 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             database = pair.second
 
             runBlocking {
-                verifySeries(database)
-
-                val artistChangelog = addArtistChangelog(database)
-                fixLegacyArtistImages(database, imageCacheDir)
-
-                finalizeLegacyLinkFlags(database)
-
-                val embedCache = EmbedCache(
-                    logger = logger,
-                    inputFolder = inputEmbeds.get().asFile,
-                    outputJsonFile = outputMetadata.get().asFile,
-                    workingImagesFolder = outputMetadata.dir("embedImages")
-                        .get().asFile.apply { mkdir() },
-                )
-                finalizeAnimeExpo2026(
-                    database = database,
-                    imageCacheDir = imageCacheDir,
-                    embedCache = embedCache,
-                    artistLastEditTimes =
-                        artistChangelog?.lastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
-                )
-                calculateNewArtists(database)
-
                 @Suppress("NewApi")
-                Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
-                    val dispatcher = it.asCoroutineDispatcher()
-                    withContext(dispatcher) {
-                        embedCache.finalizeCache(
-                            scope = this,
-                            imageCacheDir = imageCacheDir,
-                            embedImagesOutputFolder = outputEmbedImages.get().asFile,
-                        )
-                    }
-                }
+                Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)
+                    .use {
+                        withContext(it.asCoroutineDispatcher()) {
+                            trackStage("VerifySeries") { verifySeries(database) }
 
-                val mutationQueries = database.mutationQueries
+                            val artistChangelog =
+                                trackStage("ArtistChangelog") { addArtistChangelog(database) }
 
-                // Need to reverse to ensure that earlier years don't overwrite
-                // before later years can calculate a fallback
-                DataYear.entries.sortedByDescending { it.dates.start }.forEach { year ->
-                    when (year) {
-                        // 2023 is the earliest year and doesn't have any fallback data
-                        DataYear.ANIME_EXPO_2023 -> Unit
-                        DataYear.ANIME_EXPO_2024 -> mutationQueries.getAllArtistEntryAnimeExpo2024()
-                            .executeAsList()
-                            .forEach { artist ->
-                                if (artist.images.isNotEmpty()) return@forEach
-                                val (fallbackImagesYear, fallbackImages) =
-                                    mutationQueries.getFallbackImages(year, artist.id)
-                                        ?: return@forEach
-                                mutationQueries.updateArtistEntryAnimeExpo2024(
-                                    artist.copy(
-                                        images = fallbackImages,
-                                        fallbackImageYear = fallbackImagesYear,
-                                    )
+                            trackStage("LegacyArtistImages") {
+                                fixLegacyArtistImages(
+                                    database,
+                                    imageCacheDir
                                 )
                             }
-                        DataYear.ANIME_EXPO_2025 -> mutationQueries.getAllArtistEntryAnimeExpo2025()
-                            .executeAsList()
-                            .forEach { artist ->
-                                if (artist.images.isNotEmpty()) return@forEach
-                                val (fallbackImagesYear, fallbackImages) =
-                                    mutationQueries.getFallbackImages(year, artist.id)
-                                        ?: return@forEach
-                                mutationQueries.updateArtistEntryAnimeExpo2025(
-                                    artist.copy(
-                                        images = fallbackImages,
-                                        fallbackImageYear = fallbackImagesYear,
-                                    )
+                            trackStage("LegacyLinkFlags") { finalizeLegacyLinkFlags(database) }
+
+                            val embedCache = trackStage("LoadEmbedCache") {
+                                EmbedCache(
+                                    logger = logger,
+                                    inputFolder = inputEmbeds.get().asFile,
+                                    outputJsonFile = outputMetadata.get().asFile,
+                                    workingImagesFolder = outputMetadata.dir("embedImages")
+                                        .get().asFile.apply { mkdir() },
                                 )
                             }
-                        DataYear.ANIME_EXPO_2026 -> mutationQueries.getAllArtistEntryAnimeExpo2026()
-                            .executeAsList()
-                            .forEach { artist ->
-                                if (artist.images.isNotEmpty()) return@forEach
-                                val (fallbackImagesYear, fallbackImages) =
-                                    mutationQueries.getFallbackImages(year, artist.id)
-                                        ?: return@forEach
-                                mutationQueries.updateArtistEntryAnimeExpo2026(
-                                    artist.copy(
-                                        images = fallbackImages,
-                                        fallbackImageYear = fallbackImagesYear,
-                                    )
+                            trackStage("FinalizeAnimeExpo2026") {
+                                finalizeAnimeExpo2026(
+                                    database = database,
+                                    imageCacheDir = imageCacheDir,
+                                    embedCache = embedCache,
+                                    artistLastEditTimes =
+                                        artistChangelog?.lastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
                                 )
                             }
-                        DataYear.ANIME_NYC_2024 -> mutationQueries.getAllArtistEntryAnimeNyc2024()
-                            .executeAsList()
-                            .forEach { artist ->
-                                if (artist.images.isNotEmpty()) return@forEach
-                                val (fallbackImagesYear, fallbackImages) =
-                                    mutationQueries.getFallbackImages(year, artist.id)
-                                        ?: return@forEach
-                                mutationQueries.updateArtistEntryAnimeNyc2024(
-                                    artist.copy(
-                                        images = fallbackImages,
-                                        fallbackImageYear = fallbackImagesYear,
-                                    )
+                            trackStage("NewArtists") { calculateNewArtists(database) }
+
+                            trackStage("FinalizeCache") {
+                                embedCache.finalizeCache(
+                                    scope = this,
+                                    imageCacheDir = imageCacheDir,
+                                    embedImagesOutputFolder = outputEmbedImages.get().asFile,
                                 )
                             }
-                        DataYear.ANIME_NYC_2025 -> mutationQueries.getAllArtistEntryAnimeNyc2025()
-                            .executeAsList()
-                            .forEach { artist ->
-                                if (artist.images.isNotEmpty()) return@forEach
-                                val (fallbackImagesYear, fallbackImages) =
-                                    mutationQueries.getFallbackImages(year, artist.id)
-                                        ?: return@forEach
-                                mutationQueries.updateArtistEntryAnimeNyc2025(
-                                    artist.copy(
-                                        images = fallbackImages,
-                                        fallbackImageYear = fallbackImagesYear,
-                                    )
+
+                            val mutationQueries = database.mutationQueries
+
+                            trackStage("ArtistFallbackYears") {
+                                calculateArtistFallbackYears(
+                                    mutationQueries
                                 )
                             }
+
+                            trackStage("StampRallyConnections") {
+                                buildStampRallyConnections(
+                                    database
+                                )
+                            }
+
+                            val artistTagConnections = trackStage("ArtistConnections") {
+                                buildArtistConnections(database)
+                            }
+                            trackStage("SeriesInferredConfirmedCounts") {
+                                updateSeriesInferredConfirmedCounts(database, artistTagConnections)
+                            }
+                            trackStage("MerchYearFlags") {
+                                updateMerchYearFlags(database, artistTagConnections)
+                            }
+
+                            val (seriesConnections, merchConnections) = artistTagConnections
+                            trackStage("InsertTagConnections") {
+                                mutationQueries.transaction {
+                                    seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
+                                    merchConnections.values.forEach(mutationQueries::insertMerchConnection)
+                                }
+                            }
+
+                            var shouldFail = false
+
+                            fun logTagError(tagId: String, error: String) {
+                                // Split in future years and there is no valid fallback default
+                                if (tagId != "Honkai") {
+                                    shouldFail = true
+                                    logger.error(error)
+                                }
+                            }
+
+                            trackStage("CheckSeriesIds") {
+                                val allEnteredSeriesIds =
+                                    seriesConnections.map { it.value.seriesId }.toSet()
+                                val allValidSeriesIds =
+                                    database.seriesQueries.getSeries().executeAsList().map { it.id }
+                                        .toSet()
+                                val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
+                                if (seriesDiff.isNotEmpty()) {
+                                    seriesDiff.forEach { badSeries ->
+                                        logTagError(
+                                            badSeries,
+                                            "Entered series does not match valid series: $badSeries"
+                                        )
+                                        val brokenArtists = seriesConnections
+                                            .filter { it.value.seriesId == badSeries }
+                                            .map { it.value.artistId }
+                                        logTagError(badSeries, "Broken artists: $brokenArtists")
+                                    }
+                                }
+                                val seriesWithExtraSpaces =
+                                    allValidSeriesIds.filter { it.endsWith(" ") }
+                                if (seriesWithExtraSpaces.isNotEmpty()) {
+                                    logger.error("Series with extra spaces: $seriesWithExtraSpaces")
+                                }
+                            }
+
+                            trackStage("CheckMerchIds") {
+                                val allEnteredMerchIds =
+                                    merchConnections.map { it.value.merchId }.toSet()
+                                val allValidMerchIds =
+                                    database.merchQueries.getMerch().executeAsList().map { it.name }
+                                        .toSet()
+                                val merchDiff = allEnteredMerchIds - allValidMerchIds
+                                if (merchDiff.isNotEmpty()) {
+                                    merchDiff.forEach { badMerch ->
+                                        logTagError(
+                                            badMerch,
+                                            "Entered merch does not match valid merch: $badMerch"
+                                        )
+                                        val brokenArtists = merchConnections
+                                            .filter { it.value.merchId == badMerch }
+                                            .map { it.value.artistId }
+                                        logTagError(badMerch, "Broken artists: $brokenArtists")
+                                    }
+                                }
+                                val merchWithExtraSpaces =
+                                    allValidMerchIds.filter { it.endsWith(" ") }
+                                if (merchWithExtraSpaces.isNotEmpty()) {
+                                    logger.error("Merch with extra spaces: $merchWithExtraSpaces")
+                                }
+                            }
+
+                            if (shouldFail) {
+                                throw IllegalStateException("Broken tags must be resolved")
+                            }
+
+                            trackStage("CleanUpForRelease") {
+                                database.mutationQueries.cleanUpForRelease().await()
+                                // Don't retain user tables (merged from depending on :modules:alley:user)
+                                listOf(
+                                    "artistUserEntry",
+                                    "stampRallyUserEntry",
+                                    "artistNotes",
+                                    "stampRallyNotes",
+                                    "imageEntry",
+                                ).forEach {
+                                    driver.execute(null, "DROP TABLE $it;", 0, null).await()
+                                }
+
+                                val ftsTables = listOf(
+                                    "artistEntry2023_fts",
+                                    "artistEntry2024_fts",
+                                    "artistEntry2025_fts",
+                                    "artistEntryAnimeExpo2026_fts",
+                                    "artistEntryAnimeNyc2024_fts",
+                                    "artistEntryAnimeNyc2025_fts",
+                                    "stampRallyEntry2023_fts",
+                                    "stampRallyEntry2024_fts",
+                                    "stampRallyEntry2025_fts",
+                                    "seriesEntry_fts",
+                                    "merchEntry_fts",
+                                )
+
+                                ftsTables.forEach {
+                                    driver.execute(
+                                        null,
+                                        "INSERT INTO $it($it) VALUES('rebuild');",
+                                        0,
+                                        null
+                                    )
+                                        .await()
+                                    driver.execute(
+                                        null,
+                                        "INSERT INTO $it($it) VALUES('optimize');",
+                                        0,
+                                        null
+                                    )
+                                        .await()
+                                }
+
+                                driver.execute(null, "VACUUM;", 0, null).await()
+                                driver.execute(null, "PRAGMA optimize;", 0, null).await()
+                            }
+                        }
                     }
-                }
-
-                buildStampRallyConnections(database)
-
-                val artistTagConnections = buildArtistConnections(database)
-                updateSeriesInferredConfirmedCounts(database, artistTagConnections)
-                updateMerchYearFlags(database, artistTagConnections)
-
-                val (seriesConnections, merchConnections) = artistTagConnections
-                mutationQueries.transaction {
-                    seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
-                    merchConnections.values.forEach(mutationQueries::insertMerchConnection)
-                }
-
-                var shouldFail = false
-
-                fun logTagError(tagId: String, error: String) {
-                    // Split in future years and there is no valid fallback default
-                    if (tagId != "Honkai") {
-                        shouldFail = true
-                        logger.error(error)
-                    }
-                }
-
-                val allEnteredSeriesIds = seriesConnections.map { it.value.seriesId }.toSet()
-                val allValidSeriesIds =
-                    database.seriesQueries.getSeries().executeAsList().map { it.id }.toSet()
-                val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
-                if (seriesDiff.isNotEmpty()) {
-                    seriesDiff.forEach { badSeries ->
-                        logTagError(
-                            badSeries,
-                            "Entered series does not match valid series: $badSeries"
-                        )
-                        val brokenArtists = seriesConnections
-                            .filter { it.value.seriesId == badSeries }
-                            .map { it.value.artistId }
-                        logTagError(badSeries, "Broken artists: $brokenArtists")
-                    }
-                }
-                val seriesWithExtraSpaces = allValidSeriesIds.filter { it.endsWith(" ") }
-                if (seriesWithExtraSpaces.isNotEmpty()) {
-                    logger.error("Series with extra spaces: $seriesWithExtraSpaces")
-                }
-
-                val allEnteredMerchIds = merchConnections.map { it.value.merchId }.toSet()
-                val allValidMerchIds =
-                    database.merchQueries.getMerch().executeAsList().map { it.name }.toSet()
-                val merchDiff = allEnteredMerchIds - allValidMerchIds
-                if (merchDiff.isNotEmpty()) {
-                    merchDiff.forEach { badMerch ->
-                        logTagError(badMerch, "Entered merch does not match valid merch: $badMerch")
-                        val brokenArtists = merchConnections
-                            .filter { it.value.merchId == badMerch }
-                            .map { it.value.artistId }
-                        logTagError(badMerch, "Broken artists: $brokenArtists")
-                    }
-                }
-                val merchWithExtraSpaces = allValidMerchIds.filter { it.endsWith(" ") }
-                if (merchWithExtraSpaces.isNotEmpty()) {
-                    logger.error("Merch with extra spaces: $merchWithExtraSpaces")
-                }
-
-                if (shouldFail) {
-                    throw IllegalStateException("Broken tags must be resolved")
-                }
-
-                database.mutationQueries.cleanUpForRelease().await()
-                // Don't retain user tables (merged from depending on :modules:alley:user)
-                listOf(
-                    "artistUserEntry",
-                    "stampRallyUserEntry",
-                    "artistNotes",
-                    "stampRallyNotes",
-                    "imageEntry",
-                ).forEach {
-                    driver.execute(null, "DROP TABLE $it;", 0, null).await()
-                }
-
-                val ftsTables = listOf(
-                    "artistEntry2023_fts",
-                    "artistEntry2024_fts",
-                    "artistEntry2025_fts",
-                    "artistEntryAnimeExpo2026_fts",
-                    "artistEntryAnimeNyc2024_fts",
-                    "artistEntryAnimeNyc2025_fts",
-                    "stampRallyEntry2023_fts",
-                    "stampRallyEntry2024_fts",
-                    "stampRallyEntry2025_fts",
-                    "seriesEntry_fts",
-                    "merchEntry_fts",
-                )
-
-                ftsTables.forEach {
-                    driver.execute(null, "INSERT INTO $it($it) VALUES('rebuild');", 0, null).await()
-                    driver.execute(null, "INSERT INTO $it($it) VALUES('optimize');", 0, null)
-                        .await()
-                }
-
-                driver.execute(null, "VACUUM;", 0, null).await()
-                driver.execute(null, "PRAGMA optimize;", 0, null).await()
             }
 
             driver.close()
@@ -577,20 +557,27 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     ?.let { queryYear to it }
             }
 
-    private fun <T : Any> fixLegacyArtistImages(
+    private suspend fun <T : Any> fixLegacyArtistImages(
         database: BuildLogicEditDatabase,
         imageCacheDir: File,
         dataYear: DataYear,
         entries: Query<T>,
         artistId: (T) -> String,
         updateImages: MutationQueries.(List<DatabaseImage>, id: String) -> Unit,
-    ) {
-        entries.executeAsList()
-            .forEach {
-                val id = artistId(it)
-                val images = findArtistImages(imageCacheDir, dataYear, id)
+    ) = coroutineScope {
+        val fixedImages = entries.executeAsList()
+            .map {
+                async {
+                    val id = artistId(it)
+                    id to findArtistImages(imageCacheDir, dataYear, id)
+                }
+            }
+            .awaitAll()
+        database.transaction {
+            fixedImages.forEach { (id, images) ->
                 database.mutationQueries.updateImages(images, id)
             }
+        }
     }
 
     private fun <T : Any> fixLegacyRallyImages(
@@ -644,7 +631,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         return artistChangelog
     }
 
-    private fun fixLegacyArtistImages(database: BuildLogicEditDatabase, imageCacheDir: File) {
+    private suspend fun fixLegacyArtistImages(
+        database: BuildLogicEditDatabase,
+        imageCacheDir: File,
+    ) {
         fixLegacyArtistImages(
             database = database,
             imageCacheDir = imageCacheDir,
@@ -934,6 +924,87 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             addConnection(
                 ArtistMerchConnection(artistId = artistId, merchId = it, yearFlags = confirmedFlag)
             )
+        }
+    }
+
+    private fun calculateArtistFallbackYears(mutationQueries: MutationQueries) {
+        // Need to reverse to ensure that earlier years don't overwrite
+        // before later years can calculate a fallback
+        DataYear.entries.sortedByDescending { it.dates.start }.forEach { year ->
+            when (year) {
+                // 2023 is the earliest year and doesn't have any fallback data
+                DataYear.ANIME_EXPO_2023 -> Unit
+                DataYear.ANIME_EXPO_2024 -> mutationQueries.getAllArtistEntryAnimeExpo2024()
+                    .executeAsList()
+                    .forEach { artist ->
+                        if (artist.images.isNotEmpty()) return@forEach
+                        val (fallbackImagesYear, fallbackImages) =
+                            mutationQueries.getFallbackImages(year, artist.id)
+                                ?: return@forEach
+                        mutationQueries.updateArtistEntryAnimeExpo2024(
+                            artist.copy(
+                                images = fallbackImages,
+                                fallbackImageYear = fallbackImagesYear,
+                            )
+                        )
+                    }
+                DataYear.ANIME_EXPO_2025 -> mutationQueries.getAllArtistEntryAnimeExpo2025()
+                    .executeAsList()
+                    .forEach { artist ->
+                        if (artist.images.isNotEmpty()) return@forEach
+                        val (fallbackImagesYear, fallbackImages) =
+                            mutationQueries.getFallbackImages(year, artist.id)
+                                ?: return@forEach
+                        mutationQueries.updateArtistEntryAnimeExpo2025(
+                            artist.copy(
+                                images = fallbackImages,
+                                fallbackImageYear = fallbackImagesYear,
+                            )
+                        )
+                    }
+                DataYear.ANIME_EXPO_2026 -> mutationQueries.getAllArtistEntryAnimeExpo2026()
+                    .executeAsList()
+                    .forEach { artist ->
+                        if (artist.images.isNotEmpty()) return@forEach
+                        val (fallbackImagesYear, fallbackImages) =
+                            mutationQueries.getFallbackImages(year, artist.id)
+                                ?: return@forEach
+                        mutationQueries.updateArtistEntryAnimeExpo2026(
+                            artist.copy(
+                                images = fallbackImages,
+                                fallbackImageYear = fallbackImagesYear,
+                            )
+                        )
+                    }
+                DataYear.ANIME_NYC_2024 -> mutationQueries.getAllArtistEntryAnimeNyc2024()
+                    .executeAsList()
+                    .forEach { artist ->
+                        if (artist.images.isNotEmpty()) return@forEach
+                        val (fallbackImagesYear, fallbackImages) =
+                            mutationQueries.getFallbackImages(year, artist.id)
+                                ?: return@forEach
+                        mutationQueries.updateArtistEntryAnimeNyc2024(
+                            artist.copy(
+                                images = fallbackImages,
+                                fallbackImageYear = fallbackImagesYear,
+                            )
+                        )
+                    }
+                DataYear.ANIME_NYC_2025 -> mutationQueries.getAllArtistEntryAnimeNyc2025()
+                    .executeAsList()
+                    .forEach { artist ->
+                        if (artist.images.isNotEmpty()) return@forEach
+                        val (fallbackImagesYear, fallbackImages) =
+                            mutationQueries.getFallbackImages(year, artist.id)
+                                ?: return@forEach
+                        mutationQueries.updateArtistEntryAnimeNyc2025(
+                            artist.copy(
+                                images = fallbackImages,
+                                fallbackImageYear = fallbackImagesYear,
+                            )
+                        )
+                    }
+            }
         }
     }
 

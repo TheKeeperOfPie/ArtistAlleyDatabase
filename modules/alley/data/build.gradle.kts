@@ -41,7 +41,10 @@ sqldelight {
     }
 }
 
-val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
+val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs") {
+    // Writing the cache is more expensive than running the task incrementally
+    outputs.cacheIf { false }
+}
 val changelogTask = tasks.register<ArtistAlleyChangelogTask>("generateArtistAlleyChangelog")
 val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase") {
     inputImages.set(inputsTask.flatMap { it.outputImages })
