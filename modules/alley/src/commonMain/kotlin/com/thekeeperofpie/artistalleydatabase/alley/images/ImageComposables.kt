@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -58,16 +57,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastRoundToInt
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_image_fullscreen_content_description
@@ -81,6 +83,7 @@ import coil3.decode.BlackholeDecoder
 import coil3.request.CachePolicy
 import coil3.request.Disposable
 import coil3.request.ImageRequest
+import coil3.size.SizeResolver
 import com.composables.core.ScrollArea
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
@@ -97,7 +100,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollAreaState
 import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.ZoomableContentLocation
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 import org.jetbrains.compose.resources.stringResource
@@ -124,6 +129,8 @@ fun rememberImagePagerState(images: List<ImageWithDimensions>, initialImageIndex
 
 @OptIn(ExperimentalCoilApi::class)
 private val blackholeFactory = BlackholeDecoder.Factory()
+
+private val CycleDoubleClickListener = DoubleClickToZoomListener.cycle(3f)
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -161,7 +168,7 @@ fun ImagePager(
         var anySuccess by remember { mutableStateOf(false) }
 
         CompositionLocalProvider(LocalViewConfiguration provides newViewConfiguration) {
-            var minHeight by remember { mutableIntStateOf(0) }
+            var minPagerHeight by remember { mutableIntStateOf(0) }
             val density = LocalDensity.current
             HorizontalPager(
                 state = pagerState,
@@ -169,86 +176,113 @@ fun ImagePager(
                 userScrollEnabled = userScrollEnabled,
                 modifier = Modifier
                     .conditionally(forceMinHeight) {
-                        heightIn(min = density.run { minHeight.toDp() })
+                        heightIn(min = density.run { minPagerHeight.toDp() })
                             .onSizeChanged {
-                                if (it.height > minHeight) {
-                                    minHeight = it.height
+                                if (it.height > minPagerHeight) {
+                                    minPagerHeight = it.height
                                 }
                             }
                     }
                     .conditionally(clipCorners) {
                         clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                     }
-                    .clipToBounds()
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    if (it == 0 && images.size > 1) {
-                        SmallImageGrid(
-                            targetHeight = if (forceMinHeight) {
-                                minHeight.coerceAtLeast(
-                                    density.run { 320.dp.roundToPx() }
-                                )
-                            } else {
-                                null
-                            },
-                            images = images,
-                            onImageClick = { index, _ ->
-                                scope.launch {
-                                    pagerState.animateScrollToPage(index + 1)
-                                }
-                            }
-                        )
-                    } else {
-                        Box(modifier = modifier.fillMaxSize()) {
-                            val imageIndex = (it - 1).coerceAtLeast(0)
-                            val zoomableState = multiZoomableState[imageIndex]
-                            val image = images[imageIndex]
-                            val width = image.width
-                            val height = image.height
-                            val isFillWidth = imageContentScale == ContentScale.FillWidth
-
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalPlatformContext.current)
-                                    .data(image)
-                                    .memoryCacheKey(image.coilImageModel.toString())
-                                    .build(),
-                                contentScale = imageContentScale,
-                                onSuccess = { anySuccess = true },
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                                modifier = Modifier
-                                    .zoomable(
-                                        state = zoomableState,
-                                        onClick = if (onClickPage == null) null else {
-                                            {
-                                                if (!pagerState.isScrollInProgress) {
-                                                    onClickPage(pagerState.settledPage)
-                                                }
-                                            }
-                                        },
-                                        clipToBounds = false,
-                                    )
-                                    .sharedElement("image", image.coilImageModel)
-                                    .conditionally(isFillWidth) {
-                                        fillMaxWidth()
-                                    }
-                                    .conditionally(isFillWidth && width != null && height != null) {
-                                        aspectRatio(width!! / height!!.toFloat())
-                                    }
-                                    .conditionally(!isFillWidth) {
-                                        fillMaxHeight()
-                                    }
-                                    .conditionally(clipCorners && LocalSharedTransitionScope.current.isTransitionActive) {
-                                        clip(
-                                            RoundedCornerShape(
-                                                topStart = 12.dp,
-                                                topEnd = 12.dp
-                                            )
-                                        )
-                                    }
-                                    .align(Alignment.Center)
+                if (it == 0 && images.size > 1) {
+                    SmallImageGrid(
+                        targetHeight = if (forceMinHeight) {
+                            minPagerHeight.coerceAtLeast(
+                                density.run { 320.dp.roundToPx() }
                             )
+                        } else {
+                            null
+                        },
+                        images = images,
+                        onImageClick = { index, _ ->
+                            scope.launch {
+                                pagerState.animateScrollToPage(index + 1)
+                            }
                         }
+                    )
+                } else {
+                    val imageIndex = (it - 1).coerceAtLeast(0)
+                    val image = images[imageIndex]
+                    val zoomableState = multiZoomableState[imageIndex].apply {
+                        val width = image.width?.toFloat() ?: return@apply
+                        val height = image.height?.toFloat() ?: return@apply
+                        setContentLocation(
+                            @Suppress("DEPRECATION")
+                            ZoomableContentLocation.scaledToFitAndCenterAligned(
+                                Size(width = width, height = height)
+                            )
+                        )
+                    }
+                    val isFillWidth = imageContentScale == ContentScale.FillWidth
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .zoomable(
+                                state = zoomableState,
+                                onClick = if (onClickPage == null) null else {
+                                    {
+                                        if (!pagerState.isScrollInProgress) {
+                                            onClickPage(pagerState.settledPage)
+                                        }
+                                    }
+                                },
+                                onDoubleClick = CycleDoubleClickListener,
+                            )
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalPlatformContext.current)
+                                .data(image)
+                                .memoryCacheKey(image.coilImageModel.toString())
+                                .apply {
+                                    if (zoomableState.zoomFraction != 0f) {
+                                        size(SizeResolver.ORIGINAL)
+                                    }
+                                }
+                                .build(),
+                            contentScale = imageContentScale,
+                            onSuccess = { anySuccess = true },
+                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                            contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                            modifier = Modifier
+                                .sharedElement("image", image.coilImageModel)
+                                .heightIn(min = with(LocalDensity.current) { minPagerHeight.toDp() })
+                                .layout { measurable, constraints ->
+                                    val newConstraints = when {
+                                        isFillWidth && constraints.hasBoundedWidth -> {
+                                            val maxWidth = constraints.maxWidth
+                                            val width = image.width
+                                            val height = image.height
+                                            if (width != null && height != null) {
+                                                Constraints.fixed(
+                                                    width = maxWidth,
+                                                    height = (height.toFloat() / width * maxWidth).fastRoundToInt(),
+                                                )
+                                            } else {
+                                                constraints.copy(minWidth = maxWidth)
+                                            }
+                                        }
+                                        !isFillWidth && constraints.hasBoundedHeight ->
+                                            constraints.copy(minHeight = constraints.maxHeight)
+                                        else -> constraints
+                                    }
+                                    val placeable = measurable.measure(newConstraints)
+                                    layout(placeable.width, placeable.height) {
+                                        placeable.place(0, 0)
+                                    }
+                                }
+                                .conditionally(clipCorners && LocalSharedTransitionScope.current.isTransitionActive) {
+                                    clip(
+                                        RoundedCornerShape(
+                                            topStart = 12.dp,
+                                            topEnd = 12.dp
+                                        )
+                                    )
+                                }
+                        )
                     }
                 }
             }
@@ -342,7 +376,10 @@ private fun BoxScope.ImagePagerActions(
         modifier = Modifier.sharedElement("previousPage", sharedElementId, zIndexInOverlay = 1f)
             .align(Alignment.CenterStart)
             .hoverable(previousPageInteractionSource)
-            .conditionally(pagerState.pageCount <= 1 || pagerState.currentPage == 0, Modifier.alpha(0f))
+            .conditionally(
+                pagerState.pageCount <= 1 || pagerState.currentPage == 0,
+                Modifier.alpha(0f)
+            )
     ) {
         val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
         Box(

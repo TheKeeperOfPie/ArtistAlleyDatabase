@@ -53,7 +53,7 @@ import me.saket.telephoto.zoomable.rememberZoomableState
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun rememberMultiZoomableState(size: Int, maxZoomFactor: Float = 3f): MultiZoomableState {
+fun rememberMultiZoomableState(size: Int, maxZoomFactor: Float = 5f): MultiZoomableState {
     val states = (0 until size).map {
         key(it) {
             rememberZoomableState(ZoomSpec(maxZoomFactor = maxZoomFactor))
