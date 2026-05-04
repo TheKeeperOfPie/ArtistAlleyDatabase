@@ -155,11 +155,12 @@ fun ImagePager(
                 overrideTouchSlop = existingViewConfiguration.touchSlop * 4,
             )
         }
-        val userScrollEnabled by remember(images) {
+        val userScrollEnabled by remember(pagerState, images, multiZoomableState) {
             derivedStateOf {
                 if (images.size <= 1) return@derivedStateOf false
                 val zoomableState =
-                    multiZoomableState[(pagerState.currentPage - 1).coerceAtLeast(0)]
+                    multiZoomableState.getOrNull((pagerState.currentPage - 1).coerceAtLeast(0))
+                        ?: return@derivedStateOf false
                 val zoomFraction = zoomableState.zoomFraction ?: return@derivedStateOf true
                 zoomFraction < 0.05f
             }
