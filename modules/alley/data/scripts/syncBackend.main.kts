@@ -101,7 +101,7 @@ if (SYNC_IMAGES) {
         "rclone",
         "--config",
         rcloneConf.absolutePath,
-        "sync",
+        "copy",
         "images:artist-alley-images",
         imagesDataDir.absolutePath,
     )
