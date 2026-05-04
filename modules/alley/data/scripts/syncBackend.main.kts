@@ -12,7 +12,7 @@ import kotlin.time.Clock
 val RELEASE_FLAG = false
 val PROD = false || RELEASE_FLAG
 val PULL_REMOTE = false || RELEASE_FLAG
-val SYNC_IMAGES = true || RELEASE_FLAG
+val SYNC_IMAGES = false || RELEASE_FLAG
 val WRITE_BACKUP = false || RELEASE_FLAG
 val scriptDir = __FILE__.parentFile
 
@@ -95,6 +95,7 @@ if (PULL_REMOTE) {
 }
 
 if (SYNC_IMAGES) {
+    // TODO: Clean up abandoned images
     val imagesDataDir = dataDir.resolve("images")
     runCommand(
         "rclone",
