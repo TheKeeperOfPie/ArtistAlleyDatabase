@@ -57,7 +57,7 @@ internal object Utils {
         override fun encode(value: DataYear) = value.serializedName
     }
 
-    private val listCatalogImageAdapter = object : ColumnAdapter<List<DatabaseImage>, String> {
+    private val listDatabaseImageAdapter = object : ColumnAdapter<List<DatabaseImage>, String> {
         override fun decode(databaseValue: String) =
             Json.decodeFromString<List<DatabaseImage>>(databaseValue)
 
@@ -154,7 +154,7 @@ internal object Utils {
                 artistNamesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
                 catalogLinksAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
             ),
             artistEntry2024Adapter = ArtistEntry2024.Adapter(
                 linksAdapter = listStringAdapter,
@@ -164,7 +164,7 @@ internal object Utils {
                 seriesConfirmedAdapter = listStringAdapter,
                 merchInferredAdapter = listStringAdapter,
                 merchConfirmedAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
                 fallbackImageYearAdapter = dataYearAdapter,
             ),
             artistEntry2025Adapter = ArtistEntry2025.Adapter(
@@ -176,7 +176,7 @@ internal object Utils {
                 merchInferredAdapter = listStringAdapter,
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
                 fallbackImageYearAdapter = dataYearAdapter,
             ),
             artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
@@ -190,7 +190,8 @@ internal object Utils {
                 merchInferredAdapter = listStringAdapter,
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
+                tempImagesAdapter = listDatabaseImageAdapter,
                 fallbackImageYearAdapter = dataYearAdapter,
                 embedsAdapter = embedsAdapter,
                 lastEditTimeAdapter = instantAdapter,
@@ -211,7 +212,7 @@ internal object Utils {
                 merchInferredAdapter = listStringAdapter,
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
                 fallbackImageYearAdapter = dataYearAdapter,
             ),
             artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
@@ -223,25 +224,25 @@ internal object Utils {
                 merchInferredAdapter = listStringAdapter,
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
                 fallbackImageYearAdapter = dataYearAdapter,
             ),
             stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
                 tablesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
             ),
             stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
                 tablesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
                 tableMinAdapter = tableMinAdapter,
             ),
             stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
                 tablesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
                 seriesAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
                 tableMinAdapter = tableMinAdapter,
             ),
             stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
@@ -249,7 +250,7 @@ internal object Utils {
                 linksAdapter = listStringAdapter,
                 seriesAdapter = listStringAdapter,
                 merchAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
                 lastEditTimeAdapter = instantAdapter,
                 tableMinAdapter = tableMinAdapter,
             ),
@@ -295,7 +296,7 @@ internal object Utils {
                 beforeSeriesConfirmedAdapter = listStringAdapter,
                 beforeMerchInferredAdapter = listStringAdapter,
                 beforeMerchConfirmedAdapter = listStringAdapter,
-                beforeImagesAdapter = listCatalogImageAdapter,
+                beforeImagesAdapter = listDatabaseImageAdapter,
                 afterSocialLinksAdapter = listStringAdapter,
                 afterStoreLinksAdapter = listStringAdapter,
                 afterPortfolioLinksAdapter = listStringAdapter,
@@ -305,7 +306,7 @@ internal object Utils {
                 afterSeriesConfirmedAdapter = listStringAdapter,
                 afterMerchInferredAdapter = listStringAdapter,
                 afterMerchConfirmedAdapter = listStringAdapter,
-                afterImagesAdapter = listCatalogImageAdapter,
+                afterImagesAdapter = listDatabaseImageAdapter,
                 timestampAdapter = instantAdapter,
             )
         )

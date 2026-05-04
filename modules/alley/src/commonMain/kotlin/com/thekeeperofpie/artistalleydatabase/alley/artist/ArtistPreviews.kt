@@ -29,6 +29,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 merchConfirmed = listOf("Bags", "Shirts", "Stickers", "Prints"),
                 _images = emptyList(),
                 fallbackImageYear = null,
+                tempImages = emptyList(),
                 embeds = emptyMap(),
                 editorNotes = null,
                 lastEditor = null,

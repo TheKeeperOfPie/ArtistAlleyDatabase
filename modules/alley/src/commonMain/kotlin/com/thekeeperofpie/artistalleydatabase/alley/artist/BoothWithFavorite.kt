@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 
 data class BoothWithFavorite(
     val year: DataYear,
@@ -10,6 +10,7 @@ data class BoothWithFavorite(
     val name: String?,
     val images: List<DatabaseImage>,
     val fallbackImageYear: DataYear?,
+    val tempImages: List<DatabaseImage>,
     val embeds: Map<String, DatabaseImage>,
     val favorite: Boolean,
     val hasNotes: Boolean,

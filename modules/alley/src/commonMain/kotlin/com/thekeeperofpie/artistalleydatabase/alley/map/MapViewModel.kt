@@ -157,6 +157,7 @@ class MapViewModel(
                 images = primaryArtist.images
                     .takeIf { primaryArtist.fallbackImageYear == null }
                     .orEmpty(),
+                tempImages = primaryArtist.tempImages,
                 embeds = primaryArtist.embeds,
             )
         }

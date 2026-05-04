@@ -44,6 +44,9 @@ class ArtistEntryGridModel(
 
     override val booth get() = artist.booth
 
+    val showingFallback = !hasCatalog && fallbackImages.isNotEmpty()
+    val displayImages get() = if (showingFallback) fallbackImages else images
+
     companion object {
 
         fun buildFromEntry(
@@ -71,6 +74,7 @@ class ArtistEntryGridModel(
             val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
                 year = artist.year,
                 images = artist.images,
+                tempImages = artist.tempImages,
                 embeds = artist.embeds.takeIf { showEmbeds }.orEmpty(),
             )
 

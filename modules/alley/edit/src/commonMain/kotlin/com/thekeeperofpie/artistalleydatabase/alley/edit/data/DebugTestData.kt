@@ -154,6 +154,7 @@ object DebugTestData {
                 merchConfirmed = emptyList(),
                 _images = emptyList(),
                 fallbackImageYear = null,
+                tempImages = emptyList(),
                 embeds = emptyMap(),
                 editorNotes = null,
                 lastEditor = "fakeemail@example.com",

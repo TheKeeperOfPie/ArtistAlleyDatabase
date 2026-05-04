@@ -107,8 +107,7 @@ object ArtistAlleyAppScreen {
         }
         val onOpenArtistImageFullscreen = { entry: ArtistEntryGridModel, imageIndex: Int? ->
             val artist = entry.artist
-            val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty()
-            val images = if (showingFallback) entry.fallbackImages else entry.images
+            val images = entry.images
             navStack.navigate(
                 AlleyDestination.Images(
                     year = artist.year,
@@ -118,7 +117,7 @@ object ArtistAlleyAppScreen {
                         booth = artist.booth,
                         profileImage = AlleyImageUtils.getProfileImage(artist.embeds),
                         name = artist.name,
-                        showingFallback = showingFallback,
+                        showingFallback = entry.showingFallback,
                     ),
                     images = images,
                     initialImageIndex = imageIndex,

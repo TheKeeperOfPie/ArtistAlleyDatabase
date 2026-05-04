@@ -316,8 +316,7 @@ fun SingleTablePopup(
     modifier: Modifier = Modifier,
 ) {
     val ignored = entry.ignored
-    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty()
-    val images = if (showingFallback) entry.fallbackImages else entry.images
+    val images = entry.displayImages
     val imagesSize = images.size
     val pagerState = rememberPagerState(
         initialPage = imageIndex?.coerceAtMost(imagesSize) ?: 0,
@@ -386,7 +385,7 @@ fun SingleTablePopup(
             }
         }
 
-        if (showingFallback) {
+        if (entry.showingFallback) {
             Box(
                 contentAlignment = Alignment.BottomCenter,
                 modifier = modifier

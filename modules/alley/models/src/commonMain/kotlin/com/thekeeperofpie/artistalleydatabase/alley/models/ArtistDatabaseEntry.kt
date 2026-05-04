@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -28,6 +28,7 @@ interface ArtistDatabaseEntry {
     val images: List<DatabaseImage>
     val fallbackImages: List<DatabaseImage>
     val fallbackImageYear: DataYear?
+    val tempImages: List<DatabaseImage>
     val embeds: Map<String, DatabaseImage>
     val editorNotes: String?
     val lastEditor: String?
@@ -56,6 +57,7 @@ interface ArtistDatabaseEntry {
         override val merchConfirmed: List<String>,
         val _images: List<DatabaseImage>,
         override val fallbackImageYear: DataYear?,
+        override val tempImages: List<DatabaseImage>,
         override val embeds: Map<String, DatabaseImage>,
         override val editorNotes: String?,
         override val lastEditor: String?,
@@ -126,6 +128,7 @@ interface ArtistDatabaseEntry {
             merchConfirmed = merchConfirmed,
             _images = images,
             fallbackImageYear = fallbackImageYear,
+            tempImages = emptyList(),
             embeds = emptyMap(),
             status = ArtistStatus.UNKNOWN,
             editorNotes = null,

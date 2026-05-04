@@ -36,6 +36,7 @@ class ImagesViewModel(
                     } else {
                         artist.images
                     },
+                    tempImages = artist.tempImages,
                     embeds = artist.embeds,
                 )
             }

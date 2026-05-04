@@ -47,7 +47,10 @@ val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlle
 }
 val changelogTask = tasks.register<ArtistAlleyChangelogTask>("generateArtistAlleyChangelog")
 val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase") {
-    inputImages.set(inputsTask.flatMap { it.outputImages })
+    inputImagesAnimeExpo2023.set(inputsTask.flatMap { it.outputImagesAnimeExpo2023 })
+    inputImagesAnimeExpo2024.set(inputsTask.flatMap { it.outputImagesAnimeExpo2024 })
+    inputImagesAnimeExpo2025.set(inputsTask.flatMap { it.outputImagesAnimeExpo2025 })
+    inputImagesAnimeNyc2025.set(inputsTask.flatMap { it.outputImagesAnimeNyc2025 })
     inputEmbeds.set(project.file("inputs/embeds"))
     inputChangelog.set(changelogTask.flatMap { it.outputFile })
     mustRunAfter(changelogTask, inputsTask)

@@ -105,6 +105,7 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                         AlleyImageUtils.getArtistImagesWithEmbedFallback(
                             year = it.artist.year,
                             images = it.artist.images,
+                            tempImages = it.artist.tempImages,
                             embeds = it.artist.embeds,
                         )
                     }
@@ -147,6 +148,7 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                             val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
                                 year = it,
                                 images = artist.artist.images,
+                                tempImages = artist.artist.tempImages,
                                 embeds = artist.artist.embeds,
                             )
                             images.forEach { image ->

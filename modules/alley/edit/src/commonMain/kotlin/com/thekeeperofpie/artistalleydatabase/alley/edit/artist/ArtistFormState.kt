@@ -136,6 +136,7 @@ class ArtistFormState(
             merchConfirmed = merchConfirmed,
             _images = emptyList(),
             fallbackImageYear = null,
+            tempImages = emptyList(),
             embeds = emptyMap(),
             editorNotes = editorNotes,
             lastEditor = null, // This is filled on the backend

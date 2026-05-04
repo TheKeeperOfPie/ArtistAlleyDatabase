@@ -26,47 +26,68 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val inputsFolder: DirectoryProperty
+    abstract val imagesAnimeExpo2023Folder: DirectoryProperty
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val imagesFolder: DirectoryProperty
+    abstract val imagesAnimeExpo2024Folder: DirectoryProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val imagesAnimeExpo2025Folder: DirectoryProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val imagesAnimeNyc2025Folder: DirectoryProperty
 
     @get:OutputDirectory
-    abstract val outputImages: DirectoryProperty
+    abstract val outputImagesAnimeExpo2023: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputImagesAnimeExpo2024: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputImagesAnimeExpo2025: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputImagesAnimeNyc2025: DirectoryProperty
 
     @get:OutputDirectory
     abstract val outputSource: DirectoryProperty
 
     init {
-        inputsFolder.convention(layout.projectDirectory.dir("inputs"))
-        imagesFolder.convention(layout.projectDirectory.dir("images"))
-        outputImages.convention(layout.buildDirectory.dir("generated/composeResources/files/images"))
-        outputSource.convention(layout.buildDirectory.dir("generated/source"))
+        val projectDirectory = layout.projectDirectory
+        imagesAnimeExpo2023Folder.convention(projectDirectory.dir("images/2023"))
+        imagesAnimeExpo2024Folder.convention(projectDirectory.dir("images/2024"))
+        imagesAnimeExpo2025Folder.convention(projectDirectory.dir("images/2025"))
+        imagesAnimeNyc2025Folder.convention(projectDirectory.dir("images/animeNyc2025"))
+
+        val buildDirectory = layout.buildDirectory
+        outputImagesAnimeExpo2023.convention(buildDirectory.dir("generated/composeResources/files/images/2023"))
+        outputImagesAnimeExpo2024.convention(buildDirectory.dir("generated/composeResources/files/images/2024"))
+        outputImagesAnimeExpo2025.convention(buildDirectory.dir("generated/composeResources/files/images/2025"))
+        outputImagesAnimeNyc2025.convention(buildDirectory.dir("generated/composeResources/files/images/animeNyc2025"))
+        outputSource.convention(buildDirectory.dir("generated/source"))
     }
 
     @Suppress("NewApi")
     @TaskAction
     fun process() {
-        if (!inputsFolder.get().asFile.exists()) return
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
             val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
             val dispatcher = it.asCoroutineDispatcher()
             runBlocking(dispatcher) {
                 // Copy over preserved pre-processed images
                 listOf(
-                    "2023",
-                    "2024",
-                    "2025",
-                    "animeExpo2026",
-                    "animeNyc2024",
-                    "animeNyc2025"
-                ).forEach {
-                    val processed = imagesFolder.dir("$it/processed").get().asFile
+                    imagesAnimeExpo2023Folder to outputImagesAnimeExpo2023,
+                    imagesAnimeExpo2024Folder to outputImagesAnimeExpo2024,
+                    imagesAnimeExpo2025Folder to outputImagesAnimeExpo2025,
+                    imagesAnimeNyc2025Folder to outputImagesAnimeNyc2025,
+                ).forEach { (input, output) ->
+                    val processed = input.dir("processed").get().asFile
                     if (processed.exists()) {
-                        val output = outputImages.dir(it).get().asFile.apply { mkdirs() }
                         processed.copyRecursively(
-                            output,
+                            output.get().asFile,
                             overwrite = false,
                             onError = { _, exception ->
                                 if (exception is FileAlreadyExistsException) {
@@ -96,7 +117,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 trackStage("AnimeExpo2023Catalogs") {
                     processFolder(
                         imageCacheDir = imageCacheDir,
-                        path = "2023/catalogs",
+                        imagesAnimeExpo2023Folder.dir("catalogs").get().asFile,
+                        outputImagesAnimeExpo2023.dir("catalogs").get().asFile,
                         transformName = transformCatalogName,
                         transformId = transformCatalogId,
                     )
@@ -104,7 +126,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 trackStage("AnimeExpo2023Rallies") {
                     processFolder(
                         imageCacheDir = imageCacheDir,
-                        path = "2023/rallies",
+                        imagesAnimeExpo2023Folder.dir("rallies").get().asFile,
+                        outputImagesAnimeExpo2023.dir("rallies").get().asFile,
                         transformName = {
                             val parts = it.split("-").map { it.trim() }
                             "${parts[1]}${parts[0]}${parts[2]}"
@@ -114,7 +137,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 trackStage("AnimeExpo2024Catalogs") {
                     processFolder(
                         imageCacheDir = imageCacheDir,
-                        path = "2024/catalogs",
+                        imagesAnimeExpo2024Folder.dir("catalogs").get().asFile,
+                        outputImagesAnimeExpo2024.dir("catalogs").get().asFile,
                         transformName = transformCatalogName,
                         transformId = transformCatalogId,
                     )
@@ -122,14 +146,16 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 trackStage("AnimeExpo2024Rallies") {
                     processFolder(
                         imageCacheDir = imageCacheDir,
-                        path = "2024/rallies",
+                        imagesAnimeExpo2024Folder.dir("rallies").get().asFile,
+                        outputImagesAnimeExpo2024.dir("rallies").get().asFile,
                         transformName = { it.replace(" - ", "").replace("'", "_") },
                     )
                 }
                 trackStage("AnimeExpo2025Catalogs") {
                     processFolder(
                         imageCacheDir = imageCacheDir,
-                        path = "2025/catalogs",
+                        imagesAnimeExpo2025Folder.dir("catalogs").get().asFile,
+                        outputImagesAnimeExpo2025.dir("catalogs").get().asFile,
                         transformName = transformCatalogName,
                         transformId = transformCatalogId,
                     )
@@ -137,35 +163,18 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 trackStage("AnimeExpo2025Rallies") {
                     processFolder(
                         imageCacheDir = imageCacheDir,
-                        path = "2025/rallies",
+                        imagesAnimeExpo2025Folder.dir("rallies").get().asFile,
+                        outputImagesAnimeExpo2025.dir("rallies").get().asFile,
                         transformName = { it.replace(" - ", "").replace("'", "_") },
-                    )
-                }
-                trackStage("AnimeNyc2024Catalogs") {
-                    processFolder(
-                        imageCacheDir = imageCacheDir,
-                        path = "animeNyc2024/catalogs",
-                        transformName = transformCatalogName,
-                        transformId = transformCatalogId,
                     )
                 }
                 trackStage("AnimeNyc2025Catalogs") {
                     processFolder(
                         imageCacheDir = imageCacheDir,
-                        path = "animeNyc2025/catalogs",
+                        imagesAnimeNyc2025Folder.dir("catalogs").get().asFile,
+                        outputImagesAnimeNyc2025.dir("catalogs").get().asFile,
                         transformName = transformCatalogName,
                         transformId = transformCatalogId,
-                    )
-                }
-
-                trackStage("AnimeExpo2026Catalogs") {
-                    processFolder(
-                        imageCacheDir = imageCacheDir,
-                        path = "animeExpo2026/catalogs",
-                        transformName = { it },
-                        transformImageName = { index, hash, name ->
-                            "${index.toString().padStart(2, '0')}-$name-$hash.webp"
-                        },
                     )
                 }
             }
@@ -174,19 +183,18 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     private suspend fun processFolder(
         imageCacheDir: File,
-        path: String,
+        inputFolder: File,
+        outputFolder: File,
         transformName: (String) -> String,
         transformId: (String) -> String = transformName,
         transformImageName: (index: Int, hash: String, name: String) -> String = { index, hash, _ ->
             "${index.toString().padStart(2, '0')}-$hash.webp"
         },
     ): List<CatalogFolder> {
-        val input = imagesFolder.dir(path).get().asFile
-        val output = outputImages.dir(path).get().asFile
         return processFolders(
             imageCacheDir = imageCacheDir,
-            inputFolder = input,
-            outputFolder = output,
+            inputFolder = inputFolder,
+            outputFolder = outputFolder,
             transformName = transformName,
             transformId = transformId,
             transformImageName = transformImageName,

@@ -88,6 +88,7 @@ internal object ImageUtils {
         target: File,
     ) {
         logger.lifecycle("Compressing $input")
+        target.parentFile.mkdirs()
         val params = mutableListOf(
             cwebpPath.toAbsolutePath().toString(),
             "-af",

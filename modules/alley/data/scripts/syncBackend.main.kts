@@ -12,6 +12,7 @@ import kotlin.time.Clock
 val RELEASE_FLAG = false
 val PROD = false || RELEASE_FLAG
 val PULL_REMOTE = false || RELEASE_FLAG
+val SYNC_IMAGES = true || RELEASE_FLAG
 val WRITE_BACKUP = false || RELEASE_FLAG
 val scriptDir = __FILE__.parentFile
 
@@ -22,6 +23,7 @@ val buildDir = scriptDir.resolve("build")
 val secretsFile = scriptDir.resolve("../../../alley-app/secrets.properties")
 val secrets = Properties().apply { secretsFile.inputStream().use(::load) }
 val wranglerToml = initializeWranglerFile(secrets)
+val rcloneConf = initializeRcloneConfFile(secrets)
 val editExportFile = buildDir.resolve("editExport.sql")
 val formExportFile = buildDir.resolve("formExport.sql")
 
@@ -66,31 +68,43 @@ if (PULL_REMOTE) {
             .apply { mkdirs() }
             .resolve("$snapshotTime.sql")
     )
+
+    dataDir.resolve("inputs/artists")
+        .apply { mkdirs() }
+        .resolve("animeExpo2026.sql")
+        .writer()
+        .use { writer ->
+            editExportFile.useLines {
+                it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
+                    .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
+                    .forEach(writer::appendLine)
+            }
+        }
+
+    dataDir.resolve("inputs/tags")
+        .apply { mkdirs() }
+        .resolve("tags.sql")
+        .writer()
+        .use { writer ->
+            editExportFile.useLines {
+                it.filter { it.contains("\"seriesEntry\"") || it.contains("\"merchEntry\"") }
+                    .map { it.replace("INSERT INTO", "INSERT OR REPLACE INTO") }
+                    .forEach(writer::appendLine)
+            }
+        }
 }
 
-dataDir.resolve("inputs/artists")
-    .apply { mkdirs() }
-    .resolve("animeExpo2026.sql")
-    .writer()
-    .use { writer ->
-        editExportFile.useLines {
-            it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
-                .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
-                .forEach(writer::appendLine)
-        }
-    }
-
-dataDir.resolve("inputs/tags")
-    .apply { mkdirs() }
-    .resolve("tags.sql")
-    .writer()
-    .use { writer ->
-        editExportFile.useLines {
-            it.filter { it.contains("\"seriesEntry\"") || it.contains("\"merchEntry\"") }
-                .map { it.replace("INSERT INTO", "INSERT OR REPLACE INTO") }
-                .forEach(writer::appendLine)
-        }
-    }
+if (SYNC_IMAGES) {
+    val imagesDataDir = dataDir.resolve("images")
+    runCommand(
+        "rclone",
+        "--config",
+        rcloneConf.absolutePath,
+        "sync",
+        "images:artist-alley-images",
+        imagesDataDir.absolutePath,
+    )
+}
 
 if (WRITE_BACKUP) {
     runWranglerCommand(
@@ -161,6 +175,25 @@ fun initializeWranglerFile(secrets: Properties): File {
             [[r2_buckets]]
             binding = "ARTIST_ALLEY_SNAPSHOTS_BUCKET"
             bucket_name = "artist-alley-snapshots"
+        """.trimIndent()
+    )
+    return file
+}
+
+fun initializeRcloneConfFile(secrets: Properties): File {
+    val file = buildDir.resolve("rclone.conf")
+    val cloudflareAccountId = secrets.getProperty("cloudflareAccountId")
+    val imagesAccessKeyId = secrets.getProperty("imagesAccessKeyId")
+    val imagesSecretAccessKeyId = secrets.getProperty("imagesSecretAccessKeyId")
+    file.writeText(
+        """
+            [images]
+            type = s3
+            provider = Cloudflare
+            access_key_id = $imagesAccessKeyId
+            secret_access_key = $imagesSecretAccessKeyId
+            endpoint = https://$cloudflareAccountId.r2.cloudflarestorage.com
+            no_check_bucket = true
         """.trimIndent()
     )
     return file

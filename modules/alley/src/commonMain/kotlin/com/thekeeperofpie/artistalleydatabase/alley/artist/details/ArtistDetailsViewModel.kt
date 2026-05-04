@@ -94,6 +94,7 @@ class ArtistDetailsViewModel(
         showFallbackImages,
         entry.mapState(viewModelScope) { it?.artist }) { showFallbackImages, artist ->
         val fallbackImageYear = artist?.fallbackImageYear
+        val tempImages = artist?.tempImages?.let(AlleyImageUtils::getTempImages).orEmpty()
         val embedImages = artist?.embeds?.let(AlleyImageUtils::getEmbedImages).orEmpty()
         when {
             artist == null -> LoadingResult.loading()
@@ -101,18 +102,19 @@ class ArtistDetailsViewModel(
                 LoadingResult.success(
                     DetailsScreenCatalog(
                         images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
-                            artist.year,
-                            artist.images,
-                            artist.embeds,
+                            year = artist.year,
+                            images = artist.images,
+                            tempImages = artist.tempImages,
+                            embeds = artist.embeds,
                         ),
                         showOutdatedCatalogs = null,
                         fallbackYear = null,
                     )
                 )
-            !showFallbackImages && embedImages.isEmpty() ->
+            !showFallbackImages && tempImages.isNotEmpty() ->
                 LoadingResult.success(
                     DetailsScreenCatalog(
-                        images = emptyList(),
+                        images = tempImages,
                         showOutdatedCatalogs = false,
                         fallbackYear = artist.fallbackImageYear,
                     )
@@ -121,6 +123,14 @@ class ArtistDetailsViewModel(
                 LoadingResult.success(
                     DetailsScreenCatalog(
                         images = embedImages,
+                        showOutdatedCatalogs = false,
+                        fallbackYear = artist.fallbackImageYear,
+                    )
+                )
+            !showFallbackImages ->
+                LoadingResult.success(
+                    DetailsScreenCatalog(
+                        images = emptyList(),
                         showOutdatedCatalogs = false,
                         fallbackYear = artist.fallbackImageYear,
                     )

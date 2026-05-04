@@ -17,7 +17,30 @@ object AlleyImageUtils {
         images: List<DatabaseImage>,
     ) = images.mapNotNull {
         try {
-            val path = "files/images/${year.folderName}/catalogs/${it.name}"
+            val path = when (year) {
+                DataYear.ANIME_EXPO_2023,
+                DataYear.ANIME_EXPO_2024,
+                DataYear.ANIME_EXPO_2025,
+                DataYear.ANIME_NYC_2024,
+                DataYear.ANIME_NYC_2025,
+                    -> "files/images/${year.folderName}/catalogs/${it.name}"
+                DataYear.ANIME_EXPO_2026 -> "files/images/${it.name}"
+            }
+
+            CatalogImage(
+                uri = Uri.parse(Res.getUri(path)),
+                width = it.width,
+                height = it.height,
+            )
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
+        }
+    }
+
+    fun getTempImages(tempImages: List<DatabaseImage>) = tempImages.mapNotNull {
+        try {
+            val path = "files/images/${it.name}"
             CatalogImage(
                 uri = Uri.parse(Res.getUri(path)),
                 width = it.width,
@@ -88,8 +111,10 @@ object AlleyImageUtils {
     fun getArtistImagesWithEmbedFallback(
         year: DataYear,
         images: List<DatabaseImage>,
+        tempImages: List<DatabaseImage>,
         embeds: Map<String, DatabaseImage>,
     ) = getArtistImages(year, images)
+        .ifEmpty { getTempImages(tempImages) }
         .ifEmpty { getEmbedImages(embeds) }
 
     fun getProfileImageWithPath(embeds: Map<String, DatabaseImage>) =
