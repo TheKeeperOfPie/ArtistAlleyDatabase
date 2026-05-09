@@ -212,7 +212,7 @@ object ArtistDetailsScreen {
                                             .orEmpty(),
                                         artist.name,
                                         showingOutdatedCatalogs,
-                                        images,
+                                        catalog.result?.images.orEmpty(),
                                         event.imageIndex,
                                         profileImage,
                                     )

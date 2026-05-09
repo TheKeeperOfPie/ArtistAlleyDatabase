@@ -283,6 +283,7 @@ fun ImagePager(
                                         )
                                     )
                                 }
+                                .align(Alignment.Center)
                         )
                     }
                 }
