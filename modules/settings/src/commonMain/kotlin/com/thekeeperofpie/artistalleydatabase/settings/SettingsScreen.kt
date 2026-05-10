@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -36,6 +34,8 @@ import artistalleydatabase.modules.utils_compose.generated.resources.open
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_albums
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_artists
 import coil3.compose.AsyncImage
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MonetizationOn
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStrings
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen

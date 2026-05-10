@@ -12,11 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.outlined.ThumbDown
-import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +42,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendations.AnimeMediaDe
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ThumbDown
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ThumbUp
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.ThumbDown
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.ThumbUp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState

@@ -28,8 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -65,6 +63,8 @@ import artistalleydatabase.modules.anime.ui.generated.resources.anime_banner_ima
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_cover_image_long_press_preview
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_unfold_less_text
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AccelerateEasing

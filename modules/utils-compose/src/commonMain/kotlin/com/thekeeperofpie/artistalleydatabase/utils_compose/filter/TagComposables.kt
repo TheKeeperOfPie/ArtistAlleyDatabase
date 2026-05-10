@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +26,8 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.tag_expand_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.tag_search_clear_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.tag_search_placeholder
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry.Category
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry.Tag

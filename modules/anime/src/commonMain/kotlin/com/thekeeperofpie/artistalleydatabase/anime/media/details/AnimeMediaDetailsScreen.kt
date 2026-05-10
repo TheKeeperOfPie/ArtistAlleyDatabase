@@ -28,13 +28,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -193,6 +186,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ContentCopy
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Error
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
+import com.thekeeperofpie.artistalleydatabase.icons.filled.OpenInBrowser
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Share
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Warning
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.media.YouTubePlayer
 import com.thekeeperofpie.artistalleydatabase.media.rememberYouTubePlayerState

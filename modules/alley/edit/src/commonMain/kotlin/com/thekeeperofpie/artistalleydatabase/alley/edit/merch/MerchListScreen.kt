@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFloatingActionButton
@@ -40,6 +37,9 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_mer
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

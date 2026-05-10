@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import androidx.compose.material.icons.materialPath
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.icons.materialPath
 
 object CustomIcons {
 

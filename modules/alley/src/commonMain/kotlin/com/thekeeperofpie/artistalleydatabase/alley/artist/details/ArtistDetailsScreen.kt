@@ -22,12 +22,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FiberNew
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -111,6 +105,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FiberNew
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Verified
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton

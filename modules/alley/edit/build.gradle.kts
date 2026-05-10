@@ -18,7 +18,6 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.material3AdaptiveNavigationSuite)
-            implementation(compose.materialIconsExtended)
             implementation(compose.preview)
             implementation(compose.runtime)
             implementation(compose.ui)
@@ -38,6 +37,7 @@ kotlin {
             implementation(libs.stately.concurrent.collections)
 
             implementation(projects.modules.alley)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsInject)

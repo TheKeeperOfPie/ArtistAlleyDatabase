@@ -17,11 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Tab
@@ -49,14 +44,19 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.anime_me
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_year_increment_content_description
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_year_today_content_description
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.AddCircleOutline
+import com.thekeeperofpie.artistalleydatabase.icons.filled.CalendarToday
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
+import com.thekeeperofpie.artistalleydatabase.icons.filled.RemoveCircleOutline
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
-import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.Clock
 
 // TODO: This should probably live somewhere else
 

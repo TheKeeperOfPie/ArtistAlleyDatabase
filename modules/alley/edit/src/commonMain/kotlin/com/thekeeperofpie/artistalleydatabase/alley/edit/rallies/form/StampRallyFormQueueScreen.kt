@@ -11,10 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LeadingIconTab
@@ -46,6 +42,10 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.List
+import com.thekeeperofpie.artistalleydatabase.icons.filled.History
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import org.jetbrains.compose.resources.StringResource

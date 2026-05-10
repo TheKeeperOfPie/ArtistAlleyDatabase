@@ -21,6 +21,7 @@ kotlin {
 
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.edit)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
         }

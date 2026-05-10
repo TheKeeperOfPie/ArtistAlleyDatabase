@@ -26,12 +26,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.PeopleAlt
-import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -115,6 +109,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameContinuation
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Done
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Movie
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PeopleAlt
+import com.thekeeperofpie.artistalleydatabase.icons.filled.RestartAlt
+import com.thekeeperofpie.artistalleydatabase.icons.filled.SwapVert
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler

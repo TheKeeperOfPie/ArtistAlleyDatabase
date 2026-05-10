@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.navigation3)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.molecule.runtime)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
         }
         desktopMain {

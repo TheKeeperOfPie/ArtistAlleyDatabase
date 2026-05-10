@@ -67,13 +67,13 @@ kotlin {
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.edit)
             implementation(projects.modules.alley.form)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
         }
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
-                implementation(compose.materialIconsExtended)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.java)
             }

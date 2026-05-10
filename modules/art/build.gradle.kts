@@ -14,6 +14,7 @@ kotlin {
             api(projects.modules.browse)
             api(projects.modules.data)
             api(projects.modules.entry)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsRoom)
 

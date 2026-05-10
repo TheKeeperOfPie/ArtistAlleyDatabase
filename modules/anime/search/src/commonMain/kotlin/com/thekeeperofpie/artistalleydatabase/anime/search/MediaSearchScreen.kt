@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +40,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton

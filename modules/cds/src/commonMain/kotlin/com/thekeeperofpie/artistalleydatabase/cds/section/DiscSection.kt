@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -51,10 +49,11 @@ import artistalleydatabase.modules.entry.generated.resources.move_up
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

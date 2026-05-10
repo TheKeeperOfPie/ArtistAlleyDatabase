@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -16,6 +14,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.different_indicator_content_description
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ViewKanban
 import com.thekeeperofpie.artistalleydatabase.utils_compose.observableStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

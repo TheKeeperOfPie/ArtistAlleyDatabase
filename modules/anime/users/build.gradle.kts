@@ -19,6 +19,7 @@ kotlin {
             api(projects.modules.anime.users.data)
             api(projects.modules.markdown)
             implementation(projects.modules.anime.ui)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
 

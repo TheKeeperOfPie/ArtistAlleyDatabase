@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.links
 
-import androidx.compose.material.icons.materialPath
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
@@ -52,6 +51,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_vg
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_weebly
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_x
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_you_tube
+import com.thekeeperofpie.artistalleydatabase.icons.materialPath
 import org.jetbrains.compose.resources.StringResource
 
 enum class Logo(

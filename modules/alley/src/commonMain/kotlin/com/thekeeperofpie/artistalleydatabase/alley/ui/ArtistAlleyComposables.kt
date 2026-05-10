@@ -51,13 +51,6 @@ import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChangeHistory
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -156,6 +149,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.start
 import com.thekeeperofpie.artistalleydatabase.alley.utils.timeZone
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ChangeHistory
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Error
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting

@@ -10,10 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -29,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.app.generated.resources.Res
 import artistalleydatabase.app.generated.resources.progress_complete_content_description
 import artistalleydatabase.app.generated.resources.select_export_destination_content_description
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
+import com.thekeeperofpie.artistalleydatabase.icons.filled.CheckCircle
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.CheckCircle
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 

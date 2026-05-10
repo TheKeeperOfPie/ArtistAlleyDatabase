@@ -29,8 +29,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -81,6 +79,8 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.imageFolderName
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropRequestDialog
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton

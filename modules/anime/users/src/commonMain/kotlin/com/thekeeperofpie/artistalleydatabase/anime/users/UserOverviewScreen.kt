@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -52,6 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Check
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Close
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState

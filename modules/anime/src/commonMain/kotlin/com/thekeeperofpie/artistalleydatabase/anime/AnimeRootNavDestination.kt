@@ -1,12 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -17,6 +10,13 @@ import artistalleydatabase.modules.anime.generated.resources.anime_screen_manga
 import artistalleydatabase.modules.anime.generated.resources.anime_screen_profile
 import artistalleydatabase.modules.anime.generated.resources.anime_screen_search
 import artistalleydatabase.modules.anime.generated.resources.anime_screen_unlock
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.LibraryBooks
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Home
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Lock
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Person
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Search
+import com.thekeeperofpie.artistalleydatabase.icons.filled.VideoLibrary
 import org.jetbrains.compose.resources.StringResource
 
 enum class AnimeRootNavDestination(

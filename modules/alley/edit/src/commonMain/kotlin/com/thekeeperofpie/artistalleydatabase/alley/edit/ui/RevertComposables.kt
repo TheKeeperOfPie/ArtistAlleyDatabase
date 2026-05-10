@@ -3,8 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.ui
 import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -27,6 +25,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_rev
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_revert_tooltip
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.History
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import org.jetbrains.compose.resources.StringResource

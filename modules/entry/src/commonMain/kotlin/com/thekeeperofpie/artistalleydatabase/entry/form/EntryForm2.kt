@@ -41,10 +41,6 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -104,6 +100,10 @@ import artistalleydatabase.modules.entry.generated.resources.entry_open_more_con
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.OpenInNew
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ViewKanban
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally

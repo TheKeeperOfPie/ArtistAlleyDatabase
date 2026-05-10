@@ -35,6 +35,7 @@ kotlin {
             implementation(projects.modules.anime.data)
             implementation(projects.modules.anime.ui)
             implementation(projects.modules.cds)
+            implementation(projects.modules.icons)
             implementation(projects.modules.markdown)
             implementation(projects.modules.media)
             implementation(projects.modules.monetization)

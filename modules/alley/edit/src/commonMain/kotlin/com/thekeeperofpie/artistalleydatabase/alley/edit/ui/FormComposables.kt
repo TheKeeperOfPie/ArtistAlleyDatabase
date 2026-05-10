@@ -11,12 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -66,6 +60,12 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.Notes
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
+import com.thekeeperofpie.artistalleydatabase.icons.filled.History
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Save
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import kotlinx.coroutines.delay

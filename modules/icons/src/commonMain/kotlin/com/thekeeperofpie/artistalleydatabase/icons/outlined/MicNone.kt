@@ -1,0 +1,49 @@
+@file:Suppress("UnusedReceiverParameter")
+
+package com.thekeeperofpie.artistalleydatabase.icons.outlined
+
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.materialIcon
+import com.thekeeperofpie.artistalleydatabase.icons.materialPath
+
+val Icons.Outlined.MicNone: ImageVector
+    get() {
+        if (_micNone != null) {
+            return _micNone!!
+        }
+        _micNone = materialIcon(name = "Outlined.MicNone") {
+            materialPath {
+                moveTo(12.0f, 14.0f)
+                curveToRelative(1.66f, 0.0f, 3.0f, -1.34f, 3.0f, -3.0f)
+                lineTo(15.0f, 5.0f)
+                curveToRelative(0.0f, -1.66f, -1.34f, -3.0f, -3.0f, -3.0f)
+                reflectiveCurveTo(9.0f, 3.34f, 9.0f, 5.0f)
+                verticalLineToRelative(6.0f)
+                curveToRelative(0.0f, 1.66f, 1.34f, 3.0f, 3.0f, 3.0f)
+                close()
+                moveTo(11.0f, 5.0f)
+                curveToRelative(0.0f, -0.55f, 0.45f, -1.0f, 1.0f, -1.0f)
+                reflectiveCurveToRelative(1.0f, 0.45f, 1.0f, 1.0f)
+                verticalLineToRelative(6.0f)
+                curveToRelative(0.0f, 0.55f, -0.45f, 1.0f, -1.0f, 1.0f)
+                reflectiveCurveToRelative(-1.0f, -0.45f, -1.0f, -1.0f)
+                lineTo(11.0f, 5.0f)
+                close()
+                moveTo(17.0f, 11.0f)
+                curveToRelative(0.0f, 2.76f, -2.24f, 5.0f, -5.0f, 5.0f)
+                reflectiveCurveToRelative(-5.0f, -2.24f, -5.0f, -5.0f)
+                lineTo(5.0f, 11.0f)
+                curveToRelative(0.0f, 3.53f, 2.61f, 6.43f, 6.0f, 6.92f)
+                lineTo(11.0f, 21.0f)
+                horizontalLineToRelative(2.0f)
+                verticalLineToRelative(-3.08f)
+                curveToRelative(3.39f, -0.49f, 6.0f, -3.39f, 6.0f, -6.92f)
+                horizontalLineToRelative(-2.0f)
+                close()
+            }
+        }
+        return _micNone!!
+    }
+
+private var _micNone: ImageVector? = null

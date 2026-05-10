@@ -148,6 +148,7 @@ include(
     ":modules:debug",
     ":modules:discord",
     ":modules:entry",
+    ":modules:icons",
     ":modules:image",
     ":modules:markdown",
     ":modules:media",

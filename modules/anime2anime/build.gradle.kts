@@ -14,6 +14,7 @@ kotlin {
             implementation(projects.modules.anime.media.data)
             implementation(projects.modules.anime.news)
             implementation(projects.modules.anime.recommendations)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
 

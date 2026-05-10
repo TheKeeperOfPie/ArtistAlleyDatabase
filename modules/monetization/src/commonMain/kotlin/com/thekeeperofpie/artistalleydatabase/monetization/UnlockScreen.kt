@@ -19,10 +19,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,6 +58,10 @@ import artistalleydatabase.modules.monetization.generated.resources.monetization
 import artistalleydatabase.modules.monetization.generated.resources.monetization_subscribe_button
 import artistalleydatabase.modules.monetization.generated.resources.monetization_subscribed_ads_not_needed
 import artistalleydatabase.modules.monetization.generated.resources.monetization_subscription_not_supported
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Check
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Close
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.AdsTier
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.FreeTier
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.SubscriptionTier

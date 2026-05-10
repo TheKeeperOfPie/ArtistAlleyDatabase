@@ -30,6 +30,7 @@ kotlin {
             api(projects.modules.entry)
             api(projects.modules.utilsNetwork)
             implementation(projects.modules.apollo.utils)
+            implementation(projects.modules.icons)
             implementation(projects.modules.settings.ui)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)

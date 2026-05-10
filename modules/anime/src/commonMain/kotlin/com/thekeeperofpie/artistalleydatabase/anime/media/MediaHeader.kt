@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -46,6 +43,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
+import com.thekeeperofpie.artistalleydatabase.icons.filled.OpenInBrowser
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption

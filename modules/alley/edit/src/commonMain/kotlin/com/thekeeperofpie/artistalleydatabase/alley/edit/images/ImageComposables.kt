@@ -14,9 +14,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -41,6 +38,9 @@ import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageRowActions
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryHorizontalScrollbar
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Error
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreHoriz
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull

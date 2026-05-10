@@ -1,10 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Tag
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_list_tab_all
@@ -12,6 +7,11 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_list_tab_missing_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_list_tab_missing_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_list_tab_missing_updated_inferred
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.List
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Image
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Tag
 import org.jetbrains.compose.resources.StringResource
 
 internal enum class ArtistListTab(val icon: ImageVector, val label: StringResource) {

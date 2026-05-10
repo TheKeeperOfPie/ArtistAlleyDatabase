@@ -6,12 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.ProductionQuantityLimits
-import androidx.compose.material.icons.filled.ShoppingBag
-import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -71,6 +65,12 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.AttachMoney
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ProductionQuantityLimits
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ShoppingBag
+import com.thekeeperofpie.artistalleydatabase.icons.filled.TableRestaurant
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.digits

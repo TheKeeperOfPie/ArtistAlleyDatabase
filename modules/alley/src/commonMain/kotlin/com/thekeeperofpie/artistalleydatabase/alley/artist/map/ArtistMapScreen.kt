@@ -1,8 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.map
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +26,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.Table
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import org.jetbrains.compose.resources.stringResource

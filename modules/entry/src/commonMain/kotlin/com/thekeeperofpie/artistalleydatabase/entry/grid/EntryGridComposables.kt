@@ -2,10 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.entry.grid
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,6 +24,10 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_edit_m
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_edit_mode_selected
 import artistalleydatabase.modules.utils_compose.generated.resources.cancel
 import artistalleydatabase.modules.utils_compose.generated.resources.confirm
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Edit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings

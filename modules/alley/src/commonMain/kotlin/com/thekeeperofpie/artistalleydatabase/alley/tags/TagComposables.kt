@@ -9,12 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +44,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.ui.UnrecognizedTagIcon
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Book
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Monitor
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import org.jetbrains.compose.resources.stringResource

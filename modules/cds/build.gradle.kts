@@ -15,6 +15,7 @@ kotlin {
             api(projects.modules.data)
             api(projects.modules.entry)
             api(projects.modules.musicalArtists)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsRoom)
             api(projects.modules.vgmdb)

@@ -14,6 +14,7 @@ kotlin {
             api(projects.modules.anime.favorites)
             api(projects.modules.anime.ignore.data)
             api(projects.modules.anime.ui)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)

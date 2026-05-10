@@ -1,8 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.Monitor
 import artistalleydatabase.modules.anilist.generated.resources.Res
 import artistalleydatabase.modules.anilist.generated.resources.aniList_entry_anime_indicator_content_description
 import artistalleydatabase.modules.anilist.generated.resources.aniList_entry_manga_indicator_content_description
@@ -17,6 +14,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Book
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Monitor
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn

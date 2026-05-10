@@ -17,6 +17,7 @@ kotlin {
             api(projects.modules.anime.staff.data)
             api(projects.modules.anime.studios.data)
             api(projects.modules.anime.users.data)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)

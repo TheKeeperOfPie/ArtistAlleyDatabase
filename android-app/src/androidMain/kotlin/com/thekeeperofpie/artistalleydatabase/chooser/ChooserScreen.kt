@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +40,8 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import org.jetbrains.compose.resources.stringResource

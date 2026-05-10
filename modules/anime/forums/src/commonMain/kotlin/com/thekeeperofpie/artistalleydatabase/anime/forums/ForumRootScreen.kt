@@ -15,8 +15,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,6 +50,8 @@ import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_generic_view_all_content_description
 import com.anilist.data.fragment.ForumThread
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Search
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ErrorSnackbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult

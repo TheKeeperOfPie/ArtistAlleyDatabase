@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -26,6 +24,8 @@ import artistalleydatabase.modules.utils_compose.generated.resources.crash_intro
 import artistalleydatabase.modules.utils_compose.generated.resources.crash_open_discord
 import artistalleydatabase.modules.utils_compose.generated.resources.crash_share_icon_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.crash_title
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Share
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)

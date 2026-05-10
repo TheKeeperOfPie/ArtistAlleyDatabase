@@ -3,12 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Approval
-import androidx.compose.material.icons.filled.Brush
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -36,6 +30,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.List
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Approval
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Brush
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource

@@ -1,14 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Games
-import androidx.compose.material.icons.filled.ListAlt
-import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.app.generated.resources.Res
 import artistalleydatabase.app.generated.resources.nav_drawer_anime
@@ -23,6 +14,15 @@ import com.thekeeperofpie.artistalleydatabase.AppNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.cds.CdNavDestinations
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ListAlt
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Album
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Build
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Create
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Games
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PhotoLibrary
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
+import com.thekeeperofpie.artistalleydatabase.icons.filled.VideoLibrary
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsStrings
 import org.jetbrains.compose.resources.StringResource
 
@@ -35,7 +35,7 @@ enum class NavDrawerItems(
     ANIME(AnimeNavDestinations.HOME.id, Res.string.nav_drawer_anime, Icons.Default.VideoLibrary),
     ART(ArtNavDestinations.HOME.id, Res.string.nav_drawer_art, Icons.Default.PhotoLibrary),
     CDS(CdNavDestinations.HOME.id, Res.string.nav_drawer_cds, Icons.Default.Album),
-    BROWSE(AppNavDestinations.BROWSE.id, Res.string.nav_drawer_browse, Icons.Default.ListAlt),
+    BROWSE(AppNavDestinations.BROWSE.id, Res.string.nav_drawer_browse, Icons.AutoMirrored.Default.ListAlt),
     IMPORT(AppNavDestinations.IMPORT.id, Res.string.nav_drawer_import, Icons.Default.Create),
     EXPORT(AppNavDestinations.EXPORT.id, Res.string.nav_drawer_export, Icons.Default.Build),
     SETTINGS(

@@ -28,6 +28,7 @@ kotlin {
             api(projects.modules.anilist.data)
             api(projects.modules.entry)
             api(projects.modules.apollo.utils)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsNetwork)

@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +57,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState

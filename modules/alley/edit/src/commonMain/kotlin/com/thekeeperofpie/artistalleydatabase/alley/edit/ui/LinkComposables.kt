@@ -6,9 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
@@ -20,6 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Edit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

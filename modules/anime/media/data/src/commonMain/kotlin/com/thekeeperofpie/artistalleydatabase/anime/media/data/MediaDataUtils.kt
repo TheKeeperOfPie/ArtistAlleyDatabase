@@ -1,11 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.data
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Monitor
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res
@@ -55,6 +50,11 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.MenuBook
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Monitor
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Warning
+import com.thekeeperofpie.artistalleydatabase.icons.twotone._18UpRating
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
@@ -162,7 +162,7 @@ fun MediaTitleFragment.primaryTitle(languageOption: AniListLanguageOption) =
 fun MediaType?.toIcon() = if (this == MediaType.ANIME) {
     Icons.Filled.Monitor
 } else {
-    Icons.Filled.MenuBook
+    Icons.AutoMirrored.Default.MenuBook
 }
 
 @Composable

@@ -10,6 +10,7 @@ kotlin {
             api(projects.modules.anilist)
             api(projects.modules.anilist.data)
             api(projects.modules.markdown)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(libs.coil3.coil.compose)

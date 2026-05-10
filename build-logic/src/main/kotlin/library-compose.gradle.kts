@@ -19,7 +19,6 @@ kotlin {
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(compose.materialIconsExtended)
                 implementation(compose.ui)
                 resolveLibraries("libs.jetBrainsCompose.material3")
                     .forEach(::implementation)

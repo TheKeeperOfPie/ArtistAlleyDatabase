@@ -19,13 +19,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.PauseCircleOutline
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -69,6 +62,13 @@ import artistalleydatabase.modules.anime.ui.generated.resources.anime_voice_acto
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables.SONGS_ABOVE_FOLD
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
+import com.thekeeperofpie.artistalleydatabase.icons.filled.OpenInBrowser
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PauseCircleOutline
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Person
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PlayCircleOutline
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Warning
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayerView
 import com.thekeeperofpie.artistalleydatabase.media.rememberMediaPlayerViewState

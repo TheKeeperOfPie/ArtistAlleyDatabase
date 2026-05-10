@@ -38,13 +38,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.UnfoldLess
-import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
@@ -94,6 +87,13 @@ import artistalleydatabase.modules.utils_compose.generated.resources.sort_direct
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_label
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_expand_content_description
 import coil3.compose.AsyncImage
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ArrowDownward
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ArrowUpward
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Check
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Close
+import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldLess
+import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldMore
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField

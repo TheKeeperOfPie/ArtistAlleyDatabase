@@ -12,11 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -58,6 +53,11 @@ import artistalleydatabase.modules.utils_compose.generated.resources.clear
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Edit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter

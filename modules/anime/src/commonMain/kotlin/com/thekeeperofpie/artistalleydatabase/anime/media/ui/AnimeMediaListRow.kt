@@ -20,11 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.outlined.ThumbDown
-import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,6 +61,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ThumbDown
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ThumbUp
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.ThumbDown
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.ThumbUp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState

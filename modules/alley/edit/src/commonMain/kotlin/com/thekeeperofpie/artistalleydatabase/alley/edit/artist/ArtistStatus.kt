@@ -1,11 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DeviceUnknown
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -21,6 +15,12 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_status_needs_attention_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_status_unknown
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_status_unknown_description
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Check
+import com.thekeeperofpie.artistalleydatabase.icons.filled.DeviceUnknown
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Lock
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Tag
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Warning
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

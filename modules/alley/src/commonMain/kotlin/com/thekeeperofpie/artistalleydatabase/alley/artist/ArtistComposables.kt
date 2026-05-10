@@ -16,12 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.FiberNew
-import androidx.compose.material.icons.filled.FormatPaint
-import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
@@ -68,6 +62,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FiberNew
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FormatPaint
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Verified
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally

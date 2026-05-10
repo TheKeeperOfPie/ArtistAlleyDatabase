@@ -14,6 +14,7 @@ kotlin {
             implementation(projects.modules.anime.forums.data)
             implementation(projects.modules.anime.media.data)
             implementation(projects.modules.anime.ui)
+            implementation(projects.modules.icons)
             implementation(projects.modules.markdown)
             implementation(projects.modules.utils)
             implementation(libs.coil3.coil.compose)

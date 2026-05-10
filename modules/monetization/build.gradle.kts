@@ -20,6 +20,7 @@ kotlin {
             api(projects.modules.utils)
             api(projects.modules.utilsCompose)
             implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
+            implementation(projects.modules.icons)
         }
     }
 }

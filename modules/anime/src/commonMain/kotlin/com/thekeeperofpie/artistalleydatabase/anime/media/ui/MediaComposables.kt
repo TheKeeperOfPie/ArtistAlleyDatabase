@@ -25,13 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PeopleAlt
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -88,6 +81,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.BarChart
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Edit
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PeopleAlt
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Person
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PersonOutline
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.PeopleAlt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration

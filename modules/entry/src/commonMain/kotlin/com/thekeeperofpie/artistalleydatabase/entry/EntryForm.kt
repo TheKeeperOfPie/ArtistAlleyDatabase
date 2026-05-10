@@ -48,13 +48,6 @@ import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.AddPhotoAlternate
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.LockReset
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -125,6 +118,13 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.OpenInNew
+import com.thekeeperofpie.artistalleydatabase.icons.filled.AddPhotoAlternate
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Lock
+import com.thekeeperofpie.artistalleydatabase.icons.filled.LockOpen
+import com.thekeeperofpie.artistalleydatabase.icons.filled.LockReset
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
 import com.thekeeperofpie.artistalleydatabase.image.rememberImageSelectController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanState

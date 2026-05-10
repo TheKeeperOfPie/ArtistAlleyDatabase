@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +66,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
 import com.thekeeperofpie.artistalleydatabase.anime.users.social.UserSocialViewModel
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings

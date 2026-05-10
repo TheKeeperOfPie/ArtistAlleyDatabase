@@ -17,11 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.outlined.ThumbDown
-import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -56,6 +51,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ThumbDown
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ThumbUp
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.ThumbDown
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.ThumbUp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils

@@ -1,10 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.links
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FormatPaint
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Web
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -13,6 +8,11 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_commis
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FormatPaint
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Web
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.jetbrains.compose.resources.stringResource

@@ -1,14 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.lock_state_different_content_description
 import artistalleydatabase.modules.entry.generated.resources.lock_state_locked_content_description
 import artistalleydatabase.modules.entry.generated.resources.lock_state_unlocked_content_description
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Lock
+import com.thekeeperofpie.artistalleydatabase.icons.filled.LockOpen
+import com.thekeeperofpie.artistalleydatabase.icons.filled.LockReset
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import org.jetbrains.compose.resources.StringResource
 

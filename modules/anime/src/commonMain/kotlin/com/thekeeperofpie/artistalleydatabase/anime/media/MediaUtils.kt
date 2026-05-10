@@ -1,15 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.CheckBox
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Monitor
-import androidx.compose.material.icons.filled.PauseCircle
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -91,6 +81,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.MenuBook
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Bookmark
+import com.thekeeperofpie.artistalleydatabase.icons.filled.CheckBox
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Monitor
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PauseCircle
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Repeat
+import com.thekeeperofpie.artistalleydatabase.icons.filled.WatchLater
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption

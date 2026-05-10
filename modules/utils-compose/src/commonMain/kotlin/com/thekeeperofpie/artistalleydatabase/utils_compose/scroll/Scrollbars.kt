@@ -22,8 +22,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -46,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.scrollbar_handle_content_description
 import com.composables.core.ScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldMore
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

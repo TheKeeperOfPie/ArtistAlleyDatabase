@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +56,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.social.UserSocialScree
 import com.thekeeperofpie.artistalleydatabase.anime.users.stats.UserMediaScreen
 import com.thekeeperofpie.artistalleydatabase.anime.users.stats.UserStatsBasicScreen
 import com.thekeeperofpie.artistalleydatabase.anime.users.stats.UserStatsDetailScreen
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar

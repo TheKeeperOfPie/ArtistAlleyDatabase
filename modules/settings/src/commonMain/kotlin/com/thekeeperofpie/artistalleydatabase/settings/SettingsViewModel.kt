@@ -4,13 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AppSettingsAlt
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -88,6 +81,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.AppSettingsAlt
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Block
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Build
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ColorLens
+import com.thekeeperofpie.artistalleydatabase.icons.filled.History
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao

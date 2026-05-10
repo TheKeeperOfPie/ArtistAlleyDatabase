@@ -14,6 +14,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.image)
+            implementation(projects.modules.icons)
             implementation(projects.modules.markdown)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)

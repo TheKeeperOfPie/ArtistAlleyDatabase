@@ -3,9 +3,6 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,6 +16,9 @@ import androidx.compose.ui.Modifier
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.app_bar_back_icon_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.nav_drawer_icon_content_description
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowBack
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Menu
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import org.jetbrains.compose.resources.stringResource
 

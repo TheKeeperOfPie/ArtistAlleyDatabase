@@ -7,11 +7,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Brush
-import androidx.compose.material.icons.outlined.Monitor
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.WrongLocation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -28,6 +23,11 @@ import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.Brush
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.Monitor
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.Person
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.WrongLocation
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import kotlinx.serialization.json.Json

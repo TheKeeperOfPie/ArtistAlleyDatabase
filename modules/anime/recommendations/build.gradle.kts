@@ -13,6 +13,7 @@ kotlin {
             api(projects.modules.anime.ignore.data)
             api(projects.modules.anime.favorites)
             api(projects.modules.anime.media.data)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
 

@@ -33,12 +33,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowLeft
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -90,6 +84,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.WrappedViewConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLeft
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowRight
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Fullscreen
+import com.thekeeperofpie.artistalleydatabase.icons.filled.GridView
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomableState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
@@ -399,7 +399,7 @@ private fun BoxScope.ImagePagerActions(
                 imageVector = if (willPageToGrid) {
                     Icons.Default.GridView
                 } else {
-                    Icons.AutoMirrored.Filled.ArrowLeft
+                    Icons.AutoMirrored.Default.ArrowLeft
                 },
                 contentDescription = stringResource(Res.string.alley_previous_page),
                 modifier = Modifier.conditionally(willPageToGrid) { size(16.dp) }
@@ -420,7 +420,7 @@ private fun BoxScope.ImagePagerActions(
     ) {
         val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
         Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+            imageVector = Icons.AutoMirrored.Default.ArrowRight,
             contentDescription = stringResource(Res.string.alley_next_page),
             modifier = Modifier.padding(8.dp)
                 .background(
@@ -554,7 +554,7 @@ fun BoxScope.ImageRowActions(listState: LazyListState) {
                     )
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
+                    imageVector = Icons.AutoMirrored.Default.ArrowLeft,
                     contentDescription = stringResource(Res.string.alley_previous_page),
                 )
             }
@@ -581,7 +581,7 @@ fun BoxScope.ImageRowActions(listState: LazyListState) {
         ) {
             val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                imageVector = Icons.AutoMirrored.Default.ArrowRight,
                 contentDescription = stringResource(Res.string.alley_next_page),
                 modifier = Modifier.padding(8.dp)
                     .background(

@@ -22,11 +22,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PeopleAlt
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +56,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtit
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffDetailsRoute
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PeopleAlt
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Person
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PersonOutline
+import com.thekeeperofpie.artistalleydatabase.icons.outlined.PeopleAlt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration

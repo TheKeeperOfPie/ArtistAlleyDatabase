@@ -32,13 +32,6 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.Monitor
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.PlusOne
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CardDefaults
@@ -142,6 +135,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.MenuBook
+import com.thekeeperofpie.artistalleydatabase.icons.filled.CalendarMonth
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Forum
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Monitor
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Notifications
+import com.thekeeperofpie.artistalleydatabase.icons.filled.PlusOne
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils

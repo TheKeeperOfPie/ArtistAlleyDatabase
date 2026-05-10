@@ -11,9 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Redo
-import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +27,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_undo
 import artistalleydatabase.modules.alley.generated.resources.alley_user_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_user_notes_character_count
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.Redo
+import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.Undo
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

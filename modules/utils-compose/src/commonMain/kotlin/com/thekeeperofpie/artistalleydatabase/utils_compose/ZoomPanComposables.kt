@@ -15,9 +15,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ZoomIn
-import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +43,9 @@ import androidx.compose.ui.util.lerp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.zoom_in
 import artistalleydatabase.modules.utils_compose.generated.resources.zoom_out
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ZoomIn
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ZoomOut
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.ZoomSpec

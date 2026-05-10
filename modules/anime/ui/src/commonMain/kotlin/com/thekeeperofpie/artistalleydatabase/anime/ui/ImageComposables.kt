@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.BiasAbsoluteAlignment
 import androidx.compose.ui.Modifier
@@ -14,6 +12,8 @@ import artistalleydatabase.modules.anime.ui.generated.resources.anime_staff_imag
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_user_image
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode

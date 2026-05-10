@@ -12,6 +12,7 @@ kotlin {
             api(projects.modules.anilist.data)
             implementation(projects.modules.anime.ui)
             implementation(projects.modules.anime.characters.data)
+            implementation(projects.modules.icons)
             implementation(projects.modules.media)
             implementation(projects.modules.utils)
             implementation(libs.coil3.coil.compose)
