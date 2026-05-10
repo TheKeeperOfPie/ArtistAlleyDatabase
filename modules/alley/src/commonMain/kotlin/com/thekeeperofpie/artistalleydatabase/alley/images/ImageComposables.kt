@@ -234,12 +234,14 @@ fun ImagePager(
                                 onDoubleClick = CycleDoubleClickListener,
                             )
                     ) {
+                        val zoomed = zoomableState.zoomFraction != 0f
                         AsyncImage(
                             model = ImageRequest.Builder(LocalPlatformContext.current)
                                 .data(image)
-                                .memoryCacheKey(image.coilImageModel.toString())
+                                .placeholderMemoryCacheKey(image.coilImageModel.toString())
+                                .memoryCacheKey(image.coilImageModel.toString() + if (zoomed) "-original" else "")
                                 .apply {
-                                    if (zoomableState.zoomFraction != 0f) {
+                                    if (zoomed) {
                                         size(SizeResolver.ORIGINAL)
                                     }
                                 }
@@ -467,10 +469,17 @@ fun ImageGrid(
                 Box {
                     val zoomableState = rememberZoomableState(ZoomSpec(maxZoomFactor = 3f))
                     val size = cachedDimensions[image]
+                    val zoomed = zoomableState.zoomFraction != 0f
                     AsyncImage(
                         model = ImageRequest.Builder(LocalPlatformContext.current)
                             .data(image.coilImageModel)
                             .placeholderMemoryCacheKey(image.coilImageModel.toString())
+                            .memoryCacheKey(image.coilImageModel.toString() + if (zoomed) "-original" else "")
+                            .apply {
+                                if (zoomed) {
+                                    size(SizeResolver.ORIGINAL)
+                                }
+                            }
                             .build(),
                         contentScale = ContentScale.FillWidth,
                         contentDescription = stringResource(Res.string.alley_artist_catalog_image),
