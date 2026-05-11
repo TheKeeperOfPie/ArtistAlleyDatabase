@@ -10,8 +10,8 @@ repositories {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.multiplatform") version "2.3.21"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.21"
+    id("org.jetbrains.kotlin.multiplatform") version "2.4.0-Beta2"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0-Beta2"
     id("com.android.kotlin.multiplatform.library") version "9.2.1"
 }
 

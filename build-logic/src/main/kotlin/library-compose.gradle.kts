@@ -38,7 +38,6 @@ kotlin {
 
 composeCompiler {
     featureFlags = setOf(
-        ComposeFeatureFlag.StrongSkipping,
         ComposeFeatureFlag.OptimizeNonSkippingGroups,
     )
     includeSourceInformation = true
