@@ -9,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary { namespace = "com.thekeeperofpie.artistalleydatabase.alley.models" }
+    android { namespace = "com.thekeeperofpie.artistalleydatabase.alley.models" }
 
     sourceSets {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)

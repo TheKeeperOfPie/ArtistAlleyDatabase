@@ -1,8 +1,3 @@
-@file:OptIn(ExperimentalComposeLibrary::class)
-
-import org.jetbrains.compose.ExperimentalComposeLibrary
-import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
-
 plugins {
     id("library-desktop")
     id("library-kotlin")
@@ -15,30 +10,30 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.ui)
-                resolveLibraries("libs.jetBrainsCompose.material3")
-                    .forEach(::implementation)
+                resolveLibraries(
+                    "libs.jetBrainsCompose.components.resources",
+                    "libs.jetBrainsCompose.components.ui.tooling.preview",
+                    "libs.jetBrainsCompose.material3",
+                    "libs.jetBrainsCompose.foundation",
+                    "libs.jetBrainsCompose.runtime",
+                    "libs.jetBrainsCompose.ui",
+                ).forEach(::implementation)
             }
         }
         commonTest.dependencies {
-            implementation(compose.uiTest)
+            resolveLibraries("libs.jetBrainsCompose.ui.test")
+                .forEach(::implementation)
         }
         val desktopTest by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
-                implementation(compose.uiTooling)
+                resolveLibraries("libs.jetBrainsCompose.ui.tooling")
+                    .forEach(::implementation)
             }
         }
     }
 }
 
 composeCompiler {
-    featureFlags = setOf(
-        ComposeFeatureFlag.OptimizeNonSkippingGroups,
-    )
     includeSourceInformation = true
 }

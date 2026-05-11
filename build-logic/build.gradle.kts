@@ -67,7 +67,7 @@ dependencies {
     implementation(libs.dev.zacsweers.metro.gradle.plugin)
     implementation(libs.gradle)
     implementation(libs.jetBrainsCompose.compose.gradle.plugin)
-    implementation(libs.jetBrainsCompose.multiplatform.ui)
+    implementation(libs.jetBrainsCompose.ui)
     implementation(libs.jsoup)
     implementation(libs.kmpalette.core)
     implementation(libs.kotlinx.coroutines.core)
@@ -85,7 +85,6 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
         optIn.addAll(
             "kotlin.time.ExperimentalTime",
             "kotlin.uuid.ExperimentalUuidApi",

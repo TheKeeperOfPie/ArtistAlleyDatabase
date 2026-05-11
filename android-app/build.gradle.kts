@@ -21,7 +21,6 @@ kotlin {
     }
 
     compilerOptions  {
-        freeCompilerArgs.add("-Xcontext-parameters")
         optIn.add("kotlin.time.ExperimentalTime")
     }
 }
@@ -150,12 +149,12 @@ dependencies {
 
     // TODO: Figure out actual app dependencies, these were copied from :app when this module was
     //  split out
-    implementation(compose.components.resources)
-    implementation(compose.components.uiToolingPreview)
-    implementation(compose.foundation)
-    implementation(compose.material3)
-    implementation(compose.runtime)
-    implementation(compose.ui)
+    implementation(libs.jetBrainsCompose.components.resources)
+    implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+    implementation(libs.jetBrainsCompose.foundation)
+    implementation(libs.jetBrainsCompose.material3)
+    implementation(libs.jetBrainsCompose.runtime)
+    implementation(libs.jetBrainsCompose.ui)
     implementation(libs.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.security.crypto)

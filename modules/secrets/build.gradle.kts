@@ -9,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.secrets"
     }
 }

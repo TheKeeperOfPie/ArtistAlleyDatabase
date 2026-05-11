@@ -7,7 +7,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.musical_artists"
     }
 }

@@ -17,10 +17,6 @@ kotlin {
         }
     }
 
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-
     sourceSets {
         jsMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)

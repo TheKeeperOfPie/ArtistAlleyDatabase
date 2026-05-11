@@ -11,7 +11,7 @@ kotlin {
             enable = true
         }
     }
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.debug"
     }
     sourceSets {

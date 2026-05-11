@@ -40,14 +40,13 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
 //        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            implementation(libs.jetBrainsCompose.runtime)
+            implementation(libs.jetBrainsCompose.ui)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.coil3.coil.network.ktor3)

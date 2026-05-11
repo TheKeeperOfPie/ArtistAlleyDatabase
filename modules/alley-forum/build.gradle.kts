@@ -26,13 +26,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
-            implementation(compose.components.resources)
             implementation(compose.desktop.currentOs)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            implementation(libs.jetBrainsCompose.components.resources)
+            implementation(libs.jetBrainsCompose.foundation)
+            implementation(libs.jetBrainsCompose.material3)
+            implementation(libs.jetBrainsCompose.runtime)
+            implementation(libs.jetBrainsCompose.ui)
             implementation(libs.kmpalette.core)
             implementation(libs.kotlin.multiplatform.diff)
             implementation(libs.kotlinx.coroutines.core)
@@ -43,6 +42,7 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.material.kolor)
+            implementation(libs.shared)
             implementation(libs.sqldelight.sqlite.driver)
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.data)

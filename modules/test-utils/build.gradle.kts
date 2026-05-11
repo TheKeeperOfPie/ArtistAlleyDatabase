@@ -19,7 +19,7 @@ kotlin {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.test_utils"
     }
 }

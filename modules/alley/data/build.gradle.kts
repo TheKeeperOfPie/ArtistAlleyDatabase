@@ -13,9 +13,9 @@ kotlin {
             dependencies {
                 api("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
                 api(projects.modules.alley.models)
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
-                implementation(compose.runtime)
+                implementation(libs.jetBrainsCompose.components.resources)
+                implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+                implementation(libs.jetBrainsCompose.runtime)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.uri.kmp)
             }
@@ -24,7 +24,7 @@ kotlin {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.alley.data"
         compileSdk = 36
         minSdk = 28

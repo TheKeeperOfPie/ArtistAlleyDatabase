@@ -35,7 +35,7 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
 
-            implementation(compose.material3AdaptiveNavigationSuite)
+            implementation(libs.jetBrainsCompose.material3.adaptive.navigation.suite)
             implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
@@ -96,7 +96,7 @@ kotlin {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.alley"
     }
 }

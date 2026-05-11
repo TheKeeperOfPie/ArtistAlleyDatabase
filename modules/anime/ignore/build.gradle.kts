@@ -20,7 +20,7 @@ kotlin {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.anime.ignore"
     }
 }

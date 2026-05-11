@@ -6,7 +6,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.monetization"
     }
 }
@@ -20,6 +20,7 @@ kotlin {
             api(projects.modules.utils)
             api(projects.modules.utilsCompose)
             implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
+            implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
             implementation(projects.modules.icons)
         }
     }

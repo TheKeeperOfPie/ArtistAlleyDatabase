@@ -42,6 +42,7 @@ jetbrains-androidx-navigation = "2.9.2"
 jetbrains-androidx-navigation3 = "1.1.1"
 jetbrains-androidx-navigationevent = "1.0.1"
 jetbrains-compose-material3 = "1.11.0-alpha07"
+jetbrains-compose-material3-adaptive-navigation-suite = "1.11.0-alpha07"
 jetbrains-compose-multiplatform-plugin = "1.11.0-rc01"
 jetbrains-compose-multiplatform-runtime = "1.11.0-rc01"
 jetbrains-compose-multiplatform-window-sizeclass = "1.11.0-alpha07"
@@ -68,6 +69,7 @@ okhttp = "5.3.2"
 placeholder = "1.0.12"
 qrose = "1.1.2"
 scrimage = "4.5.1"
+shared = "0.0.1"
 #noinspection NewerVersionAvailable
 skrape-it = "1.3.0-alpha.1"
 sqldelight = "2.3.2"
@@ -109,7 +111,7 @@ coil3-coil-network-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-kt
 coil3-coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 colormath-ext-jetpack-compose = { group = "com.github.ajalt.colormath", name = "colormath-ext-jetpack-compose", version.ref = "colormath" }
 com-google-devtools-ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "google-ksp" }
-com-mikepenz-aboutlibraries-plugin-gradle-plugin = { group ="com.mikepenz.aboutlibraries.plugin", name = "com.mikepenz.aboutlibraries.plugin.gradle.plugin", version.ref = "aboutLibraries" }
+com-mikepenz-aboutlibraries-plugin-gradle-plugin = { group = "com.mikepenz.aboutlibraries.plugin", name = "com.mikepenz.aboutlibraries.plugin.gradle.plugin", version.ref = "aboutLibraries" }
 compose-compiler-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin-core" }
 compose-placeholder-material3 = { group = "com.eygraber", name = "compose-placeholder-material3", version.ref = "placeholder" }
 composeunstyled-primitives = { group = "com.composables", name = "composeunstyled-primitives", version.ref = "compose-unstyled" }
@@ -119,7 +121,7 @@ filekit-dialogs-compose = { group = "io.github.vinceglb", name = "filekit-dialog
 flowExt = { group = "io.github.hoc081098", name = "FlowExt", version.ref = "flow-ext" }
 fluid-country = { group = "io.fluidsonic.country", name = "fluid-country", version.ref = "fluid-i18n" }
 fluid-i18n = { group = "io.fluidsonic.i18n", name = "fluid-i18n", version.ref = "fluid-i18n" }
-google-truth = { group = "com.google.truth", name = "truth", version.ref = "google-truth"}
+google-truth = { group = "com.google.truth", name = "truth", version.ref = "google-truth" }
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "android-gradle" }
 graphql-java = { group = "com.graphql-java", name = "graphql-java", version.ref = "graph-ql-java" }
 html-text = { group = "de.charlex.compose", name = "html-text", version.ref = "html-text" }
@@ -131,12 +133,18 @@ jetBrainsAndroidX-lifecycle-viewmodel-navigation3 = { group = "org.jetbrains.and
 jetBrainsAndroidX-navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "jetbrains-androidx-navigation" }
 jetBrainsAndroidX-navigation3-ui = { group = "org.jetbrains.androidx.navigation3", name = "navigation3-ui", version.ref = "jetbrains-androidx-navigation3" }
 jetBrainsAndroidX-navigationevent-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "jetbrains-androidx-navigationevent" }
+jetBrainsCompose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetbrains-compose-multiplatform-runtime" }
+jetBrainsCompose-components-ui-tooling-preview = { module = "org.jetbrains.compose.components:components-ui-tooling-preview", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-compose-gradle-plugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "jetbrains-compose-multiplatform-plugin" }
+jetBrainsCompose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "jetbrains-compose-material3" }
+jetBrainsCompose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "jetbrains-compose-material3-adaptive-navigation-suite" }
 jetBrainsCompose-material3-windowSizeClass = { group = "org.jetbrains.compose.material3", name = "material3-window-size-class", version.ref = "jetbrains-compose-multiplatform-window-sizeclass" }
-jetBrainsCompose-multiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "jetbrains-compose-multiplatform-runtime" }
+jetBrainsCompose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "jetbrains-compose-multiplatform-runtime" }
+jetBrainsCompose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "jetbrains-compose-multiplatform-runtime" }
+jetBrainsCompose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jimfs = { group = "com.google.jimfs", name = "jimfs", version.ref = "jimfs" }
 jsontree = { group = "com.sebastianneubauer.jsontree", name = "jsontree", version.ref = "json-tree" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
@@ -193,6 +201,7 @@ room-paging = { group = "androidx.room", name = "room-paging", version.ref = "an
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 scrimage-core = { group = "com.sksamuel.scrimage", name = "scrimage-core", version.ref = "scrimage" }
 scrimage-webp = { group = "com.sksamuel.scrimage", name = "scrimage-webp", version.ref = "scrimage" }
+shared = { module = "com.thekeeperofpie.artistalleydatabase.shared:shared", version.ref = "shared" }
 skrapeit = { group = "it.skrape", name = "skrapeit", version.ref = "skrape-it" }
 sqldelight-androidx-driver = { group = "com.eygraber", name = "sqldelight-androidx-driver", version.ref = "sqldelight-androidx-driver" }
 sqldelight-coroutines-extensions = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
@@ -221,7 +230,7 @@ com-apollographql-apollo-external = { id = "com.apollographql.apollo.external", 
 com-codingfeline-buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "build-konfig" }
 com-github-ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "ben-manes-versions" }
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
-com-mikepenz-aboutlibraries-plugin = { id ="com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
+com-mikepenz-aboutlibraries-plugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 dev-zacsweers-metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 org-jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-multiplatform-plugin" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-core" }

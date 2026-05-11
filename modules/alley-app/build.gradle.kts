@@ -73,14 +73,13 @@ kotlin {
     }
 
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
 //        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.components.resources)
-            implementation(compose.runtime)
+            implementation(libs.jetBrainsCompose.components.resources)
+            implementation(libs.jetBrainsCompose.runtime)
             implementation(libs.coil3.coil.network.ktor3)
             implementation(libs.kotlinx.coroutines.core)
         }
@@ -92,11 +91,11 @@ kotlin {
                 implementation(projects.modules.utilsCompose)
                 implementation(projects.modules.utilsInject)
 
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.ui)
+                implementation(libs.jetBrainsCompose.components.resources)
+                implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+                implementation(libs.jetBrainsCompose.foundation)
+                implementation(libs.jetBrainsCompose.material3)
+                implementation(libs.jetBrainsCompose.ui)
 
                 implementation(libs.kotlinx.serialization.json)
 

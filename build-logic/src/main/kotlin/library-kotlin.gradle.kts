@@ -14,10 +14,8 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
             listOf(
-                "-Xcontext-parameters",
                 "-Xexpect-actual-classes",
                 "-Xjspecify-annotations=strict",
-                "-Xtype-enhancement-improvements-strict-mode",
             )
         )
         optIn.addAll(

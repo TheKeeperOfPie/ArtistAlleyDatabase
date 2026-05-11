@@ -14,13 +14,13 @@ kotlin {
         commonMain.dependencies {
             api(libs.jetBrainsAndroidX.navigation3.ui)
 
-            implementation(compose.components.resources)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.material3AdaptiveNavigationSuite)
-            implementation(compose.preview)
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            implementation(libs.jetBrainsCompose.components.resources)
+            implementation(libs.jetBrainsCompose.foundation)
+            implementation(libs.jetBrainsCompose.material3)
+            implementation(libs.jetBrainsCompose.material3.adaptive.navigation.suite)
+            implementation(libs.jetBrainsCompose.runtime)
+            implementation(libs.jetBrainsCompose.ui)
+            implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.composeunstyled.primitives)

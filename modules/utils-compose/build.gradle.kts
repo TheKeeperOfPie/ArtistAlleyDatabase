@@ -42,7 +42,7 @@ kotlin {
             }
         }
         commonMain.dependencies {
-            api(compose.components.resources)
+            api(libs.jetBrainsCompose.components.resources)
             api(libs.compose.placeholder.material3)
             api(libs.jetBrainsAndroidX.lifecycle.runtime.compose)
             api(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
@@ -82,7 +82,7 @@ kotlin {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.utils_compose"
     }
 }

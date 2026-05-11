@@ -16,7 +16,7 @@ kotlin {
         )
     }
 
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase.alley.form.data"
         compileSdk = 36
         minSdk = 28

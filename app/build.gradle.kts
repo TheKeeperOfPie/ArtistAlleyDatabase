@@ -41,7 +41,7 @@ metro {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.thekeeperofpie.artistalleydatabase"
         compileSdk {
             version = release(36)
@@ -50,7 +50,6 @@ kotlin {
     }
     jvm("desktop")
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
         optIn.add("kotlin.time.ExperimentalTime")
     }
 
@@ -67,12 +66,12 @@ kotlin {
             implementation(projects.modules.utilsNetwork)
             implementation(projects.modules.utilsRoom)
 
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
+            implementation(libs.jetBrainsCompose.components.resources)
+            implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+            implementation(libs.jetBrainsCompose.runtime)
+            implementation(libs.jetBrainsCompose.foundation)
+            implementation(libs.jetBrainsCompose.material3)
+            implementation(libs.jetBrainsCompose.ui)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
