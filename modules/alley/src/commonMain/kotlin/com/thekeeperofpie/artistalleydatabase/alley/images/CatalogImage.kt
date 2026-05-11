@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.images
 
 import androidx.annotation.ColorInt
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import kotlinx.serialization.Serializable
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @Serializable
 data class CatalogImage(

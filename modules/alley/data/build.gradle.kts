@@ -14,7 +14,7 @@ kotlin {
                 api("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
                 api(projects.modules.alley.models)
                 implementation(libs.jetBrainsCompose.components.resources)
-                implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+                implementation(libs.jetBrainsCompose.ui.tooling.preview)
                 implementation(libs.jetBrainsCompose.runtime)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.uri.kmp)

@@ -92,7 +92,7 @@ kotlin {
                 implementation(projects.modules.utilsInject)
 
                 implementation(libs.jetBrainsCompose.components.resources)
-                implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+                implementation(libs.jetBrainsCompose.ui.tooling.preview)
                 implementation(libs.jetBrainsCompose.foundation)
                 implementation(libs.jetBrainsCompose.material3)
                 implementation(libs.jetBrainsCompose.ui)

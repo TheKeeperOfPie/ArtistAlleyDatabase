@@ -150,7 +150,7 @@ dependencies {
     // TODO: Figure out actual app dependencies, these were copied from :app when this module was
     //  split out
     implementation(libs.jetBrainsCompose.components.resources)
-    implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+    implementation(libs.jetBrainsCompose.ui.tooling.preview)
     implementation(libs.jetBrainsCompose.foundation)
     implementation(libs.jetBrainsCompose.material3)
     implementation(libs.jetBrainsCompose.runtime)

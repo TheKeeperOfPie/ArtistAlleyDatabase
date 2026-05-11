@@ -134,7 +134,6 @@ jetBrainsAndroidX-navigation-compose = { group = "org.jetbrains.androidx.navigat
 jetBrainsAndroidX-navigation3-ui = { group = "org.jetbrains.androidx.navigation3", name = "navigation3-ui", version.ref = "jetbrains-androidx-navigation3" }
 jetBrainsAndroidX-navigationevent-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "jetbrains-androidx-navigationevent" }
 jetBrainsCompose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetbrains-compose-multiplatform-runtime" }
-jetBrainsCompose-components-ui-tooling-preview = { module = "org.jetbrains.compose.components:components-ui-tooling-preview", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-compose-gradle-plugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "jetbrains-compose-multiplatform-plugin" }
 jetBrainsCompose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "jetbrains-compose-material3" }
@@ -145,6 +144,7 @@ jetBrainsCompose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "j
 jetBrainsCompose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jetBrainsCompose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "jetbrains-compose-multiplatform-runtime" }
+jetBrainsCompose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "jetbrains-compose-multiplatform-runtime" }
 jimfs = { group = "com.google.jimfs", name = "jimfs", version.ref = "jimfs" }
 jsontree = { group = "com.sebastianneubauer.jsontree", name = "jsontree", version.ref = "json-tree" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }

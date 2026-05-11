@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData> {
     override val values = sequence {

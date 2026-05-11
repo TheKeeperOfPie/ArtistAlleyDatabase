@@ -12,11 +12,11 @@ kotlin {
             dependencies {
                 resolveLibraries(
                     "libs.jetBrainsCompose.components.resources",
-                    "libs.jetBrainsCompose.components.ui.tooling.preview",
                     "libs.jetBrainsCompose.material3",
                     "libs.jetBrainsCompose.foundation",
                     "libs.jetBrainsCompose.runtime",
                     "libs.jetBrainsCompose.ui",
+                    "libs.jetBrainsCompose.ui.tooling.preview",
                 ).forEach(::implementation)
             }
         }

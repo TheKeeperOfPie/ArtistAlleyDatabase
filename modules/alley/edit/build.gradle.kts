@@ -20,7 +20,7 @@ kotlin {
             implementation(libs.jetBrainsCompose.material3.adaptive.navigation.suite)
             implementation(libs.jetBrainsCompose.runtime)
             implementation(libs.jetBrainsCompose.ui)
-            implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+            implementation(libs.jetBrainsCompose.ui.tooling.preview)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.composeunstyled.primitives)

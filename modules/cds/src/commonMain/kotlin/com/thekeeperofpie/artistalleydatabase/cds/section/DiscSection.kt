@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.cds.generated.resources.Res
 import artistalleydatabase.modules.cds.generated.resources.cd_entry_disc_duration_label
@@ -57,7 +58,6 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsRes
 
 class DiscSection(private val json: Json, lockState: LockState? = null) :

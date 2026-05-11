@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.monetization.generated.resources.Res
 import artistalleydatabase.modules.monetization.generated.resources.monetization_bullet_point_not_supported_icon_content_description
@@ -71,7 +72,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

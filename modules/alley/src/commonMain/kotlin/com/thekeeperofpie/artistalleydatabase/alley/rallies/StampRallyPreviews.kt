@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithUserData> {
     override val values = sequenceOf(

@@ -67,7 +67,7 @@ kotlin {
             implementation(projects.modules.utilsRoom)
 
             implementation(libs.jetBrainsCompose.components.resources)
-            implementation(libs.jetBrainsCompose.components.ui.tooling.preview)
+            implementation(libs.jetBrainsCompose.ui.tooling.preview)
             implementation(libs.jetBrainsCompose.runtime)
             implementation(libs.jetBrainsCompose.foundation)
             implementation(libs.jetBrainsCompose.material3)

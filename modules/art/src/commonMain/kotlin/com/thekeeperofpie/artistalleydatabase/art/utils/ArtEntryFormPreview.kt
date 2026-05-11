@@ -2,6 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.art.utils
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import artistalleydatabase.modules.art.generated.resources.Res
 import artistalleydatabase.modules.art.generated.resources.art_entry_artists_header_many
 import artistalleydatabase.modules.art.generated.resources.art_entry_artists_header_one
@@ -21,9 +24,6 @@ import artistalleydatabase.modules.art.generated.resources.art_entry_tags_header
 import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntryForm
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<EntrySection>> {
     override val values = sequenceOf(
