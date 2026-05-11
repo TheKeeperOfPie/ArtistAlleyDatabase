@@ -34,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack
@@ -53,6 +54,7 @@ import org.jetbrains.compose.resources.WebResourcesConfiguration
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
 fun main() {
+    ComposeInit.init()
     ComposeViewport(document.body!!) {
         SideEffect {
             WebResourcesConfiguration.resourcePathMapping { "${window.location.origin}/$it" }

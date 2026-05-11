@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
@@ -46,6 +47,7 @@ import org.jetbrains.compose.resources.WebResourcesConfiguration
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
 fun main() {
+    ComposeInit.init()
     ComposeViewport(document.body!!) {
         PreventUnloadEffect()
         SideEffect {

@@ -30,6 +30,7 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import dev.zacsweers.metro.createGraphFactory
@@ -40,6 +41,7 @@ import okio.buffer
 import okio.source
 
 fun main() {
+    ComposeInit.init()
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
         val graph = createGraphFactory<ArtistAlleyDesktopGraph.Factory>().create(scope)

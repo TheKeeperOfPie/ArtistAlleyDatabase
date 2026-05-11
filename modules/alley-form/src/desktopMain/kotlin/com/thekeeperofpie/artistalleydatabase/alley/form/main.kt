@@ -44,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Close
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.mouseNavigationEvents
@@ -59,6 +60,7 @@ import okio.source
 
 @OptIn(ExperimentalFoundationApi::class)
 fun main() {
+    ComposeInit.init()
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
         val graph = createGraphFactory<ArtistAlleyFormDesktopGraph.Factory>()

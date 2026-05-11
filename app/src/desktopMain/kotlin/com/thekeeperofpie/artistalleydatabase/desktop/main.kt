@@ -45,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -78,6 +79,7 @@ fun main() {
             exitEvents.value = true
         }
     }
+    ComposeInit.init()
     application {
         val exitEvent by exitEvents.collectAsState()
         LaunchedEffect(exitEvent) {
