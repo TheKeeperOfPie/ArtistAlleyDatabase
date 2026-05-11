@@ -479,6 +479,14 @@ tasks.register("webRelease") {
         folder.listFiles()!!
             .filter { it.nameWithoutExtension !in filesToKeepInRoot && it.name !in filesToKeepInRoot }
             .forEach { Files.move(it.toPath(), publicPath.resolve(it.name)) }
+
+        publicPath.resolve("composeResources").toFile()
+            .listFiles()
+            ?.forEach {
+                if (it.list().isEmpty()) {
+                    it.delete()
+                }
+            }
     }
 }
 
