@@ -4,7 +4,7 @@ plugins {
     id("library-desktop")
     id("library-kotlin")
     id("library-web")
-    alias(libs.plugins.com.apollographql.apollo3.external)
+    alias(libs.plugins.com.apollographql.apollo.external)
 }
 
 // Need to manually remove some types, as this downloads the default type definitions,

@@ -4,7 +4,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import com.apollographql.apollo3.api.Optional as ApolloOptional
+import com.apollographql.apollo.api.Optional as ApolloOptional
 
 class OptionalSerializer<T>(private val dataSerializer: KSerializer<T>) : KSerializer<ApolloOptional<T>> {
     override val descriptor = dataSerializer.descriptor
@@ -17,10 +17,10 @@ class OptionalSerializer<T>(private val dataSerializer: KSerializer<T>) : KSeria
             is Optional.Present -> ApolloOptional.present(optional.value)
         }
 
-    override fun serialize(encoder: Encoder, value: com.apollographql.apollo3.api.Optional<T>) {
+    override fun serialize(encoder: Encoder, value: com.apollographql.apollo.api.Optional<T>) {
         val optional = when (value) {
-            com.apollographql.apollo3.api.Optional.Absent -> Optional.Absent
-            is com.apollographql.apollo3.api.Optional.Present -> Optional.Present(value.value)
+            com.apollographql.apollo.api.Optional.Absent -> Optional.Absent
+            is com.apollographql.apollo.api.Optional.Present -> Optional.Present(value.value)
         }
         serializer.serialize(encoder, optional)
     }

@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.app.Application
-import com.apollographql.apollo3.cache.normalized.api.NormalizedCacheFactory
-import com.apollographql.apollo3.cache.normalized.sql.SqlNormalizedCacheFactory
+import com.apollographql.apollo.cache.normalized.api.NormalizedCacheFactory
+import com.apollographql.apollo.cache.normalized.sql.SqlNormalizedCacheFactory
 import dev.zacsweers.metro.Provides
 
 actual class AniListSqlCache(actual val cache: NormalizedCacheFactory?)

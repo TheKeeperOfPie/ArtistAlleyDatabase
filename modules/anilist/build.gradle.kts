@@ -4,7 +4,7 @@ plugins {
     id("library-desktop")
     id("library-inject")
     id("library-room")
-    alias(libs.plugins.com.apollographql.apollo3.external)
+    alias(libs.plugins.com.apollographql.apollo.external)
 }
 
 kotlin {

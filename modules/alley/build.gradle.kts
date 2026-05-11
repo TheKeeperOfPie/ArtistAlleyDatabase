@@ -11,7 +11,7 @@ plugins {
     id("library-web")
     id("app.cash.sqldelight")
     alias(libs.plugins.com.codingfeline.buildkonfig)
-    alias(libs.plugins.com.apollographql.apollo3.external)
+    alias(libs.plugins.com.apollographql.apollo.external)
 }
 
 kotlin {

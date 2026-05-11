@@ -16,7 +16,8 @@ androidyoutubeplayer = "13.0.0"
 apache-commons-compress = "1.28.0"
 apache-commons-csv = "1.14.1"
 apache-commons-io = "2.22.0"
-apollo = "4.0.0-beta.7"
+apollo = "4.4.3"
+apolloKtor = "0.1.1"
 ben-manes-versions = "0.54.0"
 big-num = "0.3.10"
 build-konfig = "0.18.0"
@@ -93,12 +94,11 @@ androidyoutubeplayer = { group = "com.pierfrancescosoffritti.androidyoutubeplaye
 apache-commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "apache-commons-compress" }
 apache-commons-csv = { group = "org.apache.commons", name = "commons-csv", version.ref = "apache-commons-csv" }
 apache-commons-io = { group = "commons-io", name = "commons-io", version.ref = "apache-commons-io" }
-apollo-compiler = { group = "com.apollographql.apollo3", name = "apollo-compiler", version.ref = "apollo" }
-apollo-engine-ktor = { group = "com.apollographql.apollo3", name = "apollo-engine-ktor", version.ref = "apollo" }
-apollo-engine-ktor-wasm-js = { group = "com.apollographql.ktor", name = "apollo-engine-ktor-wasm-js", version = "0.1.1" }
-apollo-normalized-cache = { group = "com.apollographql.apollo3", name = "apollo-normalized-cache", version.ref = "apollo" }
-apollo-normalized-cache-sqlite = { group = "com.apollographql.apollo3", name = "apollo-normalized-cache-sqlite", version.ref = "apollo" }
-apollo-runtime = { group = "com.apollographql.apollo3", name = "apollo-runtime", version.ref = "apollo" }
+apollo-compiler = { group = "com.apollographql.apollo", name = "apollo-compiler", version.ref = "apollo" }
+apollo-engine-ktor = { group = "com.apollographql.ktor", name = "apollo-engine-ktor", version.ref = "apolloKtor" }
+apollo-normalized-cache = { group = "com.apollographql.apollo", name = "apollo-normalized-cache", version.ref = "apollo" }
+apollo-normalized-cache-sqlite = { group = "com.apollographql.apollo", name = "apollo-normalized-cache-sqlite", version.ref = "apollo" }
+apollo-runtime = { group = "com.apollographql.apollo", name = "apollo-runtime", version.ref = "apollo" }
 app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "google-app-update" }
 bignum = { group = "com.ionspin.kotlin", name = "bignum", version.ref = "big-num" }
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "google-billing" }
@@ -217,7 +217,7 @@ app-cash-burst = { id = "app.cash.burst", version.ref = "burst" }
 app-cash-sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 com-android-application = { id = "com.android.application", version.ref = "android-gradle" }
 com-android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "android-gradle" }
-com-apollographql-apollo3-external = { id = "com.apollographql.apollo3.external", version.ref = "apollo" }
+com-apollographql-apollo-external = { id = "com.apollographql.apollo.external", version.ref = "apollo" }
 com-codingfeline-buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "build-konfig" }
 com-github-ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "ben-manes-versions" }
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }

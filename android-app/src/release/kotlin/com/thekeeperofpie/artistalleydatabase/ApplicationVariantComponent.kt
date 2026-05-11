@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase
 
-import com.apollographql.apollo3.api.http.HttpRequest
-import com.apollographql.apollo3.network.http.HttpInterceptor
-import com.apollographql.apollo3.network.http.HttpInterceptorChain
+import com.apollographql.apollo.api.http.HttpRequest
+import com.apollographql.apollo.network.http.HttpInterceptor
+import com.apollographql.apollo.network.http.HttpInterceptorChain
 import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.IntoSet

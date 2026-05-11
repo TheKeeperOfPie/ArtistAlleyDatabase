@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils_network
 
-import com.apollographql.apollo3.annotations.ApolloExperimental
-import com.apollographql.apollo3.network.http.HttpEngine
-import com.apollographql.apollo3.network.http.KtorHttpEngine
+import com.apollographql.apollo.annotations.ApolloExperimental
+import com.apollographql.apollo.network.http.HttpEngine
+import com.apollographql.ktor.http.KtorHttpEngine
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import it.skrape.fetcher.BrowserFetcher

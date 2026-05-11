@@ -25,7 +25,7 @@ import com.anilist.data.type.StaffSort
 import com.anilist.data.type.StudioSort
 import com.anilist.data.type.ThreadSort
 import com.anilist.data.type.UserSort
-import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo.ApolloClient
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.apollo.utils.ApolloCache
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope

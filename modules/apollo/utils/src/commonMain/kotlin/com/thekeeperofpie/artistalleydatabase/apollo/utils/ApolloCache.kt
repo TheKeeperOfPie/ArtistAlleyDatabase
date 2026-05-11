@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.apollo.utils
 
 import co.touchlab.kermit.Logger
-import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.annotations.ApolloExperimental
-import com.apollographql.apollo3.api.Query
-import com.apollographql.apollo3.cache.normalized.FetchPolicy
-import com.apollographql.apollo3.cache.normalized.fetchPolicy
+import com.apollographql.apollo.ApolloClient
+import com.apollographql.apollo.annotations.ApolloExperimental
+import com.apollographql.apollo.api.Query
+import com.apollographql.apollo.cache.normalized.FetchPolicy
+import com.apollographql.apollo.cache.normalized.fetchPolicy
 import com.thekeeperofpie.artistalleydatabase.inject.Named
 import com.thekeeperofpie.artistalleydatabase.utils.debug
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem

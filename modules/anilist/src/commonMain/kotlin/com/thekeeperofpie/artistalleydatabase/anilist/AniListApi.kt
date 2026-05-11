@@ -8,8 +8,8 @@ import com.anilist.data.SimpleMediaByIdsQuery
 import com.anilist.data.fragment.AniListCharacter
 import com.anilist.data.fragment.AniListMedia
 import com.anilist.data.type.MediaType
-import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.api.Optional
+import com.apollographql.apollo.ApolloClient
+import com.apollographql.apollo.api.Optional
 import com.thekeeperofpie.artistalleydatabase.inject.Named
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers

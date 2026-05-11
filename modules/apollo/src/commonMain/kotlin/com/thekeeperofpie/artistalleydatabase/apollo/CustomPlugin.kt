@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.apollo
 
-import com.apollographql.apollo3.compiler.ApolloCompilerPlugin
-import com.apollographql.apollo3.compiler.Transform
-import com.apollographql.apollo3.compiler.codegen.kotlin.KotlinOutput
+import com.apollographql.apollo.compiler.ApolloCompilerPlugin
+import com.apollographql.apollo.compiler.ApolloCompilerPluginEnvironment
+import com.apollographql.apollo.compiler.ApolloCompilerRegistry
+import com.apollographql.apollo.compiler.Transform
+import com.apollographql.apollo.compiler.codegen.kotlin.KotlinOutput
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -25,12 +27,21 @@ class CustomPlugin : ApolloCompilerPlugin {
         )
     }
 
-    override fun kotlinOutputTransform() = chain(
-        DefaultValuesTransform,
-        ComposeImmutableTransform,
-        KotlinXSerializationTransform,
-        OptionalSerializerTransform,
-    )
+    override fun beforeCompilationStep(
+        environment: ApolloCompilerPluginEnvironment,
+        registry: ApolloCompilerRegistry,
+    ) {
+        super.beforeCompilationStep(environment, registry)
+        registry.registerKotlinOutputTransform(
+            id = "com.thekeeperofpie.artistalleydatabase.apollo.CustomPlugin",
+            transform = chain(
+                DefaultValuesTransform,
+                ComposeImmutableTransform,
+                KotlinXSerializationTransform,
+                OptionalSerializerTransform,
+            ),
+        )
+    }
 
     private fun <T> chain(vararg transforms: Transform<T>) = object : Transform<T> {
         override fun transform(input: T) = transforms.fold(input) { acc, transform ->
@@ -60,7 +71,7 @@ class CustomPlugin : ApolloCompilerPlugin {
     }
 
     object KotlinXSerializationTransform : Transform<KotlinOutput> {
-        private val mutation = ClassName("com.apollographql.apollo3.api", "Mutation")
+        private val mutation = ClassName("com.apollographql.apollo.api", "Mutation")
         private val annotation = ClassName("kotlinx.serialization", "Serializable")
         private val any = ClassName("kotlin", "Any")
         private val anyNullable = any.copy(nullable = true)
@@ -113,7 +124,7 @@ class CustomPlugin : ApolloCompilerPlugin {
     object OptionalSerializerTransform : Transform<KotlinOutput> {
 
         private val annotation = ClassName("kotlinx.serialization", "Serializable")
-        private val optionalType = ClassName("com.apollographql.apollo3.api", "Optional")
+        private val optionalType = ClassName("com.apollographql.apollo.api", "Optional")
         private val optionalSerializer =
             ClassName("com.thekeeperofpie.artistalleydatabase.apollo.utils", "OptionalSerializer")
         private val fuzzyDateInput = ClassName("com.anilist.type", "FuzzyDateInput")

@@ -5,8 +5,8 @@ import co.touchlab.kermit.Logger
 import com.anilist.data.fragment.AniListCharacter
 import com.anilist.data.fragment.AniListMedia
 import com.anilist.data.type.MediaSeason
-import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.network.http.LoggingInterceptor
+import com.apollographql.apollo.ApolloClient
+import com.apollographql.apollo.network.http.LoggingInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
