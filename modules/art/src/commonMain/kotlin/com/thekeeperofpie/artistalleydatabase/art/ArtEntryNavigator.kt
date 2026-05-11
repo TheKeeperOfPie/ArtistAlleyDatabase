@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
-import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -41,7 +40,7 @@ import dev.zacsweers.metro.SingleIn
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @SingleIn(AppScope::class)
 @Inject
-class ArtEntryNavigator : BrowseSelectionNavigator {
+class ArtEntryNavigator {
 
     fun initialize(
         onClickNav: () -> Unit,
@@ -205,7 +204,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
         }
     }
 
-    override fun navigate(navHostController: NavHostController, entry: BrowseEntryModel) {
+    fun navigate(navHostController: NavHostController, entry: BrowseEntryModel) {
         val query = entry.queryIdOrString
         val queryParam = if (query is Either.Left) {
             "&queryId=${query.value}"

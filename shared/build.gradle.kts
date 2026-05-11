@@ -11,17 +11,20 @@ repositories {
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform") version "2.3.21"
-    id("com.android.library") version "8.13.2"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.3.21"
+    id("com.android.kotlin.multiplatform.library") version "9.2.1"
 }
 
 group = "com.thekeeperofpie.artistalleydatabase.shared"
 version = "0.0.1"
 
 kotlin {
-    androidTarget {
+    android {
+        namespace = "com.thekeeperofpie.artistalleydatabase.shared"
+        compileSdk = 36
+        minSdk = 28
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_18
+            jvmTarget.set(JvmTarget.JVM_18)
         }
     }
     jvm()
@@ -51,10 +54,4 @@ kotlin {
             }
         }
     }
-}
-
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.shared"
-    compileSdk = 36
-    defaultConfig { minSdk = 28 }
 }

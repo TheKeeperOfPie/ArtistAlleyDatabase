@@ -16,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtExporter
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtImporter
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSyncer
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils.Importer
@@ -85,8 +84,4 @@ interface ArtEntryComponent {
     @IntoSet
     @Binds
     val ArtSyncer.bindDatabaseSyncer: DatabaseSyncer
-
-    @IntoSet
-    @Binds
-    val ArtEntryNavigator.bindBrowseSelectionNavigator: BrowseSelectionNavigator
 }

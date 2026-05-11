@@ -1,6 +1,6 @@
 [versions]
 aboutLibraries = "14.0.1"
-android-gradle = "8.13.2"
+android-gradle = "9.2.1"
 androidx-activity = "1.13.0"
 androidx-annotation = "1.10.0"
 androidx-browser = "1.10.0"

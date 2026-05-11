@@ -17,7 +17,6 @@ import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.savedstate.read
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
-import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
@@ -39,7 +38,7 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @SingleIn(AppScope::class)
 @Inject
-class CdEntryNavigator : BrowseSelectionNavigator {
+class CdEntryNavigator {
 
     fun initialize(
         onClickNav: () -> Unit,
@@ -177,7 +176,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
         }
     }
 
-    override fun navigate(navHostController: NavHostController, entry: BrowseEntryModel) {
+    fun navigate(navHostController: NavHostController, entry: BrowseEntryModel) {
         val query = entry.queryIdOrString
         val queryParam = if (query is Either.Left) {
             "&queryId=${query.value}"

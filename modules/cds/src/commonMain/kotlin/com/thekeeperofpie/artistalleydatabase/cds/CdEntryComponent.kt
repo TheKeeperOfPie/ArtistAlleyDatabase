@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
-import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.browse.CdBrowseTabMusicalArtists
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
@@ -48,10 +47,6 @@ interface CdEntryComponent {
     @IntoSet
     @Binds
     val CdImporter.bindImporter: Importer
-
-    @IntoSet
-    @Binds
-    val CdEntryNavigator.bindBrowseSelectionNavigator: BrowseSelectionNavigator
 
     @IntoSet
     @Binds

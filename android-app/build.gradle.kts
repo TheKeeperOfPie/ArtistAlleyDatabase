@@ -2,13 +2,11 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.compose")
     id("androidx.room")
     alias(libs.plugins.dev.zacsweers.metro)
@@ -16,11 +14,12 @@ plugins {
 }
 
 kotlin {
-    androidTarget {
+    target {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_18)
         }
     }
+
     compilerOptions  {
         freeCompilerArgs.add("-Xcontext-parameters")
         optIn.add("kotlin.time.ExperimentalTime")
