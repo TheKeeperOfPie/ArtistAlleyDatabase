@@ -309,7 +309,9 @@ fun ImagePager(
                     disposables += imageLoader.enqueue(
                         ImageRequest.Builder(context)
                             .data(it)
+                            .size(SizeResolver.ORIGINAL)
                             .memoryCachePolicy(CachePolicy.DISABLED)
+                            .memoryCacheKey("${it.coilImageModel}-original")
                             .decoderFactory(blackholeFactory)
                             .build()
                     )
