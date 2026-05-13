@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -81,7 +83,6 @@ import coil3.size.SizeResolver
 import com.composables.core.ScrollArea
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.WrappedViewConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -158,9 +159,8 @@ fun ImagePager(
         val userScrollEnabled by remember(pagerState, images, multiZoomableState) {
             derivedStateOf {
                 if (images.size <= 1) return@derivedStateOf false
-                val zoomableState =
-                    multiZoomableState.getOrNull((pagerState.currentPage - 1).coerceAtLeast(0))
-                        ?: return@derivedStateOf false
+                val zoomableState = multiZoomableState.getOrNull(pagerState.currentPage - 1)
+                    ?: return@derivedStateOf true
                 val zoomFraction = zoomableState.zoomFraction ?: return@derivedStateOf true
                 zoomFraction < 0.05f
             }
@@ -202,7 +202,8 @@ fun ImagePager(
                             scope.launch {
                                 pagerState.animateScrollToPage(index + 1)
                             }
-                        }
+                        },
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
                     val imageIndex = (it - 1).coerceAtLeast(0)
@@ -318,6 +319,48 @@ fun ImagePager(
                 }
             }
             onDispose { disposables.forEach { it.dispose() } }
+        }
+    }
+}
+
+
+@Composable
+internal fun <Image : ImageWithDimensions> SmallImageGrid(
+    targetHeight: Int? = null,
+    images: List<Image>,
+    onImageClick: (index: Int, image: Image) -> Unit = { _, _ -> },
+    modifier: Modifier = Modifier,
+) {
+    val density = LocalDensity.current
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(160.dp),
+        contentPadding = PaddingValues(8.dp),
+        verticalItemSpacing = 8.dp,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+            .let {
+                if (targetHeight == null) {
+                    it
+                } else if (targetHeight > 0) {
+                    it.height(density.run { targetHeight.toDp() })
+                } else {
+                    it.heightIn(max = 320.dp)
+                }
+            }
+    ) {
+        itemsIndexed(images) { index, image ->
+            AsyncImage(
+                model = image,
+                contentScale = ContentScale.FillWidth,
+                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                modifier = Modifier
+                    .clickable { onImageClick(index, image) }
+                    .sharedElement("gridImage", image.coilImageModel)
+                    .fillMaxWidth()
+                    .conditionally(image.width != null && image.height != null) {
+                        aspectRatio(image.width!! / image.height!!.toFloat())
+                    }
+            )
         }
     }
 }

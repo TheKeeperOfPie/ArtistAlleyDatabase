@@ -28,23 +28,16 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.progressSemantics
@@ -96,7 +89,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalUriHandler
@@ -118,7 +110,6 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_showing_fallback
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_show_qr
@@ -132,7 +123,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_unrecognized_
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
-import coil3.compose.AsyncImage
 import com.composables.core.HorizontalScrollbar
 import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
@@ -157,7 +147,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
@@ -171,7 +160,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -462,47 +450,6 @@ fun HorizontalPagerIndicator(pagerState: PagerState, modifier: Modifier = Modifi
                     .background(color, CircleShape)
                     .border(1.dp, Color.DarkGray, CircleShape)
                     .size(8.dp)
-            )
-        }
-    }
-}
-
-@Composable
-internal fun <Image : ImageWithDimensions> SmallImageGrid(
-    targetHeight: Int? = null,
-    images: List<Image>,
-    onImageClick: (index: Int, image: Image) -> Unit = { _, _ -> },
-    modifier: Modifier = Modifier,
-) {
-    val density = LocalDensity.current
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Adaptive(160.dp),
-        contentPadding = PaddingValues(8.dp),
-        verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-            .let {
-                if (targetHeight == null) {
-                    it
-                } else if (targetHeight > 0) {
-                    it.height(density.run { targetHeight.toDp() })
-                } else {
-                    it.heightIn(max = 320.dp)
-                }
-            }
-    ) {
-        itemsIndexed(images) { index, image ->
-            AsyncImage(
-                model = image,
-                contentScale = ContentScale.FillWidth,
-                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                modifier = Modifier
-                    .clickable { onImageClick(index, image) }
-                    .sharedElement("gridImage", image.coilImageModel)
-                    .fillMaxWidth()
-                    .conditionally(image.width != null && image.height != null) {
-                        aspectRatio(image.width!! / image.height!!.toFloat())
-                    }
             )
         }
     }
