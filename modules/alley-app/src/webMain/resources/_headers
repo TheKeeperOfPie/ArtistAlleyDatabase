@@ -4,3 +4,6 @@
 
 /composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/images/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=604800, immutable
+
+/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/embeds/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=604800, immutable
