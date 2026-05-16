@@ -180,11 +180,7 @@ object StampRallyDetailsScreen {
                 StampRallyTitle(year = route.year, id = id, hostTable = hostTable, fandom = fandom)
             },
             sharedElementId = route.id,
-            favorite = {
-                // TODO: Show explanation for why favorites is disabled
-                val entry = entry()
-                entry?.favorite?.takeIf { entry.stampRally.confirmed }
-            },
+            favorite = { entry()?.favorite },
             catalog = { LoadingResult.success(DetailsScreenCatalog(images(), null, null)) },
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
@@ -423,13 +419,11 @@ object StampRallyDetailsScreen {
                 }
             }
 
-            if (entry.stampRally.confirmed) {
-                item("stampRallyUserNotes") {
-                    UserNotesText(
-                        state = userNotesTextState,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
+            item("stampRallyUserNotes") {
+                UserNotesText(
+                    state = userNotesTextState,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
 
             item("stampRallyButtons") {

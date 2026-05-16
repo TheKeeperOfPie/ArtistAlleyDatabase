@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant

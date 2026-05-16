@@ -2,30 +2,19 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.minimumInteractiveComponentSize
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +29,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_free
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_other
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_paid
-import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_disabled
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_cost
@@ -199,65 +187,35 @@ fun StampRallyListRow(
             mutableStateOf<SearchScreen.SearchEntryModel?>(null)
         }
 
-        if (entry.stampRally.confirmed) {
-            val favorite = entry.favorite
-            IconButton(
-                onClick = {
-                    if (favorite) {
-                        unfavoriteDialogEntry = entry
-                    } else {
-                        onFavoriteToggle(true)
-                    }
-                },
-                modifier = Modifier
-                    .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
-                    .align(Alignment.Top)
-            ) {
-                Icon(
-                    imageVector = if (favorite) {
-                        Icons.Filled.Favorite
-                    } else {
-                        Icons.Filled.FavoriteBorder
-                    },
-                    contentDescription = stringResource(
-                        Res.string.alley_stamp_rally_favorite_icon_content_description
-                    ),
-                )
-            }
-
-            UnfavoriteDialog(
-                entry = { unfavoriteDialogEntry },
-                onClearEntry = { unfavoriteDialogEntry = null },
-                onRemoveFavorite = { onFavoriteToggle(false) },
-            )
-        } else {
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                    positioning = TooltipAnchorPosition.Below,
-                    spacingBetweenTooltipAndAnchor = 0.dp,
-                ),
-                tooltip = {
-                    PlainTooltip {
-                        Text(stringResource(Res.string.alley_stamp_rally_favorite_disabled))
-                    }
-                },
-                state = rememberTooltipState(),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier =
-                        modifier
-                            .minimumInteractiveComponentSize()
-                            .size(IconButtonDefaults.smallContainerSize()),
-                ) {
-                    CompositionLocalProvider(LocalContentColor provides IconButtonDefaults.iconButtonColors().disabledContentColor) {
-                        Icon(
-                            imageVector = Icons.Filled.FavoriteBorder,
-                            contentDescription = stringResource(Res.string.alley_stamp_rally_favorite_disabled),
-                        )
-                    }
+        val favorite = entry.favorite
+        IconButton(
+            onClick = {
+                if (favorite) {
+                    unfavoriteDialogEntry = entry
+                } else {
+                    onFavoriteToggle(true)
                 }
-            }
+            },
+            modifier = Modifier
+                .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
+                .align(Alignment.Top)
+        ) {
+            Icon(
+                imageVector = if (favorite) {
+                    Icons.Filled.Favorite
+                } else {
+                    Icons.Filled.FavoriteBorder
+                },
+                contentDescription = stringResource(
+                    Res.string.alley_stamp_rally_favorite_icon_content_description
+                ),
+            )
         }
+
+        UnfavoriteDialog(
+            entry = { unfavoriteDialogEntry },
+            onClearEntry = { unfavoriteDialogEntry = null },
+            onRemoveFavorite = { onFavoriteToggle(false) },
+        )
     }
 }

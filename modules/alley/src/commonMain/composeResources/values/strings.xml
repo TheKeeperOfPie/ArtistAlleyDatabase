@@ -127,7 +127,6 @@
     <string name="alley_stamp_rally_cost_paid">Paid</string>
     <string name="alley_stamp_rally_cost_equation_any">Any × %1$d tables</string>
     <string name="alley_stamp_rally_cost_equation_paid">$%1$d × %2$d tables = $%3$d+</string>
-    <string name="alley_stamp_rally_favorite_disabled">Rally status is pending, favoriting disabled</string>
 
     <string name="alley_previous_page">Previous page</string>
     <string name="alley_next_page">Next page</string>
