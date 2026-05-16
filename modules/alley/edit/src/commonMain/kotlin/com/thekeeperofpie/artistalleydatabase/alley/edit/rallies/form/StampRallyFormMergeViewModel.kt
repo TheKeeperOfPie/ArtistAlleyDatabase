@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
@@ -31,6 +32,7 @@ class StampRallyFormMergeViewModel(
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: TagAutocomplete,
+    artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
     @Assisted stampRallyId: String,
@@ -39,6 +41,9 @@ class StampRallyFormMergeViewModel(
     val entry =
         flowFromSuspend { database.loadStampRallyWithFormEntry(dataYear, artistId, stampRallyId) }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
+
+    val tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear)
+
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val saveTask: ExclusiveTask<SaveData, BackendRequest.StampRallyCommitForm.Response> =
         ExclusiveTask(viewModelScope, ::save)

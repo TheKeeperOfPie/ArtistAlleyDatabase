@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.FormArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
@@ -27,8 +28,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -58,6 +59,7 @@ class ArtistFormViewModel(
     private val formDatabase: AlleyFormDatabase,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: FormTagAutocomplete,
+    val artistTableAutocomplete: FormArtistTableAutocomplete,
     private val imageUploader: ImageUploader,
     @Assisted private val dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -228,6 +230,7 @@ class ArtistFormViewModel(
                             stampRally = stampRally,
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
+                            tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear).first(),
                             mergeBehavior = FormMergeBehavior.REPLACE,
                         )
                         baseState.images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))
@@ -252,6 +255,7 @@ class ArtistFormViewModel(
 
     fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
+    fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 

@@ -57,6 +57,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_timestamp_prefix
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_title_fandom
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_title_host_table_fandom
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -118,6 +119,7 @@ internal object StampRallyFormMergeScreen {
         val stampRallyWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
+        val tablesByBooth by viewModel.tablesByBooth.collectAsStateWithLifecycle()
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = viewModel.saveTaskState
         val deleteTaskState = viewModel.deleteTaskState
@@ -132,6 +134,7 @@ internal object StampRallyFormMergeScreen {
             },
             seriesById = { seriesById },
             merchById = { merchById },
+            tablesByBooth = { tablesByBooth },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
@@ -195,6 +198,7 @@ internal object StampRallyFormMergeScreen {
         saving: () -> Boolean,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
+        tablesByBooth: () -> Map<String, ArtistTable>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
@@ -206,6 +210,7 @@ internal object StampRallyFormMergeScreen {
         val fieldState = rememberFieldState(formDiff)
         val seriesByIdMap = seriesById()
         val merchByIdMap = merchById()
+        val tablesByBoothMap = tablesByBooth()
         val stampRallyFormState by remember(entry, fieldState, seriesByIdMap, merchByIdMap) {
             derivedStateOf {
                 formDiff ?: return@derivedStateOf null
@@ -216,6 +221,7 @@ internal object StampRallyFormMergeScreen {
                     ),
                     seriesById = seriesByIdMap,
                     merchById = merchByIdMap,
+                    tablesByBooth = tablesByBoothMap,
                     diff = formDiff,
                 )
             }
@@ -346,6 +352,7 @@ internal object StampRallyFormMergeScreen {
                     seriesPredictions = { emptyFlow() },
                     merchById = merchById,
                     merchPredictions = { emptyFlow() },
+                    tablePredictions = { emptyFlow() },
                     seriesImage = seriesImage,
                     showImages = true,
                     modifier = modifier.fillMaxWidth(),
@@ -456,6 +463,7 @@ internal object StampRallyFormMergeScreen {
             base: StampRallyDatabaseEntry,
             seriesById: Map<String, SeriesInfo>,
             merchById: Map<String, MerchInfo>,
+            tablesByBooth: Map<String, ArtistTable>,
             diff: StampRallyEntryDiff,
         ): StampRallyFormState {
             fun <T> applyDiff(
@@ -536,6 +544,7 @@ internal object StampRallyFormMergeScreen {
                 stampRally = stampRally,
                 seriesById = seriesById,
                 merchById = merchById,
+                tablesByBooth = tablesByBooth,
                 mergeBehavior = FormMergeBehavior.REPLACE,
             ).apply {
                 images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))

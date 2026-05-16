@@ -26,7 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_booth_and_table_name
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_booth_and_table_name
 import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_any
@@ -327,7 +327,7 @@ object StampRallyDetailsScreen {
                                     it.name
                                 } else {
                                     stringResource(
-                                        Res.string.alley_artist_details_booth_and_table_name,
+                                        Res.string.alley_artist_booth_and_table_name,
                                         booth,
                                         it.name
                                     )

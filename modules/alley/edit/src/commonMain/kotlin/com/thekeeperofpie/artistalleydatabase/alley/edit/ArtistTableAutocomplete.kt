@@ -1,0 +1,86 @@
+package com.thekeeperofpie.artistalleydatabase.alley.edit
+
+import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SearchUtils
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyUtils
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
+
+@SingleIn(AppScope::class)
+open class ArtistTableAutocomplete(
+    applicationScope: ApplicationScope,
+    private val dispatchers: CustomDispatchers,
+    loadTables: suspend (DataYear) -> List<ArtistTable>,
+) {
+    private val defaultFlow = ReadOnlyStateFlow(emptyList<ArtistTable>())
+    private val defaultFlowByBooth = ReadOnlyStateFlow(emptyMap<String, ArtistTable>())
+
+    @Inject
+    constructor(
+        applicationScope: ApplicationScope,
+        dispatchers: CustomDispatchers,
+        database: AlleyEditDatabase,
+    ) : this(
+        applicationScope = applicationScope,
+        dispatchers = dispatchers,
+        loadTables = database::loadTables,
+    )
+
+    private val animeExpo2026 = flowFromSuspend { loadTables(DataYear.ANIME_EXPO_2026) }
+        .stateIn(applicationScope, SharingStarted.Eagerly, emptyList())
+
+    private val animeExpo2026ByBooth = animeExpo2026.mapState(applicationScope) {
+        it.associateBy { it.booth }
+    }
+
+    fun tablesByBooth(dataYear: DataYear) = when (dataYear) {
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025,
+            -> defaultFlowByBooth
+        DataYear.ANIME_EXPO_2026 -> animeExpo2026ByBooth
+    }
+
+    fun predictions(dataYear: DataYear, query: String) = when {
+        query.isBlank() -> defaultFlow
+        else -> when (dataYear) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> defaultFlow
+            DataYear.ANIME_EXPO_2026 ->
+                animeExpo2026.flatMapLatest {
+                    flow {
+                        SearchUtils.incrementallyPartition(
+                            values = it,
+                            { it.booth.contains(query, ignoreCase = true) },
+                            { it.name?.contains(query, ignoreCase = true) == true },
+                            finalTransform = { tables ->
+                                val booth = StampRallyUtils.toValidBooth(query)
+                                val table = booth?.let { ArtistTable(booth = booth, name = null) }
+                                    ?.takeIf { tables.none { it.booth == booth } }
+                                tables + listOfNotNull(table)
+                            },
+                        )
+                    }
+                }
+        }
+    }.flowOn(dispatchers.io)
+}

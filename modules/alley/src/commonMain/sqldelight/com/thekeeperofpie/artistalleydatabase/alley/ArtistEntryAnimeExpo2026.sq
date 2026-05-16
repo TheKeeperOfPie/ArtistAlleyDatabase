@@ -24,3 +24,6 @@ WHERE artistEntryAnimeExpo2026.id = :artistId;
 
 getChangelog:
 SELECT * FROM artistEntryAnimeExpo2026Changelog;
+
+getTables:
+SELECT booth, name FROM artistEntryAnimeExpo2026;

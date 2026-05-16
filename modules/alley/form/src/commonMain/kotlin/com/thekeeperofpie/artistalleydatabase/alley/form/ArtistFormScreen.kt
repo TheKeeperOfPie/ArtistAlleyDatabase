@@ -105,6 +105,7 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_sta
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_tables_placeholder
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
@@ -197,6 +198,7 @@ object ArtistFormScreen {
             seriesPredictions = viewModel::seriesPredictions,
             merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
+            tablePredictions = viewModel::tablePredictions,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickDone = viewModel::onClickDone,
@@ -215,6 +217,7 @@ object ArtistFormScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickDone: () -> Unit,
@@ -332,6 +335,7 @@ object ArtistFormScreen {
                             seriesPredictions = seriesPredictions,
                             merchById = merchById,
                             merchPredictions = merchPredictions,
+                            tablePredictions = tablePredictions,
                             seriesImage = seriesImage,
                             onClickDone = onClickDone,
                             onConfirmMerge = onConfirmMerge,
@@ -368,6 +372,7 @@ object ArtistFormScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickDone: () -> Unit,
         onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
@@ -477,6 +482,7 @@ object ArtistFormScreen {
                                     seriesPredictions = seriesPredictions,
                                     merchById = merchById,
                                     merchPredictions = merchPredictions,
+                                    tablePredictions = tablePredictions,
                                     seriesImage = seriesImage,
                                     onClickEditImages = onClickEditImages,
                                 )
@@ -508,7 +514,7 @@ object ArtistFormScreen {
         val booth =
             state.artistFormState.info.booth.value.text.toString()
         if (booth.isNotBlank()) {
-            tables += booth
+            tables += ArtistTable(booth = booth, name = null)
         }
     }
 
@@ -628,6 +634,7 @@ object ArtistFormScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
     ) {
         Column(
@@ -679,7 +686,7 @@ object ArtistFormScreen {
                                 }
                             ) {
                                 val booth =
-                                    formState.tables.toList().firstOrNull()?.ifBlank { null }
+                                    formState.tables.toList().firstOrNull()?.booth?.ifBlank { null }
                                         ?: formState.stateTables.value.text.toString()
                                 StampRallySummaryRow(
                                     stampRallyId = formState.editorState.id.value.text.toString(),
@@ -753,6 +760,7 @@ object ArtistFormScreen {
                                 seriesPredictions = seriesPredictions,
                                 merchById = merchById,
                                 merchPredictions = merchPredictions,
+                                tablePredictions = tablePredictions,
                                 seriesImage = seriesImage,
                             ) {
                                 val requestKey =
@@ -775,6 +783,7 @@ object ArtistFormScreen {
                                 TablesSection(
                                     state = formState.stateTables,
                                     tables = formState.tables,
+                                    predictions = tablePredictions,
                                     label = { Text(stringResource(Res.string.alley_form_stamp_rally_tables_placeholder)) },
                                 )
                                 LinksSection(

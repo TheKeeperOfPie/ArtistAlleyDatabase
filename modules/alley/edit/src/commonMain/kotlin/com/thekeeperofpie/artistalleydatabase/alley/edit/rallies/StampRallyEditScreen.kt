@@ -30,6 +30,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_title_editing_booth_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_title_editing_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_error_saving_bad_fields
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.EditImagesButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -99,6 +100,7 @@ object StampRallyEditScreen {
             seriesPredictions = viewModel::seriesPredictions,
             merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
+            tablePredictions = viewModel::tablePredictions,
             seriesImage = viewModel::seriesImage,
             hasPendingChanges = viewModel::hasPendingChanges,
             onClickBack = onClickBack,
@@ -125,6 +127,7 @@ object StampRallyEditScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         hasPendingChanges: () -> Boolean,
         onClickBack: (force: Boolean) -> Unit,
@@ -172,7 +175,7 @@ object StampRallyEditScreen {
                             formState.editorState.id.value.text.toString()
                         }
                         val conventionName = stringResource(dataYear.shortName)
-                        val booth = formState.tables.toList().firstOrNull()?.ifBlank { null }
+                        val booth = formState.tables.toList().firstOrNull()?.booth?.ifBlank { null }
                             ?: formState.stateTables.value.text.toString()
                         val text = if (booth.isNotEmpty()) {
                             stringResource(
@@ -232,6 +235,7 @@ object StampRallyEditScreen {
                                 seriesPredictions = seriesPredictions,
                                 merchById = merchById,
                                 merchPredictions = merchPredictions,
+                                tablePredictions = tablePredictions,
                                 seriesImage = seriesImage,
                                 onConfirmDelete = onConfirmDelete,
                             )
@@ -355,6 +359,7 @@ object StampRallyEditScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         onConfirmDelete: () -> Unit,
     ) {
@@ -377,6 +382,7 @@ object StampRallyEditScreen {
                     seriesPredictions = seriesPredictions,
                     merchById = merchById,
                     merchPredictions = merchPredictions,
+                    tablePredictions = tablePredictions,
                     seriesImage = seriesImage,
                 )
 

@@ -120,7 +120,7 @@ internal fun <T> MultiTextSection(
     header: @Composable () -> Unit,
     items: SnapshotStateList<T>,
     showItems: () -> Boolean = { true },
-    itemToCommitted: ((String) -> T)? = null,
+    itemToCommitted: ((String) -> T?)? = null,
     removeLastItem: () -> String?,
     item: @Composable (index: Int, T) -> Unit,
     entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
@@ -140,7 +140,10 @@ internal fun <T> MultiTextSection(
         items = items.takeIf { showItems() },
         onItemCommitted = if (itemToCommitted != null) {
             {
-                addUniqueErrorState.addAndEnforceUnique(itemToCommitted(it))
+                val item = itemToCommitted(it)
+                if (item != null) {
+                    addUniqueErrorState.addAndEnforceUnique(item)
+                }
             }
         } else null,
         removeLastItem = removeLastItem,

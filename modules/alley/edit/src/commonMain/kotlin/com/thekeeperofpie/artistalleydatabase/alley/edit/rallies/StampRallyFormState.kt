@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormUtils
@@ -30,7 +31,7 @@ class StampRallyFormState(
     val editorState: EditorState = EditorState(),
     val fandom: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val stateTables: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-    val tables: SnapshotStateList<String> = SnapshotStateList(),
+    val tables: SnapshotStateList<ArtistTable> = SnapshotStateList(),
     val stateLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
     val tableMin: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
@@ -50,7 +51,7 @@ class StampRallyFormState(
             with(EditorState.Saver) { save(value.editorState) },
             with(EntryForm2.SingleTextState.Saver) { save(value.fandom) },
             with(EntryForm2.SingleTextState.Saver) { save(value.stateTables) },
-            with(StateUtils.snapshotListJsonSaver<String>()) { save(value.tables) },
+            with(StateUtils.snapshotListJsonSaver<ArtistTable>()) { save(value.tables) },
             with(EntryForm2.SingleTextState.Saver) { save(value.stateLinks) },
             with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
             with(EntryForm2.SingleTextState.Saver) { save(value.tableMin) },
@@ -70,7 +71,7 @@ class StampRallyFormState(
             editorState = with(EditorState.Saver) { restore(value[2] as List<Any>) },
             fandom = with(EntryForm2.SingleTextState.Saver) { restore(value[3]!!) },
             stateTables = with(EntryForm2.SingleTextState.Saver) { restore(value[4]!!) },
-            tables = with(StateUtils.snapshotListJsonSaver<String>()) { restore(value[5] as String) },
+            tables = with(StateUtils.snapshotListJsonSaver<ArtistTable>()) { restore(value[5] as String) },
             stateLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[6]!!) },
             links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[7] as String) },
             tableMin = with(EntryForm2.SingleTextState.Saver) { restore(value[8]!!) },
@@ -92,6 +93,7 @@ class StampRallyFormState(
         stampRally: StampRallyDatabaseEntry,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
+        tablesByBooth: Map<String, ArtistTable>,
         mergeBehavior: FormMergeBehavior = FormMergeBehavior.IGNORE,
     ) = apply {
         editorState.applyValues(
@@ -101,7 +103,10 @@ class StampRallyFormState(
         )
 
         FormUtils.applyValue(this.fandom, stampRally.fandom, mergeBehavior)
-        FormUtils.applyValue(this.stateTables, this.tables, stampRally.tables, mergeBehavior)
+
+        val tables = stampRally.tables.map { tablesByBooth[it] ?: ArtistTable(booth = it, name = null) }
+        FormUtils.applyValue(this.stateTables, this.tables, tables, mergeBehavior)
+
         FormUtils.applyValue(
             this.stateLinks,
             this.links,
@@ -142,8 +147,8 @@ class StampRallyFormState(
             year = dataYear,
             id = id,
             fandom = fandom.value.text.toString(),
-            hostTable = tables.firstOrNull().orEmpty(),
-            tables = tables.toList(),
+            hostTable = tables.firstOrNull()?.booth.orEmpty(),
+            tables = tables.map { it.booth },
             links = links,
             tableMin = tableMin,
             totalCost = when (tableMin) {

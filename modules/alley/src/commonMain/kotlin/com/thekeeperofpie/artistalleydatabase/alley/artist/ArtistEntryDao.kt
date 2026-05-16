@@ -783,7 +783,8 @@ class ArtistEntryDao(
                 DataYear.ANIME_EXPO_2024,
                 DataYear.ANIME_EXPO_2025,
                 DataYear.ANIME_NYC_2025,
-                DataYear.ANIME_EXPO_2026 -> {
+                DataYear.ANIME_EXPO_2026,
+                    -> {
                     if (ArtistTag.NEW in filterParams.artistTagsIn) {
                         this += "$tableName.newArtist = 1"
                     } else if (ArtistTag.NEW in filterParams.artistTagsNotIn) {
@@ -1340,6 +1341,21 @@ class ArtistEntryDao(
                     )
                 }
         }
+    }
+
+    suspend fun getTables(dataYear: DataYear): List<ArtistTable> = when (dataYear) {
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025,
+            -> emptyList()
+        DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getTables().awaitAsList()
+            .mapNotNull {
+                // Rallies are tracked by booth, so if one doesn't exist, skip
+                val booth = it.booth ?: return@mapNotNull null
+                ArtistTable(booth = booth, name = it.name)
+            }
     }
 
     suspend fun getChangelog() = daoAnimeExpo2026().getChangelog().awaitAsList()

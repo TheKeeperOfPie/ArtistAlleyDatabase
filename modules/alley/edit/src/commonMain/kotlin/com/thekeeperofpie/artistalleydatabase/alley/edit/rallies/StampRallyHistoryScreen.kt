@@ -64,6 +64,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_action_revert_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_select_all
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_title
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryCardHeader
@@ -116,6 +117,7 @@ object StampRallyHistoryScreen {
         val history by viewModel.history.collectAsStateWithLifecycle()
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
+        val tablesByBooth by viewModel.tablesByBooth.collectAsStateWithLifecycle()
         val initialStampRally by viewModel.initial.collectAsStateWithLifecycle()
         StampRallyHistoryScreen(
             history = { history },
@@ -124,6 +126,7 @@ object StampRallyHistoryScreen {
             initialStampRally = { initialStampRally },
             seriesById = { seriesById },
             merchById = { merchById },
+            tablesByBooth = { tablesByBooth },
             saveProgress = viewModel.saveProgress,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
@@ -140,6 +143,7 @@ object StampRallyHistoryScreen {
         initialStampRally: () -> StampRallyDatabaseEntry?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
+        tablesByBooth: () -> Map<String, ArtistTable>,
         saveProgress: MutableStateFlow<JobProgress<BackendRequest.StampRallySave.Response>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
@@ -243,6 +247,7 @@ object StampRallyHistoryScreen {
                             seriesById = seriesById(),
                             merchById = merchById(),
                             seriesImage = seriesImage,
+                            tablesByBooth = tablesByBooth(),
                             modifier = Modifier.weight(1f)
                         )
 
@@ -270,6 +275,7 @@ object StampRallyHistoryScreen {
                             stampRally = { stampRally },
                             seriesById = seriesById(),
                             merchById = merchById(),
+                            tablesByBooth = tablesByBooth(),
                             seriesImage = seriesImage,
                             modifier = Modifier.weight(1f)
                         )
@@ -294,6 +300,7 @@ object StampRallyHistoryScreen {
         stampRally: () -> StampRallyDatabaseEntry?,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
+        tablesByBooth: Map<String, ArtistTable>,
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
@@ -302,6 +309,7 @@ object StampRallyHistoryScreen {
                 initialValue = null,
                 seriesById,
                 merchById,
+                tablesByBooth,
             ) {
                 if (seriesById.isNotEmpty() && merchById.isNotEmpty()) {
                     snapshotFlow { stampRally() }
@@ -312,6 +320,7 @@ object StampRallyHistoryScreen {
                                     stampRally = it,
                                     seriesById = seriesById,
                                     merchById = merchById,
+                                    tablesByBooth = tablesByBooth,
                                     mergeBehavior = FormMergeBehavior.REPLACE,
                                 )
                             }
@@ -331,6 +340,7 @@ object StampRallyHistoryScreen {
                         seriesPredictions = { emptyFlow() },
                         merchById = { merchById },
                         merchPredictions = { emptyFlow() },
+                        tablePredictions = { emptyFlow() },
                         seriesImage = seriesImage,
                         forceLocked = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -506,13 +516,19 @@ object StampRallyHistoryScreen {
             StampRallyField.entries.forEach { field ->
                 val fieldText = when (field) {
                     StampRallyField.FANDOM -> rebuiltEntry.fandom.takeIf { it != initialStampRally?.fandom }
-                    StampRallyField.TABLES -> rebuiltEntry.tables.takeIf { it != initialStampRally?.tables }?.joinToString()
-                    StampRallyField.LINKS -> rebuiltEntry.links.takeIf { it != initialStampRally?.links }?.joinToString()
-                    StampRallyField.TABLE_MIN -> rebuiltEntry.tableMin.takeIf { it != initialStampRally?.tableMin }?.toString()
+                    StampRallyField.TABLES -> rebuiltEntry.tables.takeIf { it != initialStampRally?.tables }
+                        ?.joinToString()
+                    StampRallyField.LINKS -> rebuiltEntry.links.takeIf { it != initialStampRally?.links }
+                        ?.joinToString()
+                    StampRallyField.TABLE_MIN -> rebuiltEntry.tableMin.takeIf { it != initialStampRally?.tableMin }
+                        ?.toString()
                     StampRallyField.PRIZE -> rebuiltEntry.prize.takeIf { it != initialStampRally?.prize }
-                    StampRallyField.PRIZE_LIMIT -> rebuiltEntry.prizeLimit.takeIf { it != initialStampRally?.prizeLimit }?.toString()
-                    StampRallyField.SERIES -> rebuiltEntry.series.takeIf { it != initialStampRally?.series }?.joinToString()
-                    StampRallyField.MERCH -> rebuiltEntry.merch.takeIf { it != initialStampRally?.merch }?.joinToString()
+                    StampRallyField.PRIZE_LIMIT -> rebuiltEntry.prizeLimit.takeIf { it != initialStampRally?.prizeLimit }
+                        ?.toString()
+                    StampRallyField.SERIES -> rebuiltEntry.series.takeIf { it != initialStampRally?.series }
+                        ?.joinToString()
+                    StampRallyField.MERCH -> rebuiltEntry.merch.takeIf { it != initialStampRally?.merch }
+                        ?.joinToString()
                     StampRallyField.NOTES -> rebuiltEntry.notes.takeIf { it != initialStampRally?.notes }
                     StampRallyField.EDITOR_NOTES -> rebuiltEntry.editorNotes.takeIf { it != initialStampRally?.editorNotes }
                 }

@@ -80,7 +80,15 @@ actual class AlleyFormRemoteDatabase(
             } else {
                 after.id
             }
-            after.copy(id = stampRallyId)
+            val tables = after.tables.let {
+                val afterBooth = afterArtist.booth
+                if (afterBooth == null || it.contains(afterBooth)) {
+                    it
+                } else {
+                    it + afterBooth
+                }
+            }
+            after.copy(id = stampRallyId, tables = tables)
         }
         finalizedStampRallies.forEach { after ->
             val before = beforeStampRallies.find { it.id == after.id }

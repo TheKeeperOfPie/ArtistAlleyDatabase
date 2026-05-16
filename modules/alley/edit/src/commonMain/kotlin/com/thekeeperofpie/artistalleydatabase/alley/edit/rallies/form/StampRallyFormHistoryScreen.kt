@@ -45,6 +45,7 @@ internal object StampRallyFormHistoryScreen {
         val stampRallyWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
+        val tablesByBooth by viewModel.tablesByBooth.collectAsStateWithLifecycle()
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = viewModel.saveTaskState
         StampRallyFormMergeScreen(
@@ -55,6 +56,7 @@ internal object StampRallyFormHistoryScreen {
             saving = { saveTaskState.showBlockingLoadingIndicator },
             seriesById = { seriesById },
             merchById = { merchById },
+            tablesByBooth = { tablesByBooth },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,

@@ -35,6 +35,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_table_min
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_tables
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_booth_and_table_name
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImagesSection
@@ -80,7 +82,8 @@ import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import artistalleydatabase.modules.alley.edit.generated.resources.Res as AlleyRes
+import artistalleydatabase.modules.alley.edit.generated.resources.Res as AlleyEditRes
+import artistalleydatabase.modules.alley.generated.resources.Res as AlleyRes
 
 object StampRallyForm {
 
@@ -93,6 +96,7 @@ object StampRallyForm {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         showImages: Boolean = false,
         forceLocked: Boolean = false,
@@ -123,6 +127,7 @@ object StampRallyForm {
             seriesPredictions = seriesPredictions,
             merchById = merchById,
             merchPredictions = merchPredictions,
+            tablePredictions = tablePredictions,
             seriesImage = seriesImage,
             forceLocked = forceLocked,
             modifier = modifier,
@@ -144,7 +149,7 @@ object StampRallyForm {
 
             IdSection(state.editorState.id, errorState.idErrorMessage)
             FandomSection(state.fandom)
-            TablesSection(state.stateTables, state.tables)
+            TablesSection(state.stateTables, state.tables, tablePredictions)
             LinksSection(state.stateLinks, state.links, errorState.linksErrorMessage)
             TableMinSection(state.tableMin)
             PrizeSection(state.prize)
@@ -180,6 +185,7 @@ object StampRallyForm {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         forceLocked: Boolean = false,
         modifier: Modifier = Modifier,
@@ -248,7 +254,7 @@ abstract class StampRallyFormScope(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            stringResource(AlleyRes.string.alley_edit_artist_action_edit_images)
+                            stringResource(AlleyEditRes.string.alley_edit_artist_action_edit_images)
                         )
                     }
                 }
@@ -313,10 +319,13 @@ abstract class StampRallyFormScope(
     @Composable
     fun TablesSection(
         state: EntryForm2.SingleTextState,
-        tables: SnapshotStateList<String>,
+        tables: SnapshotStateList<ArtistTable>,
+        predictions: suspend (String) -> Flow<List<ArtistTable>>,
         label: @Composable (() -> Unit)? = null,
     ) {
-        val initialTables = initialStampRally?.tables
+        val initialTables = remember(initialStampRally) {
+            initialStampRally?.tables?.map { ArtistTable(booth = it, name = null) }
+        }
         val listRevertDialogState = rememberListRevertDialogState(initialTables)
         MultiTextSection(
             state = state,
@@ -327,17 +336,31 @@ abstract class StampRallyFormScope(
                 )
             },
             items = tables,
-            itemToCommitted = { it },
-            removeLastItem = { tables.removeLastOrNull() },
+            itemToCommitted = {
+                StampRallyUtils.toValidBooth(it)?.let {
+                    ArtistTable(booth = it, name = null)
+                }
+            },
+            removeLastItem = { tables.removeLastOrNull()?.booth },
             label = label,
             item = { _, value ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
                 ) {
-                    val existed = initialTables?.any { it == value }
+                    val existed = initialTables?.any { it.booth == value.booth }
+                    val tableName = value.name
                     Text(
-                        text = value,
+                        text = if (tableName == null) {
+                            value.booth
+                        } else {
+                            stringResource(
+                                AlleyRes.string.alley_artist_booth_and_table_name,
+                                value.booth,
+                                tableName,
+                            )
+                        },
                         style = MaterialTheme.typography.bodyMedium
                             .copy(
                                 fontFamily = FontFamily.Monospace,
@@ -355,12 +378,33 @@ abstract class StampRallyFormScope(
                         forceLocked = this@StampRallyFormScope.forceLocked,
                         items = tables,
                         item = value,
-                        itemToText = { it },
+                        itemToText = { it.booth },
+                    )
+                }
+            },
+            prediction = { _, value ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+                ) {
+                    val tableName = value.name
+                    Text(
+                        text = if (tableName == null) {
+                            value.booth
+                        } else {
+                            stringResource(
+                                AlleyRes.string.alley_artist_booth_and_table_name,
+                                value.booth,
+                                tableName,
+                            )
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             },
             inputTransformation = InputTransformation {
-                if (asCharSequence().any { it.isWhitespace() || it == ',' }) {
+                if (!asCharSequence().all { it.isLetterOrDigit() || it == '-' }) {
                     revertAllChanges()
                 }
             },
@@ -369,6 +413,7 @@ abstract class StampRallyFormScope(
                     ShowListRevertIconButton(listRevertDialogState, tables)
                 }
             },
+            entryPredictions = predictions,
         )
 
         ListFieldRevertDialog(

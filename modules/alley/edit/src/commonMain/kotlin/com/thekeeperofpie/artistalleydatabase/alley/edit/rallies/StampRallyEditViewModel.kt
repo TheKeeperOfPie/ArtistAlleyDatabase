@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.serialization.saved
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -18,8 +19,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
@@ -40,6 +41,7 @@ class StampRallyEditViewModel(
     private val imageUploader: ImageUploader,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: TagAutocomplete,
+    val artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val stampRallyId: String,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -88,6 +90,7 @@ class StampRallyEditViewModel(
                     stampRally = stampRally,
                     seriesById = tagAutocomplete.seriesById.first(),
                     merchById = tagAutocomplete.merchById.first(),
+                    tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear).first(),
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 )
                 state.stampRallyFormState.images
@@ -99,6 +102,7 @@ class StampRallyEditViewModel(
 
     fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
+    fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
@@ -172,6 +176,7 @@ class StampRallyEditViewModel(
                             stampRally = updatedStampRally,
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
+                            tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear).first(),
                         )
                     }
                 }

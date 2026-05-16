@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
@@ -29,6 +29,7 @@ class StampRallyHistoryViewModel(
     dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: TagAutocomplete,
+    artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val stampRallyId: String,
 ) : ViewModel() {
@@ -42,6 +43,8 @@ class StampRallyHistoryViewModel(
         .mapLatest(StampRallyHistoryEntryWithDiff::calculateDiffs)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
+
+    val tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear)
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 

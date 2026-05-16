@@ -21,6 +21,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_action_save_tooltip
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
@@ -66,6 +67,7 @@ object StampRallyAddScreen {
             seriesPredictions = viewModel::seriesPredictions,
             merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
+            tablePredictions = viewModel::tablePredictions,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
@@ -81,6 +83,7 @@ object StampRallyAddScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: () -> Unit,
@@ -161,6 +164,7 @@ object StampRallyAddScreen {
                             seriesPredictions = seriesPredictions,
                             merchById = merchById,
                             merchPredictions = merchPredictions,
+                            tablePredictions = tablePredictions,
                             seriesImage = seriesImage,
                         )
                     },

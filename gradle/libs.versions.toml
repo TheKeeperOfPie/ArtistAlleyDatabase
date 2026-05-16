@@ -85,7 +85,7 @@ whyoleg-cryptography = "0.6.0"
 xml-util = "1.0.0-rc2"
 
 [libraries]
-aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }      # Material 3 UI
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidx-annotation" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidx-browser" }

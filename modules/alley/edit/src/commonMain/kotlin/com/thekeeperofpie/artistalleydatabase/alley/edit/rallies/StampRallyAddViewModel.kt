@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
@@ -27,6 +28,7 @@ class StampRallyAddViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     val tagAutocomplete: TagAutocomplete,
+    val artistTableAutocomplete: ArtistTableAutocomplete,
     seriesImagesStore: SeriesImagesStore,
     @Assisted private val dataYear: DataYear,
     @Assisted stampRallyId: String,
@@ -49,6 +51,7 @@ class StampRallyAddViewModel(
 
     fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
+    fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
@@ -84,6 +87,7 @@ class StampRallyAddViewModel(
                             stampRally = databaseEntry,
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
+                            tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear).first(),
                         )
                     }
                 }

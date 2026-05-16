@@ -14,7 +14,7 @@ import dev.zacsweers.metro.SingleIn
 @Inject
 class FormTagAutocomplete(
     applicationScope: ApplicationScope,
-    private val dispatchers: CustomDispatchers,
+    dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
     merchEntryDao: MerchEntryDao,
 ) : TagAutocomplete(

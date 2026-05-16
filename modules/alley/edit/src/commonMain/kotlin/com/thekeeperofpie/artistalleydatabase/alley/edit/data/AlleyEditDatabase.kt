@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
@@ -75,6 +76,16 @@ class AlleyEditDatabase(
     suspend fun loadMerch(): Map<String, MerchInfo> {
         return (merchEntryDao.getMerch().map { it.toMerchInfo() } + remoteDatabase.loadMerch())
             .associateBy { it.name }
+    }
+
+    suspend fun loadTables(dataYear: DataYear): List<ArtistTable> = when (dataYear) {
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025,
+            -> emptyList()
+        DataYear.ANIME_EXPO_2026 -> artistEntryDao.getTables(dataYear)
     }
 
     suspend fun saveArtist(

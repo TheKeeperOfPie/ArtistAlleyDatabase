@@ -250,7 +250,15 @@ internal object AlleyFormBackend {
             } else {
                 Uuid.parse(after.id)
             }
-            after.copy(id = finalizedId.toString())
+            val tables = after.tables.let {
+                val afterBooth = afterArtist.booth
+                if (afterBooth == null || it.contains(afterBooth)) {
+                    it
+                } else {
+                    it + afterBooth
+                }
+            }
+            after.copy(id = finalizedId.toString(), tables = tables)
         }
 
         val updatedStampRallyFormEntries = finalizedStampRallies.mapNotNull { after ->
