@@ -16,6 +16,7 @@ kotlin {
             listOf(
                 "-Xexpect-actual-classes",
                 "-Xjspecify-annotations=strict",
+                "-Xcontext-parameters",
             )
         )
         optIn.addAll(
