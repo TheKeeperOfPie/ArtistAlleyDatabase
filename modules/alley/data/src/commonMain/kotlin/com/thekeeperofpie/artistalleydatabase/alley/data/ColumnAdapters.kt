@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.data
 
 import app.cash.sqldelight.ColumnAdapter
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.json.Json
@@ -183,5 +183,9 @@ object ColumnAdapters {
             override fun encode(value: SeriesSource) = value.name
         },
         synonymsAdapter = listStringAdapter,
+    )
+
+    val stampRallySeriesConnectionAdapter = StampRallySeriesConnection.Adapter(
+        dataYearAdapter = dataYearAdapter,
     )
 }

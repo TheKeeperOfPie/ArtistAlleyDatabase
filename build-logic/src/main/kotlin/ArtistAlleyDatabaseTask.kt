@@ -1,4 +1,3 @@
-
 import ImageUtils.parseScaledImageWidthHeight
 import Utils.createEditDatabase
 import app.cash.sqldelight.Query
@@ -201,9 +200,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             }
 
                             trackStage("StampRallyConnections") {
-                                buildStampRallyConnections(
-                                    database
-                                )
+                                buildStampRallyConnections(database)
                             }
 
                             val artistTagConnections = trackStage("ArtistConnections") {
@@ -313,6 +310,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                     "stampRallyEntry2023_fts",
                                     "stampRallyEntry2024_fts",
                                     "stampRallyEntry2025_fts",
+                                    "stampRallyEntryAnimeExpo2026_fts",
                                     "seriesEntry_fts",
                                     "merchEntry_fts",
                                 )
@@ -1156,7 +1154,32 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .map { StampRallyArtistConnection(stampRallyId = stampRallyId, artistId = it.id) }
                 .forEach(database.mutationQueries::insertArtistConnection)
             it.series
-                .map { StampRallySeriesConnection(stampRallyId = stampRallyId, seriesId = it) }
+                .map {
+                    StampRallySeriesConnection(
+                        stampRallyId = stampRallyId,
+                        seriesId = it,
+                        dataYear = DataYear.ANIME_EXPO_2025,
+                    )
+                }
+                .forEach(database.mutationQueries::insertStampRallySeriesConnection)
+        }
+        database.stampRallyEntryAnimeExpo2026Queries.getAllEntries().executeAsList().forEach {
+            val stampRallyId = it.id
+            it.tables
+                .mapNotNull {
+                    database.artistEntryAnimeExpo2026Queries.getEntriesByBooth(it)
+                        .executeAsOneOrNull()
+                }
+                .map { StampRallyArtistConnection(stampRallyId = stampRallyId, artistId = it.id) }
+                .forEach(database.mutationQueries::insertArtistConnection)
+            it.series
+                .map {
+                    StampRallySeriesConnection(
+                        stampRallyId = stampRallyId,
+                        seriesId = it,
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                    )
+                }
                 .forEach(database.mutationQueries::insertStampRallySeriesConnection)
         }
     }

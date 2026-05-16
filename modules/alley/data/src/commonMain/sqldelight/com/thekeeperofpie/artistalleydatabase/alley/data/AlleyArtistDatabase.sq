@@ -383,6 +383,7 @@ CREATE TABLE
     IF NOT EXISTS stampRallySeriesConnection (
         stampRallyId TEXT NOT NULL,
         seriesId TEXT NOT NULL,
+        dataYear TEXT AS DataYear NOT NULL,
         PRIMARY KEY (stampRallyId, seriesId)
     );
 

@@ -41,6 +41,7 @@ class StampRallySortFilterController(
     val settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
     private val allowHideFavorited: Boolean,
+    private val showUnconfirmedOption: Boolean,
 ) {
     val sortOption = settings.stampRalliesSortOption
     val sortAscending = settings.stampRalliesSortAscending
@@ -151,12 +152,12 @@ class StampRallySortFilterController(
         )
     )
 
-    private val sections = listOf(
+    private val sections = listOfNotNull(
         sortSection,
         seriesAutocompleteSection.section,
         totalCostSection,
         prizeLimitSection,
-        showUnconfirmedSection,
+        showUnconfirmedSection.takeIf { showUnconfirmedOption },
         advancedSection,
     )
 

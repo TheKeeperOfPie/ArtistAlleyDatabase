@@ -81,6 +81,17 @@ if (PULL_REMOTE) {
             }
         }
 
+    dataDir.resolve("inputs/stampRallies")
+        .apply { mkdirs() }
+        .resolve("animeExpo2026.sql")
+        .writer()
+        .use { writer ->
+            editExportFile.useLines {
+                it.filter { it.contains("\"stampRallyEntryAnimeExpo2026\"") }
+                    .forEach(writer::appendLine)
+            }
+        }
+
     dataDir.resolve("inputs/tags")
         .apply { mkdirs() }
         .resolve("tags.sql")

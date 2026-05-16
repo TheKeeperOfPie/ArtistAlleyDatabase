@@ -104,6 +104,7 @@ class FavoritesViewModel(
         settings = settings,
         savedStateHandle = savedStateHandle,
         allowHideFavorited = false,
+        showUnconfirmedOption = true,
     )
 
     val artistSearchState = SearchScreen.State(

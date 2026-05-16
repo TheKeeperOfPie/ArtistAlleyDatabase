@@ -255,7 +255,7 @@ object StampRallyDetailsScreen {
             }
 
             val prize = entry.stampRally.prize
-            if (prize != null) {
+            if (!prize.isNullOrBlank()) {
                 item("stampRallyPrize") {
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SelectionContainer {

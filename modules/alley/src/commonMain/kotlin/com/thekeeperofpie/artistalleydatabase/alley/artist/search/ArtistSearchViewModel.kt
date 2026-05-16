@@ -197,11 +197,13 @@ class ArtistSearchViewModel(
         ReadOnlyStateFlow(false)
     } else {
         year.mapLatest {
-            // TODO: Add 2026 support
-            if (it == DataYear.ANIME_EXPO_2025) {
-                seriesEntryDao.hasRallies(lockedSeries)
-            } else {
-                false
+            when (it) {
+                DataYear.ANIME_EXPO_2023,
+                DataYear.ANIME_EXPO_2024,
+                DataYear.ANIME_NYC_2024,
+                DataYear.ANIME_NYC_2025,
+                    -> false
+                else -> seriesEntryDao.hasRallies(it, lockedSeries)
             }
         }
             .flowOn(dispatchers.io)

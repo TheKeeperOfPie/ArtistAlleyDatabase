@@ -356,8 +356,8 @@ class SeriesEntryDao(
         ).awaitAsList().map { it.toSeriesInfo() }
     }
 
-    suspend fun hasRallies(series: String) = seriesDao().getRallyCount(series)
-        .awaitAsOne() > 0
+    suspend fun hasRallies(dataYear: DataYear, series: String) =
+        seriesDao().getRallyCount(dataYear, series).awaitAsOne() > 0
 
     suspend fun getSeries() = seriesDao().getSeries().awaitAsList()
 

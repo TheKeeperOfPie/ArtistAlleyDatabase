@@ -89,4 +89,4 @@ AND (artistSeriesConnection.yearFlags & 512) != 0;
 
 getRallyCount:
 SELECT COUNT(*) FROM stampRallySeriesConnection
-WHERE seriesId = :seriesId;
+WHERE dataYear = :dataYear AND seriesId = :seriesId;
