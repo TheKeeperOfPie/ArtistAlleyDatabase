@@ -23,7 +23,7 @@ class AlleyWikipediaApi(private val networkClient: NetworkClient) {
     }
 
     private val requestUrl =
-        "https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&pilicense=any&origin=*&format=json&pageids="
+        "https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&pilicense=any&pithumbsize=240&origin=*&format=json&pageids="
 
     suspend fun getMediaImages(mediaIds: Collection<String>) = try {
         networkClient.httpClient
@@ -35,7 +35,7 @@ class AlleyWikipediaApi(private val networkClient: NetworkClient) {
             ?.filterValues { it.thumbnail?.source != null }
             ?.mapValues { it.value.thumbnail?.source!! }
             .orEmpty()
-    } catch (ignored: Throwable) {
+    } catch (_: Throwable) {
         emptyMap()
     }
 

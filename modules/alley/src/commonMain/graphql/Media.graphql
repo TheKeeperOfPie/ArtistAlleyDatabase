@@ -3,7 +3,7 @@ query MediaImages($ids: [Int]!, $page: Int!) {
         media(id_in: $ids) {
             id
             coverImage {
-                medium
+                large
             }
         }
     }

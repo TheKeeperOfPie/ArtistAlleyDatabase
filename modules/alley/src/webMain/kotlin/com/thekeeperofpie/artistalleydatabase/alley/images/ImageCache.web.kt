@@ -14,20 +14,12 @@ import kotlinx.coroutines.launch
 import org.w3c.fetch.Request
 import org.w3c.workers.Cache
 import org.w3c.workers.CacheQueryOptions
-import kotlin.collections.Collection
-import kotlin.collections.filter
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
-import kotlin.collections.map
-import kotlin.collections.mutableListOf
-import kotlin.collections.plusAssign
 import kotlin.js.JsArray
 import kotlin.js.get
 import kotlin.js.length
-import kotlin.time.Clock
 
 // Must keep in sync with ServiceWorker.kt
-private const val MEDIA_IMAGE_CACHE = "media-image-v1"
+private const val MEDIA_IMAGE_CACHE = "media-image-v2"
 
 @SingleIn(AppScope::class)
 @Inject
@@ -50,7 +42,6 @@ actual class ImageCache(
     }
 
     private suspend fun prune() {
-        val now = Clock.System.now()
         val cache = cache()
         val keys = cache.keys().await<JsArray<Request>>()
         var index = 0
