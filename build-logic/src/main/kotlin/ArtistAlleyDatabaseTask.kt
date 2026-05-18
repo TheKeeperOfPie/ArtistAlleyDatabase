@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -151,6 +152,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     .use {
                         withContext(it.asCoroutineDispatcher()) {
                             trackStage("VerifySeries") { verifySeries(database) }
+                            trackStage("FixLegacySeriesSources") {
+                                fixLegacySeriesSources(database)
+                            }
 
                             val artistChangelog =
                                 trackStage("ArtistChangelog") { addArtistChangelog(database) }
@@ -819,6 +823,26 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             fandom = { it.fandom },
             updateImages = MutationQueries::updateStampRallyAnimeExpo2025Images,
         )
+    }
+
+    // Coerces AniList series source to match their aniListType
+    private fun fixLegacySeriesSources(database: BuildLogicEditDatabase) {
+        database.transaction {
+            val mutationQueries = database.mutationQueries
+            database.seriesQueries.getSeries()
+                .executeAsList()
+                .asSequence()
+                .filter { it.source == null || it.source == SeriesSource.NONE }
+                .filter { it.aniListType != null }
+                .forEach {
+                    val source = when (it.aniListType) {
+                        "ANIME" -> SeriesSource.ANIME
+                        "MANGA" -> SeriesSource.MANGA
+                        else -> it.source
+                    }
+                    mutationQueries.insertSeries(it.copy(source = source))
+                }
+        }
     }
 
     private fun findArtistImages(

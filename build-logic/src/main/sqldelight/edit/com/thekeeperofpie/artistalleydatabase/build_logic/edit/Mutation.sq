@@ -9,6 +9,10 @@ VALUES ?;
 getSeries:
 SELECT * FROM seriesEntry;
 
+insertSeries:
+INSERT OR REPLACE INTO seriesEntry
+VALUES ?;
+
 insertArtistConnection:
 INSERT OR REPLACE INTO stampRallyArtistConnection
 VALUES ?;
