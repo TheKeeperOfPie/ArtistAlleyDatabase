@@ -120,6 +120,7 @@
     <string name="alley_edit_series_header_canonical">Series</string>
     <string name="alley_edit_series_header_type">Type</string>
     <string name="alley_edit_series_header_type_aniList">AniList</string>
+    <string name="alley_edit_series_header_type_tmdb">TMDB</string>
     <string name="alley_edit_series_header_type_wikipedia">Wikipedia</string>
     <string name="alley_edit_series_header_type_other">Other</string>
     <string name="alley_edit_series_header_notes">Notes</string>
@@ -132,6 +133,8 @@
     <string name="alley_edit_series_header_title_preferred">Preferred</string>
     <string name="alley_edit_series_header_synonyms">Synonyms</string>
     <string name="alley_edit_series_header_wikipedia_id">Wikipedia ID</string>
+    <string name="alley_edit_series_header_tmdb_id">TMDB ID</string>
+    <string name="alley_edit_series_header_tmdb_type">TMDB Type</string>
     <string name="alley_edit_series_header_external_link">External link</string>
     <string name="alley_edit_series_header_uuid">UUID</string>
 
@@ -170,6 +173,10 @@
     <string name="alley_edit_aniList_type_none" />
     <string name="alley_edit_aniList_type_anime">Anime</string>
     <string name="alley_edit_aniList_type_manga">Manga</string>
+
+    <string name="alley_edit_tmdb_type_none" />
+    <string name="alley_edit_tmdb_type_tv">TV</string>
+    <string name="alley_edit_tmdb_type_movie">Movie</string>
 
     <string name="alley_edit_artist_status_unknown">Unknown</string>
     <string name="alley_edit_artist_status_unknown_description">Status not known, either a parsing error, in prod where the column is wiped, or from a historical year where this data is not available</string>

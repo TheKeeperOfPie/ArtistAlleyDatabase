@@ -12,4 +12,5 @@ object AlleyUtils {
     const val contactLinkX = BuildKonfig.contactLinkX
     const val prodImagesUrl = BuildKonfig.prodImagesUrl
     const val serverUrl = BuildKonfig.serverUrl
+    const val tmdbApiKey = BuildKonfig.tmdbApiKey
 }

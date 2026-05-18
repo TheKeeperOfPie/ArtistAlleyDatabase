@@ -1,4 +1,3 @@
-
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
@@ -24,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
 import kotlinx.serialization.json.Json
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -270,6 +270,13 @@ internal object Utils {
                     override fun encode(value: SeriesSource) = value.name
                 },
                 synonymsAdapter = listStringAdapter,
+                tmdbTypeAdapter = object : ColumnAdapter<TmdbType, String> {
+                    override fun decode(databaseValue: String) =
+                        TmdbType.entries.find { it.name == databaseValue }
+                            ?: TmdbType.TV
+
+                    override fun encode(value: TmdbType) = value.name
+                },
             ),
             stampRallySeriesConnectionAdapter = StampRallySeriesConnection.Adapter(
                 dataYearAdapter = dataYearAdapter,

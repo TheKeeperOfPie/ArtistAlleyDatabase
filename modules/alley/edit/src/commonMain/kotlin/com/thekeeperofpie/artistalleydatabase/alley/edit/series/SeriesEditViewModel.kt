@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
@@ -81,6 +82,32 @@ class SeriesEditViewModel(
             initialValue(
                 initialSeries?.wikipediaId?.toString(),
                 SeriesColumn.WIKIPEDIA_ID
+            )
+        },
+        tmdbId = savedStateHandle.saveable(
+            key = "tmdbId",
+            saver = EntryForm2.SingleTextState.Saver,
+        ) {
+            initialValue(
+                initialSeries?.tmdbId,
+                SeriesColumn.TMDB_ID
+            )
+        },
+        tmdbType = savedStateHandle.saveable(
+            key = "tmdbType",
+            saver = EntryForm2.DropdownState.Saver,
+        ) {
+            val index = initialSeries?.tmdbType?.let(TmdbType.entries::indexOf)
+                ?: TmdbType.NONE.ordinal
+            EntryForm2.DropdownState(
+                initialSelectedIndex = index,
+                initialLockState = if (index == TmdbType.NONE.ordinal ||
+                    editInfo?.seriesColumn == SeriesColumn.TMDB_TYPE
+                ) {
+                    EntryLockState.UNLOCKED
+                } else {
+                    EntryLockState.LOCKED
+                }
             )
         },
         source = savedStateHandle.saveable(
@@ -177,6 +204,8 @@ class SeriesEditViewModel(
         val aniListId = state.aniListId.value.text.toString()
         val aniListType = AniListType.entries[state.aniListType.selectedIndex]
         val wikipediaId = state.wikipediaId.value.text.toString()
+        val tmdbId = state.tmdbId.value.text.toString()
+        val tmdbType = TmdbType.entries[state.tmdbType.selectedIndex]
         val source = SeriesSource.entries[state.source.selectedIndex]
         val titlePreferred = state.titlePreferred.value.text.toString()
         val titleEnglish = state.titleEnglish.value.text.toString()
@@ -191,6 +220,8 @@ class SeriesEditViewModel(
             aniListId = aniListId.ifBlank { null }?.toLong(),
             aniListType = aniListType,
             wikipediaId = wikipediaId.ifBlank { null }?.toLong(),
+            tmdbId = tmdbId,
+            tmdbType = tmdbType.takeIf { it != TmdbType.NONE },
             source = source,
             titlePreferred = titlePreferred,
             titleEnglish = titleEnglish,
@@ -252,6 +283,15 @@ class SeriesEditViewModel(
                     updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
                     updatedSeriesInfo.wikipediaId == null -> "must have a Wikipedia ID"
                     updatedSeriesInfo.link.isNullOrBlank() -> "must have a Wikipedia or external link"
+                    else -> null
+                }
+            SeriesType.TMDB ->
+                when {
+                    updatedSeriesInfo.aniListId != null -> "cannot have an AniList ID"
+                    updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
+                    updatedSeriesInfo.wikipediaId != null -> "cannot have a Wikipedia ID"
+                    updatedSeriesInfo.tmdbId == null -> "must have a TMDB ID"
+                    updatedSeriesInfo.tmdbType == TmdbType.NONE -> "must have a TMDB type"
                     else -> null
                 }
             SeriesType.OTHER ->

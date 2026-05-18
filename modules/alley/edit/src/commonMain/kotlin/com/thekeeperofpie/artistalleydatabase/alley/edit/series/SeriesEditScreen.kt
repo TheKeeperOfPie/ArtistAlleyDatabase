@@ -61,6 +61,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_native
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_preferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_romaji
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_tmdb_id
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_tmdb_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_uuid
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_wikipedia_id
@@ -84,6 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.OpenInNe
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Save
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OneTimeEffect
@@ -136,6 +139,11 @@ object SeriesEditScreen {
                 SeriesColumn.TITLE_PREFERRED -> state.titlePreferred.focusRequester
                 SeriesColumn.SYNONYMS -> state.synonymsValue.focusRequester
                 SeriesColumn.WIKIPEDIA_ID -> state.wikipediaId.focusRequester
+                SeriesColumn.TMDB_ID -> state.tmdbId.focusRequester
+                SeriesColumn.TMDB_TYPE -> {
+                    state.tmdbType.expanded = true
+                    state.tmdbType.focusRequester
+                }
                 SeriesColumn.EXTERNAL_LINK -> state.link.focusRequester
                 SeriesColumn.UUID -> state.uuid.focusRequester
             }?.requestFocus()
@@ -209,10 +217,13 @@ object SeriesEditScreen {
                     if (seriesType == null) {
                         AllForm(state, modifier)
                     } else {
-                        when (seriesType.selectedIndex) {
-                            0 -> AniListForm(state, modifier)
-                            1 -> WikipediaForm(state, modifier)
-                            else -> OtherForm(state, modifier) // TODO
+                        when (SeriesType.entries.getOrNull(seriesType.selectedIndex)) {
+                            SeriesType.ANILIST -> AniListForm(state, modifier)
+                            SeriesType.TMDB -> TmdbForm(state, modifier)
+                            SeriesType.WIKIPEDIA -> WikipediaForm(state, modifier)
+                            SeriesType.OTHER,
+                            null,
+                                -> OtherForm(state, modifier)
                         }
                     }
                 }
@@ -372,6 +383,48 @@ object SeriesEditScreen {
                 state = state.wikipediaId,
                 headerText = { Text(stringResource(Res.string.alley_edit_series_header_wikipedia_id)) },
                 inputTransformation = InputTransformation.digits(),
+            )
+
+            SharedFooter(state)
+        }
+    }
+
+    @Composable
+    private fun TmdbForm(state: State, modifier: Modifier = Modifier) {
+        EntryForm2(
+            focusState = EntryForm2.rememberFocusState(
+                listOf(
+                    state.id,
+                    state.uuid,
+                    state.tmdbId,
+                    state.tmdbType,
+                    state.source,
+                    state.titleEnglish,
+                    state.titleRomaji,
+                    state.titleNative,
+                    state.titlePreferred,
+                    state.synonymsValue,
+                    state.link,
+                    state.notes,
+                )
+            ),
+            modifier = modifier
+        ) {
+            SharedHeader(state)
+
+            SingleTextSection(
+                state = state.tmdbId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_tmdb_id)) },
+                inputTransformation = InputTransformation.digits(),
+            )
+
+            DropdownSection(
+                state = state.tmdbType,
+                headerText = {
+                    Text(stringResource(Res.string.alley_edit_series_header_tmdb_type))
+                },
+                options = TmdbType.entries,
+                optionToText = { stringResource(it.textRes) },
             )
 
             SharedFooter(state)
@@ -607,6 +660,8 @@ object SeriesEditScreen {
         val aniListId: EntryForm2.SingleTextState,
         val aniListType: EntryForm2.DropdownState,
         val wikipediaId: EntryForm2.SingleTextState,
+        val tmdbId: EntryForm2.SingleTextState,
+        val tmdbType: EntryForm2.DropdownState,
         val source: EntryForm2.DropdownState,
         val titleEnglish: EntryForm2.SingleTextState,
         val titleRomaji: EntryForm2.SingleTextState,

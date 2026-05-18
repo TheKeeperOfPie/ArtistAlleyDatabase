@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -12,6 +13,8 @@ data class SeriesInfo(
     val aniListId: Long?,
     val aniListType: AniListType,
     val wikipediaId: Long?,
+    val tmdbId: String?,
+    val tmdbType: TmdbType?,
     val source: SeriesSource,
     val titlePreferred: String,
     val titleEnglish: String,
@@ -21,6 +24,18 @@ data class SeriesInfo(
     val link: String?,
     val faked: Boolean = false,
 ) {
+    val resolvedLink = when {
+        link != null -> link
+        tmdbId != null -> when (tmdbType) {
+            TmdbType.NONE -> null
+            TmdbType.TV -> "https://themoviedb.org/tv/$tmdbId"
+            TmdbType.MOVIE -> "https://themoviedb.org/movie/$tmdbId"
+            null -> null
+        }
+        wikipediaId != null -> "https://en.wikipedia.org/?curid=$wikipediaId"
+        else -> null
+    }
+
     companion object {
         fun fake(id: String) = SeriesInfo(
             id = id,
@@ -29,6 +44,8 @@ data class SeriesInfo(
             aniListId = null,
             aniListType = AniListType.NONE,
             wikipediaId = null,
+            tmdbId = null,
+            tmdbType = null,
             source = SeriesSource.NONE,
             titlePreferred = id,
             titleEnglish = id,

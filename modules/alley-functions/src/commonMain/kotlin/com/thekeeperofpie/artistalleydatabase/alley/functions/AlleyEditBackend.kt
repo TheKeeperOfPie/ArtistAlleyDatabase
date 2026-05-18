@@ -1171,6 +1171,8 @@ object AlleyEditBackend {
         aniListId = aniListId,
         aniListType = aniListType.takeUnless { it == AniListType.NONE }?.name,
         wikipediaId = wikipediaId,
+        tmdbId = tmdbId,
+        tmdbType = tmdbType,
         source = source,
         titlePreferred = titlePreferred,
         titleEnglish = titleEnglish,

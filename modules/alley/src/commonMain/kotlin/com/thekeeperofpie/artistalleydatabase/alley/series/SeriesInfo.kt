@@ -9,6 +9,8 @@ fun SeriesInfo.toImageInfo() = SeriesImageInfo(
     uuid = uuid,
     aniListId = aniListId,
     wikipediaId = wikipediaId,
+    tmdbId = tmdbId,
+    tmdbType = tmdbType,
 )
 
 fun SeriesInfo.name(languageOption: AniListLanguageOption) = when (languageOption) {

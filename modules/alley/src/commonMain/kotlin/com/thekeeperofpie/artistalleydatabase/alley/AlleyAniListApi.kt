@@ -30,7 +30,7 @@ class AlleyAniListApi(networkClient: NetworkClient) {
     suspend fun getMediaImages(mediaIds: Collection<Int>) =
         mediaIds
             .chunked(25)
-            .map {mediaIds ->
+            .map { mediaIds ->
                 client.query(MediaImagesQuery(mediaIds)).execute().data?.page?.media
                     ?.filter { it?.id != null && it.coverImage?.large != null }
                     ?.associate { it!!.id to it.coverImage?.large!! }

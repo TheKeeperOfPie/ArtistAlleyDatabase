@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
 import kotlinx.serialization.json.Json
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -183,6 +184,13 @@ object ColumnAdapters {
             override fun encode(value: SeriesSource) = value.name
         },
         synonymsAdapter = listStringAdapter,
+        tmdbTypeAdapter = object : ColumnAdapter<TmdbType, String> {
+            override fun decode(databaseValue: String) =
+                TmdbType.entries.find { it.name == databaseValue }
+                    ?: TmdbType.TV
+
+            override fun encode(value: TmdbType) = value.name
+        },
     )
 
     val stampRallySeriesConnectionAdapter = StampRallySeriesConnection.Adapter(

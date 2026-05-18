@@ -36,6 +36,8 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             aniListId = null,
             aniListType = AniListType.NONE,
             wikipediaId = null,
+            tmdbId = null,
+            tmdbType = null,
             source = SeriesSource.NONE,
             titlePreferred = id,
             titleEnglish = id,

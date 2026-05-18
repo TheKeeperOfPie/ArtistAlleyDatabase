@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
+import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -101,15 +103,26 @@ fun SeriesRow(
     ) {
         favoritesButton?.invoke()
 
-        AsyncImage(
-            model = image(),
-            null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxHeight()
-                .width(56.dp)
-                .height(80.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-        )
+        Box {
+            AsyncImage(
+                model = image(),
+                null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxHeight()
+                    .width(56.dp)
+                    .height(80.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+
+            if (series?.tmdbId != null && series.tmdbType != null) {
+                Icon(
+                    imageVector = Logo.TMDB.icon,
+                    contentDescription = null,
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                        .padding(2.dp)
+                )
+            }
+        }
 
         // For highlighting tag that needs resolution in edit app
         if (series?.faked == true && showUnknownIndicator) {
@@ -166,7 +179,7 @@ fun SeriesRow(
             )
         }
 
-        val link = series?.link
+        val link = series?.resolvedLink
         if (link != null) {
             TooltipIconButton(
                 icon = Icons.Default.Link,

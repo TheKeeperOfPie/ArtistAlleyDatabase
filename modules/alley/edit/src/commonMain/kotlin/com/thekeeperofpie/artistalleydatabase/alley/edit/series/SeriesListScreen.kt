@@ -179,6 +179,14 @@ internal object SeriesListScreen {
                             value = row?.wikipediaId,
                             modifier = modifier
                         )
+                        SeriesColumn.TMDB_ID -> FieldText(
+                            value = row?.tmdbId,
+                            modifier = modifier
+                        )
+                        SeriesColumn.TMDB_TYPE -> FieldText(
+                            value = row?.tmdbType?.textRes?.let { stringResource(it) },
+                            modifier = modifier
+                        )
                         SeriesColumn.EXTERNAL_LINK -> {
                             val link = row?.link
                             Text(

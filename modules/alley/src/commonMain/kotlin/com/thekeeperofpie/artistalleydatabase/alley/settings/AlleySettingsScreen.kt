@@ -178,6 +178,12 @@ private fun Header(onOpenLibraries: () -> Unit) {
                     withStyle(typography.labelMedium.toSpanStyle()) {
                         append("Some ANYC data also provided by ${BuildKonfig.authorAnycHistoricalOneName} who has since been removed from the project")
                     }
+
+                    append("\n\n")
+
+                    withStyle(typography.labelMedium.toSpanStyle()) {
+                        append("This product uses the TMDB API but is not endorsed or certified by TMDB.")
+                    }
                 }
             }
             Text(
