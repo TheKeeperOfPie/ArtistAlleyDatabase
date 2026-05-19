@@ -110,9 +110,10 @@ class SeriesImagesStore(
         return series.mapNotNull {
             val imageUrl = when {
                 it.aniListId != null -> allAniListImages[it.aniListId.toString()]
-                it.wikipediaId != null -> allWikipediaImages[it.wikipediaId.toString()]
-                it.tmdbId != null -> allTmdbImages[it.tmdbId]
+                it.openLibraryId != null -> "https://covers.openlibrary.org/b/OLID/${it.openLibraryId}-M.jpg"
                 it.steamId != null -> "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${it.steamId}/library_600x900.jpg"
+                it.tmdbId != null -> allTmdbImages[it.tmdbId]
+                it.wikipediaId != null -> allWikipediaImages[it.wikipediaId.toString()]
                 else -> null
             } ?: return@mapNotNull null
             it.id to imageUrl

@@ -191,6 +191,10 @@ internal object SeriesListScreen {
                             value = row?.steamId,
                             modifier = modifier
                         )
+                        SeriesColumn.OPEN_LIBRARY_ID -> FieldText(
+                            value = row?.openLibraryId,
+                            modifier = modifier
+                        )
                         SeriesColumn.EXTERNAL_LINK -> {
                             val link = row?.link
                             Text(

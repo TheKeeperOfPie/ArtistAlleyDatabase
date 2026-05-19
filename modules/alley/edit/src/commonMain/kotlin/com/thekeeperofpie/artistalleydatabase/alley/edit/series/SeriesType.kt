@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.series
 
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_type_aniList
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_type_open_library
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_type_other
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_type_steam
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_type_tmdb
@@ -10,6 +11,7 @@ import org.jetbrains.compose.resources.StringResource
 
 internal enum class SeriesType(val textRes: StringResource) {
     ANILIST(Res.string.alley_edit_series_header_type_aniList),
+    OPEN_LIBRARY(Res.string.alley_edit_series_header_type_open_library),
     STEAM(Res.string.alley_edit_series_header_type_steam),
     TMDB(Res.string.alley_edit_series_header_type_tmdb),
     WIKIPEDIA(Res.string.alley_edit_series_header_type_wikipedia),

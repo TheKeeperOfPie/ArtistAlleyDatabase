@@ -55,6 +55,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_canonical
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_external_link
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_open_library_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_source_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_steam_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_synonyms
@@ -146,6 +147,7 @@ object SeriesEditScreen {
                     state.tmdbType.focusRequester
                 }
                 SeriesColumn.STEAM_ID -> state.steamId.focusRequester
+                SeriesColumn.OPEN_LIBRARY_ID -> state.openLibraryId.focusRequester
                 SeriesColumn.EXTERNAL_LINK -> state.link.focusRequester
                 SeriesColumn.UUID -> state.uuid.focusRequester
             }?.requestFocus()
@@ -221,6 +223,7 @@ object SeriesEditScreen {
                     } else {
                         when (SeriesType.entries.getOrNull(seriesType.selectedIndex)) {
                             SeriesType.ANILIST -> AniListForm(state, modifier)
+                            SeriesType.OPEN_LIBRARY -> OpenLibraryForm(state, modifier)
                             SeriesType.STEAM -> SteamForm(state, modifier)
                             SeriesType.TMDB -> TmdbForm(state, modifier)
                             SeriesType.WIKIPEDIA -> WikipediaForm(state, modifier)
@@ -266,6 +269,7 @@ object SeriesEditScreen {
                     state.uuid,
                     state.aniListId,
                     state.aniListType,
+                    state.openLibraryId,
                     state.steamId,
                     state.tmdbId,
                     state.tmdbType,
@@ -306,8 +310,14 @@ object SeriesEditScreen {
             )
 
             SingleTextSection(
+                state = state.openLibraryId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_open_library_id)) },
+            )
+
+            SingleTextSection(
                 state = state.steamId,
                 headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_id)) },
+                inputTransformation = InputTransformation.digits(),
             )
 
             SingleTextSection(
@@ -483,6 +493,37 @@ object SeriesEditScreen {
                 state = state.steamId,
                 headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_id)) },
                 inputTransformation = InputTransformation.digits(),
+            )
+
+            SharedFooter(state)
+        }
+    }
+
+    @Composable
+    private fun OpenLibraryForm(state: State, modifier: Modifier = Modifier) {
+        EntryForm2(
+            focusState = EntryForm2.rememberFocusState(
+                listOf(
+                    state.id,
+                    state.uuid,
+                    state.openLibraryId,
+                    state.source,
+                    state.titleEnglish,
+                    state.titleRomaji,
+                    state.titleNative,
+                    state.titlePreferred,
+                    state.synonymsValue,
+                    state.link,
+                    state.notes,
+                )
+            ),
+            modifier = modifier
+        ) {
+            SharedHeader(state)
+
+            SingleTextSection(
+                state = state.openLibraryId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_open_library_id)) },
             )
 
             SharedFooter(state)
@@ -717,10 +758,11 @@ object SeriesEditScreen {
         val uuid: EntryForm2.SingleTextState,
         val aniListId: EntryForm2.SingleTextState,
         val aniListType: EntryForm2.DropdownState,
-        val wikipediaId: EntryForm2.SingleTextState,
+        val openLibraryId: EntryForm2.SingleTextState,
+        val steamId: EntryForm2.SingleTextState,
         val tmdbId: EntryForm2.SingleTextState,
         val tmdbType: EntryForm2.DropdownState,
-        val steamId: EntryForm2.SingleTextState,
+        val wikipediaId: EntryForm2.SingleTextState,
         val source: EntryForm2.DropdownState,
         val titleEnglish: EntryForm2.SingleTextState,
         val titleRomaji: EntryForm2.SingleTextState,

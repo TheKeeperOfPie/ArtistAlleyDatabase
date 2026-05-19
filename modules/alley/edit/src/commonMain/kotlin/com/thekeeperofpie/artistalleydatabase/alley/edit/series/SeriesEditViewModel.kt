@@ -75,13 +75,22 @@ class SeriesEditViewModel(
                 }
             )
         },
-        wikipediaId = savedStateHandle.saveable(
-            key = "wikipediaId",
+        openLibraryId = savedStateHandle.saveable(
+            key = "openLibraryId",
             saver = EntryForm2.SingleTextState.Saver,
         ) {
             initialValue(
-                initialSeries?.wikipediaId?.toString(),
-                SeriesColumn.WIKIPEDIA_ID
+                initialSeries?.openLibraryId,
+                SeriesColumn.OPEN_LIBRARY_ID
+            )
+        },
+        steamId = savedStateHandle.saveable(
+            key = "steamId",
+            saver = EntryForm2.SingleTextState.Saver,
+        ) {
+            initialValue(
+                initialSeries?.steamId,
+                SeriesColumn.STEAM_ID
             )
         },
         tmdbId = savedStateHandle.saveable(
@@ -110,13 +119,13 @@ class SeriesEditViewModel(
                 }
             )
         },
-        steamId = savedStateHandle.saveable(
-            key = "steamId",
+        wikipediaId = savedStateHandle.saveable(
+            key = "wikipediaId",
             saver = EntryForm2.SingleTextState.Saver,
         ) {
             initialValue(
-                initialSeries?.steamId,
-                SeriesColumn.STEAM_ID
+                initialSeries?.wikipediaId?.toString(),
+                SeriesColumn.WIKIPEDIA_ID
             )
         },
         source = savedStateHandle.saveable(
@@ -216,6 +225,7 @@ class SeriesEditViewModel(
         val tmdbId = state.tmdbId.value.text.toString()
         val tmdbType = TmdbType.entries[state.tmdbType.selectedIndex]
         val steamId = state.steamId.value.text.toString()
+        val openLibraryId = state.openLibraryId.value.text.toString()
         val source = SeriesSource.entries[state.source.selectedIndex]
         val titlePreferred = state.titlePreferred.value.text.toString()
         val titleEnglish = state.titleEnglish.value.text.toString()
@@ -233,6 +243,7 @@ class SeriesEditViewModel(
             tmdbId = tmdbId.ifBlank { null },
             tmdbType = tmdbType.takeIf { it != TmdbType.NONE },
             steamId = steamId.ifBlank { null },
+            openLibraryId = openLibraryId.ifBlank { null },
             source = source,
             titlePreferred = titlePreferred,
             titleEnglish = titleEnglish,
@@ -294,6 +305,18 @@ class SeriesEditViewModel(
                     updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
                     updatedSeriesInfo.wikipediaId == null -> "must have a Wikipedia ID"
                     updatedSeriesInfo.link.isNullOrBlank() -> "must have a Wikipedia or external link"
+                    else -> null
+                }
+            SeriesType.OPEN_LIBRARY ->
+                when {
+                    updatedSeriesInfo.aniListId != null -> "cannot have an AniList ID"
+                    updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
+                    updatedSeriesInfo.wikipediaId != null -> "cannot have a Wikipedia ID"
+                    updatedSeriesInfo.tmdbId != null -> "cannot have a TMDB ID"
+                    (updatedSeriesInfo.tmdbType
+                        ?: TmdbType.NONE) != TmdbType.NONE -> "cannot have a TMDB type"
+                    updatedSeriesInfo.steamId != null -> "cannot have a Steam ID"
+                    updatedSeriesInfo.openLibraryId == null -> "must have an Open Library ID"
                     else -> null
                 }
             SeriesType.STEAM ->

@@ -9,6 +9,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_external_link
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_image
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_open_library_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_source_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_steam_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_synonyms
@@ -42,6 +43,7 @@ enum class SeriesColumn(
     TMDB_ID(text = Res.string.alley_edit_series_header_tmdb_id),
     TMDB_TYPE(text = Res.string.alley_edit_series_header_tmdb_type),
     STEAM_ID(text = Res.string.alley_edit_series_header_steam_id),
+    OPEN_LIBRARY_ID(text = Res.string.alley_edit_series_header_open_library_id),
     EXTERNAL_LINK(text = Res.string.alley_edit_series_header_external_link),
     UUID(text = Res.string.alley_edit_series_header_uuid),
 }

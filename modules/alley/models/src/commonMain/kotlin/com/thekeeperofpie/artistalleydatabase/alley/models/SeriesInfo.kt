@@ -16,6 +16,7 @@ data class SeriesInfo(
     val tmdbId: String?,
     val tmdbType: TmdbType?,
     val steamId: String?,
+    val openLibraryId: String?,
     val source: SeriesSource,
     val titlePreferred: String,
     val titleEnglish: String,
@@ -35,6 +36,7 @@ data class SeriesInfo(
         }
         wikipediaId != null -> "https://en.wikipedia.org/?curid=$wikipediaId"
         steamId != null -> "https://store.steampowered.com/app/$steamId"
+        openLibraryId != null -> "https://openlibrary.org/books/$openLibraryId"
         else -> null
     }
 
@@ -49,6 +51,7 @@ data class SeriesInfo(
             tmdbId = null,
             tmdbType = null,
             steamId = null,
+            openLibraryId = null,
             source = SeriesSource.NONE,
             titlePreferred = id,
             titleEnglish = id,

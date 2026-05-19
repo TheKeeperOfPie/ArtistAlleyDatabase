@@ -15,6 +15,7 @@ fun SeriesEntry.toSeriesInfo() = SeriesInfo(
     tmdbId = tmdbId,
     tmdbType = tmdbType,
     steamId = steamId,
+    openLibraryId = openLibraryId,
     source = source ?: SeriesSource.NONE,
     titlePreferred = titlePreferred,
     titleEnglish = titleEnglish,

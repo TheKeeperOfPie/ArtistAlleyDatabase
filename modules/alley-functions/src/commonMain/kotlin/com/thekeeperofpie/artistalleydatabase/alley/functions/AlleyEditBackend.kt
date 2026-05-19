@@ -1174,6 +1174,7 @@ object AlleyEditBackend {
         tmdbId = tmdbId,
         tmdbType = tmdbType,
         steamId = steamId,
+        openLibraryId = openLibraryId,
         source = source,
         titlePreferred = titlePreferred,
         titleEnglish = titleEnglish,
