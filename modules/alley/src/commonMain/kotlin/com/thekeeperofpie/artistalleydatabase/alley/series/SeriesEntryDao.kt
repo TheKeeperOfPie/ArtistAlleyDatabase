@@ -149,13 +149,6 @@ class SeriesEntryDao(
             }
             .mapLatest { it?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(id) }
 
-    suspend fun getSeriesByIds(ids: List<String>): List<SeriesInfo> {
-        if (ids.isEmpty()) return emptyList()
-        val series =
-            seriesDao().getSeriesByIds(ids).awaitAsList().associate { it.id to it.toSeriesInfo() }
-        return ids.map { series[it] ?: fallbackSeriesWithUserData(it).series }
-    }
-
     suspend fun observeSeriesByIdsWithUserData(ids: List<String>): Flow<List<SeriesWithUserData>> {
         if (ids.isEmpty()) return flowOf(emptyList())
         return seriesDao().getSeriesByIdsWithUserData(ids).asFlow()

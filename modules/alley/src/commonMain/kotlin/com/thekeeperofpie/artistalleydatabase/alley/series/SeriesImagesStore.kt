@@ -34,6 +34,9 @@ class SeriesImagesStore(
             .mapNotNull {
                 val imageUrl =
                     it.aniListId?.toString()?.let { images[ImageType.ANILIST.name]?.get(it) }
+                        ?: it.openLibraryId?.let { images[ImageType.OPEN_LIBRARY.name]?.get(it) }
+                        ?: it.steamId?.let { images[ImageType.STEAM.name]?.get(it) }
+                        ?: it.tmdbId?.let { images[ImageType.TMDB.name]?.get(it) }
                         ?: it.wikipediaId?.toString()
                             ?.let { images[ImageType.WIKIPEDIA.name]?.get(it) }
                         ?: return@mapNotNull null
@@ -48,18 +51,26 @@ class SeriesImagesStore(
         val cachedAniListImages = imageEntryDao
             .getImages(mediaImageIds.aniListIds.values, ImageType.ANILIST)
             .associateBy { it.imageId }
-        val cachedWikipediaImages = imageEntryDao
-            .getImages(mediaImageIds.wikipediaIds.values, ImageType.WIKIPEDIA)
+        val cachedOpenLibraryImages = imageEntryDao
+            .getImages(mediaImageIds.openLibraryIds.values, ImageType.OPEN_LIBRARY)
+            .associateBy { it.imageId }
+        val cachedSteamImages = imageEntryDao
+            .getImages(mediaImageIds.steamIds.values, ImageType.STEAM)
             .associateBy { it.imageId }
         val cachedTmdbImages = imageEntryDao
-            .getImages(mediaImageIds.tmdbIds.values.map { it.first }, ImageType.WIKIPEDIA)
+            .getImages(mediaImageIds.tmdbIds.values.map { it.first }, ImageType.TMDB)
+            .associateBy { it.imageId }
+        val cachedWikipediaImages = imageEntryDao
+            .getImages(mediaImageIds.wikipediaIds.values, ImageType.WIKIPEDIA)
             .associateBy { it.imageId }
 
         val seriesIdsToImages = series.mapNotNull {
             val imageUrl = when {
                 it.aniListId != null -> cachedAniListImages[it.aniListId.toString()]?.url
-                it.wikipediaId != null -> cachedWikipediaImages[it.wikipediaId.toString()]?.url
+                it.openLibraryId != null -> cachedOpenLibraryImages[it.openLibraryId]?.url
+                it.steamId != null -> cachedSteamImages[it.steamId]?.url
                 it.tmdbId != null -> cachedTmdbImages[it.tmdbId]?.url
+                it.wikipediaId != null -> cachedWikipediaImages[it.wikipediaId.toString()]?.url
                 else -> null
             } ?: return@mapNotNull null
             it.id to imageUrl
@@ -67,8 +78,10 @@ class SeriesImagesStore(
 
         return CacheResult(
             aniListImages = cachedAniListImages,
-            wikipediaImages = cachedWikipediaImages,
+            steamImages = cachedSteamImages,
+            openLibraryImages = cachedOpenLibraryImages,
             tmdbImages = cachedTmdbImages,
+            wikipediaImages = cachedWikipediaImages,
             seriesIdsToImages = seriesIdsToImages,
         )
     }
@@ -78,40 +91,55 @@ class SeriesImagesStore(
         cacheResult: CacheResult,
     ): Map<String, String> {
         val mediaImageIds = series.toImageIds()
-        val (cachedAniListImages, cachedWikipediaImages, cachedTmdbImages, _) = cacheResult
         val now = Clock.System.now()
         val missingAniListIds = mediaImageIds.aniListIds.values.filter {
-            cachedAniListImages[it]?.takeUnless {
+            cacheResult.aniListImages[it]?.takeUnless {
+                (now - Instant.fromEpochSeconds(it.createdAtSecondsUtc)) > 7.days
+            } == null
+        }
+
+        val missingOpenLibraryIds = mediaImageIds.openLibraryIds.values.filter {
+            // Cache expiry doesn't matter since these are hardcoded
+            cacheResult.openLibraryImages[it] == null
+        }
+
+        val missingSteamIds = mediaImageIds.steamIds.values.filter {
+            // Cache expiry doesn't matter since these are hardcoded
+            cacheResult.steamImages[it] == null
+        }
+
+        val missingTmdbIds = mediaImageIds.tmdbIds.values.filter {
+            cacheResult.tmdbImages[it.first]?.takeUnless {
                 (now - Instant.fromEpochSeconds(it.createdAtSecondsUtc)) > 7.days
             } == null
         }
 
         val missingWikipediaIds = mediaImageIds.wikipediaIds.values.filter {
-            cachedWikipediaImages[it]?.takeUnless {
+            cacheResult.wikipediaImages[it]?.takeUnless {
                 (now - Instant.fromEpochSeconds(it.createdAtSecondsUtc)) > 7.days
             } == null
         }
 
-        val missingTmdbIds = mediaImageIds.tmdbIds.values.filter {
-            cachedTmdbImages[it.first]?.takeUnless {
-                (now - Instant.fromEpochSeconds(it.createdAtSecondsUtc)) > 7.days
-            } == null
-        }
-
-        val allAniListImages = cachedAniListImages.mapValues { it.value.url }
+        val allAniListImages = cacheResult.aniListImages.mapValues { it.value.url }
             .plus(loadAniListImages(now, missingAniListIds))
 
-        val allWikipediaImages = cachedWikipediaImages.mapValues { it.value.url }
-            .plus(loadWikipediaImages(now, missingWikipediaIds))
+        val allOpenLibraryImages = cacheResult.openLibraryImages.mapValues { it.value.url }
+            .plus(loadOpenLibraryImages(now, missingOpenLibraryIds))
 
-        val allTmdbImages = cachedTmdbImages.mapValues { it.value.url }
+        val allSteamImages = cacheResult.steamImages.mapValues { it.value.url }
+            .plus(loadSteamImages(now, missingSteamIds))
+
+        val allTmdbImages = cacheResult.tmdbImages.mapValues { it.value.url }
             .plus(loadTmdbImages(now, missingTmdbIds))
+
+        val allWikipediaImages = cacheResult.wikipediaImages.mapValues { it.value.url }
+            .plus(loadWikipediaImages(now, missingWikipediaIds))
 
         return series.mapNotNull {
             val imageUrl = when {
                 it.aniListId != null -> allAniListImages[it.aniListId.toString()]
-                it.openLibraryId != null -> "https://covers.openlibrary.org/b/OLID/${it.openLibraryId}-M.jpg"
-                it.steamId != null -> "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${it.steamId}/library_600x900.jpg"
+                it.openLibraryId != null -> allOpenLibraryImages[it.openLibraryId]
+                it.steamId != null -> allSteamImages[it.steamId]
                 it.tmdbId != null -> allTmdbImages[it.tmdbId]
                 it.wikipediaId != null -> allWikipediaImages[it.wikipediaId.toString()]
                 else -> null
@@ -181,27 +209,74 @@ class SeriesImagesStore(
         return newTmdbImages.mapKeys { it.key }
     }
 
+    private suspend fun loadOpenLibraryImages(now: Instant, ids: List<String>): Map<String, String> {
+        if (ids.isEmpty()) return emptyMap()
+        val newOpenLibraryImages = ids.associateWith {
+            "https://covers.openlibrary.org/b/OLID/$it-M.jpg"
+        }
+        imageEntryDao.insertImageEntries(newOpenLibraryImages.map {
+            ImageEntry(
+                imageId = it.key,
+                type = ImageType.OPEN_LIBRARY.name,
+                url = it.value,
+                createdAtSecondsUtc = now.epochSeconds,
+            )
+        })
+        try {
+            imageCache.cache(newOpenLibraryImages.values)
+        } catch (_: Throwable) {
+        }
+        return newOpenLibraryImages.mapKeys { it.key }
+    }
+
+    private suspend fun loadSteamImages(now: Instant, ids: List<String>): Map<String, String> {
+        if (ids.isEmpty()) return emptyMap()
+        val newSteamImages = ids.associateWith {
+            "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/$it/library_600x900.jpg"
+        }
+        imageEntryDao.insertImageEntries(newSteamImages.map {
+            ImageEntry(
+                imageId = it.key,
+                type = ImageType.STEAM.name,
+                url = it.value,
+                createdAtSecondsUtc = now.epochSeconds,
+            )
+        })
+        try {
+            imageCache.cache(newSteamImages.values)
+        } catch (_: Throwable) {
+        }
+        return newSteamImages.mapKeys { it.key }
+    }
+
     private fun List<SeriesImageInfo>.toImageIds() =
         MediaImageIds(
             aniListIds = filter { it.aniListId != null }
                 .associate { it.id to it.aniListId!!.toString() },
-            wikipediaIds = filter { it.wikipediaId != null }
-                .associate { it.id to it.wikipediaId!!.toString() },
+            openLibraryIds = filter { it.openLibraryId != null }
+                .associate { it.id to it.openLibraryId!! },
+            steamIds = filter { it.steamId != null }
+                .associate { it.id to it.steamId!! },
             tmdbIds = filter { it.tmdbId != null && it.tmdbType != null && it.tmdbType != TmdbType.NONE }
                 .associate { it.id to (it.tmdbId!! to it.tmdbType!!) },
+            wikipediaIds = filter { it.wikipediaId != null }
+                .associate { it.id to it.wikipediaId!!.toString() },
         )
-
 
     data class CacheResult(
         val aniListImages: Map<String, GetImageEntries>,
-        val wikipediaImages: Map<String, GetImageEntries>,
+        val openLibraryImages: Map<String, GetImageEntries>,
+        val steamImages: Map<String, GetImageEntries>,
         val tmdbImages: Map<String, GetImageEntries>,
+        val wikipediaImages: Map<String, GetImageEntries>,
         val seriesIdsToImages: Map<String, String>,
     )
 
     data class MediaImageIds(
         val aniListIds: Map<String, String>,
-        val wikipediaIds: Map<String, String>,
+        val openLibraryIds: Map<String, String>,
+        val steamIds: Map<String, String>,
         val tmdbIds: Map<String, Pair<String, TmdbType>>,
+        val wikipediaIds: Map<String, String>,
     )
 }

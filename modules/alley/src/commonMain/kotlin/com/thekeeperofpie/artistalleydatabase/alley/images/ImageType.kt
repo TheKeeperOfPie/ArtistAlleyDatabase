@@ -4,4 +4,6 @@ enum class ImageType {
     ANILIST,
     WIKIPEDIA,
     TMDB,
+    STEAM,
+    OPEN_LIBRARY,
 }
