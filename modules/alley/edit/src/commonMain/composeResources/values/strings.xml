@@ -120,6 +120,7 @@
     <string name="alley_edit_series_header_canonical">Series</string>
     <string name="alley_edit_series_header_type">Type</string>
     <string name="alley_edit_series_header_type_aniList">AniList</string>
+    <string name="alley_edit_series_header_type_steam">Steam</string>
     <string name="alley_edit_series_header_type_tmdb">TMDB</string>
     <string name="alley_edit_series_header_type_wikipedia">Wikipedia</string>
     <string name="alley_edit_series_header_type_other">Other</string>
@@ -135,6 +136,7 @@
     <string name="alley_edit_series_header_wikipedia_id">Wikipedia ID</string>
     <string name="alley_edit_series_header_tmdb_id">TMDB ID</string>
     <string name="alley_edit_series_header_tmdb_type">TMDB Type</string>
+    <string name="alley_edit_series_header_steam_id">Steam ID</string>
     <string name="alley_edit_series_header_external_link">External link</string>
     <string name="alley_edit_series_header_uuid">UUID</string>
 

@@ -15,6 +15,7 @@ data class SeriesInfo(
     val wikipediaId: Long?,
     val tmdbId: String?,
     val tmdbType: TmdbType?,
+    val steamId: String?,
     val source: SeriesSource,
     val titlePreferred: String,
     val titleEnglish: String,
@@ -33,6 +34,7 @@ data class SeriesInfo(
             null -> null
         }
         wikipediaId != null -> "https://en.wikipedia.org/?curid=$wikipediaId"
+        steamId != null -> "https://store.steampowered.com/app/$steamId"
         else -> null
     }
 
@@ -46,6 +48,7 @@ data class SeriesInfo(
             wikipediaId = null,
             tmdbId = null,
             tmdbType = null,
+            steamId = null,
             source = SeriesSource.NONE,
             titlePreferred = id,
             titleEnglish = id,

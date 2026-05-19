@@ -11,6 +11,7 @@ fun SeriesInfo.toImageInfo() = SeriesImageInfo(
     wikipediaId = wikipediaId,
     tmdbId = tmdbId,
     tmdbType = tmdbType,
+    steamId = steamId,
 )
 
 fun SeriesInfo.name(languageOption: AniListLanguageOption) = when (languageOption) {

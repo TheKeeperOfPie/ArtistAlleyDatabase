@@ -1173,6 +1173,7 @@ object AlleyEditBackend {
         wikipediaId = wikipediaId,
         tmdbId = tmdbId,
         tmdbType = tmdbType,
+        steamId = steamId,
         source = source,
         titlePreferred = titlePreferred,
         titleEnglish = titleEnglish,

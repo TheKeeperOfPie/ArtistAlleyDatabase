@@ -14,6 +14,7 @@ fun SeriesEntry.toSeriesInfo() = SeriesInfo(
     wikipediaId = wikipediaId,
     tmdbId = tmdbId,
     tmdbType = tmdbType,
+    steamId = steamId,
     source = source ?: SeriesSource.NONE,
     titlePreferred = titlePreferred,
     titleEnglish = titleEnglish,

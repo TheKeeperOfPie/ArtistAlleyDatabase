@@ -401,6 +401,7 @@ CREATE TABLE
         wikipediaId INTEGER,
         tmdbId TEXT DEFAULT NULL,
         tmdbType TEXT AS TmdbType DEFAULT NULL,
+        steamId TEXT DEFAULT NULL,
         source TEXT AS SeriesSource,
         titlePreferred TEXT NOT NULL COLLATE NOCASE,
         titleEnglish TEXT NOT NULL COLLATE NOCASE,

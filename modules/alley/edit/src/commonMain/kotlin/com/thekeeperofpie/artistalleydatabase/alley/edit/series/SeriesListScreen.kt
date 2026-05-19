@@ -187,6 +187,10 @@ internal object SeriesListScreen {
                             value = row?.tmdbType?.textRes?.let { stringResource(it) },
                             modifier = modifier
                         )
+                        SeriesColumn.STEAM_ID -> FieldText(
+                            value = row?.steamId,
+                            modifier = modifier
+                        )
                         SeriesColumn.EXTERNAL_LINK -> {
                             val link = row?.link
                             Text(

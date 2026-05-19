@@ -110,6 +110,15 @@ class SeriesEditViewModel(
                 }
             )
         },
+        steamId = savedStateHandle.saveable(
+            key = "steamId",
+            saver = EntryForm2.SingleTextState.Saver,
+        ) {
+            initialValue(
+                initialSeries?.steamId,
+                SeriesColumn.STEAM_ID
+            )
+        },
         source = savedStateHandle.saveable(
             key = "source",
             saver = EntryForm2.DropdownState.Saver,
@@ -206,6 +215,7 @@ class SeriesEditViewModel(
         val wikipediaId = state.wikipediaId.value.text.toString()
         val tmdbId = state.tmdbId.value.text.toString()
         val tmdbType = TmdbType.entries[state.tmdbType.selectedIndex]
+        val steamId = state.steamId.value.text.toString()
         val source = SeriesSource.entries[state.source.selectedIndex]
         val titlePreferred = state.titlePreferred.value.text.toString()
         val titleEnglish = state.titleEnglish.value.text.toString()
@@ -220,8 +230,9 @@ class SeriesEditViewModel(
             aniListId = aniListId.ifBlank { null }?.toLong(),
             aniListType = aniListType,
             wikipediaId = wikipediaId.ifBlank { null }?.toLong(),
-            tmdbId = tmdbId,
+            tmdbId = tmdbId.ifBlank { null },
             tmdbType = tmdbType.takeIf { it != TmdbType.NONE },
+            steamId = steamId.ifBlank { null },
             source = source,
             titlePreferred = titlePreferred,
             titleEnglish = titleEnglish,
@@ -285,23 +296,28 @@ class SeriesEditViewModel(
                     updatedSeriesInfo.link.isNullOrBlank() -> "must have a Wikipedia or external link"
                     else -> null
                 }
+            SeriesType.STEAM ->
+                when {
+                    updatedSeriesInfo.aniListId != null -> "cannot have an AniList ID"
+                    updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
+                    updatedSeriesInfo.wikipediaId != null -> "cannot have a Wikipedia ID"
+                    updatedSeriesInfo.tmdbId != null -> "cannot have a TMDB ID"
+                    (updatedSeriesInfo.tmdbType
+                        ?: TmdbType.NONE) != TmdbType.NONE -> "cannot have a TMDB type"
+                    updatedSeriesInfo.steamId == null -> "must have a Steam ID"
+                    else -> null
+                }
             SeriesType.TMDB ->
                 when {
                     updatedSeriesInfo.aniListId != null -> "cannot have an AniList ID"
                     updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
                     updatedSeriesInfo.wikipediaId != null -> "cannot have a Wikipedia ID"
                     updatedSeriesInfo.tmdbId == null -> "must have a TMDB ID"
-                    updatedSeriesInfo.tmdbType == TmdbType.NONE -> "must have a TMDB type"
+                    (updatedSeriesInfo.tmdbType
+                        ?: TmdbType.NONE) == TmdbType.NONE -> "must have a TMDB type"
                     else -> null
                 }
-            SeriesType.OTHER ->
-                when {
-                    updatedSeriesInfo.aniListId != null -> "cannot have an AniList ID"
-                    updatedSeriesInfo.aniListType != AniListType.NONE -> "cannot have an AniList type"
-                    updatedSeriesInfo.wikipediaId != null -> "cannot have a Wikipedia ID"
-                    updatedSeriesInfo.link.isNullOrBlank() -> "must have an external link"
-                    else -> null
-                }
+            SeriesType.OTHER -> null
         }
         if (typeErrorMessage != null) {
             return@withContext BackendRequest.SeriesSave.Response.Failed("Series $typeErrorMessage")

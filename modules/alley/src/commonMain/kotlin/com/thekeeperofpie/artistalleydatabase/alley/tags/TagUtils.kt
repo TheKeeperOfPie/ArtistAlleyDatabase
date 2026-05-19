@@ -38,6 +38,7 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             wikipediaId = null,
             tmdbId = null,
             tmdbType = null,
+            steamId = null,
             source = SeriesSource.NONE,
             titlePreferred = id,
             titleEnglish = id,

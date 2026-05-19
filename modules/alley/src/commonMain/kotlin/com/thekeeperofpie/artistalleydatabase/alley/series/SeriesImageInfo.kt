@@ -10,4 +10,5 @@ data class SeriesImageInfo(
     val wikipediaId: Long?,
     val tmdbId: String?,
     val tmdbType: TmdbType?,
+    val steamId: String?,
 )

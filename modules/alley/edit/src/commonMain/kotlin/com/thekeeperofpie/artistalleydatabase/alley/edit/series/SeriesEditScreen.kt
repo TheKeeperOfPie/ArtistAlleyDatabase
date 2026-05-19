@@ -56,6 +56,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_external_link
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_source_type
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_steam_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_synonyms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_english
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_native
@@ -144,6 +145,7 @@ object SeriesEditScreen {
                     state.tmdbType.expanded = true
                     state.tmdbType.focusRequester
                 }
+                SeriesColumn.STEAM_ID -> state.steamId.focusRequester
                 SeriesColumn.EXTERNAL_LINK -> state.link.focusRequester
                 SeriesColumn.UUID -> state.uuid.focusRequester
             }?.requestFocus()
@@ -219,6 +221,7 @@ object SeriesEditScreen {
                     } else {
                         when (SeriesType.entries.getOrNull(seriesType.selectedIndex)) {
                             SeriesType.ANILIST -> AniListForm(state, modifier)
+                            SeriesType.STEAM -> SteamForm(state, modifier)
                             SeriesType.TMDB -> TmdbForm(state, modifier)
                             SeriesType.WIKIPEDIA -> WikipediaForm(state, modifier)
                             SeriesType.OTHER,
@@ -263,6 +266,9 @@ object SeriesEditScreen {
                     state.uuid,
                     state.aniListId,
                     state.aniListType,
+                    state.steamId,
+                    state.tmdbId,
+                    state.tmdbType,
                     state.wikipediaId,
                     state.source,
                     state.titleEnglish,
@@ -297,6 +303,26 @@ object SeriesEditScreen {
                 options = AniListType.entries,
                 optionToText = { stringResource(it.textRes) },
                 errorText = { aniListTypeErrorMessage },
+            )
+
+            SingleTextSection(
+                state = state.steamId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_id)) },
+            )
+
+            SingleTextSection(
+                state = state.tmdbId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_tmdb_id)) },
+                inputTransformation = InputTransformation.digits(),
+            )
+
+            DropdownSection(
+                state = state.tmdbType,
+                headerText = {
+                    Text(stringResource(Res.string.alley_edit_series_header_tmdb_type))
+                },
+                options = TmdbType.entries,
+                optionToText = { stringResource(it.textRes) },
             )
 
             SingleTextSection(
@@ -425,6 +451,38 @@ object SeriesEditScreen {
                 },
                 options = TmdbType.entries,
                 optionToText = { stringResource(it.textRes) },
+            )
+
+            SharedFooter(state)
+        }
+    }
+
+    @Composable
+    private fun SteamForm(state: State, modifier: Modifier = Modifier) {
+        EntryForm2(
+            focusState = EntryForm2.rememberFocusState(
+                listOf(
+                    state.id,
+                    state.uuid,
+                    state.steamId,
+                    state.source,
+                    state.titleEnglish,
+                    state.titleRomaji,
+                    state.titleNative,
+                    state.titlePreferred,
+                    state.synonymsValue,
+                    state.link,
+                    state.notes,
+                )
+            ),
+            modifier = modifier
+        ) {
+            SharedHeader(state)
+
+            SingleTextSection(
+                state = state.steamId,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_id)) },
+                inputTransformation = InputTransformation.digits(),
             )
 
             SharedFooter(state)
@@ -662,6 +720,7 @@ object SeriesEditScreen {
         val wikipediaId: EntryForm2.SingleTextState,
         val tmdbId: EntryForm2.SingleTextState,
         val tmdbType: EntryForm2.DropdownState,
+        val steamId: EntryForm2.SingleTextState,
         val source: EntryForm2.DropdownState,
         val titleEnglish: EntryForm2.SingleTextState,
         val titleRomaji: EntryForm2.SingleTextState,
