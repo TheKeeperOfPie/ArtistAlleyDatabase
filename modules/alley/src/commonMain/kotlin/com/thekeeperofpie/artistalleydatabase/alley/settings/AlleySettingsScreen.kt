@@ -117,6 +117,7 @@ internal fun AlleySettingsScreen(
         ) {
             when (it.id) {
                 "header" -> Header(onOpenLibraries)
+                "footer" -> Footer()
                 "export" -> ExportSection(onOpenExport)
                 "import" -> ImportSection(
                     state = { viewModel.state.importState },
@@ -172,18 +173,6 @@ private fun Header(onOpenLibraries: () -> Unit) {
                             append(BuildKonfig.authorAnycThreeName)
                         }
                     }
-
-                    append("\n\n")
-
-                    withStyle(typography.labelMedium.toSpanStyle()) {
-                        append("Some ANYC data also provided by ${BuildKonfig.authorAnycHistoricalOneName} who has since been removed from the project")
-                    }
-
-                    append("\n\n")
-
-                    withStyle(typography.labelMedium.toSpanStyle()) {
-                        append("This product uses the TMDB API but is not endorsed or certified by TMDB.")
-                    }
                 }
             }
             Text(
@@ -194,7 +183,7 @@ private fun Header(onOpenLibraries: () -> Unit) {
 
             Column(
                 horizontalAlignment = Alignment.End,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Row {
                     val uriHandler = LocalUriHandler.current
@@ -226,6 +215,74 @@ private fun Header(onOpenLibraries: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun Footer() {
+    OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth()) {
+        val colorScheme = MaterialTheme.colorScheme
+        val typography = MaterialTheme.typography
+        val text = remember(colorScheme, typography) {
+            buildAnnotatedString {
+                withStyle(typography.labelLarge.toSpanStyle()) {
+                    append("Additional information")
+                }
+
+                append("\n\n")
+
+                withStyle(typography.labelMedium.toSpanStyle()) {
+                    append("Some ANYC data provided by ${BuildKonfig.authorAnycHistoricalOneName} who has since been removed from the project.")
+                }
+
+                append("\n\n")
+
+                withStyle(typography.labelMedium.toSpanStyle()) {
+                    append("Images are powered by ")
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url("https://anilist.co")) {
+                            append("AniList")
+                        }
+                    }
+                    append(", ")
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url("https://openlibrary.org")) {
+                            append("Open Library")
+                        }
+                    }
+                    append(", ")
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url("https://store.steampowered.com")) {
+                            append("Steam")
+                        }
+                    }
+                    append(", ")
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url("https://www.themoviedb.org")) {
+                            append("TMDB")
+                        }
+                    }
+                    append(", and ")
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url("https://www.wikipedia.org")) {
+                            append("Wikipedia")
+                        }
+                    }
+                    append(".")
+                }
+
+                append("\n\n")
+
+                withStyle(typography.labelSmall.toSpanStyle()) {
+                    append("This product uses the TMDB API but is not endorsed or certified by TMDB.")
+                }
+            }
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
 
@@ -555,6 +612,12 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
 @Composable
 private fun HeaderPreview() = PreviewDark {
     Header(onOpenLibraries = {})
+}
+
+@Preview
+@Composable
+private fun FooterPreview() = PreviewDark {
+    Footer()
 }
 
 @Preview

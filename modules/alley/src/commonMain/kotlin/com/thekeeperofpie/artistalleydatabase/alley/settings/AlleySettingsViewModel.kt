@@ -70,6 +70,7 @@ class AlleySettingsViewModel(
                 SettingsSection.HorizontalDivider("importDivider", horizontalPadding = 16.dp),
                 SettingsSection.Placeholder("clear"),
                 SettingsSection.Placeholder("faq"),
+                SettingsSection.Placeholder("footer"),
                 SettingsSection.Spacer("bottomSpacer", 80.dp),
             )
         )
