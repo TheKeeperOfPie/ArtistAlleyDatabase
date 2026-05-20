@@ -605,6 +605,21 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
                 append(" channel.")
             }
         )
+
+        HorizontalDivider()
+
+        QuestionAnswer(
+            question = "What about other conventions besides AX or ANYC?",
+            answer = {
+                append("We don't plan to tag any other conventions, but check out ")
+                withStyle(SpanStyle(color = colorScheme.primary)) {
+                    withLink(LinkAnnotation.Url(BuildKonfig.otherConventionsCrossLink)) {
+                        append(BuildKonfig.otherConventionsCrossLink)
+                    }
+                }
+                append(" which is another unaffiliated site that tags conventions.")
+            }
+        )
     }
 }
 
