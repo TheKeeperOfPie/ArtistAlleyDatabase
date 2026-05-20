@@ -15,7 +15,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.collections.set
 
 data class ImageColors(
     val containerColor: Color,
@@ -110,7 +109,7 @@ class ImageColorsState @OptIn(DelicateCoroutinesApi::class) constructor(
                             textColor = swatch.bodyTextColor.copy(alpha = 1f)
                         )
                     }
-                } catch (ignored: Exception) {
+                } catch (_: Exception) {
                 }
             }
         }

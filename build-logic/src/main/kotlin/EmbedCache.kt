@@ -1,3 +1,4 @@
+
 import ImageUtils.parseScaledImageWidthHeight
 import androidx.annotation.ColorInt
 import androidx.compose.ui.graphics.toArgb
@@ -7,6 +8,7 @@ import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.parseInputStream
 import com.kmpalette.color
+import com.kmpalette.from
 import com.kmpalette.palette.graphics.Palette
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.coroutines.CoroutineScope

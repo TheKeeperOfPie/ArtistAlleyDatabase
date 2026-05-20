@@ -5,6 +5,7 @@ import coil3.BitmapImage
 import coil3.Image
 import com.kmpalette.bodyTextColor
 import com.kmpalette.color
+import com.kmpalette.from
 import com.kmpalette.get
 import com.kmpalette.palette.graphics.Palette
 import com.kmpalette.palette.graphics.Target
@@ -19,15 +20,16 @@ actual class PlatformPalette(private val palette: Palette) {
             selectMaxPopulation: Boolean,
         ): PlatformPalette? {
             val bitmap = (image as? BitmapImage)?.bitmap?.asComposeImageBitmap() ?: return null
-            return PlatformPalette(Palette.from(bitmap)
-                .setRegion(
-                    0,
-                    (bitmap.height * heightStartThreshold).toInt(),
-                    (bitmap.width * widthEndThreshold).toInt(),
-                    bitmap.height
-                )
-                .run { if (selectMaxPopulation) clearFilters() else this }
-                .generate()
+            return PlatformPalette(
+                Palette.from(bitmap)
+                    .setRegion(
+                        0,
+                        (bitmap.height * heightStartThreshold).toInt(),
+                        (bitmap.width * widthEndThreshold).toInt(),
+                        bitmap.height
+                    )
+                    .run { if (selectMaxPopulation) clearFilters() else this }
+                    .generate()
             )
         }
     }

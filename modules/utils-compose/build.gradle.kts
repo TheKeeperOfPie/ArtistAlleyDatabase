@@ -64,13 +64,11 @@ kotlin {
         }
         desktopMain {
             dependsOn(androidAndDesktopMain)
-            dependencies {
-                implementation(libs.kmpalette.core)
-            }
         }
         val desktopAndWebMain by getting {
             dependencies {
                 implementation(libs.human.readable)
+                implementation(libs.material.kolor.palette.core)
             }
         }
         webMain {
