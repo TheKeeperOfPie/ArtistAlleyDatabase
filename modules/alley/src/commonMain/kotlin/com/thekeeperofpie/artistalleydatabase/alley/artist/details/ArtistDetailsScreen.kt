@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +36,7 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +55,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_last_updated
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_other_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_portfolio
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series
@@ -74,11 +73,13 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_verifi
 import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_year
+import artistalleydatabase.modules.alley.generated.resources.alley_show_unconfirmed_tags
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
+import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
@@ -96,16 +97,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
-import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.tags.series
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
-import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FiberNew
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
@@ -113,8 +112,8 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Verified
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
@@ -125,6 +124,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.random.Random
 
 @OptIn(ExperimentalLayoutApi::class)
 object ArtistDetailsScreen {
@@ -250,6 +250,26 @@ object ArtistDetailsScreen {
             } catch (_: Throwable) {
             }
         }
+
+        val randomSeed = LocalStableRandomSeed.current
+
+        var seriesConfirmedExpanded by rememberSaveable { mutableStateOf(false) }
+        val seriesConfirmed = seriesConfirmed()
+        val seriesConfirmedRandomizedIndexes = remember(seriesConfirmed) {
+            seriesConfirmed.orEmpty().indices.shuffled(Random(randomSeed))
+        }
+
+        var seriesInferredExpanded by rememberSaveable { mutableStateOf(false) }
+        val seriesInferred = seriesInferred()
+        val seriesInferredRandomizedIndexes = remember(seriesInferred) {
+            seriesInferred.orEmpty().indices.shuffled(Random(randomSeed))
+        }
+
+        val merchConfirmed = entry()?.artist?.merchConfirmed.orEmpty()
+        var showInferred by rememberSaveable(seriesConfirmed, merchConfirmed) {
+            mutableStateOf(seriesConfirmed.isNullOrEmpty() && merchConfirmed.isEmpty())
+        }
+
         DetailsScreen(
             title = {
                 val artist = entry()?.artist
@@ -274,11 +294,11 @@ object ArtistDetailsScreen {
             catalog = catalog,
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
-        ) {
+        ) { columnCount ->
             val artist = entry()?.artist
             val summary = artist?.summary
             if (artist == null) {
-                item("loading") {
+                item("loading", GridUtils.maxSpanFunction) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth()
@@ -287,8 +307,8 @@ object ArtistDetailsScreen {
                     }
                 }
             } else {
-                item("artistName") {
-                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                item("artistName", GridUtils.maxSpanFunction) {
+                    ThemeAwareElevatedCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             SelectableInfoText(
                                 stringResource(Res.string.alley_artist_details_artist_name),
@@ -341,8 +361,8 @@ object ArtistDetailsScreen {
                 }
 
                 if (!summary.isNullOrBlank()) {
-                    item("artistDescription") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistDescription", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             SelectableInfoText(
                                 label = stringResource(Res.string.alley_artist_details_description),
                                 body = summary,
@@ -354,8 +374,8 @@ object ArtistDetailsScreen {
 
                 val socialLinkModels = artist.socialLinkModels
                 if (socialLinkModels.isNotEmpty()) {
-                    item("artistLinks") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistLinks", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_social_links,
                                 contentDescriptionTextRes = Res.string.alley_artist_details_social_links_expand_content_description,
@@ -370,8 +390,8 @@ object ArtistDetailsScreen {
 
                 val storeLinkModels = artist.storeLinkModels
                 if (storeLinkModels.isNotEmpty()) {
-                    item("artistStoreLinks") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistStoreLinks", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_store,
                                 contentDescriptionTextRes = null,
@@ -386,8 +406,8 @@ object ArtistDetailsScreen {
 
                 val portfolioLinks = artist.portfolioLinks
                 if (portfolioLinks.isNotEmpty()) {
-                    item("artistPortfolioLinks") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistPortfolioLinks", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_portfolio,
                                 contentDescriptionTextRes = null,
@@ -403,8 +423,8 @@ object ArtistDetailsScreen {
 
                 val catalogLinks = artist.catalogLinks
                 if (catalogLinks.isNotEmpty()) {
-                    item("artistCatalogLinks") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistCatalogLinks", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_catalog,
                                 contentDescriptionTextRes = null,
@@ -420,8 +440,8 @@ object ArtistDetailsScreen {
 
                 val stampRallies = entry()?.stampRallies
                 if (stampRallies?.isNotEmpty() == true) {
-                    item("artistStampRallies") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistStampRallies", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_stamp_rallies,
                                 contentDescriptionTextRes = null,
@@ -435,101 +455,10 @@ object ArtistDetailsScreen {
                     }
                 }
 
-                val seriesConfirmed = seriesConfirmed()
-                if (seriesConfirmed?.isNotEmpty() != false) {
-                    item("artistSeriesConfirmed") {
-                        val languageOption = LocalLanguageOptionMedia.current
-                        val sorted = remember(seriesConfirmed, languageOption) {
-                            seriesConfirmed?.sortedBy { it.series.name(languageOption) }
-                        }
-                        Confirmed(
-                            confirmed = sorted,
-                            headerTextRes = Res.string.alley_artist_details_series,
-                            forSeries = true,
-                        ) { value, expanded ->
-                            SeriesRow(
-                                data = value,
-                                image = { value?.series?.id?.let { seriesImages()[it] } },
-                                onFavoriteToggle = {
-                                    if (value != null) {
-                                        eventSink(Event.SeriesFavoriteToggle(value, it))
-                                    }
-                                },
-                                onClick = if (expanded) {
-                                    { value?.series?.id?.let { eventSink(Event.OpenSeries(it)) } }
-                                } else null,
-                            )
-                        }
-                    }
-                }
-
-                val seriesInferred = seriesInferred()
-                if (seriesInferred?.isNotEmpty() != false) {
-                    item("artistSeriesInferred") {
-                        val languageOption = LocalLanguageOptionMedia.current
-                        val sorted = remember(seriesInferred, languageOption) {
-                            seriesInferred?.sortedBy { it.series.name(languageOption) }
-                        }
-                        Inferred(
-                            inferred = sorted,
-                            headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
-                            iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
-                            forSeries = true,
-                        ) { value, expanded ->
-                            SeriesRow(
-                                data = value,
-                                image = { value?.series?.id?.let { seriesImages()[it] } },
-                                onFavoriteToggle = {
-                                    if (value != null) {
-                                        eventSink(Event.SeriesFavoriteToggle(value, it))
-                                    }
-                                },
-                                onClick = if (expanded) {
-                                    { value?.series?.id?.let { eventSink(Event.OpenSeries(it)) } }
-                                } else null,
-                            )
-                        }
-                    }
-                }
-
-                val merchConfirmed = artist.merchConfirmed
-                if (merchConfirmed.isNotEmpty()) {
-                    item("artistMerchConfirmed") {
-                        Confirmed(
-                            confirmed = merchConfirmed,
-                            headerTextRes = Res.string.alley_artist_details_merch,
-                        ) { value, expanded ->
-                            MerchRow(
-                                merch = value,
-                                expanded = expanded,
-                                onClick = { value?.let { eventSink(Event.OpenMerch(it)) } },
-                            )
-                        }
-                    }
-                }
-
-                val merchInferred = artist.merchInferred
-                if (merchInferred.isNotEmpty()) {
-                    item("artistMerchInferred") {
-                        Inferred(
-                            inferred = merchInferred,
-                            headerTextRes = Res.string.alley_artist_details_merch_unconfirmed,
-                            iconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
-                        ) { value, expanded ->
-                            MerchRow(
-                                merch = value,
-                                expanded = expanded,
-                                onClick = { value?.let { eventSink(Event.OpenMerch(it)) } },
-                            )
-                        }
-                    }
-                }
-
-
                 val commissionModels = artist.commissionModels
                 if (commissionModels.isNotEmpty()) {
-                    item("artistCommissions") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistCommissions", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_commissions,
                                 contentDescriptionTextRes = null,
@@ -544,8 +473,8 @@ object ArtistDetailsScreen {
 
                 val otherArtists = otherArtists()
                 if (otherArtists.isNotEmpty()) {
-                    item("artistOtherArtists") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistOtherArtists", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_other_artists,
                                 contentDescriptionTextRes = null,
@@ -559,10 +488,109 @@ object ArtistDetailsScreen {
                     }
                 }
 
+                if (seriesConfirmed?.isNotEmpty() != false) {
+                    item(
+                        "artistSeriesConfirmedHeader",
+                        contentType = "ConfirmedHeader",
+                        span = GridUtils.maxSpanFunction,
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.alley_artist_details_series),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.surfaceTint,
+                            modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
+                        )
+                    }
+                    series(
+                        key = "artistSeriesConfirmed",
+                        series = seriesConfirmed.orEmpty(),
+                        image = { seriesImages()[it.series.id] },
+                        columnCount = columnCount,
+                        randomizedIndexes = seriesConfirmedRandomizedIndexes,
+                        expanded = { seriesConfirmedExpanded },
+                        onExpanded = { seriesConfirmedExpanded = true },
+                        onClick = { eventSink(Event.OpenSeries(it.series.id)) },
+                    )
+                }
+
+                if (merchConfirmed.isNotEmpty()) {
+                    item(
+                        "artistMerchConfirmedHeader",
+                        contentType = "ConfirmedHeader",
+                        span = GridUtils.maxSpanFunction,
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.alley_artist_details_merch),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.surfaceTint,
+                            modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
+                        )
+                    }
+                    item("artistMerchConfirmed", GridUtils.maxSpanFunction) {
+                        MerchChips(merchConfirmed, onClick = { eventSink(Event.OpenMerch(it)) })
+                    }
+                }
+
+                if (showInferred) {
+                    if (seriesInferred?.isNotEmpty() != false) {
+                        item(
+                            "artistSeriesInferredHeader",
+                            contentType = "InferredHeader",
+                            span = GridUtils.maxSpanFunction,
+                        ) {
+                            InferredHeader(
+                                headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
+                                iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
+                            )
+                        }
+                        series(
+                            key = "artistSeriesInferred",
+                            series = seriesInferred.orEmpty(),
+                            image = { seriesImages()[it.series.id] },
+                            columnCount = columnCount,
+                            randomizedIndexes = seriesInferredRandomizedIndexes,
+                            expanded = { seriesInferredExpanded },
+                            onExpanded = { seriesInferredExpanded = true },
+                            onClick = { eventSink(Event.OpenSeries(it.series.id)) },
+                        )
+                    }
+
+                    val merchInferred = artist.merchInferred
+                    if (merchInferred.isNotEmpty()) {
+                        item(
+                            "artistMerchInferredHeader",
+                            contentType = "InferredHeader",
+                            span = GridUtils.maxSpanFunction,
+                        ) {
+                            InferredHeader(
+                                headerTextRes = Res.string.alley_artist_details_merch_unconfirmed,
+                                iconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed,
+                            )
+                        }
+                        item("artistMerchInferred", GridUtils.maxSpanFunction) {
+                            MerchChips(merchInferred, onClick = { eventSink(Event.OpenMerch(it)) })
+                        }
+                    }
+                } else {
+                    item("artistShowInferredButton", GridUtils.maxSpanFunction) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            FilledTonalButton(onClick = {
+                                seriesInferredExpanded = true
+                                showInferred = true
+                            }) {
+                                Text(stringResource(Res.string.alley_show_unconfirmed_tags))
+                            }
+                        }
+                    }
+                }
+
                 val notes = artist.notes
                 if (!notes.isNullOrEmpty()) {
-                    item("artistMaintainerNotes") {
-                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    item("artistMaintainerNotes", GridUtils.maxSpanFunction) {
+                        ThemeAwareElevatedCard {
                             SelectableInfoText(
                                 label = stringResource(Res.string.alley_maintainer_notes),
                                 body = notes,
@@ -572,19 +600,16 @@ object ArtistDetailsScreen {
                     }
                 }
 
-                item("artistUserNotes") {
-                    UserNotesText(
-                        state = userNotesTextState,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                item("artistUserNotes", GridUtils.maxSpanFunction) {
+                    UserNotesText(state = userNotesTextState)
                 }
 
-                item("artistFooter") {
+                item("artistFooter", GridUtils.maxSpanFunction) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.animateItem()
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .padding(vertical = 4.dp)
                     ) {
                         val lastEditTime = artist.lastEditTime
                         if (lastEditTime != null) {
@@ -611,13 +636,11 @@ object ArtistDetailsScreen {
                     }
                 }
 
-                item("artistButtons") {
+                item("artistButtons", GridUtils.maxSpanFunction) {
                     FlowRow(
                         horizontalArrangement =
                             Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                        modifier = Modifier.animateItem()
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                        modifier = Modifier.animateItem().fillMaxWidth()
                     ) {
                         // TODO: verifiedArtist check was removed here, re-add as a badge?
                         val entry = entry()
@@ -673,101 +696,52 @@ object ArtistDetailsScreen {
     }
 
     @Composable
-    private fun <T> Confirmed(
-        confirmed: List<T>?,
-        headerTextRes: StringResource,
-        modifier: Modifier = Modifier,
-        forSeries: Boolean = false,
-        item: @Composable (T?, expanded: Boolean) -> Unit,
-    ) {
-        ThemeAwareElevatedCard(modifier = modifier.padding(horizontal = 16.dp)) {
-            expandableListInfoText(
-                labelTextRes = headerTextRes,
-                contentDescriptionTextRes = null,
-                values = confirmed,
-                allowExpand = true,
-                showDividerAbove = false,
-                dividerPadding = PaddingValues(start = if (forSeries) 0.dp else 16.dp),
-                header = {
-                    DetailsSubsectionHeader(
-                        text = stringResource(headerTextRes),
-                        modifier = Modifier.padding(bottom = if (forSeries) 6.dp else 0.dp)
-                    )
-                },
-                item = { value, expanded, _ -> item(value, expanded) },
-            )
-        }
-    }
-
-    @Composable
-    private fun <T> Inferred(
-        inferred: List<T>?,
+    private fun InferredHeader(
         headerTextRes: StringResource,
         iconContentDescriptionTextRes: StringResource,
-        modifier: Modifier = Modifier,
-        forSeries: Boolean = false,
-        item: @Composable (T?, expanded: Boolean) -> Unit,
     ) {
-        ThemeAwareElevatedCard(modifier = modifier.padding(horizontal = 16.dp)) {
-            var showPopup by remember { mutableStateOf(false) }
-            expandableListInfoText(
-                labelTextRes = headerTextRes,
-                contentDescriptionTextRes = null,
-                values = inferred,
-                allowExpand = true,
-                showDividerAbove = false,
-                dividerPadding = PaddingValues(start = if (forSeries) 0.dp else 16.dp),
-                header = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .height(IntrinsicSize.Min)
-                            .clickable(interactionSource = null, indication = null) {
-                                showPopup = !showPopup
-                            }
-                    ) {
-                        Text(
-                            text = stringResource(headerTextRes),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.surfaceTint,
-                            modifier = Modifier
-                                .padding(
-                                    start = 16.dp,
-                                    end = 8.dp,
-                                    top = 10.dp,
-                                    bottom = if (forSeries) 10.dp else 4.dp,
-                                )
-                        )
-
-                        Box {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = stringResource(
-                                    iconContentDescriptionTextRes
-                                ),
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .heightIn(max = 20.dp)
-                                    .padding(top = 6.dp, bottom = if (forSeries) 6.dp else 0.dp)
-                            )
-
-                            if (showPopup) {
-                                Popup(onDismissRequest = { showPopup = false }) {
-                                    Text(
-                                        text = stringResource(Res.string.alley_artist_details_tags_unconfirmed_explanation),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                                            .widthIn(max = 200.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                },
-                item = { value, expanded, _ -> item(value, expanded) },
+        var showPopup by remember { mutableStateOf(false) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .clickable(interactionSource = null, indication = null) {
+                    showPopup = !showPopup
+                }
+        ) {
+            Text(
+                text = stringResource(headerTextRes),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.surfaceTint,
+                modifier = Modifier.padding(vertical = 4.dp)
             )
+
+            Box {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = stringResource(
+                        iconContentDescriptionTextRes
+                    ),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .heightIn(max = 20.dp)
+                        .padding(vertical = 4.dp)
+                )
+
+                if (showPopup) {
+                    Popup(onDismissRequest = { showPopup = false }) {
+                        Text(
+                            text = stringResource(Res.string.alley_artist_details_tags_unconfirmed_explanation),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .widthIn(max = 200.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 

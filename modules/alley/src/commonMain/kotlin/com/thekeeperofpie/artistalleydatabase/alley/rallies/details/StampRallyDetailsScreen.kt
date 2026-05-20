@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -69,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
@@ -201,7 +202,7 @@ object StampRallyDetailsScreen {
         }
     }
 
-    private fun LazyListScope.detailsContent(
+    private fun LazyGridScope.detailsContent(
         entry: StampRallyDetailsViewModel.Entry?,
         series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
@@ -210,7 +211,7 @@ object StampRallyDetailsScreen {
         onClickOpenUri: (String) -> Unit,
     ) {
         if (entry == null) {
-            item("loading") {
+            item("loading", GridUtils.maxSpanFunction) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
@@ -219,7 +220,7 @@ object StampRallyDetailsScreen {
                 }
             }
         } else {
-            item("stampRallyFandom") {
+            item("stampRallyFandom", GridUtils.maxSpanFunction) {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     SelectionContainer {
                         Column {
@@ -235,7 +236,7 @@ object StampRallyDetailsScreen {
 
             val links = entry.stampRally.links
             if (links.isNotEmpty()) {
-                item("stampRallyLinks") {
+                item("stampRallyLinks", GridUtils.maxSpanFunction) {
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         expandableListInfoText(
                             labelTextRes = Res.string.alley_stamp_rally_details_links,
@@ -252,7 +253,7 @@ object StampRallyDetailsScreen {
 
             val prize = entry.stampRally.prize
             if (!prize.isNullOrBlank()) {
-                item("stampRallyPrize") {
+                item("stampRallyPrize", GridUtils.maxSpanFunction) {
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SelectionContainer {
                             Column {
@@ -267,7 +268,7 @@ object StampRallyDetailsScreen {
                 }
             }
 
-            item("stampRallyCostAndPrizes") {
+            item("stampRallyCostAndPrizes", GridUtils.maxSpanFunction) {
                 val stampRally = entry.stampRally
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     val body = run {
@@ -315,7 +316,7 @@ object StampRallyDetailsScreen {
 
             val artists = entry.artists
             if (artists.isNotEmpty()) {
-                item("stampRallyArtists") {
+                item("stampRallyArtists", GridUtils.maxSpanFunction) {
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         expandableListInfoText(
                             labelTextRes = Res.string.alley_stamp_rally_details_artists,
@@ -343,7 +344,7 @@ object StampRallyDetailsScreen {
 
             val otherTables = entry.otherTables
             if (otherTables.isNotEmpty()) {
-                item("stampRallyOtherTables") {
+                item("stampRallyOtherTables", GridUtils.maxSpanFunction) {
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         expandableListInfoText(
                             labelTextRes = Res.string.alley_stamp_rally_details_other_tables,
@@ -360,7 +361,7 @@ object StampRallyDetailsScreen {
 
             val series = series()
             if (series?.isNotEmpty() != false) {
-                item("artistSeries") {
+                item("artistSeries", GridUtils.maxSpanFunction) {
                     val languageOption = LocalLanguageOptionMedia.current
                     val sorted = remember(series, languageOption) {
                         series?.sortedBy { it.series.name(languageOption) }
@@ -404,7 +405,7 @@ object StampRallyDetailsScreen {
 
             val notes = entry.stampRally.notes
             if (!notes.isNullOrEmpty()) {
-                item("stampRallyMaintainerNotes") {
+                item("stampRallyMaintainerNotes", GridUtils.maxSpanFunction) {
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SelectionContainer {
                             Column {
@@ -419,14 +420,14 @@ object StampRallyDetailsScreen {
                 }
             }
 
-            item("stampRallyUserNotes") {
+            item("stampRallyUserNotes", GridUtils.maxSpanFunction) {
                 UserNotesText(
                     state = userNotesTextState,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
 
-            item("stampRallyButtons") {
+            item("stampRallyButtons", GridUtils.maxSpanFunction) {
                 FilledTonalButton(
                     onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
                     modifier = Modifier.fillMaxWidth()

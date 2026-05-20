@@ -144,6 +144,7 @@
 
     <string name="alley_expand_series">Expand series</string>
     <string name="alley_expand_merch">Expand merch</string>
+    <string name="alley_show_unconfirmed_tags">Show unconfirmed tags</string>
 
     <string name="alley_artist_has_commissions">May be doing commissions</string>
     <string name="alley_artist_commission_on_site">On-site</string>

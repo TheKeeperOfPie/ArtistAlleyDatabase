@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,8 +18,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -69,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
@@ -81,6 +85,9 @@ import org.jetbrains.compose.resources.stringResource
 )
 object DetailsScreen {
 
+    private val DETAILS_HORIZONTAL_ARRANGEMENT = Arrangement.spacedBy(8.dp)
+    private val MAX_DETAILS_WIDTH = 440.dp
+
     @Composable
     operator fun invoke(
         title: @Composable () -> Unit,
@@ -89,7 +96,7 @@ object DetailsScreen {
         catalog: () -> LoadingResult<DetailsScreenCatalog>,
         imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
-        content: LazyListScope.() -> Unit,
+        content: LazyGridScope.(columnCount: Int) -> Unit,
     ) {
         Scaffold(
             topBar = {
@@ -121,10 +128,19 @@ object DetailsScreen {
         ) {
             Box(Modifier.padding(it)) {
                 val windowSizeClass = currentWindowSizeClass()
+                val density = LocalDensity.current
+                val bodyTextStyle = MaterialTheme.typography.bodyMediumEmphasized
+                val gridCells = remember(density) {
+                    // Try and fit a significant number of characters in each title for readability
+                    val size = with(density) { (bodyTextStyle.fontSize * 4).toDp() }
+                        .coerceAtLeast(80.dp)
+                    GridCells.Adaptive(size)
+                }
                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     ExpandedLayout(
                         sharedElementId = sharedElementId,
                         catalog = catalog,
+                        gridCells = gridCells,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
                         onShowFallback = { eventSink(Event.ShowFallback) },
                         onAlwaysShowFallback = { eventSink(Event.AlwaysShowFallback) },
@@ -134,6 +150,7 @@ object DetailsScreen {
                     CompactLayout(
                         sharedElementId = sharedElementId,
                         catalog = catalog,
+                        gridCells = gridCells,
                         imagePagerState = imagePagerState,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
                         onShowFallback = { eventSink(Event.ShowFallback) },
@@ -149,10 +166,11 @@ object DetailsScreen {
     private fun ExpandedLayout(
         sharedElementId: Any,
         catalog: () -> LoadingResult<DetailsScreenCatalog>,
+        gridCells: GridCells,
         onClickImage: (imageIndex: Int) -> Unit,
         onShowFallback: () -> Unit,
         onAlwaysShowFallback: () -> Unit,
-        content: LazyListScope.() -> Unit,
+        content: LazyGridScope.(columnCount: Int) -> Unit,
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -166,35 +184,55 @@ object DetailsScreen {
                 (width - 800.dp) / 2
             } else {
                 0.dp
-            }
+            }.coerceAtLeast(16.dp)
             val fallbackYear = catalog.result?.fallbackYear
             val showFallbackImages = catalog.result?.showOutdatedCatalogs
             val showFallbackPrompt = !hasImages && showFallbackImages == false &&
                     fallbackYear != null
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(
-                    start = horizontalContentPadding,
-                    end = horizontalContentPadding,
-                    bottom = 32.dp,
-                ),
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .conditionally(hasImages) { width(400.dp) }
+                    .conditionally(hasImages) { width(MAX_DETAILS_WIDTH) }
                     .conditionally(!hasImages) { fillMaxWidth() }
             ) {
-                item("availableFallbackPrompt") {
-                    if (catalog.loading) {
-                        LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    } else if (showFallbackPrompt) {
-                        LargeAvailableFallbackPrompt(
-                            fallbackYear = fallbackYear,
-                            onShowFallback = onShowFallback,
-                            onAlwaysShowFallback = onAlwaysShowFallback,
-                        )
+                val density = LocalDensity.current
+                val columnCount = remember(gridCells, density, maxWidth, horizontalContentPadding) {
+                    with(gridCells) {
+                        with(density) {
+                            val availableSize = (maxWidth - (horizontalContentPadding * 2)).roundToPx()
+                            val spacing = DETAILS_HORIZONTAL_ARRANGEMENT.spacing.roundToPx()
+                            density.calculateCrossAxisCellSizes(
+                                availableSize = availableSize,
+                                spacing = spacing,
+                            ).size
+                        }
                     }
                 }
-                content()
+
+                LazyVerticalGrid(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = DETAILS_HORIZONTAL_ARRANGEMENT,
+                    contentPadding = PaddingValues(
+                        start = horizontalContentPadding,
+                        end = horizontalContentPadding,
+                        bottom = 64.dp,
+                    ),
+                    columns = gridCells,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item("availableFallbackPrompt", GridUtils.maxSpanFunction) {
+                        if (catalog.loading) {
+                            LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        } else if (showFallbackPrompt) {
+                            LargeAvailableFallbackPrompt(
+                                fallbackYear = fallbackYear,
+                                onShowFallback = onShowFallback,
+                                onAlwaysShowFallback = onAlwaysShowFallback,
+                            )
+                        }
+                    }
+                    content(columnCount)
+                }
             }
             if (hasImages) {
                 Column {
@@ -227,29 +265,47 @@ object DetailsScreen {
     private fun CompactLayout(
         sharedElementId: Any,
         catalog: () -> LoadingResult<DetailsScreenCatalog>,
+        gridCells: GridCells,
         imagePagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
         onShowFallback: () -> Unit,
         onAlwaysShowFallback: () -> Unit,
-        content: LazyListScope.() -> Unit,
+        content: LazyGridScope.(columnCount: Int) -> Unit,
     ) {
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 32.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            item("detailsHeader") {
-                SmallImageHeader(
-                    sharedElementId = sharedElementId,
-                    catalog = catalog,
-                    headerPagerState = imagePagerState,
-                    onClickImage = onClickImage,
-                    onShowFallback = onShowFallback,
-                    onAlwaysShowFallback = onAlwaysShowFallback,
-                )
+        BoxWithConstraints {
+            val density = LocalDensity.current
+            val columnCount = remember(gridCells, density, maxWidth) {
+                with(gridCells) {
+                    with(density) {
+                        val availableSize = (maxWidth - 32.dp).roundToPx()
+                        val spacing = DETAILS_HORIZONTAL_ARRANGEMENT.spacing.roundToPx()
+                        density.calculateCrossAxisCellSizes(
+                            availableSize = availableSize,
+                            spacing = spacing,
+                        ).size
+                    }
+                }
             }
+            LazyVerticalGrid(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = DETAILS_HORIZONTAL_ARRANGEMENT,
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 64.dp),
+                columns = gridCells,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                item("detailsHeader", GridUtils.maxSpanFunction) {
+                    SmallImageHeader(
+                        sharedElementId = sharedElementId,
+                        catalog = catalog,
+                        headerPagerState = imagePagerState,
+                        onClickImage = onClickImage,
+                        onShowFallback = onShowFallback,
+                        onAlwaysShowFallback = onAlwaysShowFallback,
+                    )
+                }
 
-            content()
+                content(columnCount)
+            }
         }
     }
 

@@ -13,6 +13,8 @@ import androidx.compose.ui.graphics.Color
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColorsState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -147,9 +149,12 @@ fun AlleyTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit)
         AppThemeSetting.MIKU -> alleyDarkScheme
     }
 
+    val imageColorsState = rememberImageColorsState()
+
     CompositionLocalProvider(
         LocalAppTheme provides appTheme,
         LocalAlleyColorScheme provides alleyColorScheme,
+        LocalImageColorsState provides imageColorsState,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

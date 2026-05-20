@@ -40,7 +40,7 @@ fun UserNotesText(state: TextFieldState, modifier: Modifier = Modifier) {
                 text = stringResource(Res.string.alley_user_notes),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.surfaceTint,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             )
             Spacer(Modifier.weight(1f))
             IconButton(enabled = state.undoState.canUndo, onClick = { state.undoState.undo() }) {
