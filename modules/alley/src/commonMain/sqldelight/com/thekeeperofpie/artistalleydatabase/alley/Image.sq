@@ -13,3 +13,8 @@ VALUES ?;
 queryUrls:
 SELECT url, createdAtSecondsUtc FROM imageEntry
 WHERE url IN :urls;
+
+deleteStale:
+DELETE FROM imageEntry
+WHERE imageId = :imageId
+AND type = :type;

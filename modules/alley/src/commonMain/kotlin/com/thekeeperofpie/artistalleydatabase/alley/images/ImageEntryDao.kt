@@ -27,7 +27,7 @@ class ImageEntryDao(
 
     suspend fun getImages(ids: Collection<String>, type: ImageType) =
         imageDao()
-            .getImageEntries(ids, type.name)
+            .getImageEntries(ids, type.serializedName)
             .awaitAsList()
 
     suspend fun insertImageEntries(entries: List<ImageEntry>) {
@@ -44,4 +44,8 @@ class ImageEntryDao(
         imageDao().queryUrls(urls)
             .awaitAsList()
             .associate { it.url to Instant.fromEpochSeconds(it.createdAtSecondsUtc) }
+
+    suspend fun deleteStale(imageId: String, type: String) {
+        imageDao().deleteStale(imageId, type)
+    }
 }

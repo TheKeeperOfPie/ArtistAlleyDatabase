@@ -26,24 +26,32 @@ class SeriesImagesStore(
     private val tmdbApi: AlleyTmdbApi,
     private val wikipediaApi: AlleyWikipediaApi,
 ) {
-    suspend fun getAllCachedImages(): Map<String, String> {
-        val images = imageEntryDao.getAllImages()
-            .groupBy { it.type }
-            .mapValues { it.value.associate { it.imageId to it.url } }
-        return seriesEntryDao.getSeriesIds()
+    suspend fun getAllCachedImages(): AllCachedResult {
+        val imageEntries = imageEntryDao.getAllImages()
+            .groupBy { ImageType.fromSerializedName(it.type) }
+            .mapValues { it.value.associateBy { it.imageId } }
+        val images = seriesEntryDao.getSeriesIds()
             .mapNotNull {
-                val imageUrl =
-                    it.aniListId?.toString()?.let { images[ImageType.ANILIST.name]?.get(it) }
-                        ?: it.openLibraryId?.let { images[ImageType.OPEN_LIBRARY.name]?.get(it) }
-                        ?: it.steamId?.let { images[ImageType.STEAM.name]?.get(it) }
-                        ?: it.tmdbId?.let { images[ImageType.TMDB.name]?.get(it) }
+                val image =
+                    it.aniListId?.toString()?.let { imageEntries[ImageType.ANILIST]?.get(it) }
+                        ?: it.openLibraryId?.let { imageEntries[ImageType.OPEN_LIBRARY]?.get(it) }
+                        ?: it.steamId?.let { imageEntries[ImageType.STEAM]?.get(it) }
+                        ?: it.tmdbId?.let { imageEntries[ImageType.TMDB]?.get(it) }
                         ?: it.wikipediaId?.toString()
-                            ?.let { images[ImageType.WIKIPEDIA.name]?.get(it) }
+                            ?.let { imageEntries[ImageType.WIKIPEDIA]?.get(it) }
                         ?: return@mapNotNull null
-                it.id to imageUrl
+                it.id to image.url
             }
             .associate { it }
+        val staleIds = imageEntries[null]
+            ?.values
+            ?.map { it.imageId to it.type }
+            .orEmpty()
+        return AllCachedResult(seriesIdToUrls = images, staleIds = staleIds)
     }
+
+    suspend fun deleteStale(idAndType: Pair<String, String>) =
+        imageEntryDao.deleteStale(idAndType.first, idAndType.second)
 
     suspend fun getCachedImages(series: List<SeriesImageInfo>): CacheResult {
         val mediaImageIds = series.toImageIds()
@@ -156,7 +164,7 @@ class SeriesImagesStore(
         imageEntryDao.insertImageEntries(newAniListImages.map {
             ImageEntry(
                 imageId = it.key.toString(),
-                type = ImageType.ANILIST.name,
+                type = ImageType.ANILIST.serializedName,
                 url = it.value,
                 createdAtSecondsUtc = now.epochSeconds,
             )
@@ -175,7 +183,7 @@ class SeriesImagesStore(
         imageEntryDao.insertImageEntries(newWikipediaImages.map {
             ImageEntry(
                 imageId = it.key,
-                type = ImageType.WIKIPEDIA.name,
+                type = ImageType.WIKIPEDIA.serializedName,
                 url = it.value,
                 createdAtSecondsUtc = now.epochSeconds,
             )
@@ -197,7 +205,7 @@ class SeriesImagesStore(
         imageEntryDao.insertImageEntries(newTmdbImages.map {
             ImageEntry(
                 imageId = it.key,
-                type = ImageType.TMDB.name,
+                type = ImageType.TMDB.serializedName,
                 url = it.value,
                 createdAtSecondsUtc = now.epochSeconds,
             )
@@ -209,7 +217,10 @@ class SeriesImagesStore(
         return newTmdbImages.mapKeys { it.key }
     }
 
-    private suspend fun loadOpenLibraryImages(now: Instant, ids: List<String>): Map<String, String> {
+    private suspend fun loadOpenLibraryImages(
+        now: Instant,
+        ids: List<String>,
+    ): Map<String, String> {
         if (ids.isEmpty()) return emptyMap()
         val newOpenLibraryImages = ids.associateWith {
             "https://covers.openlibrary.org/b/OLID/$it-M.jpg"
@@ -217,7 +228,7 @@ class SeriesImagesStore(
         imageEntryDao.insertImageEntries(newOpenLibraryImages.map {
             ImageEntry(
                 imageId = it.key,
-                type = ImageType.OPEN_LIBRARY.name,
+                type = ImageType.OPEN_LIBRARY.serializedName,
                 url = it.value,
                 createdAtSecondsUtc = now.epochSeconds,
             )
@@ -237,7 +248,7 @@ class SeriesImagesStore(
         imageEntryDao.insertImageEntries(newSteamImages.map {
             ImageEntry(
                 imageId = it.key,
-                type = ImageType.STEAM.name,
+                type = ImageType.STEAM.serializedName,
                 url = it.value,
                 createdAtSecondsUtc = now.epochSeconds,
             )
@@ -262,6 +273,11 @@ class SeriesImagesStore(
             wikipediaIds = filter { it.wikipediaId != null }
                 .associate { it.id to it.wikipediaId!!.toString() },
         )
+
+    data class AllCachedResult(
+        val seriesIdToUrls: Map<String, String>,
+        val staleIds: List<Pair<String, String>>,
+    )
 
     data class CacheResult(
         val aniListImages: Map<String, GetImageEntries>,

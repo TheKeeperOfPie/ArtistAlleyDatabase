@@ -28,9 +28,11 @@ class SeriesImageLoader(
 
     init {
         scope.launch(dispatchers.io) {
-            requests.putAll(
-                seriesImagesStore.getAllCachedImages().mapValues { Request.Done(it.value) }
-            )
+            val allCached = seriesImagesStore.getAllCachedImages()
+            requests.putAll(allCached.seriesIdToUrls.mapValues { Request.Done(it.value) })
+            allCached.staleIds.forEach {
+                seriesImagesStore.deleteStale(it)
+            }
             while (isActive) {
                 val chunk = mutableSetOf(requestChannel.receive())
                 withTimeoutOrNull(2.seconds) {
