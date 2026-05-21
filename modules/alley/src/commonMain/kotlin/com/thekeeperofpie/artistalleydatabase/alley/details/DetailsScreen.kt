@@ -42,9 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_always_show
@@ -199,7 +201,8 @@ object DetailsScreen {
                 val columnCount = remember(gridCells, density, maxWidth, horizontalContentPadding) {
                     with(gridCells) {
                         with(density) {
-                            val availableSize = (maxWidth - (horizontalContentPadding * 2)).roundToPx()
+                            val availableSize =
+                                (maxWidth - (horizontalContentPadding * 2)).roundToPx()
                             val spacing = DETAILS_HORIZONTAL_ARRANGEMENT.spacing.roundToPx()
                             density.calculateCrossAxisCellSizes(
                                 availableSize = availableSize,
@@ -301,6 +304,14 @@ object DetailsScreen {
                         onClickImage = onClickImage,
                         onShowFallback = onShowFallback,
                         onAlwaysShowFallback = onAlwaysShowFallback,
+                        // Offset to remove content padding since the header is full width
+                        modifier = Modifier.layout { measurable, constraints ->
+                            val newConstraints = constraints.offset(32.dp.roundToPx())
+                            val placeable = measurable.measure(newConstraints)
+                            layout(placeable.width, placeable.height) {
+                                placeable.placeRelative(0, 0)
+                            }
+                        },
                     )
                 }
 
@@ -364,6 +375,7 @@ object DetailsScreen {
         onClickImage: (imageIndex: Int) -> Unit,
         onShowFallback: () -> Unit,
         onAlwaysShowFallback: () -> Unit,
+        modifier: Modifier = Modifier,
     ) {
         val catalog = catalog()
         val images = catalog.result?.images
@@ -375,11 +387,12 @@ object DetailsScreen {
                     fallbackYear = fallbackYear,
                     onShowFallback = onShowFallback,
                     onAlwaysShowFallback = onAlwaysShowFallback,
+                    modifier = modifier,
                 )
             } else {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
+                    modifier = modifier
                         .height(200.dp)
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -393,7 +406,7 @@ object DetailsScreen {
                 }
             }
         } else {
-            Column {
+            Column(modifier = modifier) {
                 ImagePager(
                     images = images,
                     pagerState = headerPagerState,
@@ -421,10 +434,11 @@ object DetailsScreen {
         fallbackYear: DataYear,
         onShowFallback: () -> Unit,
         onAlwaysShowFallback: () -> Unit,
+        modifier: Modifier = Modifier,
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
+            modifier = modifier
                 .heightIn(min = 200.dp)
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceVariant)

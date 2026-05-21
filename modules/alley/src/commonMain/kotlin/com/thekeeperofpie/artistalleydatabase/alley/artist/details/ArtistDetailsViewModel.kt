@@ -92,12 +92,26 @@ class ArtistDetailsViewModel(
 
     val catalog = combineStates(
         showFallbackImages,
-        entry.mapState(viewModelScope) { it?.artist }) { showFallbackImages, artist ->
+        entry.mapState(viewModelScope) { it?.artist },
+    ) { showFallbackImages, artist ->
         val fallbackImageYear = artist?.fallbackImageYear
         val tempImages = artist?.tempImages?.let(AlleyImageUtils::getTempImages).orEmpty()
         val embedImages = artist?.embeds?.let(AlleyImageUtils::getEmbedImages).orEmpty()
         when {
-            artist == null -> LoadingResult.loading()
+            artist == null -> if (route.images.isNullOrEmpty()) {
+                LoadingResult.loading()
+            } else {
+                LoadingResult.success(
+                    DetailsScreenCatalog(
+                        images = AlleyImageUtils.getArtistImages(
+                            year = route.year,
+                            images = route.images,
+                        ),
+                        showOutdatedCatalogs = null,
+                        fallbackYear = null,
+                    )
+                )
+            }
             artist.images.isNotEmpty() || fallbackImageYear == null ->
                 LoadingResult.success(
                     DetailsScreenCatalog(
