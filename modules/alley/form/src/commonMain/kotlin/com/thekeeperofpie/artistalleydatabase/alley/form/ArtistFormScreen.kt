@@ -1000,31 +1000,40 @@ object ArtistFormScreen {
                         ),
                         textAlign = TextAlign.Center,
                     )
-                    Text(
-                        text = stringResource(Res.string.alley_form_done_add_to_calendar_prompt),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                    )
+
+                    val showCalendarAction = remember(dataYear) {
+                        FormUtils.showCalendarAction(dataYear)
+                    }
+                    if (showCalendarAction) {
+                        Text(
+                            text = stringResource(Res.string.alley_form_done_add_to_calendar_prompt),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
 
                     val conventionName = stringResource(dataYear.fullName)
                     val encryptedFormLink by produceState<String?>(null) {
                         value = FormUtils.generateEncryptedFormLink()
                     }
-                    val uriHandler = LocalUriHandler.current
-                    FilledTonalButton(
-                        enabled = encryptedFormLink != null,
-                        onClick = {
-                            val link = encryptedFormLink ?: return@FilledTonalButton
-                            uriHandler.openUri(
-                                FormUtils.generateAddToCalendarLink(
-                                    dataYear = dataYear,
-                                    conventionName = conventionName,
-                                    encryptedFormLink = link,
+
+                    if (showCalendarAction) {
+                        val uriHandler = LocalUriHandler.current
+                        FilledTonalButton(
+                            enabled = encryptedFormLink != null,
+                            onClick = {
+                                val link = encryptedFormLink ?: return@FilledTonalButton
+                                uriHandler.openUri(
+                                    FormUtils.generateAddToCalendarLink(
+                                        dataYear = dataYear,
+                                        conventionName = conventionName,
+                                        encryptedFormLink = link,
+                                    )
                                 )
-                            )
-                        },
-                    ) {
-                        Text(stringResource(Res.string.alley_form_done_add_to_calendar_action))
+                            },
+                        ) {
+                            Text(stringResource(Res.string.alley_form_done_add_to_calendar_action))
+                        }
                     }
 
                     Text(

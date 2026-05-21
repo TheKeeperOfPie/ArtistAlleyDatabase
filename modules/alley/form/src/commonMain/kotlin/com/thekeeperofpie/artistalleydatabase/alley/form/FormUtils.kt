@@ -11,11 +11,19 @@ import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format.Padding
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
 expect object FormUtils {
 
     suspend fun generateEncryptedFormLink(): String
+}
+
+@Suppress("UnusedReceiverParameter")
+fun FormUtils.showCalendarAction(dataYear: DataYear): Boolean {
+    val dates = dataYear.dates
+    val timeZone = dates.timeZone
+    return (dates.start.atStartOfDayIn(timeZone) - 31.days) > Clock.System.now()
 }
 
 @Suppress("UnusedReceiverParameter")
