@@ -202,6 +202,7 @@ object ArtistSeriesScreen {
                     image = seriesImage,
                     textStyle = LocalTextStyle.current,
                     showAllTitles = true,
+                    showNotes = true,
                     onFavoriteToggle = {
                         if (data != null) {
                             onFavoriteToggle(data, it)

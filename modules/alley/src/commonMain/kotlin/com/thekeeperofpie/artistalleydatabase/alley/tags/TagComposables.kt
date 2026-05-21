@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.FlexBoxConfig
 import androidx.compose.foundation.layout.FlexWrap
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -83,6 +84,7 @@ fun SeriesRow(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showAllTitles: Boolean = false,
+    showNotes: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     SeriesRow(
@@ -98,6 +100,7 @@ fun SeriesRow(
         },
         onClick = onClick,
         showAllTitles = showAllTitles,
+        showNotes = showNotes,
         textStyle = textStyle,
         modifier = modifier,
     )
@@ -111,6 +114,7 @@ fun SeriesRow(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showAllTitles: Boolean = false,
+    showNotes: Boolean = false,
     showUnknownIndicator: Boolean = true,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
@@ -175,6 +179,15 @@ fun SeriesRow(
                         modifier = Modifier.padding(start = 32.dp)
                     )
                 }
+            }
+
+            if (showNotes && !series?.notes.isNullOrEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = series.notes.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
