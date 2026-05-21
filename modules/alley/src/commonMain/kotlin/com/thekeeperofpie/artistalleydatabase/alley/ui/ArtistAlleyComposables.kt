@@ -160,6 +160,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -210,6 +211,14 @@ fun <EntryModel : SearchEntryModel> ItemCard(
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
                 onClickFullscreen = { onClickFullscreen(entry, it) },
+                modifier = Modifier.conditionally(
+                    showingFallback,
+                    Modifier.border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                    )
+                )
             )
             if (showingFallback) {
                 ImageFallbackBanner(
