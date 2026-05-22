@@ -92,6 +92,9 @@ fun main() {
                         Button(onClick = { scope.launch { forumSyncer.syncThreads() } }) {
                             Text("Sync threads")
                         }
+                        Button(onClick = { scope.launch { forumSyncer.unarchiveAllThreads() } }) {
+                            Text("Unarchive all threads")
+                        }
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

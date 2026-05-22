@@ -32,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.discord.ForumLayout
 import com.thekeeperofpie.artistalleydatabase.discord.Message
 import com.thekeeperofpie.artistalleydatabase.discord.MessageComponent
 import com.thekeeperofpie.artistalleydatabase.discord.Thread
+import com.thekeeperofpie.artistalleydatabase.discord.ThreadsList
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -81,8 +82,28 @@ internal class ForumSyncer(private val environment: Environment) {
         println("Threads = ${threads.threads.map { it.name }}")
     }
 
+    suspend fun unarchiveAllThreads() {
+        var threads: ThreadsList? = null
+        while (threads == null || threads.threads.size == 50) {
+            threads = api.getArchivedThreads(environment.forumChannelId)
+            println("Unarchiving ${threads.threads.size} threads: ${threads.threads.map { it.name }}")
+            threads.threads
+                .filter {
+                    val flags = it.flags
+                    flags == null || (flags.flags and ChannelFlag.PINNED.flag) == 0
+                }
+                .forEach {
+                    delay(THROTTLE_DELAY)
+                    println("Unarchiving ${it.name}")
+                    api.unarchiveThread(it.id)
+                }
+        }
+        println("Unarchiving finished")
+    }
+
     suspend fun deleteAllThreads() {
         println("Deleting ALL threads")
+        delay(30.seconds)
         val threads = api.getThreads(environment.forumChannelId)
         threads.threads
             .filter {

@@ -72,6 +72,10 @@ internal class DiscordApi(private val environment: Environment) {
         client.get("channels/$channelId/threads/active")
             .body<ThreadsList>()
 
+    suspend fun getArchivedThreads(channelId: String) =
+        client.get("channels/$channelId/threads/archived/public")
+            .body<ThreadsList>()
+
     suspend fun getChannel(channelId: String) =
         client.get("channels/$channelId").body<Channel>()
 
@@ -180,6 +184,12 @@ internal class DiscordApi(private val environment: Environment) {
     ) {
         client.patch("channels/$threadId") {
             setBody(ModifyThread(name = name, archived = archived, appliedTags = appliedTags))
+        }.assertSuccess()
+    }
+
+    suspend fun unarchiveThread(threadId: String) {
+        client.patch("channels/$threadId") {
+            setBody(ModifyThread(archived = false))
         }.assertSuccess()
     }
 
