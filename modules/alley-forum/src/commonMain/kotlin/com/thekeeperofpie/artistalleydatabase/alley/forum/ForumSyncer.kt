@@ -9,6 +9,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.kmpalette.color
+import com.kmpalette.from
 import com.kmpalette.palette.graphics.Palette
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
@@ -48,7 +49,6 @@ import org.jetbrains.compose.resources.getString
 import java.nio.file.Files
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
-import kotlin.uuid.Uuid
 import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -236,7 +236,6 @@ internal class ForumSyncer(private val environment: Environment) {
                     } else {
                         emptyList()
                     },
-                    imageAttachments = it.threadContent.imageAttachments,
                 )
                 println("Created ${it.threadTitle}")
             }
@@ -247,7 +246,6 @@ internal class ForumSyncer(private val environment: Environment) {
                     channelId = it.second.thread.thread.id,
                     messageId = it.second.firstMessage.id,
                     message = it.first.threadContent.first,
-                    imageAttachments = it.first.threadContent.imageAttachments,
                 )
                 println("Edited ${it.second.firstMessage.id}")
                 delay(THROTTLE_DELAY)
@@ -264,7 +262,8 @@ internal class ForumSyncer(private val environment: Environment) {
                     emptyList()
                 }
                 if (it.second.thread.thread.name != it.first.threadTitle ||
-                    it.second.thread.thread.appliedTags.orEmpty() != expectedTags) {
+                    it.second.thread.thread.appliedTags.orEmpty() != expectedTags
+                ) {
                     delay(THROTTLE_DELAY)
                     api.modifyThread(
                         threadId = it.second.thread.thread.id,
@@ -287,7 +286,6 @@ internal class ForumSyncer(private val environment: Environment) {
 
     private data class MessageData(
         val first: CreateMessage,
-        val imageAttachments: List<Pair<String, ByteArray>>,
         val second: CreateMessage,
     )
 
@@ -322,36 +320,42 @@ internal class ForumSyncer(private val environment: Environment) {
                 seriesInferred: List<String>,
                 seriesConfirmed: List<String>,
             ): MessageData {
-                val headerImage = entry.embeds
-                    ?.let(AlleyImageUtils::getEmbedImagesMap)
-                    ?.firstOrNull()
-                    ?.let { "${Uuid.random()}${it.first}" to it }
+                val images = AlleyImageUtils.getArtistImagesForForumPost(
+                    year = DataYear.ANIME_EXPO_2026,
+                    images = entry.images.takeIf { entry.fallbackImageYear == null }.orEmpty(),
+                    tempImages = entry.tempImages.orEmpty(),
+                    embeds = entry.embeds.orEmpty(),
+                ).toMutableList()
 
-                val headerSwatches = headerImage?.second?.first
-                    ?.let { AlleyDataRes.readBytes(it) }
-                    ?.let { Palette.from(it.decodeToImageBitmap()).generate() }
-                    ?.swatches?.sortedByDescending { it.population }
+                val imageSwatches = images.mapNotNull {
+                    val palette = AlleyDataRes.readBytes(it)
+                        .decodeToImageBitmap()
+                        .let(Palette::from)
+                        .generate()
+                    palette.vibrantSwatch ?: palette.dominantSwatch
+                }
 
-                val imageEmbed = headerImage?.let {
+                val imageEmbeds = images.map {
                     Embed(
                         type = Embed.Type.IMAGE,
-                        image = Embed.Image(url = "attachment://${it.first}", flags = 0),
+                        image = Embed.Image(url = buildImageUrl(it), flags = 0),
                     )
                 }
 
                 val thumbnailImage = entry.embeds
                     ?.let(AlleyImageUtils::getProfileImageWithPath)
-                    ?.let { "${Uuid.random()}${it.first}" to it }
 
-                val thumbnailSwatches = thumbnailImage?.second?.first
+                val thumbnailSwatch =  thumbnailImage?.first
                     ?.let { AlleyDataRes.readBytes(it) }
-                    ?.let { Palette.from(it.decodeToImageBitmap()).generate() }
-                    ?.swatches?.sortedByDescending { it.population }
+                    ?.decodeToImageBitmap()
+                    ?.let(Palette::from)
+                    ?.generate()
+                    ?.run { vibrantSwatch ?: dominantSwatch }
 
                 val titleEmbed = Embed(
                     thumbnail = thumbnailImage?.let {
                         Embed.Image(
-                            url = "attachment://${it.first}",
+                            url = buildImageUrl(it.first),
                             flags = 0,
                         )
                     },
@@ -513,9 +517,8 @@ internal class ForumSyncer(private val environment: Environment) {
                     )
                 }
 
-                val allSwatches = headerSwatches.orEmpty() + thumbnailSwatches.orEmpty()
-                val embeds = listOfNotNull(
-                    imageEmbed,
+                val allSwatches = imageSwatches + listOfNotNull(thumbnailSwatch)
+                val embeds = imageEmbeds.take(4) + listOfNotNull(
                     titleEmbed,
                     linksEmbed,
                     seriesOneEmbed,
@@ -562,13 +565,12 @@ internal class ForumSyncer(private val environment: Environment) {
                 val secondCreateMessage = CreateMessage("Reserved")
                 return MessageData(
                     first = firstCreateMessage,
-                    imageAttachments = listOfNotNull(
-                        thumbnailImage?.let { it.first to AlleyDataRes.readBytes(it.second.first) },
-                        headerImage?.let { it.first to AlleyDataRes.readBytes(it.second.first) },
-                    ),
                     second = secondCreateMessage,
                 )
             }
+
+            private fun buildImageUrl(path: String) =
+                "${AlleyUtils.siteUrl}/composeResources/artistalleydatabase.modules.alley.data.generated.resources/$path"
         }
 
         val booth = entry.booth?.let(Booth::fromStringOrNull)

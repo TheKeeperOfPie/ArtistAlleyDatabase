@@ -158,6 +158,24 @@ object AlleyImageUtils {
         }
     }
 
+    fun getArtistImagesForForumPost(
+        year: DataYear,
+        images: List<DatabaseImage>,
+        tempImages: List<DatabaseImage>,
+        embeds: Map<String, DatabaseImage>,
+    ): List<String> = images.map {
+        when (year) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> "files/images/${year.folderName}/catalogs/${it.name}"
+            DataYear.ANIME_EXPO_2026 -> "files/images/${it.name}"
+        }
+    }.ifEmpty { tempImages.map { "files/images/${it.name}" } }
+        .ifEmpty { getEmbedImagesMap(embeds).map { it.first } }
+
     suspend fun artistImageExists(artistEntryDao: ArtistEntryDao, path: String): Boolean {
         val parts = path.substringAfter("generated.resources/files/images/").split("/")
         if (parts.size < 3) return false
