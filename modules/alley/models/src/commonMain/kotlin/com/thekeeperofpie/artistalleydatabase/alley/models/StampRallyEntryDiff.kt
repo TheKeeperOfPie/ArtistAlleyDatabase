@@ -11,6 +11,8 @@ data class StampRallyEntryDiff(
     val images: ListDiff<DatabaseImage>?,
     val fandom: String?,
     val tables: ListDiff<String>?,
+    val startTables: ListDiff<String>?,
+    val endTables: ListDiff<String>?,
     val links: ListDiff<String>?,
     val tableMin: TableMin?,
     val prize: String?,

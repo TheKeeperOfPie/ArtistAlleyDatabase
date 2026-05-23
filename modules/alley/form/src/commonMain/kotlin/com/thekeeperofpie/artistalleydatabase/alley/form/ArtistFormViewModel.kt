@@ -137,6 +137,16 @@ class ArtistFormViewModel(
                 return base.toMutableList()
             }
 
+            fun <T> applyDiff(
+                base: Set<T>,
+                diff: ListDiff<T>?,
+            ): Set<T> {
+                val base = base.toMutableSet()
+                base.removeAll(diff?.deleted.orEmpty().toSet())
+                base.addAll(diff?.added.orEmpty().toSet())
+                return base.toMutableSet()
+            }
+
             val artistFormDiff = response.artistFormDiff
             val artist = if (artistFormDiff == null) {
                 baseArtist
@@ -214,6 +224,8 @@ class ArtistFormViewModel(
                                 fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
                                 hostTable = tables.firstOrNull().orEmpty(),
                                 tables = tables,
+                                startTables = applyDiff(baseStampRally.startTables, stampRallyFormDiff.startTables),
+                                endTables = applyDiff(baseStampRally.endTables, stampRallyFormDiff.startTables),
                                 links = applyDiff(baseStampRally.links, stampRallyFormDiff.links),
                                 tableMin = stampRallyFormDiff.tableMin ?: baseStampRally.tableMin,
                                 prize = stampRallyFormDiff.prize ?: baseStampRally.prize,

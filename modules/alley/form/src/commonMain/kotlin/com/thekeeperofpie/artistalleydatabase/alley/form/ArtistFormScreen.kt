@@ -56,7 +56,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_end_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_start_tables
 import artistalleydatabase.modules.alley.form.generated.resources.Res
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_done
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
@@ -96,11 +98,13 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_sta
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_header
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_action_delete
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_action_restore
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_end_tables_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_name_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_notes_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_prize_limit_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_prize_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_start_tables_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_table_min_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_tables_placeholder
 import com.composables.core.ScrollArea
@@ -145,7 +149,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
 import com.thekeeperofpie.artistalleydatabase.icons.filled.DoneAll
+import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
 import com.thekeeperofpie.artistalleydatabase.icons.filled.RestoreFromTrash
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -785,6 +791,22 @@ object ArtistFormScreen {
                                     tables = formState.tables,
                                     predictions = tablePredictions,
                                     label = { Text(stringResource(Res.string.alley_form_stamp_rally_tables_placeholder)) },
+                                )
+                                TableCheckboxesSection(
+                                    state = formState.stateStartTables,
+                                    tables = formState.tables,
+                                    selectedTables = formState.startTables,
+                                    icon = Icons.Filled.Start,
+                                    title = AlleyEditRes.string.alley_edit_stamp_rally_edit_start_tables,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_start_tables_placeholder)) },
+                                )
+                                TableCheckboxesSection(
+                                    state = formState.stateEndTables,
+                                    tables = formState.tables,
+                                    selectedTables = formState.endTables,
+                                    icon = Icons.Filled.HandPackage,
+                                    title = AlleyEditRes.string.alley_edit_stamp_rally_edit_end_tables,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_end_tables_placeholder)) },
                                 )
                                 LinksSection(
                                     state = formState.stateLinks,

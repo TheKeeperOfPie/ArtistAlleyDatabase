@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
@@ -11,6 +11,8 @@ import kotlin.time.Instant
 data class StampRallyHistoryEntry(
     val fandom: String?,
     val tables: List<String>?,
+    val startTables: Set<String>?,
+    val endTables: Set<String>?,
     val links: List<String>?,
     val tableMin: TableMin?,
     val totalCost: Long?,
@@ -33,6 +35,8 @@ data class StampRallyHistoryEntry(
         ) = StampRallyHistoryEntry(
             fandom = after.fandom.takeIf { it != before?.fandom },
             tables = after.tables.takeIf { it != before?.tables },
+            startTables = after.startTables.takeIf { it != before?.startTables },
+            endTables = after.endTables.takeIf { it != before?.endTables },
             links = after.links.takeIf { it != before?.links },
             tableMin = after.tableMin.takeIf { it != before?.tableMin },
             totalCost = after.totalCost.takeIf { it != before?.totalCost },
@@ -55,6 +59,8 @@ data class StampRallyHistoryEntry(
         ): StampRallyDatabaseEntry {
             var fandom: String? = null
             var tables: List<String>? = null
+            var startTables: Set<String>? = null
+            var endTables: Set<String>? = null
             var links: List<String>? = null
             var tableMin: TableMin? = null
             var totalCost: Long? = null
@@ -70,6 +76,8 @@ data class StampRallyHistoryEntry(
             list.forEach {
                 fandom = fandom ?: it.fandom
                 tables = tables ?: it.tables
+                startTables = startTables ?: it.startTables
+                endTables = endTables ?: it.endTables
                 links = links ?: it.links
                 tableMin = tableMin ?: it.tableMin
                 totalCost = totalCost ?: it.totalCost
@@ -89,6 +97,8 @@ data class StampRallyHistoryEntry(
                 fandom = fandom.orEmpty(),
                 hostTable = tables?.firstOrNull().orEmpty(),
                 tables = tables.orEmpty(),
+                startTables = startTables.orEmpty(),
+                endTables = endTables.orEmpty(),
                 links = links.orEmpty(),
                 tableMin = tableMin,
                 totalCost = totalCost,
@@ -109,6 +119,8 @@ data class StampRallyHistoryEntry(
             initial.copy(
                 fandom = entry.fandom ?: initial.fandom,
                 tables = entry.tables ?: initial.tables,
+                startTables = entry.startTables ?: initial.startTables,
+                endTables = entry.endTables ?: initial.endTables,
                 links = entry.links ?: initial.links,
                 tableMin = entry.tableMin ?: initial.tableMin,
                 totalCost = entry.totalCost ?: initial.totalCost,

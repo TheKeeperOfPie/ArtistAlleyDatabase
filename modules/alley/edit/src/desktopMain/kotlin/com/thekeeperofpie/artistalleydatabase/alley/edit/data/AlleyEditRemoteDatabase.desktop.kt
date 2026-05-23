@@ -2,8 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptographyKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -14,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
-import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -23,8 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
-import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.toStampRallySummary
@@ -33,8 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.extension
 import kotlinx.coroutines.delay
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
@@ -649,6 +642,8 @@ actual class AlleyEditRemoteDatabase(
                     id = stampRallyId,
                     fandom = null,
                     tables = null,
+                    startTables = null,
+                    endTables = null,
                     links = null,
                     tableMin = null,
                     prize = null,
@@ -665,6 +660,8 @@ actual class AlleyEditRemoteDatabase(
                     id = stampRallyId,
                     fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
                     tables = ListDiff.diffList(before?.tables, after.tables),
+                    startTables = ListDiff.diffSet(before?.startTables, after.startTables),
+                    endTables = ListDiff.diffSet(before?.endTables, after.endTables),
                     links = ListDiff.diffList(before?.links, after.links),
                     tableMin = after.tableMin.takeIf { it != before?.tableMin },
                     prize = after.prize.takeIf { it != before?.prize },

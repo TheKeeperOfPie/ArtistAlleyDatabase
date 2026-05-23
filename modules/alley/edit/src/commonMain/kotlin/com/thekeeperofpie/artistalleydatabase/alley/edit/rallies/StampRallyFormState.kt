@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateSet
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
@@ -32,6 +33,10 @@ class StampRallyFormState(
     val fandom: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val stateTables: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val tables: SnapshotStateList<ArtistTable> = SnapshotStateList(),
+    val stateStartTables: EntryForm2.EmptyState = EntryForm2.EmptyState(),
+    val startTables: SnapshotStateSet<String> = SnapshotStateSet(),
+    val stateEndTables: EntryForm2.EmptyState = EntryForm2.EmptyState(),
+    val endTables: SnapshotStateSet<String> = SnapshotStateSet(),
     val stateLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
     val tableMin: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
@@ -52,6 +57,10 @@ class StampRallyFormState(
             with(EntryForm2.SingleTextState.Saver) { save(value.fandom) },
             with(EntryForm2.SingleTextState.Saver) { save(value.stateTables) },
             with(StateUtils.snapshotListJsonSaver<ArtistTable>()) { save(value.tables) },
+            with(EntryForm2.EmptyState.Saver) { save(value.stateStartTables) },
+            with(StateUtils.snapshotSetJsonSaver<String>()) { save(value.startTables) },
+            with(EntryForm2.EmptyState.Saver) { save(value.stateEndTables) },
+            with(StateUtils.snapshotSetJsonSaver<String>()) { save(value.endTables) },
             with(EntryForm2.SingleTextState.Saver) { save(value.stateLinks) },
             with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
             with(EntryForm2.SingleTextState.Saver) { save(value.tableMin) },
@@ -72,16 +81,20 @@ class StampRallyFormState(
             fandom = with(EntryForm2.SingleTextState.Saver) { restore(value[3]!!) },
             stateTables = with(EntryForm2.SingleTextState.Saver) { restore(value[4]!!) },
             tables = with(StateUtils.snapshotListJsonSaver<ArtistTable>()) { restore(value[5] as String) },
-            stateLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[6]!!) },
-            links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[7] as String) },
-            tableMin = with(EntryForm2.SingleTextState.Saver) { restore(value[8]!!) },
-            prize = with(EntryForm2.SingleTextState.Saver) { restore(value[9]!!) },
-            prizeLimit = with(EntryForm2.SingleTextState.Saver) { restore(value[10]!!) },
-            stateSeries = with(EntryForm2.SingleTextState.Saver) { restore(value[11]!!) },
-            series = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[12] as String) },
-            stateMerch = with(EntryForm2.SingleTextState.Saver) { restore(value[13]!!) },
-            merch = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[14] as String) },
-            notes = with(EntryForm2.SingleTextState.Saver) { restore(value[15]!!) },
+            stateStartTables = with(EntryForm2.EmptyState.Saver) { restore(value[6]!!) },
+            startTables = with(StateUtils.snapshotSetJsonSaver<String>()) { restore(value[7] as String) },
+            stateEndTables = with(EntryForm2.EmptyState.Saver) { restore(value[8]!!) },
+            endTables = with(StateUtils.snapshotSetJsonSaver<String>()) { restore(value[9] as String) },
+            stateLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[10]!!) },
+            links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[11] as String) },
+            tableMin = with(EntryForm2.SingleTextState.Saver) { restore(value[12]!!) },
+            prize = with(EntryForm2.SingleTextState.Saver) { restore(value[13]!!) },
+            prizeLimit = with(EntryForm2.SingleTextState.Saver) { restore(value[14]!!) },
+            stateSeries = with(EntryForm2.SingleTextState.Saver) { restore(value[15]!!) },
+            series = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[16] as String) },
+            stateMerch = with(EntryForm2.SingleTextState.Saver) { restore(value[17]!!) },
+            merch = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[18] as String) },
+            notes = with(EntryForm2.SingleTextState.Saver) { restore(value[19]!!) },
         )
     }
 
@@ -104,8 +117,21 @@ class StampRallyFormState(
 
         FormUtils.applyValue(this.fandom, stampRally.fandom, mergeBehavior)
 
-        val tables = stampRally.tables.map { tablesByBooth[it] ?: ArtistTable(booth = it, name = null) }
+        val tables =
+            stampRally.tables.map { tablesByBooth[it] ?: ArtistTable(booth = it, name = null) }
         FormUtils.applyValue(this.stateTables, this.tables, tables, mergeBehavior)
+        FormUtils.applyValue(
+            state = this.stateStartTables,
+            set = this.startTables,
+            value = stampRally.startTables,
+            mergeBehavior = mergeBehavior,
+        )
+        FormUtils.applyValue(
+            state = this.stateEndTables,
+            set = this.endTables,
+            value = stampRally.endTables,
+            mergeBehavior = mergeBehavior,
+        )
 
         FormUtils.applyValue(
             this.stateLinks,
@@ -143,12 +169,13 @@ class StampRallyFormState(
             .distinct()
         val tableMin = tableMin.value.text.toString().toIntOrNull()?.let(TableMin::parseFromValue)
         val images = images.toList()
+        val booths = tables.map { it.booth }
         return images to StampRallyDatabaseEntry(
             year = dataYear,
             id = id,
             fandom = fandom.value.text.toString(),
-            hostTable = tables.firstOrNull()?.booth.orEmpty(),
-            tables = tables.map { it.booth },
+            hostTable = booths.firstOrNull().orEmpty(),
+            tables = booths,
             links = links,
             tableMin = tableMin,
             totalCost = when (tableMin) {
@@ -161,6 +188,8 @@ class StampRallyFormState(
             },
             prize = prize.value.text.toString(),
             prizeLimit = prizeLimit.value.text.toString().toLongOrNull(),
+            startTables = startTables.toMutableSet().apply { retainAll(booths) },
+            endTables = endTables.toMutableSet().apply { retainAll(booths) },
             series = series.toList().map { it.id },
             merch = merch.toList().map { it.name },
             notes = notes.value.text.toString(),

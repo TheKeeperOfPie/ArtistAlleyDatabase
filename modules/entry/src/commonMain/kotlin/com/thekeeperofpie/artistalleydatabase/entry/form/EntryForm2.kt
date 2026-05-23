@@ -188,6 +188,30 @@ object EntryForm2 {
     }
 
     @Stable
+    class EmptyState(
+        val value: TextFieldState = TextFieldState(),
+        initialLockState: EntryLockState = EntryLockState.UNLOCKED,
+        override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
+    ): State() {
+        override var lockState by mutableStateOf(initialLockState)
+
+        object Saver : ComposeSaver<EmptyState, Any> {
+            override fun SaverScope.save(value: EmptyState) = listOf(
+                value.lockState,
+                value.wasEverDifferent,
+            )
+
+            override fun restore(value: Any): EmptyState {
+                val (lockState, wasEverDifferent) = value as List<*>
+                return EmptyState(
+                    initialLockState = lockState as EntryLockState,
+                    wasEverDifferent = wasEverDifferent as Boolean,
+                )
+            }
+        }
+    }
+
+    @Stable
     class SingleTextState(
         val value: TextFieldState = TextFieldState(),
         initialLockState: EntryLockState = EntryLockState.UNLOCKED,
@@ -747,7 +771,7 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun EntryFormScope.SectionHeader(
+fun EntryFormScope.SectionHeader(
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     state: EntryForm2.State,

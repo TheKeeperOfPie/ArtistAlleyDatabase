@@ -51,6 +51,13 @@ internal object Utils {
         override fun encode(value: List<String>) = Json.encodeToString(value)
     }
 
+    internal val setStringAdapter = object : ColumnAdapter<Set<String>, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<Set<String>>(databaseValue)
+
+        override fun encode(value: Set<String>) = Json.encodeToString(value)
+    }
+
     private val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
         override fun decode(databaseValue: String) =
             DataYear.entries.first { it.serializedName == databaseValue }
@@ -248,12 +255,14 @@ internal object Utils {
             ),
             stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
                 tablesAdapter = listStringAdapter,
+                startTablesAdapter = setStringAdapter,
+                endTablesAdapter = setStringAdapter,
                 linksAdapter = listStringAdapter,
+                tableMinAdapter = tableMinAdapter,
                 seriesAdapter = listStringAdapter,
                 merchAdapter = listStringAdapter,
                 imagesAdapter = listDatabaseImageAdapter,
                 lastEditTimeAdapter = instantAdapter,
-                tableMinAdapter = tableMinAdapter,
             ),
             artistNotesAdapter = ArtistNotes.Adapter(
                 dataYearAdapter = dataYearAdapter,

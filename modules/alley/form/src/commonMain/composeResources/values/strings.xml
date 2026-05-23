@@ -53,6 +53,8 @@
 
     <string name="alley_form_stamp_rally_name_placeholder">Display name / theme of the rally</string>
     <string name="alley_form_stamp_rally_tables_placeholder">List of tables (A01, KH-1000, SH-3003, WH-5005 format)</string>
+    <string name="alley_form_stamp_rally_start_tables_placeholder">Card pickup or first purchase</string>
+    <string name="alley_form_stamp_rally_end_tables_placeholder">Prize pickup when rally is completed</string>
     <string name="alley_form_stamp_rally_links_placeholder">Social media post or more info link if one exists</string>
     <string name="alley_form_stamp_rally_table_min_placeholder">Minimum price (USD) per table (blank, 1, and 0 are also valid)</string>
     <string name="alley_form_stamp_rally_prize_placeholder">Description of prize when rally is completed</string>

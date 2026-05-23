@@ -15,6 +15,8 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 fandom = "Vocaloid",
                 hostTable = "C39",
                 tables = listOf("C39, C40, C41"),
+                startTables = setOf("C39"),
+                endTables = setOf("C41"),
                 links = listOf("https://example.org/stampRally"),
                 tableMin = TableMin.Price(10),
                 totalCost = 30,

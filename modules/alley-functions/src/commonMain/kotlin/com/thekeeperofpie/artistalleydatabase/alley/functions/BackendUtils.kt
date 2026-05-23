@@ -231,7 +231,15 @@ internal object BackendUtils {
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
                 tables = ListDiff.diffList(
                     formEntry.beforeTables,
-                    formEntry.afterTables
+                    formEntry.afterTables,
+                ),
+                startTables = ListDiff.diffSet(
+                    formEntry.beforeStartTables,
+                    formEntry.afterStartTables,
+                ),
+                endTables = ListDiff.diffSet(
+                    formEntry.beforeEndTables,
+                    formEntry.afterEndTables,
                 ),
                 links = ListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
@@ -268,7 +276,15 @@ internal object BackendUtils {
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
                 tables = ListDiff.diffList(
                     formEntry.beforeTables,
-                    formEntry.afterTables
+                    formEntry.afterTables,
+                ),
+                startTables = ListDiff.diffSet(
+                    formEntry.beforeStartTables,
+                    formEntry.afterStartTables,
+                ),
+                endTables = ListDiff.diffSet(
+                    formEntry.beforeEndTables,
+                    formEntry.afterEndTables,
                 ),
                 links = ListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
@@ -306,7 +322,15 @@ internal object BackendUtils {
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
                 tables = ListDiff.diffList(
                     formEntry.beforeTables,
-                    formEntry.afterTables
+                    formEntry.afterTables,
+                ),
+                startTables = ListDiff.diffSet(
+                    formEntry.beforeStartTables,
+                    formEntry.afterStartTables,
+                ),
+                endTables = ListDiff.diffSet(
+                    formEntry.beforeEndTables,
+                    formEntry.afterEndTables,
                 ),
                 links = ListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },

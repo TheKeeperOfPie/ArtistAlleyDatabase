@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_end_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_fandom
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_links
@@ -48,6 +49,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize_limit
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_series
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_start_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_table_min
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_action_save
@@ -428,6 +430,10 @@ internal object StampRallyFormMergeScreen {
                         StampRallyField.FANDOM -> diff?.fandom
                         StampRallyField.TABLES_ADDED -> diff?.tables?.added?.joinToString()
                         StampRallyField.TABLES_REMOVED -> diff?.tables?.deleted?.joinToString()
+                        StampRallyField.START_TABLES_ADDED -> diff?.startTables?.added?.joinToString()
+                        StampRallyField.START_TABLES_REMOVED -> diff?.startTables?.deleted?.joinToString()
+                        StampRallyField.END_TABLES_ADDED -> diff?.endTables?.added?.joinToString()
+                        StampRallyField.END_TABLES_REMOVED -> diff?.endTables?.deleted?.joinToString()
                         StampRallyField.LINKS_ADDED -> diff?.links?.added?.joinToString()
                         StampRallyField.LINKS_REMOVED -> diff?.links?.deleted?.joinToString()
                         StampRallyField.TABLE_MIN -> diff?.tableMin?.toString()
@@ -488,6 +494,18 @@ internal object StampRallyFormMergeScreen {
                 return base.toMutableList()
             }
 
+            fun <T> applyDiff(
+                base: Set<T>,
+                diff: ListDiff<T>?,
+                added: StampRallyField,
+                deleted: StampRallyField,
+            ): Set<T> {
+                val base = base.toMutableSet()
+                if (this[deleted]) base.removeAll(diff?.deleted.orEmpty().toSet())
+                if (this[added]) base.addAll(diff?.added.orEmpty().toSet())
+                return base.toMutableSet()
+            }
+
             val tables = applyDiff(
                 base.tables,
                 diff.tables,
@@ -505,6 +523,18 @@ internal object StampRallyFormMergeScreen {
                 ),
                 fandom = applyDiff(base.fandom, diff.fandom, StampRallyField.FANDOM),
                 tables = tables,
+                startTables = applyDiff(
+                    base.startTables,
+                    diff.startTables,
+                    StampRallyField.START_TABLES_ADDED,
+                    StampRallyField.START_TABLES_REMOVED,
+                ),
+                endTables = applyDiff(
+                    base.endTables,
+                    diff.endTables,
+                    StampRallyField.END_TABLES_ADDED,
+                    StampRallyField.END_TABLES_REMOVED,
+                ),
                 links = applyDiff(
                     base.links,
                     diff.links,
@@ -564,6 +594,10 @@ internal object StampRallyFormMergeScreen {
                         StampRallyField.FANDOM -> diff.fandom != null
                         StampRallyField.TABLES_ADDED -> diff.tables?.added != null
                         StampRallyField.TABLES_REMOVED -> diff.tables?.deleted != null
+                        StampRallyField.START_TABLES_ADDED -> diff.startTables?.added != null
+                        StampRallyField.START_TABLES_REMOVED -> diff.startTables?.deleted != null
+                        StampRallyField.END_TABLES_ADDED -> diff.endTables?.added != null
+                        StampRallyField.END_TABLES_REMOVED -> diff.endTables?.deleted != null
                         StampRallyField.LINKS_ADDED -> diff.links?.added != null
                         StampRallyField.LINKS_REMOVED -> diff.links?.deleted != null
                         StampRallyField.TABLE_MIN -> diff.tableMin != null
@@ -589,6 +623,10 @@ internal object StampRallyFormMergeScreen {
         FANDOM(Res.string.alley_edit_stamp_rally_field_label_fandom),
         TABLES_ADDED(Res.string.alley_edit_stamp_rally_field_label_tables),
         TABLES_REMOVED(Res.string.alley_edit_stamp_rally_field_label_tables),
+        START_TABLES_ADDED(Res.string.alley_edit_stamp_rally_field_label_start_tables),
+        START_TABLES_REMOVED(Res.string.alley_edit_stamp_rally_field_label_start_tables),
+        END_TABLES_ADDED(Res.string.alley_edit_stamp_rally_field_label_end_tables),
+        END_TABLES_REMOVED(Res.string.alley_edit_stamp_rally_field_label_end_tables),
         LINKS_ADDED(Res.string.alley_edit_stamp_rally_field_label_links),
         LINKS_REMOVED(Res.string.alley_edit_stamp_rally_field_label_links),
         TABLE_MIN(Res.string.alley_edit_stamp_rally_field_label_table_min),
@@ -606,6 +644,8 @@ internal object StampRallyFormMergeScreen {
                 IMAGES_ADDED,
                 FANDOM,
                 TABLES_ADDED,
+                START_TABLES_ADDED,
+                END_TABLES_ADDED,
                 LINKS_ADDED,
                 TABLE_MIN,
                 PRIZE,
@@ -616,6 +656,8 @@ internal object StampRallyFormMergeScreen {
                     -> false
                 IMAGES_REMOVED,
                 TABLES_REMOVED,
+                START_TABLES_REMOVED,
+                END_TABLES_REMOVED,
                 LINKS_REMOVED,
                 SERIES_REMOVED,
                 MERCH_REMOVED,

@@ -4,11 +4,13 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.runtime.toMutableStateList
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.enums.enumEntries
@@ -65,6 +67,11 @@ object StateUtils {
         return SnapshotListJsonSaver(listSerializer)
     }
 
+    inline fun <reified T : Any> snapshotSetJsonSaver(): SnapshotSetJsonSaver<T> {
+        val setSerializer = SetSerializer(T::class.serializer())
+        return SnapshotSetJsonSaver(setSerializer)
+    }
+
     class SnapshotListJsonSaver<T>(private val listSerializer: KSerializer<List<T>>) :
         Saver<SnapshotStateList<T>, String> {
         override fun SaverScope.save(value: SnapshotStateList<T>) =
@@ -72,6 +79,19 @@ object StateUtils {
 
         override fun restore(value: String): SnapshotStateList<T> =
             Json.decodeFromString(listSerializer, value).toMutableStateList()
+
+    }
+
+    class SnapshotSetJsonSaver<T>(private val setSerializer: KSerializer<Set<T>>) :
+        Saver<SnapshotStateSet<T>, String> {
+        override fun SaverScope.save(value: SnapshotStateSet<T>) =
+            Json.encodeToString(setSerializer, value)
+
+        override fun restore(value: String): SnapshotStateSet<T> =
+            SnapshotStateSet<T>().apply {
+                addAll(Json.decodeFromString(setSerializer, value))
+            }
+
 
     }
 }
@@ -90,6 +110,15 @@ fun <T> SnapshotStateList<T>.swap(indexOne: Int, indexTwo: Int) {
 
 fun <T> SnapshotStateList<T>.replaceAll(values: List<T>) {
     if (this.toList() == values) return
+
+    Snapshot.withMutableSnapshot {
+        clear()
+        addAll(values)
+    }
+}
+
+fun <T> SnapshotStateSet<T>.replaceAll(values: Set<T>) {
+    if (this.toSet() == values) return
 
     Snapshot.withMutableSnapshot {
         clear()

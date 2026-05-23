@@ -2,6 +2,7 @@ import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
 import kotlin.collections.Map;
+import kotlin.collections.Set;
 import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
@@ -344,6 +345,8 @@ CREATE TABLE
         id TEXT NOT NULL,
         fandom TEXT NOT NULL COLLATE NOCASE,
         tables TEXT AS List<String> NOT NULL,
+        startTables TEXT AS Set<String> DEFAULT NULL,
+        endTables TEXT AS Set<String> DEFAULT NULL,
         links TEXT AS List<String> NOT NULL,
         tableMin INTEGER AS TableMin,
         totalCost INTEGER,

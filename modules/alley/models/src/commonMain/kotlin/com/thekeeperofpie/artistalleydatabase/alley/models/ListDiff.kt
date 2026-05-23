@@ -16,5 +16,14 @@ data class ListDiff<T>(
                 deleted = (previous.orEmpty() - next.toSet()).ifEmpty { null },
             )
         }
+
+        fun <T> diffSet(previous: Set<T>?, next: Set<T>?) = if (next == null) {
+            null
+        } else {
+            ListDiff(
+                added = (next - previous.orEmpty()).ifEmpty { null }?.toList(),
+                deleted = (previous.orEmpty() - next).ifEmpty { null }?.toList(),
+            )
+        }
     }
 }

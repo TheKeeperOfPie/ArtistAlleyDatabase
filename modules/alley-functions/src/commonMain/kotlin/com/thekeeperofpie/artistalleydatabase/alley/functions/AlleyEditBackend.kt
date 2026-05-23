@@ -1256,6 +1256,8 @@ object AlleyEditBackend {
             id = id,
             fandom = fandom,
             tables = tables,
+            startTables = startTables,
+            endTables = endTables,
             links = links,
             tableMin = tableMin,
             totalCost = totalCost,
@@ -1275,6 +1277,8 @@ object AlleyEditBackend {
         StampRallyHistoryEntry(
             fandom = fandom,
             tables = tables,
+            startTables = startTables,
+            endTables = endTables,
             links = links,
             tableMin = tableMin,
             totalCost = totalCost,

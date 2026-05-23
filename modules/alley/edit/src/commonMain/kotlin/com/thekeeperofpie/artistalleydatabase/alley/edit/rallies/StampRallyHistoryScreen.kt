@@ -49,6 +49,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_editor_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_end_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_fandom
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_merch
@@ -56,6 +57,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize_limit
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_series
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_start_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_table_min
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_action_apply_changes
@@ -525,6 +527,10 @@ object StampRallyHistoryScreen {
                     StampRallyField.PRIZE -> rebuiltEntry.prize.takeIf { it != initialStampRally?.prize }
                     StampRallyField.PRIZE_LIMIT -> rebuiltEntry.prizeLimit.takeIf { it != initialStampRally?.prizeLimit }
                         ?.toString()
+                    StampRallyField.START_TABLES -> rebuiltEntry.startTables.takeIf { it != initialStampRally?.startTables }
+                        ?.joinToString()
+                    StampRallyField.END_TABLES -> rebuiltEntry.endTables.takeIf { it != initialStampRally?.endTables }
+                        ?.joinToString()
                     StampRallyField.SERIES -> rebuiltEntry.series.takeIf { it != initialStampRally?.series }
                         ?.joinToString()
                     StampRallyField.MERCH -> rebuiltEntry.merch.takeIf { it != initialStampRally?.merch }
@@ -574,6 +580,8 @@ object StampRallyHistoryScreen {
                 tableMin = tableMin,
                 prize = entry.prize.takeIf { this[StampRallyField.PRIZE] },
                 prizeLimit = entry.prizeLimit.takeIf { this[StampRallyField.PRIZE_LIMIT] },
+                startTables = entry.startTables.takeIf { this[StampRallyField.START_TABLES] },
+                endTables = entry.endTables.takeIf { this[StampRallyField.END_TABLES] },
                 series = entry.series.takeIf { this[StampRallyField.SERIES] },
                 merch = entry.merch.takeIf { this[StampRallyField.MERCH] },
                 notes = entry.notes.takeIf { this[StampRallyField.NOTES] },
@@ -607,6 +615,8 @@ object StampRallyHistoryScreen {
                         StampRallyField.TABLE_MIN -> entry.tableMin != null
                         StampRallyField.PRIZE -> entry.prize != null
                         StampRallyField.PRIZE_LIMIT -> entry.prizeLimit != null
+                        StampRallyField.START_TABLES -> entry.startTables != null
+                        StampRallyField.END_TABLES -> entry.endTables != null
                         StampRallyField.SERIES -> entry.series != null
                         StampRallyField.MERCH -> entry.merch != null
                         StampRallyField.NOTES -> entry.notes != null
@@ -625,6 +635,8 @@ object StampRallyHistoryScreen {
         TABLE_MIN(Res.string.alley_edit_stamp_rally_field_label_table_min),
         PRIZE(Res.string.alley_edit_stamp_rally_field_label_prize),
         PRIZE_LIMIT(Res.string.alley_edit_stamp_rally_field_label_prize_limit),
+        START_TABLES(Res.string.alley_edit_stamp_rally_field_label_start_tables),
+        END_TABLES(Res.string.alley_edit_stamp_rally_field_label_end_tables),
         SERIES(Res.string.alley_edit_stamp_rally_field_label_series),
         MERCH(Res.string.alley_edit_stamp_rally_field_label_merch),
         NOTES(Res.string.alley_edit_stamp_rally_field_label_notes),

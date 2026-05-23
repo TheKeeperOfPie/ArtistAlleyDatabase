@@ -112,7 +112,6 @@ internal fun FormHeaderIconAndTitle(icon: ImageVector, title: StringResource) {
     }
 }
 
-
 context(formScope: EntryFormScope)
 @Composable
 internal fun <T> MultiTextSection(

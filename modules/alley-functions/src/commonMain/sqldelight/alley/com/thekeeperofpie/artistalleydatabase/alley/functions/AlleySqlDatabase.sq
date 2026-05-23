@@ -1,6 +1,7 @@
 import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
+import kotlin.collections.Set;
 import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
@@ -50,6 +51,8 @@ CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     id TEXT,
     fandom TEXT COLLATE NOCASE,
     tables TEXT AS List<String>,
+    startTables TEXT AS Set<String> DEFAULT NULL,
+    endTables TEXT AS Set<String> DEFAULT NULL,
     links TEXT AS List<String>,
     tableMin INTEGER AS TableMin,
     totalCost INTEGER,

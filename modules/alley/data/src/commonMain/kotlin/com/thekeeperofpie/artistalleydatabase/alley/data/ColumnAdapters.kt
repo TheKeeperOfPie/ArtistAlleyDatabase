@@ -20,6 +20,13 @@ object ColumnAdapters {
         override fun encode(value: List<String>) = Json.encodeToString(value)
     }
 
+    val setStringAdapter = object : ColumnAdapter<Set<String>, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<Set<String>>(databaseValue)
+
+        override fun encode(value: Set<String>) = Json.encodeToString(value)
+    }
+
     val listDatabaseImageAdapter = object : ColumnAdapter<List<DatabaseImage>, String> {
         override fun decode(databaseValue: String) =
             Json.decodeFromString<List<DatabaseImage>>(databaseValue)
@@ -167,6 +174,8 @@ object ColumnAdapters {
     )
     val stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
         tablesAdapter = listStringAdapter,
+        startTablesAdapter = setStringAdapter,
+        endTablesAdapter = setStringAdapter,
         linksAdapter = listStringAdapter,
         tableMinAdapter = tableMinAdapter,
         seriesAdapter = listStringAdapter,
