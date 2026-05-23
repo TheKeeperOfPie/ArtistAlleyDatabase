@@ -63,7 +63,7 @@ object ColumnAdapters {
         override fun encode(value: TableMin) = value.serializedValue.toLong()
     }
 
-    private val embedsAdapter = object : ColumnAdapter<Map<String, DatabaseImage>, String> {
+    val embedsAdapter = object : ColumnAdapter<Map<String, DatabaseImage>, String> {
         override fun decode(databaseValue: String) =
             Json.decodeFromString<Map<String, DatabaseImage>>(databaseValue)
 

@@ -103,7 +103,12 @@ object StampRallySearchScreen {
                 onClickBack = onClickBack,
                 itemToSharedElementId = { it.stampRally.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
-                    StampRallyListRow(entry, onFavoriteToggle, modifier)
+                    StampRallyListRow(
+                        entry = entry,
+                        onFavoriteToggle = onFavoriteToggle,
+                        seriesImage = viewModel::seriesImage,
+                        modifier = modifier,
+                    )
                 },
                 columnHeader = { ColumnHeader(it) },
                 tableCell = { row, column -> TableCell(row, column) },

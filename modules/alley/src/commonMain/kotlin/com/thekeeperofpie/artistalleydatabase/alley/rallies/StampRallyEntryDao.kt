@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryAnimeExpo2026Queries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
@@ -25,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
@@ -37,6 +39,7 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
@@ -128,13 +131,20 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             lastEditor = null,
             lastEditTime = null,
         ),
+        seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(13)!!),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(13),
-            ignored = getBooleanFixed(14),
+            favorite = getBooleanFixed(14),
+            ignored = getBooleanFixed(15),
         )
     )
 }
+
+@Serializable
+private data class BoothAndEmbeds(
+    val booth: String? = null,
+    val embeds: String? = null,
+)
 
 fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
@@ -161,10 +171,15 @@ fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
             lastEditor = null,
             lastEditTime = null,
         ),
+        seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(12)!!),
+        artistBoothToEmbeds = Json.decodeFromString<List<BoothAndEmbeds>>(getString(13)!!)
+            .associate {
+                it.booth.orEmpty() to it.embeds?.let(ColumnAdapters.embedsAdapter::decode).orEmpty()
+            },
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(12),
-            ignored = getBooleanFixed(13),
+            favorite = getBooleanFixed(14),
+            ignored = getBooleanFixed(15),
         )
     )
 }
@@ -525,60 +540,93 @@ class StampRallyEntryDao(
                 "ORDER BY $tableName.totalCost $ascending NULLS LAST"
         }
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
+        val imageSubquery = """(
+            SELECT
+                json_group_array (
+                    json_object (
+                        'id', s.id,
+                        'uuid', s.uuid,
+                        'aniListId', s.aniListId,
+                        'wikipediaId', s.wikipediaId,
+                        'tmdbId', s.tmdbId,
+                        'tmdbType', s.tmdbType,
+                        'steamId', s.steamId,
+                        'openLibraryId', s.openLibraryId
+                    )
+                )
+            FROM
+                seriesEntry s
+                JOIN stampRallySeriesConnection sc ON sc.seriesId = s.id
+            WHERE
+                sc.stampRallyId = $tableName.id
+        )""".trimIndent()
         val selectFields = when (year) {
             DataYear.ANIME_EXPO_2023 -> listOf(
-                "id",
-                "fandom",
-                "hostTable",
-                "tables",
-                "links",
-                "images",
+                "$tableName.id",
+                "$tableName.fandom",
+                "$tableName.hostTable",
+                "$tableName.tables",
+                "$tableName.links",
+                "$tableName.images",
             )
             DataYear.ANIME_EXPO_2024 -> listOf(
-                "id",
-                "fandom",
-                "hostTable",
-                "tables",
-                "links",
-                "tableMin",
-                "totalCost",
-                "prizeLimit",
-                "notes",
-                "images",
+                "$tableName.id",
+                "$tableName.fandom",
+                "$tableName.hostTable",
+                "$tableName.tables",
+                "$tableName.links",
+                "$tableName.tableMin",
+                "$tableName.totalCost",
+                "$tableName.prizeLimit",
+                "$tableName.notes",
+                "$tableName.images",
             )
             DataYear.ANIME_EXPO_2025 -> listOf(
-                "id",
-                "fandom",
-                "hostTable",
-                "tables",
-                "links",
-                "tableMin",
-                "totalCost",
-                "prize",
-                "prizeLimit",
-                "series",
-                "notes",
-                "images",
-                "confirmed",
+                "$tableName.id",
+                "$tableName.fandom",
+                "$tableName.hostTable",
+                "$tableName.tables",
+                "$tableName.links",
+                "$tableName.tableMin",
+                "$tableName.totalCost",
+                "$tableName.prize",
+                "$tableName.prizeLimit",
+                "$tableName.series",
+                "$tableName.notes",
+                "$tableName.images",
+                "$tableName.confirmed",
+                imageSubquery,
             )
             DataYear.ANIME_EXPO_2026 -> listOf(
-                "id",
-                "fandom",
-                "tables",
-                "links",
-                "tableMin",
-                "totalCost",
-                "prize",
-                "prizeLimit",
-                "series",
-                "merch",
-                "notes",
-                "images",
+                "$tableName.id",
+                "$tableName.fandom",
+                "$tableName.tables",
+                "$tableName.links",
+                "$tableName.tableMin",
+                "$tableName.totalCost",
+                "$tableName.prize",
+                "$tableName.prizeLimit",
+                "$tableName.series",
+                "$tableName.merch",
+                "$tableName.notes",
+                "$tableName.images",
+                imageSubquery,
+                """(
+                    SELECT
+                        json_group_array (
+                            json_object ('booth', a.booth, 'embeds', a.embeds)
+                        )
+                    FROM
+                        artistEntryAnimeExpo2026 a
+                        JOIN stampRallyArtistConnection ac ON ac.artistId = a.id
+                    WHERE
+                        ac.stampRallyId = $tableName.id
+                 )""".trimMargin(),
             )
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> throw IllegalStateException("Cannot load rallies for $year")
-        }.joinToString { "$tableName.$it" }
+        }.joinToString()
 
         if (query.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }

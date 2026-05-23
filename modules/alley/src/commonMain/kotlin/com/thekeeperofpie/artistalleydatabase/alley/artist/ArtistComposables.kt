@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -37,6 +39,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_commissions
@@ -88,7 +91,7 @@ fun ArtistTitle(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.height(IntrinsicSize.Min)
         ) {
-            ArtistProfileImage(id, profileImage)
+            ArtistProfileImage(image = profileImage, artistId = id)
             Spacer(Modifier.width(12.dp))
 
             val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
@@ -281,31 +284,63 @@ fun ArtistListRow(
 }
 
 @Composable
-private fun ArtistProfileImage(
-    artistId: String,
+fun ArtistProfileImage(
     image: CatalogImage?,
     modifier: Modifier = Modifier,
+    booth: String? = null,
     useSharedElements: Boolean = false,
+    artistId: String? = null,
 ) {
     Box(
         modifier = modifier
             .fillMaxHeight()
             .aspectRatio(1f, matchHeightConstraintsFirst = true)
     ) {
-        AsyncImage(
-            model = image?.coilImageModel,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .conditionally(useSharedElements, Modifier.sharedElement("profile_image", artistId))
-                .matchParentSize()
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.matchParentSize()
                 .clip(RoundedCornerShape(8.dp))
                 .border(
                     1.dp,
                     image?.color?.let(::Color) ?: MaterialTheme.colorScheme.primary,
                     RoundedCornerShape(8.dp)
                 )
-        )
+        ) {
+            if (image != null) {
+                AsyncImage(
+                    model = image.coilImageModel,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .conditionally(
+                            useSharedElements,
+                            Modifier.sharedElement("profile_image", artistId)
+                        )
+                        .matchParentSize()
+                )
+            }
+        }
+
+        if (booth != null) {
+            val textStyle = MaterialTheme.typography.labelLarge
+            Text(
+                text = booth,
+                style = textStyle,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 12.sp,
+                    maxFontSize = textStyle.fontSize,
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .background(
+                        shape = RoundedCornerShape(topStart = 8.dp),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
+                    )
+                    .padding(horizontal = 2.dp)
+            )
+
+        }
     }
 }
 
@@ -327,7 +362,8 @@ internal fun SeriesRow(
             .padding(bottom = 8.dp)
             .fillMaxWidth()
             .fadingEdgeEnd(
-                startOpaque = 2.dp,
+                startTransparent = 0.dp,
+                startOpaque = 0.dp,
                 endOpaque = 32.dp,
                 endTransparent = 16.dp,
             )

@@ -57,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.ui.UnrecognizedTagIcon
+import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -135,6 +136,7 @@ fun SeriesRow(
                     .width(56.dp)
                     .height(80.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .sharedElement("series", series?.id)
             )
 
             if (series?.tmdbId != null && series.tmdbType != null) {

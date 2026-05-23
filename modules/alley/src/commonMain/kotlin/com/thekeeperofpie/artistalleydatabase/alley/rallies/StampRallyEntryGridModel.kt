@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -17,6 +18,8 @@ class StampRallyEntryGridModel(
     val userEntry: StampRallyUserEntry,
     override val images: List<CatalogImage>,
     override val placeholderText: String,
+    val artistBoothsToProfileImages: List<Pair<String, CatalogImage?>>,
+    val seriesImageInfo: List<SeriesImageInfo>,
 ) : SearchScreen.SearchEntryModel {
 
     override val id = EntryId("artist_entry", stampRally.id)
@@ -37,9 +40,14 @@ class StampRallyEntryGridModel(
     companion object {
         fun buildFromEntry(entry: StampRallyWithUserData): StampRallyEntryGridModel {
             val stampRally = entry.stampRally
+            val artistBoothsToProfileImages = entry.artistBoothToEmbeds.mapNotNull {
+                it.key to AlleyImageUtils.getProfileImage(it.value)
+            }
             return StampRallyEntryGridModel(
                 stampRally = stampRally,
                 userEntry = entry.userEntry,
+                artistBoothsToProfileImages = artistBoothsToProfileImages,
+                seriesImageInfo = entry.seriesImageInfo,
                 images = AlleyImageUtils.getRallyImages(
                     year = stampRally.year,
                     images = stampRally.images,

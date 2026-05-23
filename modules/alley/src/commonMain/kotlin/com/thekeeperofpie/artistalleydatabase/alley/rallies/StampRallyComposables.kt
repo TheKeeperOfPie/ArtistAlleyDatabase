@@ -2,12 +2,22 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -21,9 +31,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_any
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_free
@@ -32,11 +44,17 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_cost
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.compose.rememberConstraintsSizeResolver
+import coil3.request.ImageRequest
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistProfileImage
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
@@ -48,6 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -104,118 +123,200 @@ fun StampRallyListRow(
     entry: StampRallyEntryGridModel,
     onFavoriteToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    seriesImage: (SeriesInfo) -> String? = { null },
 ) {
     val stampRally = entry.stampRally
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .sharedBounds("container", stampRally.id, zIndexInOverlay = 1f)
-            .padding(start = 16.dp)
+            .height(IntrinsicSize.Min)
     ) {
-        Text(
-            text = stampRally.hostTable,
-            style = MaterialTheme.typography.titleLarge
-                .copy(fontFamily = FontFamily.Monospace),
-            modifier = Modifier
-                .sharedElement("hostTable", stampRally.id, zIndexInOverlay = 1f)
-                .padding(vertical = 8.dp)
-        )
-
-        Spacer(Modifier.width(16.dp))
-
-        Text(
-            text = stampRally.fandom,
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .sharedElement("fandom", stampRally.id, zIndexInOverlay = 1f)
-                .weight(1f)
-                .padding(vertical = 8.dp)
-        )
+        val series = entry.seriesImageInfo.firstOrNull()
+        val image = series?.toSeriesInfo()?.let(seriesImage)
+        val sizeResolver = rememberConstraintsSizeResolver()
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxHeight()
+                .width(72.dp)
+                .heightIn(min = 80.dp)
+                .then(sizeResolver)
+        ) {
+            if (image != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(image)
+                        .size(sizeResolver)
+                        .build(),
+                    null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .matchParentSize()
+                        .sharedElement("series", series.id)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                )
+            } else {
+                val textStyle = MaterialTheme.typography.titleLarge
+                Text(
+                    text = stampRally.hostTable,
+                    style = textStyle.copy(fontFamily = FontFamily.Monospace),
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 12.sp,
+                        maxFontSize = textStyle.fontSize,
+                    ),
+                    modifier = Modifier
+                        .sharedElement("hostTable", stampRally.id, zIndexInOverlay = 1f)
+                        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+                )
+            }
+        }
 
         Spacer(Modifier.width(16.dp))
 
         Column(
-            horizontalAlignment = Alignment.End,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.weight(1f)
         ) {
-            if (stampRally.prizeLimit != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+                    .sharedBounds("container", stampRally.id, zIndexInOverlay = 1f)
+            ) {
                 Text(
-                    text = stringResource(
-                        Res.string.alley_stamp_rally_prize_limit,
-                        stampRally.prizeLimitText(),
-                    ),
-                    style = MaterialTheme.typography.labelSmall,
+                    text = stampRally.fandom,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .sharedElement("fandom", stampRally.id, zIndexInOverlay = 1f)
+                        .weight(1f)
+                        .padding(vertical = 8.dp)
                 )
-            }
-            val totalCost = stampRally.totalCost
-            val text = when (val tableMin = stampRally.tableMin) {
-                TableMin.Free -> stringResource(Res.string.alley_stamp_rally_cost_free)
-                TableMin.Other -> stringResource(Res.string.alley_stamp_rally_cost_other)
-                TableMin.Any -> stringResource(Res.string.alley_stamp_rally_cost_any)
-                TableMin.Paid -> stringResource(Res.string.alley_stamp_rally_cost_paid)
-                is TableMin.Price -> when (totalCost) {
-                    null -> {
-                        val totalCostUsd = tableMin.totalCost(stampRally.tables.size)
-                        if (totalCostUsd != null) {
-                            stringResource(
-                                Res.string.alley_stamp_rally_total_cost,
-                                totalCostUsd,
-                            )
-                        } else {
-                            stringResource(Res.string.alley_stamp_rally_cost_paid)
-                        }
+
+                Spacer(Modifier.width(16.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    if (stampRally.prizeLimit != null) {
+                        Text(
+                            text = stringResource(
+                                Res.string.alley_stamp_rally_prize_limit,
+                                stampRally.prizeLimitText(),
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
                     }
-                    0L -> stringResource(Res.string.alley_stamp_rally_cost_free)
-                    else -> stringResource(
-                        Res.string.alley_stamp_rally_total_cost,
-                        totalCost,
+                    val totalCost = stampRally.totalCost
+                    val text = when (val tableMin = stampRally.tableMin) {
+                        TableMin.Free -> stringResource(Res.string.alley_stamp_rally_cost_free)
+                        TableMin.Other -> stringResource(Res.string.alley_stamp_rally_cost_other)
+                        TableMin.Any -> stringResource(Res.string.alley_stamp_rally_cost_any)
+                        TableMin.Paid -> stringResource(Res.string.alley_stamp_rally_cost_paid)
+                        is TableMin.Price -> when (totalCost) {
+                            null -> {
+                                val totalCostUsd = tableMin.totalCost(stampRally.tables.size)
+                                if (totalCostUsd != null) {
+                                    stringResource(
+                                        Res.string.alley_stamp_rally_total_cost,
+                                        totalCostUsd,
+                                    )
+                                } else {
+                                    stringResource(Res.string.alley_stamp_rally_cost_paid)
+                                }
+                            }
+                            0L -> stringResource(Res.string.alley_stamp_rally_cost_free)
+                            else -> stringResource(
+                                Res.string.alley_stamp_rally_total_cost,
+                                totalCost,
+                            )
+                        }
+                        null -> null
+                    }
+                    if (text != null) {
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
+
+                var unfavoriteDialogEntry by remember {
+                    mutableStateOf<SearchScreen.SearchEntryModel?>(null)
+                }
+
+                val favorite = entry.favorite
+                IconButton(
+                    onClick = {
+                        if (favorite) {
+                            unfavoriteDialogEntry = entry
+                        } else {
+                            onFavoriteToggle(true)
+                        }
+                    },
+                    modifier = Modifier
+                        .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
+                        .align(Alignment.Top)
+                ) {
+                    Icon(
+                        imageVector = if (favorite) {
+                            Icons.Filled.Favorite
+                        } else {
+                            Icons.Filled.FavoriteBorder
+                        },
+                        contentDescription = stringResource(
+                            Res.string.alley_stamp_rally_favorite_icon_content_description
+                        ),
                     )
                 }
-                null -> null
-            }
-            if (text != null) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelSmall,
+
+                UnfavoriteDialog(
+                    entry = { unfavoriteDialogEntry },
+                    onClearEntry = { unfavoriteDialogEntry = null },
+                    onRemoveFavorite = { onFavoriteToggle(false) },
                 )
             }
-        }
 
-        var unfavoriteDialogEntry by remember {
-            mutableStateOf<SearchScreen.SearchEntryModel?>(null)
-        }
-
-        val favorite = entry.favorite
-        IconButton(
-            onClick = {
-                if (favorite) {
-                    unfavoriteDialogEntry = entry
-                } else {
-                    onFavoriteToggle(true)
+            val artistBoothsToProfileImages = entry.artistBoothsToProfileImages
+            val tables = entry.stampRally.tables
+            if (artistBoothsToProfileImages.isNotEmpty() || tables.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .fadingEdgeEnd(
+                            startTransparent = 0.dp,
+                            startOpaque = 0.dp,
+                            endOpaque = 32.dp,
+                            endTransparent = 16.dp,
+                        )
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.wrapContentWidth(
+                            unbounded = true,
+                            align = Alignment.Start,
+                        )
+                    ) {
+                        if (artistBoothsToProfileImages.isNotEmpty()) {
+                            artistBoothsToProfileImages.forEach {
+                                ArtistProfileImage(
+                                    booth = it.first,
+                                    image = it.second,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                        } else {
+                            tables.forEach {
+                                ArtistProfileImage(
+                                    booth = it,
+                                    image = null,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                        }
+                    }
                 }
-            },
-            modifier = Modifier
-                .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
-                .align(Alignment.Top)
-        ) {
-            Icon(
-                imageVector = if (favorite) {
-                    Icons.Filled.Favorite
-                } else {
-                    Icons.Filled.FavoriteBorder
-                },
-                contentDescription = stringResource(
-                    Res.string.alley_stamp_rally_favorite_icon_content_description
-                ),
-            )
+            }
         }
-
-        UnfavoriteDialog(
-            entry = { unfavoriteDialogEntry },
-            onClearEntry = { unfavoriteDialogEntry = null },
-            onRemoveFavorite = { onFavoriteToggle(false) },
-        )
     }
 }
