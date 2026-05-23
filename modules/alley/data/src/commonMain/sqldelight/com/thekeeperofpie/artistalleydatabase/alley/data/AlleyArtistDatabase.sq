@@ -460,6 +460,7 @@ CREATE TABLE
 CREATE VIRTUAL TABLE IF NOT EXISTS merchEntry_fts USING FTS5 (
     name,
     uuid,
+    notes,
     yearFlags,
     content=merchEntry,
     tokenize="unicode61 remove_diacritics 2"
