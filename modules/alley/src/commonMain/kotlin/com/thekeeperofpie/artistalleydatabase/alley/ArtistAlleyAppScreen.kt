@@ -401,6 +401,7 @@ object ArtistAlleyAppScreen {
                     },
                     onOpenArtist = onOpenArtist,
                     onOpenSeries = onOpenSeries,
+                    onOpenMerch = onOpenMerch,
                 )
             }
 

@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -88,13 +89,15 @@ class StampRallyDetailsViewModel(
             stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@flowFromSuspend null
         val stampRallyWithUserData = entryWithArtists.stampRally
         val stampRally = stampRallyWithUserData.stampRally
-        val artists = entryWithArtists.artists.sortedBy { it.booth }
+        val artists = entryWithArtists.artists
+            .sortedBy { it.booth }
+            .map { it to AlleyImageUtils.getProfileImage(it.embeds) }
 
         // Some stamp rallies have artists in non-AA regions, try and show those
         val otherTables = stampRally.tables
             .filter { table ->
                 artists.none { artist ->
-                    artist.booth == table.substringBefore("-").trim()
+                    artist.first.booth == table.substringBefore("-").trim()
                 }
             }
 
@@ -165,7 +168,7 @@ class StampRallyDetailsViewModel(
     class Entry(
         val stampRally: StampRallyDatabaseEntry,
         val userEntry: StampRallyUserEntry,
-        val artists: List<ArtistEntry>,
+        val artists: List<Pair<ArtistEntry, CatalogImage?>>,
         val otherTables: List<String>,
     ) {
         var favorite by mutableStateOf(userEntry.favorite)
