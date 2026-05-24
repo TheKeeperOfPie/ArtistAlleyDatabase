@@ -18,8 +18,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
@@ -37,7 +37,7 @@ class StampRallySortFilterController(
     lockedSeriesEntry: StateFlow<SeriesInfo?>,
     dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
-    seriesImagesStore: SeriesImagesStore,
+    seriesImageLoader: SeriesImageLoader,
     val settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
     private val allowHideFavorited: Boolean,
@@ -88,7 +88,7 @@ class StampRallySortFilterController(
         dispatchers = dispatchers,
         lockedSeriesEntry = lockedSeriesEntry,
         seriesEntryDao = seriesEntryDao,
-        seriesImagesStore = seriesImagesStore,
+        seriesImageLoader = seriesImageLoader,
         savedStateHandle = savedStateHandle,
     )
 

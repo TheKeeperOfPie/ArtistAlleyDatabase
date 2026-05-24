@@ -24,14 +24,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.utils.launch
@@ -55,9 +52,8 @@ import kotlin.uuid.Uuid
 @AssistedInject
 class ArtistFormViewModel(
     artistInference: ArtistInference,
-    dispatchers: CustomDispatchers,
     private val formDatabase: AlleyFormDatabase,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: FormTagAutocomplete,
     val artistTableAutocomplete: FormArtistTableAutocomplete,
     private val imageUploader: ImageUploader,
@@ -105,8 +101,6 @@ class ArtistFormViewModel(
         initialFormDiff = initialFormDiff,
         saveTaskState = saveTask.state,
     )
-
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
 
@@ -269,7 +263,7 @@ class ArtistFormViewModel(
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
     fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickDone() {
         val artist = artist.value ?: return

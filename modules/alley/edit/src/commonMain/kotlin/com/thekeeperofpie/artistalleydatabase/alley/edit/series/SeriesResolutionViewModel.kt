@@ -9,13 +9,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -26,13 +22,11 @@ import kotlinx.coroutines.flow.stateIn
 class SeriesResolutionViewModel(
     private val artistCache: ArtistCache,
     private val editDatabase: AlleyEditDatabase,
-    dispatchers: CustomDispatchers,
     private val tagAutocomplete: TagAutocomplete,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     @Assisted private val seriesId: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val commitJob = ExclusiveProgressJob(viewModelScope, ::commit)
 
     val artists = flowFromSuspend { loadArtists() }
@@ -43,7 +37,7 @@ class SeriesResolutionViewModel(
     fun seriesPredictions(query: String) =
         tagAutocomplete.seriesPredictions(query, allowCustom = false)
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickDone(series: SeriesInfo) = commitJob.launch { series }
 

@@ -16,8 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -40,7 +38,7 @@ class RemoteArtistDataMergeViewModel(
     private val artistInference: ArtistInference,
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val id: ArtistRemoteEntry.Id,
@@ -111,11 +109,10 @@ class RemoteArtistDataMergeViewModel(
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val saveTask = ExclusiveTask(viewModelScope, ::save)
     val saveTaskState get() = saveTask.state
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onConfirmArtist(artistId: Uuid?) {
         confirmedArtistId.value = artistId

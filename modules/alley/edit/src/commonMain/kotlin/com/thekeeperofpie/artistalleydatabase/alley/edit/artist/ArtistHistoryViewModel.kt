@@ -7,12 +7,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -26,8 +23,7 @@ import kotlin.uuid.Uuid
 @AssistedInject
 class ArtistHistoryViewModel(
     private val database: AlleyEditDatabase,
-    dispatchers: CustomDispatchers,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
@@ -41,9 +37,8 @@ class ArtistHistoryViewModel(
         .mapLatest { database.loadArtistHistory(dataYear, artistId) }
         .mapLatest(ArtistHistoryEntryWithDiff::calculateDiffs)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
     val saveProgress = saveJob.state

@@ -15,8 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -53,7 +53,7 @@ class ArtistSearchViewModel(
     private val merchEntryDao: MerchEntryDao,
     val seriesEntryCache: SeriesEntryCache,
     private val seriesEntryDao: SeriesEntryDao,
-    private val seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     @Assisted val lockedYear: DataYear?,
@@ -114,7 +114,7 @@ class ArtistSearchViewModel(
         settings = settings,
         merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
-        seriesImagesStore = seriesImagesStore,
+        seriesImageLoader = seriesImageLoader,
         allowSettingsBasedToggles = lockedMerch == null && lockedSeries == null,
     )
 

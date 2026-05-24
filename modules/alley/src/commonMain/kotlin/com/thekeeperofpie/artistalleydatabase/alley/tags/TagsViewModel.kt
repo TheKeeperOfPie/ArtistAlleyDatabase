@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -57,7 +56,7 @@ class TagsViewModel(
     merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     settings: ArtistAlleySettings,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     userEntryDao: UserEntryDao,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -122,9 +121,6 @@ class TagsViewModel(
         .cachedIn(viewModelScope)
 
     val dataYear = settings.dataYear
-
-    private val seriesImageLoader =
-        SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
     private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)

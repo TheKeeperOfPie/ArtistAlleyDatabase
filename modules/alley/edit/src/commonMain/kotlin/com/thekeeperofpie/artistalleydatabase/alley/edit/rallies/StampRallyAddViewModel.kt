@@ -11,8 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -29,14 +27,13 @@ class StampRallyAddViewModel(
     private val dispatchers: CustomDispatchers,
     val tagAutocomplete: TagAutocomplete,
     val artistTableAutocomplete: ArtistTableAutocomplete,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     @Assisted private val dataYear: DataYear,
     @Assisted stampRallyId: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveTask: ExclusiveTask<Triple<List<EditImage>, StampRallyDatabaseEntry, Boolean>, BackendRequest.StampRallySave.Response> =
         ExclusiveTask(viewModelScope, ::save)
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     private val stampRallyFormState = savedStateHandle.saveable(
         key = "stampRallyFormState",
@@ -53,7 +50,7 @@ class StampRallyAddViewModel(
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
     fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }

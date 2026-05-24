@@ -11,8 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -30,7 +28,7 @@ import kotlin.uuid.Uuid
 class StampRallyFormMergeViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: TagAutocomplete,
     artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
@@ -44,7 +42,6 @@ class StampRallyFormMergeViewModel(
 
     val tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear)
 
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val saveTask: ExclusiveTask<SaveData, BackendRequest.StampRallyCommitForm.Response> =
         ExclusiveTask(viewModelScope, ::save)
     private val deleteTask: ExclusiveTask<DeleteData, BackendRequest.StampRallyDeleteFromForm.Response> =
@@ -52,7 +49,7 @@ class StampRallyFormMergeViewModel(
     val saveTaskState get() = saveTask.state
     val deleteTaskState get() = deleteTask.state
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickSave(images: List<EditImage>, updated: StampRallyDatabaseEntry) {
         val entry = entry.value ?: return

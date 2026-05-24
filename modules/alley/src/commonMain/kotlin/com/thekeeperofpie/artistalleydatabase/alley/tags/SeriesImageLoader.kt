@@ -6,8 +6,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import kotlinx.coroutines.CoroutineScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
@@ -15,19 +18,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.seconds
 
-// TODO: This entire mechanism is very suboptimal
+@SingleIn(AppScope::class)
+@Inject
 class SeriesImageLoader(
+    appScope: ApplicationScope,
     dispatchers: CustomDispatchers,
-    scope: CoroutineScope,
     seriesImagesStore: SeriesImagesStore,
 ) {
-
     private val requests = mutableStateMapOf<String, Request>()
 
-    private val requestChannel = Channel<SeriesImageInfo>(100, BufferOverflow.DROP_OLDEST)
+    private val requestChannel = Channel<SeriesImageInfo>(200, BufferOverflow.DROP_OLDEST)
 
     init {
-        scope.launch(dispatchers.io) {
+        appScope.launch(dispatchers.io) {
             val allCached = seriesImagesStore.getAllCachedImages()
             requests.putAll(allCached.seriesIdToUrls.mapValues { Request.Done(it.value) })
             allCached.staleIds.forEach {
@@ -35,8 +38,8 @@ class SeriesImageLoader(
             }
             while (isActive) {
                 val chunk = mutableSetOf(requestChannel.receive())
-                withTimeoutOrNull(2.seconds) {
-                    while (isActive) {
+                withTimeoutOrNull(1.seconds) {
+                    while (isActive && chunk.size < 25) {
                         chunk += requestChannel.receive()
                     }
                 }

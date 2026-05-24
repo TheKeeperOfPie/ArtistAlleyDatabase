@@ -16,8 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
@@ -39,7 +37,7 @@ class StampRallyEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val imageUploader: ImageUploader,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: TagAutocomplete,
     val artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
@@ -69,7 +67,6 @@ class StampRallyEditViewModel(
     )
 
     private var hasLoaded by savedStateHandle.saved { false }
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     fun initialize(force: Boolean = false) {
         if (!hasLoaded || force) {
@@ -104,7 +101,7 @@ class StampRallyEditViewModel(
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
     fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }

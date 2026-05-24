@@ -28,8 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -72,7 +70,7 @@ class FavoritesViewModel(
     merchEntryDao: MerchEntryDao,
     val seriesEntryCache: SeriesEntryCache,
     seriesEntryDao: SeriesEntryDao,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
@@ -91,7 +89,7 @@ class FavoritesViewModel(
         settings = settings,
         merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
-        seriesImagesStore = seriesImagesStore,
+        seriesImageLoader = seriesImageLoader,
         allowHideFavorited = false,
     )
 
@@ -100,7 +98,7 @@ class FavoritesViewModel(
         lockedSeriesEntry = ReadOnlyStateFlow(null),
         dispatchers = dispatchers,
         seriesEntryDao = seriesEntryDao,
-        seriesImagesStore = seriesImagesStore,
+        seriesImageLoader = seriesImageLoader,
         settings = settings,
         savedStateHandle = savedStateHandle,
         allowHideFavorited = false,
@@ -249,7 +247,6 @@ class FavoritesViewModel(
                 flowOf(PagingData.empty())
             } else {
                 Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                    val seriesFilterState = listOf(SeriesFilterOption.ALL to true)
                     seriesEntryDao.searchSeries(
                         languageOption = languageOption,
                         year = year,
@@ -287,9 +284,6 @@ class FavoritesViewModel(
     private val rallyMutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
     private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
     private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)
-
-    private val seriesImageLoader =
-        SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     init {
         viewModelScope.launch(dispatchers.io) {

@@ -76,7 +76,7 @@ class SeriesAutocompleteSection(
     dispatchers: CustomDispatchers,
     lockedSeriesEntry: StateFlow<SeriesInfo?>,
     seriesEntryDao: SeriesEntryDao,
-    seriesImagesStore: SeriesImagesStore,
+    seriesImageLoader: SeriesImageLoader,
     savedStateHandle: SavedStateHandle,
     private val showOnlyConfirmedTagsSection: (@Composable (SortFilterExpandedState) -> Unit)? = null,
 ) {
@@ -97,7 +97,6 @@ class SeriesAutocompleteSection(
         .flowOn(dispatchers.io)
         .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val imageLoader = SeriesImageLoader(dispatchers, scope, seriesImagesStore)
     val section = object : SortFilterSectionState.Custom("series") {
         override fun clear() {
             seriesIn.value = emptyList()
@@ -187,7 +186,7 @@ class SeriesAutocompleteSection(
                                         text = {
                                             SeriesRow(
                                                 series = it,
-                                                image = { imageLoader.getSeriesImage(it) },
+                                                image = { seriesImageLoader.getSeriesImage(it) },
                                             )
                                         },
                                         contentPadding = PaddingValues(

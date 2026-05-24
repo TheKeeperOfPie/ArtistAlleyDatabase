@@ -66,9 +66,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.AlleyTagEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
@@ -115,7 +115,7 @@ class ArtistSortFilterController(
     dispatchers: CustomDispatchers,
     merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
-    seriesImagesStore: SeriesImagesStore,
+    seriesImageLoader: SeriesImageLoader,
     val settings: ArtistAlleySettings,
     private val allowHideFavorited: Boolean = true,
     private val allowSettingsBasedToggles: Boolean = true,
@@ -150,7 +150,7 @@ class ArtistSortFilterController(
         dispatchers = dispatchers,
         lockedSeriesEntry = lockedSeriesEntry,
         seriesEntryDao = seriesEntryDao,
-        seriesImagesStore = seriesImagesStore,
+        seriesImageLoader = seriesImageLoader,
         savedStateHandle = savedStateHandle,
         showOnlyConfirmedTagsSection = { state ->
             showOnlyConfirmedTagsSection.Content(state, false)

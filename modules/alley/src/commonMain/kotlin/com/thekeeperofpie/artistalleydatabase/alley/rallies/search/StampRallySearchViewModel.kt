@@ -13,8 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
@@ -48,7 +46,7 @@ import kotlin.random.Random
 class StampRallySearchViewModel(
     dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImageLoader: SeriesImageLoader,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
@@ -88,7 +86,7 @@ class StampRallySearchViewModel(
         lockedSeriesEntry = lockedSeriesEntry,
         dispatchers = dispatchers,
         seriesEntryDao = seriesEntryDao,
-        seriesImagesStore = seriesImagesStore,
+        seriesImageLoader = seriesImageLoader,
         settings = settings,
         savedStateHandle = savedStateHandle,
         allowHideFavorited = true,
@@ -121,8 +119,6 @@ class StampRallySearchViewModel(
             )
         }
         .stateInForCompose(0)
-
-    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -165,7 +161,7 @@ class StampRallySearchViewModel(
         .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
-    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun toggleFavorite(entry: StampRallyEntryGridModel, favorite: Boolean) {
         mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
