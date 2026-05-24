@@ -27,6 +27,7 @@ import artistalleydatabase.modules.alley_app.generated.resources.service_worker_
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
+import coil3.key.Keyer
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.network.DeDupeConcurrentRequestStrategy
@@ -80,6 +81,12 @@ fun App(graph: ArtistAlleyWebGraph) {
                 })
                 add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                     data.toString().toUri()
+                })
+                add(Keyer<ImageWithDimensions> { data, _ ->
+                    (data.coilImageModel as? com.eygraber.uri.Uri).toString()
+                })
+                add(Keyer<com.eygraber.uri.Uri> { data, _ ->
+                    data.toString()
                 })
             }
             .memoryCache {

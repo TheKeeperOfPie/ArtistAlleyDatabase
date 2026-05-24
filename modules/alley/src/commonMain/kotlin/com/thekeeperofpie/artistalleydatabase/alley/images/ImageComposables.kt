@@ -240,7 +240,6 @@ fun ImagePager(
                             model = ImageRequest.Builder(LocalPlatformContext.current)
                                 .data(image)
                                 .placeholderMemoryCacheKey(image.coilImageModel.toString())
-                                .memoryCacheKey(image.coilImageModel.toString() + if (zoomed) "-original" else "")
                                 .apply {
                                     if (zoomed) {
                                         size(SizeResolver.ORIGINAL)
@@ -519,7 +518,6 @@ fun ImageGrid(
                         model = ImageRequest.Builder(LocalPlatformContext.current)
                             .data(image.coilImageModel)
                             .placeholderMemoryCacheKey(image.coilImageModel.toString())
-                            .memoryCacheKey(image.coilImageModel.toString() + if (zoomed) "-original" else "")
                             .apply {
                                 if (zoomed) {
                                     size(SizeResolver.ORIGINAL)

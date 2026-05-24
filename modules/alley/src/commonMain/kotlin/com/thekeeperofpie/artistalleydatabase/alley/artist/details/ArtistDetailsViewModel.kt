@@ -94,51 +94,41 @@ class ArtistDetailsViewModel(
         showFallbackImages,
         entry.mapState(viewModelScope) { it?.artist },
     ) { showFallbackImages, artist ->
-        val fallbackImageYear = artist?.fallbackImageYear
-        val tempImages = artist?.tempImages?.let(AlleyImageUtils::getTempImages).orEmpty()
-        val embedImages = artist?.embeds?.let(AlleyImageUtils::getEmbedImages).orEmpty()
+        val year = artist?.year ?: route.year
+        val images = (artist?.images ?: route.images).orEmpty()
+        val fallbackImages = (artist?.fallbackImages ?: route.fallbackImages).orEmpty()
+        val fallbackImageYear = artist?.fallbackImageYear ?: route.fallbackImageYear
+        val tempImages = (artist?.tempImages ?: route.tempImages).orEmpty()
+        val embeds = (artist?.embeds ?: route.embeds).orEmpty()
         when {
-            artist == null -> if (route.images.isNullOrEmpty()) {
-                LoadingResult.loading()
-            } else {
+            images.isNotEmpty() || fallbackImageYear == null -> {
                 LoadingResult.success(
                     DetailsScreenCatalog(
-                        images = AlleyImageUtils.getArtistImages(
-                            year = route.year,
-                            images = route.images,
+                        images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
+                            year = year,
+                            images = images,
+                            tempImages = tempImages,
+                            embeds = embeds,
                         ),
                         showOutdatedCatalogs = null,
                         fallbackYear = null,
                     )
                 )
             }
-            artist.images.isNotEmpty() || fallbackImageYear == null ->
-                LoadingResult.success(
-                    DetailsScreenCatalog(
-                        images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
-                            year = artist.year,
-                            images = artist.images,
-                            tempImages = artist.tempImages,
-                            embeds = artist.embeds,
-                        ),
-                        showOutdatedCatalogs = null,
-                        fallbackYear = null,
-                    )
-                )
             !showFallbackImages && tempImages.isNotEmpty() ->
                 LoadingResult.success(
                     DetailsScreenCatalog(
-                        images = tempImages,
+                        images = AlleyImageUtils.getTempImages(tempImages),
                         showOutdatedCatalogs = false,
-                        fallbackYear = artist.fallbackImageYear,
+                        fallbackYear = fallbackImageYear,
                     )
                 )
-            !showFallbackImages && embedImages.isNotEmpty() ->
+            !showFallbackImages && embeds.isNotEmpty() ->
                 LoadingResult.success(
                     DetailsScreenCatalog(
-                        images = embedImages,
+                        images = AlleyImageUtils.getEmbedImages(embeds),
                         showOutdatedCatalogs = false,
-                        fallbackYear = artist.fallbackImageYear,
+                        fallbackYear = fallbackImageYear,
                     )
                 )
             !showFallbackImages ->
@@ -146,15 +136,12 @@ class ArtistDetailsViewModel(
                     DetailsScreenCatalog(
                         images = emptyList(),
                         showOutdatedCatalogs = false,
-                        fallbackYear = artist.fallbackImageYear,
+                        fallbackYear = fallbackImageYear,
                     )
                 )
             else -> LoadingResult.success(
                 DetailsScreenCatalog(
-                    images = AlleyImageUtils.getArtistImages(
-                        fallbackImageYear,
-                        artist.fallbackImages
-                    ),
+                    images = AlleyImageUtils.getArtistImages(fallbackImageYear, fallbackImages),
                     showOutdatedCatalogs = showFallbackImages,
                     fallbackYear = fallbackImageYear,
                 )

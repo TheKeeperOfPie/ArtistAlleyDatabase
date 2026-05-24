@@ -20,6 +20,7 @@ import coil3.decode.ImageSource
 import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
+import coil3.key.Keyer
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
@@ -81,6 +82,9 @@ fun main() {
                         }
                     })
                     add(Mapper<ImageWithDimensions, Any> { data, _ -> data.coilImageModel })
+                    add(Keyer<Uri> { data, _ ->
+                        data.toString()
+                    })
                 }
                 .memoryCache {
                     MemoryCache.Builder()
