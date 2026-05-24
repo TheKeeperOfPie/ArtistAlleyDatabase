@@ -138,6 +138,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEn
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.alley.utils.end
 import com.thekeeperofpie.artistalleydatabase.alley.utils.start
 import com.thekeeperofpie.artistalleydatabase.alley.utils.timeZone
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -630,61 +631,21 @@ fun DataYearHeader(
         }
 
         if (showFeedbackReminder) {
-            if (year == DataYear.ANIME_EXPO_2025) {
-                ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                    ) {
-                        val text = buildAnnotatedString {
-                            append("Thanks for attending ")
-                            append(stringResource(year.shortName))
-                            append("! If you have any feedback, please let us know ")
-                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                                withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLink)) {
-                                    append("here")
-                                }
-                            }
-                        }
-                        Text(
-                            text = text,
-                            modifier = Modifier.weight(1f)
-                        )
-                        val uriHandler = LocalUriHandler.current
-                        Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLink) }) {
-                            Text("Open")
-                        }
-                    }
+            val isAlmostOver = remember(year) {
+                val dates = year.dates
+                (dates.end.atStartOfDayIn(dates.timeZone) - 1.days) < Clock.System.now()
+            }
+            if (isAlmostOver) {
+                val link = when (year) {
+                    DataYear.ANIME_EXPO_2023,
+                    DataYear.ANIME_EXPO_2024,
+                    DataYear.ANIME_NYC_2024 -> null
+                    DataYear.ANIME_EXPO_2025 -> BuildKonfig.feedbackFormLink
+                    DataYear.ANIME_EXPO_2026 -> BuildKonfig.feedbackFormLinkAnimeExpo2026
+                    DataYear.ANIME_NYC_2025 -> BuildKonfig.feedbackFormLinkAnimeNyc2025
                 }
-            } else if (year == DataYear.ANIME_NYC_2025) {
-                ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                    ) {
-                        val text = buildAnnotatedString {
-                            append("Thanks for attending ")
-                            append(stringResource(year.shortName))
-                            append("! If you have any feedback, please let us know ")
-                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                                withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLinkAnimeNyc2025)) {
-                                    append("here")
-                                }
-                            }
-                        }
-                        Text(
-                            text = text,
-                            modifier = Modifier.weight(1f)
-                        )
-                        val uriHandler = LocalUriHandler.current
-                        Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLinkAnimeNyc2025) }) {
-                            Text("Open")
-                        }
-                    }
+                if (link != null) {
+                    FeedbackPrompt(year, link)
                 }
             }
         }
@@ -725,6 +686,37 @@ fun DataYearHeader(
                         contentDescription = stringResource(Res.string.alley_settings),
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeedbackPrompt(year: DataYear, link: String) {
+    ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+        ) {
+            val text = buildAnnotatedString {
+                append("Thanks for attending ")
+                append(stringResource(year.shortName))
+                append("! If you have any feedback, please let us know ")
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    withLink(LinkAnnotation.Url(link)) {
+                        append("here")
+                    }
+                }
+            }
+            Text(
+                text = text,
+                modifier = Modifier.weight(1f)
+            )
+            val uriHandler = LocalUriHandler.current
+            Button(onClick = { uriHandler.openUri(link) }) {
+                Text("Open")
             }
         }
     }

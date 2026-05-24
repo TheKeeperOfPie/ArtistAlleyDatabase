@@ -37,6 +37,7 @@ serverChannel=#example
 artistFormLink=https://example.org
 feedbackFormLink=https://example.org
 feedbackFormLinkAnimeNyc2025=https://example.org
+feedbackFormLinkAnimeExpo2026=https://example.org
 ```
 
 `/modules/alley-app/secrets.properties`
