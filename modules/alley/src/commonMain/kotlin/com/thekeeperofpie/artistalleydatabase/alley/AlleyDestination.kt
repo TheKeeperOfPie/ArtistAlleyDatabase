@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.navigation3.runtime.NavKey
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -144,12 +145,12 @@ sealed interface AlleyDestination : NavKey {
             "images/${year.serializedName}/$typePath"
         }
         is Import -> "import/${data}"
-        is Merch -> "merch/${year.serializedNameOrAll}/$merch"
-        is MerchMap -> "merch/map/${year.serializedNameOrAll}/$merch"
-        is Series -> "series/${year.serializedNameOrAll}/$series"
-        is SeriesMap -> "series/map/${year.serializedNameOrAll}/$series"
+        is Merch -> "merch/${year.serializedNameOrAll}/${Uri.encode(merch)}"
+        is MerchMap -> "merch/map/${year.serializedNameOrAll}/${Uri.encode(merch)}"
+        is Series -> "series/${year.serializedNameOrAll}/${Uri.encode(series)}"
+        is SeriesMap -> "series/map/${year.serializedNameOrAll}/${Uri.encode(series)}"
         Settings -> "settings"
-        is StampRallies -> "stamp_rallies/${year.serializedNameOrAll}/$series"
+        is StampRallies -> "stamp_rallies/${year.serializedNameOrAll}/${Uri.encode(series)}"
         is StampRallyDetails -> "stamp_rally/${year.serializedName}/$id"
         is StampRallyMap -> "stamp_rally/map/${year.serializedName}/$id"
     }
@@ -223,20 +224,29 @@ sealed interface AlleyDestination : NavKey {
                     "merch" -> when (parts.size) {
                         4 if parts[1] == "map" -> MerchMap(
                             year = parts[2].toDataYearOrNull(),
-                            merch = parts[3]
+                            merch = Uri.decode(parts[3])
                         )
-                        3 -> Merch(year = parts[1].toDataYearOrNull(), merch = parts[2])
+                        3 -> Merch(year = parts[1].toDataYearOrNull(), merch = Uri.decode(parts[2]))
                         else -> null
                     }
                     "series" -> when (parts.size) {
                         4 if parts[1] == "map" ->
-                            SeriesMap(year = parts[2].toDataYearOrNull(), series = parts[3])
-                        3 -> Series(year = parts[1].toDataYearOrNull(), series = parts[2])
+                            SeriesMap(
+                                year = parts[2].toDataYearOrNull(),
+                                series = Uri.decode(parts[3])
+                            )
+                        3 -> Series(
+                            year = parts[1].toDataYearOrNull(),
+                            series = Uri.decode(parts[2])
+                        )
                         else -> null
                     }
                     "settings" -> Settings
                     "stamp_rallies" -> if (parts.size == 3) {
-                        StampRallies(year = parts[1].toDataYearOrNull(), series = parts[2])
+                        StampRallies(
+                            year = parts[1].toDataYearOrNull(),
+                            series = Uri.decode(parts[2])
+                        )
                     } else null
                     "stamp_rally" -> when (parts.size) {
                         4 if parts[1] == "map" ->
