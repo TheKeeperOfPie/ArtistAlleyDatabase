@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -101,7 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.series
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.ClickableIconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
@@ -121,7 +119,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCa
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
@@ -309,7 +306,10 @@ object ArtistDetailsScreen {
             } else {
                 item("artistName", GridUtils.maxSpanFunction) {
                     ThemeAwareElevatedCard {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.height(IntrinsicSize.Min)
+                        ) {
                             SelectableInfoText(
                                 stringResource(Res.string.alley_artist_details_artist_name),
                                 artist.name,
@@ -317,44 +317,27 @@ object ArtistDetailsScreen {
                                 modifier = Modifier.weight(1f)
                             )
 
-                            val scope = rememberCoroutineScope()
                             if (artist.newArtist) {
-                                Box(Modifier.padding(16.dp)) {
-                                    val tooltipState = rememberTooltipState()
-                                    IconWithTooltip(
-                                        imageVector = Icons.Default.FiberNew,
-                                        tooltipText = stringResource(
-                                            Res.string.alley_artist_new_explanation,
-                                            stringResource(artist.year.convention.fullName),
-                                            artist.year.convention.firstRecordedYear,
-                                        ),
-                                        contentDescription = stringResource(Res.string.alley_artist_new_content_description),
-                                        tooltipState = tooltipState,
-                                        modifier = Modifier.clickable {
-                                            scope.launch {
-                                                tooltipState.show(MutatePriority.UserInput)
-                                            }
-                                        }
-                                    )
-                                }
+                                ClickableIconWithTooltip(
+                                    imageVector = Icons.Default.FiberNew,
+                                    tooltipText = stringResource(
+                                        Res.string.alley_artist_new_explanation,
+                                        stringResource(artist.year.convention.fullName),
+                                        artist.year.convention.firstRecordedYear,
+                                    ),
+                                    contentDescription = stringResource(Res.string.alley_artist_new_content_description),
+                                    iconModifier = Modifier.fillMaxHeight()
+                                )
                             }
 
                             if (artist.verifiedArtist) {
-                                Box(Modifier.padding(16.dp)) {
-                                    val tooltipState = rememberTooltipState()
-                                    IconWithTooltip(
-                                        imageVector = Icons.Default.Verified,
-                                        tooltipText = stringResource(Res.string.alley_artist_verified_explanation),
-                                        contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
-                                        tooltipState = tooltipState,
-                                        tint = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier.clickable {
-                                            scope.launch {
-                                                tooltipState.show(MutatePriority.UserInput)
-                                            }
-                                        }
-                                    )
-                                }
+                                ClickableIconWithTooltip(
+                                    imageVector = Icons.Default.Verified,
+                                    tooltipText = stringResource(Res.string.alley_artist_verified_explanation),
+                                    contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    iconModifier = Modifier.fillMaxHeight()
+                                )
                             }
                         }
                     }

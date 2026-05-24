@@ -3,9 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -41,6 +44,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_unknown
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_cost
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_end_table_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_fandom
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_merch
@@ -48,6 +52,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_series
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_start_table_explanation
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
@@ -67,11 +72,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.ClickableIconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
@@ -106,12 +114,6 @@ object StampRallyDetailsScreen {
         val imagesResult by viewModel.images.collectAsStateWithLifecycle()
         // TODO: Loading indicator
         val images = imagesResult.result.orEmpty()
-        val pageCount = when {
-            images.isEmpty() -> 0
-            images.size == 1 -> 1
-            else -> images.size + 1
-        }
-
         val imagePagerState = rememberImagePagerState(
             images,
             viewModel.initialImageIndex
@@ -335,6 +337,8 @@ object StampRallyDetailsScreen {
                             item = { value, _, _ ->
                                 ArtistRow(
                                     value = value,
+                                    isStartTable = value?.first?.booth in entry.stampRally.startTables,
+                                    isEndTable = value?.first?.booth in entry.stampRally.endTables,
                                     onClick = {
                                         value?.first?.let {
                                             eventSink(Event.OpenArtist(it))
@@ -355,10 +359,15 @@ object StampRallyDetailsScreen {
                             labelTextRes = Res.string.alley_stamp_rally_details_other_tables,
                             contentDescriptionTextRes = null,
                             values = otherTables,
-                            valueToText = { it },
-                            onClick = null,
                             allowExpand = false,
                             showDividerAbove = false,
+                            item = { value, _, _ ->
+                                ArtistRow(
+                                    booth = value.orEmpty(),
+                                    isStartTable = value in entry.stampRally.startTables,
+                                    isEndTable = value in entry.stampRally.endTables,
+                                )
+                            },
                         )
                     }
                 }
@@ -471,12 +480,15 @@ object StampRallyDetailsScreen {
     @Composable
     private fun ArtistRow(
         value: Pair<ArtistEntry, CatalogImage?>?,
+        isStartTable: Boolean,
+        isEndTable: Boolean,
         onClick: () -> Unit,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable(onClick = onClick)
                 .fillMaxWidth()
+                .height(IntrinsicSize.Min)
         ) {
             val artist = value?.first
             val profileImage = value?.second
@@ -496,8 +508,61 @@ object StampRallyDetailsScreen {
             Text(
                 text = text.orEmpty(),
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
             )
+
+            StartEndTableIndicator(isStartTable = isStartTable, isEndTable = isEndTable)
+        }
+    }
+
+    @Composable
+    private fun ArtistRow(
+        booth: String,
+        isStartTable: Boolean,
+        isEndTable: Boolean,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+                .height(IntrinsicSize.Min)
+        ) {
+            Text(
+                text = booth,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            StartEndTableIndicator(isStartTable = isStartTable, isEndTable = isEndTable)
+        }
+    }
+
+    @Composable
+    private fun StartEndTableIndicator(
+        isStartTable: Boolean,
+        isEndTable: Boolean,
+    ) {
+        if (!isStartTable && !isEndTable) return
+        Row {
+            if (isStartTable) {
+                ClickableIconWithTooltip(
+                    imageVector = Icons.Default.Start,
+                    tooltipText = stringResource(Res.string.alley_stamp_rally_details_start_table_explanation),
+                    contentDescription = null,
+                    iconModifier = Modifier.fillMaxHeight()
+                )
+            }
+            if (isEndTable) {
+                ClickableIconWithTooltip(
+                    imageVector = Icons.Default.HandPackage,
+                    tooltipText = stringResource(Res.string.alley_stamp_rally_details_end_table_explanation),
+                    contentDescription = null,
+                    iconModifier = Modifier.fillMaxHeight()
+                )
+            }
         }
     }
 

@@ -18,6 +18,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -495,6 +496,47 @@ fun IconWithTooltip(
             contentDescription = contentDescription,
             tint = tint,
         )
+    }
+}
+
+@Composable
+fun ClickableIconWithTooltip(
+    imageVector: ImageVector,
+    tooltipText: String,
+    contentDescription: String? = tooltipText,
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
+    tooltipState: TooltipState = rememberTooltipState(),
+    tint: Color = LocalContentColor.current,
+) {
+    val scope = rememberCoroutineScope()
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(tooltipText, textAlign = TextAlign.Center) } },
+        state = tooltipState,
+        modifier = modifier
+            .minimumInteractiveComponentSize()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    scope.launch {
+                        tooltipState.show(MutatePriority.UserInput)
+                    }
+                },
+            ),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.minimumInteractiveComponentSize().then(iconModifier)
+        ) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = contentDescription,
+                tint = tint,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
     }
 }
 
