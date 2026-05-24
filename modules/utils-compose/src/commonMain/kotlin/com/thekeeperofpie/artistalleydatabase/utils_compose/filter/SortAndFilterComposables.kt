@@ -13,6 +13,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +73,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -98,6 +103,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -977,14 +986,43 @@ fun SheetDragHandle(
 @Composable
 fun SheetContent(
     state: SortFilterState<*>,
+    bottomSheetState: SheetState,
     bottomNavigationState: BottomNavigationState?,
+    modifier: Modifier = Modifier,
 ) {
-    SortFilterOptionsPanel(
-        state = state,
-        modifier = Modifier.padding(
-            bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
+    // Handle compact layouts with a bottom nav bar
+    val extraAnimateHeight = with(LocalDensity.current) { 100.dp.roundToPx() }
+    Column(
+        modifier = modifier
+            .animateEnterExit(
+                enter = slideInVertically { it + extraAnimateHeight },
+                exit = slideOutVertically { it + extraAnimateHeight },
+            )
+            .renderMaybeInSharedTransitionScopeOverlay(1f)
+            .sharedElement(SharedTransitionKey.makeKeyForId("sortFilterBottomSheet"), "")
+            .clip(BottomSheetDefaults.ExpandedShape)
+    ) {
+        val scope = rememberCoroutineScope()
+        SheetDragHandle(
+            state = state,
+            targetValue = { bottomSheetState.targetValue },
+            onClick = {
+                if (bottomSheetState.currentValue == SheetValue.Expanded) {
+                    scope.launch { bottomSheetState.partialExpand() }
+                } else {
+                    scope.launch { bottomSheetState.expand() }
+                }
+            },
         )
-    )
+        SortFilterOptionsPanel(
+            state = state,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .padding(
+                    bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
+                )
+        )
+    }
 }
 
 @Composable
@@ -996,6 +1034,13 @@ fun SortFilterBottomScaffold(
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
     sheetPeekHeight: Dp = Dp.Unspecified,
     bottomNavigationState: BottomNavigationState? = null,
+    sheetContent: @Composable (state: SortFilterState<*>) -> Unit = {
+        SheetContent(
+            state = it,
+            bottomSheetState = scaffoldState.bottomSheetState,
+            bottomNavigationState = bottomNavigationState,
+        )
+    },
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -1015,32 +1060,16 @@ fun SortFilterBottomScaffold(
             (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
                     (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
         },
-        sheetDragHandle = {
-            if (state != null) {
-                SheetDragHandle(
-                    state = state,
-                    targetValue = { bottomSheetState.targetValue },
-                    onClick = {
-                        if (bottomSheetState.currentValue == SheetValue.Expanded) {
-                            scope.launch { bottomSheetState.partialExpand() }
-                        } else {
-                            scope.launch { bottomSheetState.expand() }
-                        }
-                    },
-                )
-            }
-        },
+        sheetDragHandle = null,
         sheetContent = {
             if (state != null) {
-                SheetContent(
-                    state = state,
-                    bottomNavigationState = bottomNavigationState,
-                )
+                sheetContent(state)
             } else {
                 // State saver crashes if this contains nothing
                 Spacer(Modifier.height(1.dp))
             }
         },
+        sheetContainerColor = Color.Unspecified,
         sheetTonalElevation = 4.dp,
         sheetShadowElevation = 4.dp,
         containerColor = MaterialTheme.colorScheme.background,

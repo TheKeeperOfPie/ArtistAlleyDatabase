@@ -352,7 +352,7 @@ object BrowseScreen {
                     contentPadding = PaddingValues(
                         start = horizontalContentPadding,
                         end = horizontalContentPadding,
-                        bottom = 80.dp
+                        bottom = 200.dp,
                     ),
                     modifier = Modifier
                         .fillMaxSize()

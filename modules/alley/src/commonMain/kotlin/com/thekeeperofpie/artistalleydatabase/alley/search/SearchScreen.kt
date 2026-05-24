@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.search
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.combinedClickable
@@ -83,6 +85,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
@@ -136,7 +140,15 @@ object SearchScreen {
             gridState = gridState,
             onClickBack = onClickBack,
             topBar = {
-                EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                EnterAlwaysTopAppBarHeightChange(
+                    scrollBehavior = scrollBehavior,
+                    modifier = Modifier
+                        .animateEnterExit(
+                            enter = slideInVertically { -it },
+                            exit = slideOutVertically { -it },
+                        )
+                        .renderMaybeInSharedTransitionScopeOverlay(1f)
+                ) {
                     DisplayTypeSearchBar(
                         onClickBack = onClickBack,
                         query = query,
@@ -334,7 +346,7 @@ object SearchScreen {
                     columns = columns,
                     listState = listState,
                     horizontalScrollState = horizontalScrollState,
-                    contentPadding = PaddingValues(bottom = 80.dp),
+                    contentPadding = PaddingValues(bottom = 200.dp),
                     columnHeader = columnHeader,
                     tableCell = tableCell,
                     noResultsHeader = noResultsItem,
@@ -404,14 +416,14 @@ object SearchScreen {
                             top = 8.dp,
                             start = horizontalContentPadding,
                             end = horizontalContentPadding,
-                            bottom = 156.dp,
+                            bottom = 200.dp,
                         )
                         DisplayType.CARD,
                             -> PaddingValues(
                             start = 16.dp + horizontalContentPadding,
                             end = 16.dp + horizontalContentPadding,
                             top = 8.dp,
-                            bottom = 156.dp,
+                            bottom = 200.dp,
                         )
                         DisplayType.TABLE -> throw IllegalArgumentException()
                     },
