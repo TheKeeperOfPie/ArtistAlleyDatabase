@@ -1,6 +1,7 @@
 import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
+import kotlin.collections.Set;
 import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
@@ -99,6 +100,8 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntry (
     stampRallyId TEXT NOT NULL,
     beforeFandom TEXT,
     beforeTables TEXT AS List<String>,
+    beforeStartTables TEXT AS Set<String> DEFAULT NULL,
+    beforeEndTables TEXT AS Set<String> DEFAULT NULL,
     beforeLinks TEXT AS List<String>,
     beforeTableMin INTEGER AS TableMin,
     beforePrize TEXT,
@@ -109,6 +112,8 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntry (
     beforeImages TEXT AS List<DatabaseImage>,
     afterFandom TEXT,
     afterTables TEXT AS List<String>,
+    afterStartTables TEXT AS Set<String> DEFAULT NULL,
+    afterEndTables TEXT AS Set<String> DEFAULT NULL,
     afterLinks TEXT AS List<String>,
     afterTableMin INTEGER AS TableMin,
     afterPrize TEXT,
@@ -128,6 +133,8 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntryHistory (
     stampRallyId TEXT NOT NULL,
     beforeFandom TEXT,
     beforeTables TEXT AS List<String>,
+    beforeStartTables TEXT AS Set<String> DEFAULT NULL,
+    beforeEndTables TEXT AS Set<String> DEFAULT NULL,
     beforeLinks TEXT AS List<String>,
     beforeTableMin INTEGER AS TableMin,
     beforePrize TEXT,
@@ -138,6 +145,8 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntryHistory (
     beforeImages TEXT AS List<DatabaseImage>,
     afterFandom TEXT,
     afterTables TEXT AS List<String>,
+    afterStartTables TEXT AS Set<String> DEFAULT NULL,
+    afterEndTables TEXT AS Set<String> DEFAULT NULL,
     afterLinks TEXT AS List<String>,
     afterTableMin INTEGER AS TableMin,
     afterPrize TEXT,

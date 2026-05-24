@@ -46,6 +46,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_start_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_table_min
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_tables
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_tables_any
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_booth_and_table_name
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
@@ -93,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
@@ -477,6 +479,39 @@ abstract class StampRallyFormScope(
                 }
             }
             FlexBox(Modifier.padding(start = 32.dp, top = 8.dp, bottom = 8.dp)) {
+                val any by remember {
+                    derivedStateOf {
+                        tables.map { it.booth }.toSet() == selectedTables.toSet()
+                    }
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable {
+                            if (any) {
+                                selectedTables.clear()
+                            } else {
+                                selectedTables.replaceAll(tables.map { it.booth }.toSet())
+                            }
+                        }
+                        .padding(end = 16.dp)
+                ) {
+                    Checkbox(
+                        enabled = !scope.forceLocked && state.lockState.editable,
+                        checked = any,
+                        onCheckedChange = {
+                            if (it) {
+                                selectedTables.replaceAll(tables.map { it.booth }.toSet())
+                            } else {
+                                selectedTables.clear()
+                            }
+                        },
+                    )
+
+                    Text(text = stringResource(Res.string.alley_edit_stamp_rally_edit_tables_any))
+                }
+
                 tables.forEach {
                     val booth = it.booth
                     Row(

@@ -274,6 +274,7 @@
     <string name="alley_edit_stamp_rally_edit_tables">Tables</string>
     <string name="alley_edit_stamp_rally_edit_start_tables">Start tables</string>
     <string name="alley_edit_stamp_rally_edit_end_tables">Prize tables</string>
+    <string name="alley_edit_stamp_rally_edit_tables_any">Any</string>
     <string name="alley_edit_stamp_rally_edit_links">Links</string>
     <string name="alley_edit_stamp_rally_edit_table_min">Table min</string>
     <string name="alley_edit_stamp_rally_edit_prize">Prize</string>
