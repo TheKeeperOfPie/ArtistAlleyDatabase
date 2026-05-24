@@ -572,20 +572,8 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
         QuestionAnswer(
             question = "I'm a tabling artist and my info is missing or incorrect",
             answer = {
-                append("If you're tabling at the latest convention ($latestConvention), submit the ")
-                withStyle(
-                    SpanStyle(
-                        color = colorScheme.primary,
-                        textDecoration = TextDecoration.Underline,
-                    )
-                ) {
-                    withLink(LinkAnnotation.Url(BuildKonfig.artistFormLink)) {
-                        append("artist form")
-                    }
-                }
-                append(
-                    " and we'll get your info updated! Thank you for helping make the site better!"
-                )
+                append("If you're tabling at the latest convention ($latestConvention), see the" +
+                        "\"Is this you?\" prompt at the bottom of your artist page.")
             }
         )
 
