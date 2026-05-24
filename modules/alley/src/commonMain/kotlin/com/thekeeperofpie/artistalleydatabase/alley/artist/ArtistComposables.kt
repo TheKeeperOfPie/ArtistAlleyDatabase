@@ -22,6 +22,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -102,6 +103,7 @@ fun ArtistTitle(
             if (name == null || booth != null) {
                 Text(
                     text = if (name == null) "" else booth!!,
+                    style = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
@@ -170,11 +172,11 @@ fun ArtistListRow(
                         .copy(fontFamily = FontFamily.Monospace),
                     maxLines = 1,
                     modifier = Modifier
+                        .padding(12.dp)
                         .conditionally(
                             useSharedElements,
                             Modifier.sharedElement("booth", artist.id)
                         )
-                        .padding(12.dp)
                 )
             }
 

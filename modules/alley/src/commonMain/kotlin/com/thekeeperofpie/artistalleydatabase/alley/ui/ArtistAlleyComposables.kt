@@ -57,6 +57,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.RadioButton
@@ -98,6 +99,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -160,7 +162,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
@@ -304,12 +305,12 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                         color = MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.5f),
                         shape = RoundedCornerShape(topEnd = 12.dp)
                     )
-                    .renderMaybeInSharedTransitionScopeOverlay()
             ) {
                 val booth = entry.booth
                 if (booth != null) {
                     Text(
                         text = booth,
+                        style = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
                         modifier = Modifier
                             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
                             .sharedElement("booth", sharedElementId, zIndexInOverlay = 1f)
