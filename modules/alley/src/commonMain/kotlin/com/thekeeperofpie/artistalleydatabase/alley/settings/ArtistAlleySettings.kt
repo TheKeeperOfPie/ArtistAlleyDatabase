@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
@@ -33,4 +34,5 @@ interface ArtistAlleySettings {
 
     val artistTagsIn: MutableStateFlow<Set<ArtistTag>>
     val artistTagsNotIn: MutableStateFlow<Set<ArtistTag>>
+    val rootDestination: MutableStateFlow<AlleyRootDestination>
 }

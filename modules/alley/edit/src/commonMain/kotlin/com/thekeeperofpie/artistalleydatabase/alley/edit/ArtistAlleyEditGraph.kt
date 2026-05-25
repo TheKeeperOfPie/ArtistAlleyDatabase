@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
@@ -101,5 +102,6 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
 
         override val artistTagsIn = MutableStateFlow(emptySet<ArtistTag>())
         override val artistTagsNotIn = MutableStateFlow(emptySet<ArtistTag>())
+        override val rootDestination = MutableStateFlow(AlleyRootDestination.ARTISTS)
     }
 }

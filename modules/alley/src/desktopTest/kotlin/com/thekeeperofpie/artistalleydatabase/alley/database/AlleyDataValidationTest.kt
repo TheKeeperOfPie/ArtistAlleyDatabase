@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
@@ -35,5 +36,6 @@ class AlleyDataValidationTest {
 
         override val artistTagsIn = MutableStateFlow(emptySet<ArtistTag>())
         override val artistTagsNotIn = MutableStateFlow(emptySet<ArtistTag>())
+        override val rootDestination = MutableStateFlow(AlleyRootDestination.ARTISTS)
     }
 }

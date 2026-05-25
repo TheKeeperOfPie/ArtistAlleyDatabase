@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
@@ -131,6 +132,13 @@ class ArtistAlleyWebSettings(
                     ArtistTag.entries.find { it.name == target }
                 }
                 .toSet()
+        },
+    )
+    override val rootDestination by register(
+        serialize = { it.name },
+        deserialize = { value ->
+            AlleyRootDestination.entries.find { it.name == value }
+                ?: AlleyRootDestination.ARTISTS
         },
     )
 

@@ -31,14 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
-import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_artists
-import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_browse
-import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_favorites
-import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_map
-import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
@@ -48,17 +41,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
-import com.thekeeperofpie.artistalleydatabase.icons.Icons
-import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.List
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Approval
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Brush
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,12 +63,16 @@ object AlleyRootScreen {
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
     ) {
+        val settings = remember(graph) { graph.settings }
         val scrollPositions = ScrollStateSaver.scrollPositions()
         val mapTransformState = MapScreen.rememberTransformState()
-        var destination by rememberSaveable { mutableStateOf(Destination.ARTISTS) }
+        var destination by rememberSaveable { mutableStateOf(settings.rootDestination.value) }
         NavigationScaffold(
             destination = { destination },
-            onChangeDestination = { destination = it },
+            onChangeDestination = {
+                settings.rootDestination.value = it
+                destination = it
+            },
         ) {
             Box(
                 Modifier.fillMaxSize()
@@ -93,7 +83,7 @@ object AlleyRootScreen {
                     )
             ) {
                 when (destination) {
-                    Destination.ARTISTS ->
+                    AlleyRootDestination.ARTISTS ->
                         ArtistSearchScreen(
                             graph = graph,
                             lockedYear = null,
@@ -110,11 +100,11 @@ object AlleyRootScreen {
                             onOpenChangelog = onOpenChangelog,
                             onOpenSettings = onOpenSettings,
                             scrollStateSaver = ScrollStateSaver.fromMap(
-                                Destination.ARTISTS.name,
+                                AlleyRootDestination.ARTISTS.name,
                                 scrollPositions,
                             ),
                         )
-                    Destination.BROWSE ->
+                    AlleyRootDestination.BROWSE ->
                         BrowseScreen(
                             graph = graph,
                             onSeriesClick = onOpenSeries,
@@ -123,36 +113,36 @@ object AlleyRootScreen {
                             onOpenChangelog = onOpenChangelog,
                             onOpenSettings = onOpenSettings,
                         )
-                    Destination.FAVORITES ->
+                    AlleyRootDestination.FAVORITES ->
                         FavoritesScreen(
                             graph = graph,
                             artistsScrollStateSaver = ScrollStateSaver.fromMap(
-                                Destination.FAVORITES.name + "artists",
+                                AlleyRootDestination.FAVORITES.name + "artists",
                                 scrollPositions,
                             ),
                             ralliesScrollStateSaver = ScrollStateSaver.fromMap(
-                                Destination.FAVORITES.name + "rallies",
+                                AlleyRootDestination.FAVORITES.name + "rallies",
                                 scrollPositions,
                             ),
                             seriesScrollStateSaver = ScrollStateSaver.fromMap(
-                                Destination.FAVORITES.name + "series",
+                                AlleyRootDestination.FAVORITES.name + "series",
                                 scrollPositions,
                             ),
                             merchScrollStateSaver = ScrollStateSaver.fromMap(
-                                Destination.FAVORITES.name + "merch",
+                                AlleyRootDestination.FAVORITES.name + "merch",
                                 scrollPositions,
                             ),
-                            onNavigateToArtists = { destination = Destination.ARTISTS },
+                            onNavigateToArtists = { destination = AlleyRootDestination.ARTISTS },
                             onNavigateToRallies = {
-                                destination = Destination.STAMP_RALLIES
+                                destination = AlleyRootDestination.STAMP_RALLIES
                             },
                             onNavigateToSeries = {
                                 // TODO: This doesn't tab over to series
-                                destination = Destination.BROWSE
+                                destination = AlleyRootDestination.BROWSE
                             },
                             onNavigateToMerch = {
                                 // TODO: This doesn't tab over to merch
-                                destination = Destination.BROWSE
+                                destination = AlleyRootDestination.BROWSE
                             },
                             onOpenArtist = onOpenArtist,
                             onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
@@ -164,7 +154,7 @@ object AlleyRootScreen {
                             onOpenChangelog = onOpenChangelog,
                             onOpenSettings = onOpenSettings,
                         )
-                    Destination.MAP ->
+                    AlleyRootDestination.MAP ->
                         FavoritesMapScreen(
                             graph = graph,
                             mapTransformState = mapTransformState,
@@ -172,7 +162,7 @@ object AlleyRootScreen {
                                 onOpenArtist(entry.artist, imageIndex)
                             },
                         )
-                    Destination.STAMP_RALLIES ->
+                    AlleyRootDestination.STAMP_RALLIES ->
                         StampRallySearchScreen(
                             graph = graph,
                             lockedYear = null,
@@ -183,7 +173,7 @@ object AlleyRootScreen {
                             onOpenChangelog = onOpenChangelog,
                             onOpenSettings = onOpenSettings,
                             scrollStateSaver = ScrollStateSaver.fromMap(
-                                Destination.STAMP_RALLIES.name,
+                                AlleyRootDestination.STAMP_RALLIES.name,
                                 scrollPositions,
                             ),
                         )
@@ -194,8 +184,8 @@ object AlleyRootScreen {
 
     @Composable
     private fun NavigationScaffold(
-        destination: () -> Destination,
-        onChangeDestination: (Destination) -> Unit,
+        destination: () -> AlleyRootDestination,
+        onChangeDestination: (AlleyRootDestination) -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
         val movableContent = remember { movableContentOf(content) }
@@ -212,7 +202,7 @@ object AlleyRootScreen {
                         )
                         .renderMaybeInSharedTransitionScopeOverlay(2f)
                 ) {
-                    Destination.entries.forEach {
+                    AlleyRootDestination.entries.forEach {
                         NavigationRailItem(
                             icon = {
                                 Icon(
@@ -243,7 +233,7 @@ object AlleyRootScreen {
                         )
                         .renderMaybeInSharedTransitionScopeOverlay(2f)
                 ) {
-                    Destination.entries.forEach {
+                    AlleyRootDestination.entries.forEach {
                         NavigationBarItem(
                             icon = {
                                 Icon(
@@ -259,13 +249,5 @@ object AlleyRootScreen {
                 }
             }
         }
-    }
-
-    enum class Destination(val icon: ImageVector, val textRes: StringResource) {
-        ARTISTS(Icons.Default.Brush, Res.string.alley_nav_bar_artists),
-        BROWSE(Icons.AutoMirrored.Default.List, Res.string.alley_nav_bar_browse),
-        FAVORITES(Icons.Default.Favorite, Res.string.alley_nav_bar_favorites),
-        MAP(Icons.Default.Map, Res.string.alley_nav_bar_map),
-        STAMP_RALLIES(Icons.Default.Approval, Res.string.alley_nav_bar_stamp_rallies),
     }
 }

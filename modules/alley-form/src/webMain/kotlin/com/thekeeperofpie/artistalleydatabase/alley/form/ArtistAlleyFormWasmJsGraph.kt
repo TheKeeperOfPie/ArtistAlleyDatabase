@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
@@ -53,6 +54,7 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
 
         override val artistTagsIn = MutableStateFlow(emptySet<ArtistTag>())
         override val artistTagsNotIn = MutableStateFlow(emptySet<ArtistTag>())
+        override val rootDestination = MutableStateFlow(AlleyRootDestination.ARTISTS)
     }
 
     @DependencyGraph.Factory
