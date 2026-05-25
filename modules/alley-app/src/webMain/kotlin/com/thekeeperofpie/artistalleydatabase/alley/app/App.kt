@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import artistalleydatabase.modules.alley_app.generated.resources.Res
+import artistalleydatabase.modules.alley_app.generated.resources.legacy_domain_action
+import artistalleydatabase.modules.alley_app.generated.resources.legacy_domain_warning
 import artistalleydatabase.modules.alley_app.generated.resources.service_worker_reload
 import artistalleydatabase.modules.alley_app.generated.resources.service_worker_waiting_for_reload
 import coil3.ImageLoader
@@ -40,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -149,6 +152,22 @@ private fun Content(graph: ArtistAlleyWebGraph) {
                     when (result) {
                         SnackbarResult.Dismissed -> Unit
                         SnackbarResult.ActionPerformed -> globalSkipWaitingBridge.skipWaiting()
+                    }
+                }
+            }
+            LaunchedEffect(snackbarHostState) {
+                if (window.location.hostname == AlleyUtils.legacySiteDomain) {
+                    val result = snackbarHostState.showSnackbar(
+                        message = getString(
+                            Res.string.legacy_domain_warning,
+                            AlleyUtils.siteUrl,
+                        ),
+                        actionLabel = getString(Res.string.legacy_domain_action),
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Indefinite,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        window.location.href = AlleyUtils.siteUrl
                     }
                 }
             }

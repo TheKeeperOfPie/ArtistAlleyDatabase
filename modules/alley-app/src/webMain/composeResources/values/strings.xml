@@ -2,4 +2,6 @@
 <resources>
     <string name="service_worker_waiting_for_reload">New version of the site available, update now?</string>
     <string name="service_worker_reload">Update</string>
+    <string name="legacy_domain_warning">We've moved to a new domain at %1$s, please use that as we'll be shutting this one down at some point</string>
+    <string name="legacy_domain_action">Open</string>
 </resources>

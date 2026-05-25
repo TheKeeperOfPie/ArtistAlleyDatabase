@@ -2,7 +2,7 @@
 
 Any disclaimers/licensing/build notes from the root README still apply.
 
-This module represents the site build for https://artistalley.pages.dev, implemented using Compose
+This module represents the site build for https://artistalley.directory, implemented using Compose
 Multiplatform for Web.
 
 ## Build

@@ -4,7 +4,7 @@ Anime Archive (Anichive, formerly Artist Alley Database), is an app in two parts
 UNOFFICIAL client for [AniList.co](https://anilist.co), which allows the user to search and track
 anime/manga.
 
-__If you're looking for artistalley.pages.dev, see `./modules/alley-app/README.md`__
+__If you're looking for artistalley.directory, see `./modules/alley-app/README.md`__
 
 It is also an app to catalog art prints obtained from anime conventions in an easily searchable
 format with support for tagging metadata like the series, characters, and artists of each piece.

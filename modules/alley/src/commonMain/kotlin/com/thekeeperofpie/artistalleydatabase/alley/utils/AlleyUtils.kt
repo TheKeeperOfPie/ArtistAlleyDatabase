@@ -13,4 +13,5 @@ object AlleyUtils {
     const val prodImagesUrl = BuildKonfig.prodImagesUrl
     const val serverUrl = BuildKonfig.serverUrl
     const val tmdbApiKey = BuildKonfig.tmdbApiKey
+    const val legacySiteDomain = BuildKonfig.legacySiteDomain
 }
