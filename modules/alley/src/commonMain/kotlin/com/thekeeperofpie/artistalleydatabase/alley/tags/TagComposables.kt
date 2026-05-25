@@ -44,6 +44,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text
 import coil3.compose.AsyncImage
+import coil3.request.crossfade
 import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
@@ -69,9 +70,9 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Monitor
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
@@ -352,20 +353,42 @@ fun LazyGridScope.series(
         val expanded = expanded() || !canExpand
         val series = series[if (expanded) it else randomizedIndexes[it]]
         val imageState = rememberCoilImageState(image(series))
-        if (!expanded && it >= columnCount) {
-            FadedSeriesCard(
-                series = series,
-                imageState = imageState,
-                onClick = onClick,
-                modifier = Modifier.animateItem()
-            )
-        } else {
-            NormalSeriesCard(
-                series = series,
-                imageState = imageState,
-                onClick = onClick,
-                modifier = Modifier.animateItem()
-            )
+        val faded = !expanded && it >= columnCount
+        ThemeAwareElevatedCard(onClick = { onClick(series) }, modifier = Modifier.animateItem()) {
+            val colors = imageState.colors
+            val containerColor = colors.containerColor
+                .takeOrElse { MaterialTheme.colorScheme.surfaceVariant }
+            Column(modifier = Modifier.background(containerColor)) {
+                CoilImage(
+                    state = imageState,
+                    model = imageState.request()
+                        .crossfade(true)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(0.66f)
+                        .conditionally(faded, Modifier.fadingEdgeBottom(firstStop = 0.5f))
+                )
+
+                if (!faded) {
+                    val languageOptionMedia = LocalLanguageOptionMedia.current
+                    val name = series.series.name(languageOptionMedia)
+                    val textColor = colors.textColor
+                        .takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyMediumEmphasized,
+                        color = textColor,
+                        maxLines = 2,
+                        minLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
         }
     }
 
@@ -380,67 +403,6 @@ fun LazyGridScope.series(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun NormalSeriesCard(
-    series: SeriesWithUserData,
-    imageState: CoilImageState,
-    onClick: (SeriesWithUserData) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    ThemeAwareElevatedCard(onClick = { onClick(series) }, modifier = modifier) {
-        val colors = imageState.colors
-        val containerColor = colors.containerColor
-            .takeOrElse { MaterialTheme.colorScheme.surfaceVariant }
-        Column(modifier = Modifier.background(containerColor)) {
-            CoilImage(
-                state = imageState,
-                model = imageState.request().build(),
-                contentScale = ContentScale.Crop,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.66f)
-            )
-            val languageOptionMedia = LocalLanguageOptionMedia.current
-            val name = series.series.name(languageOptionMedia)
-            val textColor = colors.textColor
-                .takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyMediumEmphasized,
-                color = textColor,
-                maxLines = 2,
-                minLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun FadedSeriesCard(
-    series: SeriesWithUserData,
-    imageState: CoilImageState,
-    onClick: (SeriesWithUserData) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    ThemeAwareElevatedCard(onClick = { onClick(series) }, modifier = modifier.fadingEdgeBottom(firstStop = 0.5f)) {
-        val containerColor = imageState.colors.containerColor
-            .takeOrElse { MaterialTheme.colorScheme.surfaceVariant }
-        CoilImage(
-            state = imageState,
-            model = imageState.request().build(),
-            contentScale = ContentScale.Crop,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(0.66f)
-                .background(containerColor)
-        )
     }
 }
 
