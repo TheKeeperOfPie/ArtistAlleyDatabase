@@ -11,6 +11,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.SetSerializer
+import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.enums.enumEntries
@@ -39,6 +40,14 @@ object StateUtils {
 
     inline fun <reified T : @Serializable Any> jsonSaver(): Saver<T, String> {
         val serializer = T::class.serializer()
+        return Saver(
+            save = { Json.encodeToString(serializer, it) },
+            restore = { Json.decodeFromString(serializer, it) },
+        )
+    }
+
+    inline fun <reified T : @Serializable Any> nullableJsonSaver(): Saver<T?, String> {
+        val serializer = T::class.serializer().nullable
         return Saver(
             save = { Json.encodeToString(serializer, it) },
             restore = { Json.decodeFromString(serializer, it) },

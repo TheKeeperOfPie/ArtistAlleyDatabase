@@ -1,3 +1,4 @@
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
@@ -14,4 +15,5 @@ internal data class ArtistDiff(
     val merchInferred: Set<String>? = null,
     val merchConfirmed: Set<String>? = null,
     val isBrandNew: Boolean = false,
+    val images: List<DatabaseImage>?,
 )

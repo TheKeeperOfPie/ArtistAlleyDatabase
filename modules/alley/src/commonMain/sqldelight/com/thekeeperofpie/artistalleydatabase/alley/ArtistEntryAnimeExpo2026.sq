@@ -23,7 +23,12 @@ SELECT artistEntryAnimeExpo2026.images FROM artistEntryAnimeExpo2026
 WHERE artistEntryAnimeExpo2026.id = :artistId;
 
 getChangelog:
-SELECT * FROM artistEntryAnimeExpo2026Changelog;
+SELECT * FROM artistEntryAnimeExpo2026Changelog
+WHERE :catalogsOnly IS FALSE OR images IS NOT NULL;
+
+getChangelogEntry:
+SELECT * FROM artistEntryAnimeExpo2026Changelog
+WHERE artistId = :artistId AND date = :date;
 
 getTables:
 SELECT booth, name FROM artistEntryAnimeExpo2026;

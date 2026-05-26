@@ -210,6 +210,7 @@ internal object Utils {
                 seriesConfirmedAdapter = listStringAdapter,
                 merchInferredAdapter = listStringAdapter,
                 merchConfirmedAdapter = listStringAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
             ),
             artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
                 linksAdapter = listStringAdapter,

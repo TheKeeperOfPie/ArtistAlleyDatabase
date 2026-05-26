@@ -62,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
@@ -371,7 +372,6 @@ internal fun SeriesRow(
             )
             .then(modifier)
     ) {
-        Spacer(Modifier.width(2.dp))
         val colors = AssistChipDefaults.assistChipColors(
             labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
@@ -392,6 +392,50 @@ internal fun SeriesRow(
                 onClick = { onMoreClick() },
                 label = { Text("...") },
                 modifier = chipHeightModifier
+            )
+        }
+    }
+}
+
+@Composable
+internal fun MerchRow(
+    merch: List<String>,
+    hasMoreMerch: Boolean,
+    onMerchClick: (String) -> Unit,
+    onMoreClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+            .padding(bottom = 8.dp)
+            .fillMaxWidth()
+            .fadingEdgeEnd(
+                startOpaque = 12.dp,
+                endOpaque = 32.dp,
+                endTransparent = 16.dp,
+            )
+    ) {
+        val colors = AssistChipDefaults.assistChipColors(
+            labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+        )
+        val border = AssistChipDefaults.assistChipBorder(false)
+        merch.take(TagUtils.TAGS_TO_SHOW).forEach {
+            AssistChip(
+                colors = colors,
+                border = border,
+                onClick = { onMerchClick(it) },
+                label = { Text(text = it) },
+                modifier = Modifier.height(24.dp)
+            )
+        }
+        if (hasMoreMerch) {
+            AssistChip(
+                colors = colors,
+                border = border,
+                onClick = onMoreClick,
+                label = { Text("...") },
+                modifier = Modifier.height(24.dp)
             )
         }
     }

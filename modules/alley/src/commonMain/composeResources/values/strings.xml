@@ -411,6 +411,8 @@
     <string name="alley_changelog_title">What's new</string>
     <string name="alley_changelog_title_added">ADDED</string>
     <string name="alley_changelog_title_updated">UPDATED</string>
+    <string name="alley_changelog_catalogs_only">Catalogs</string>
+    <string name="alley_changelog_catalogs_only_warning">Note: artists may edit their uploaded images and finalize their catalogs before con starts</string>
 
     <string name="alley_libraries_title">Libraries</string>
 

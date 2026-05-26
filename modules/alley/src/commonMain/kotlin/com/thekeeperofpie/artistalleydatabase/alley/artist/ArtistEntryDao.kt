@@ -1358,5 +1358,9 @@ class ArtistEntryDao(
             }
     }
 
-    suspend fun getChangelog() = daoAnimeExpo2026().getChangelog().awaitAsList()
+    suspend fun getChangelog(catalogsOnly: Boolean) =
+        daoAnimeExpo2026().getChangelog(if (catalogsOnly) 1L else 0L).awaitAsList()
+
+    suspend fun getChangelogEntry(artistId: Uuid, date: String) =
+        daoAnimeExpo2026().getChangelogEntry(artistId, date).awaitAsOneOrNull()
 }

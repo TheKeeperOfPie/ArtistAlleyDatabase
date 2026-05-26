@@ -9,6 +9,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -428,6 +429,16 @@ fun Modifier.sharedElement(
                 ?: LocalAnimatedVisibilityScope.current,
             zIndexInOverlay = zIndexInOverlay,
         )
+    }
+}
+
+@Composable
+fun rememberSharedContentState(vararg keys: Any?): SharedTransitionScope.SharedContentState? {
+    if (keys.contains(null)) return null
+    if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return null
+    // TODO: Replace with SharedTransitionKey variant
+    return if (LocalInspectionMode.current) null else with(LocalSharedTransitionScope.current) {
+        rememberSharedContentState(key = keys.toList())
     }
 }
 

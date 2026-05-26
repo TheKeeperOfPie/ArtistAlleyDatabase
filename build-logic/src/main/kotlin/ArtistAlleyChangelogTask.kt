@@ -127,17 +127,25 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                                 afterArtist.merchInferred.toMutableSet()
                                             val merchConfirmed =
                                                 afterArtist.merchConfirmed.toMutableSet()
+                                            val images = afterArtist.images.toMutableList()
                                             if (beforeArtist != null) {
                                                 seriesInferred -= beforeArtist.seriesInferred.toSet()
                                                 seriesConfirmed -= beforeArtist.seriesConfirmed.toSet()
                                                 merchInferred -= beforeArtist.merchInferred.toSet()
                                                 merchConfirmed -= beforeArtist.merchConfirmed.toSet()
+                                                images -= beforeArtist.images.toSet()
                                             }
-                                            if (beforeArtist != null && seriesInferred.isEmpty() && seriesConfirmed.isEmpty() &&
-                                                merchInferred.isEmpty() && merchConfirmed.isEmpty()
+                                            if (beforeArtist != null && listOf(
+                                                    seriesInferred,
+                                                    seriesConfirmed,
+                                                    merchInferred,
+                                                    merchConfirmed,
+                                                    images,
+                                                ).all { it.isEmpty() }
                                             ) {
                                                 return@mapNotNull null
                                             }
+
                                             ArtistDiff(
                                                 artistId = artistId,
                                                 date = date,
@@ -148,6 +156,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                                 merchInferred = merchInferred.takeUnless { it.isEmpty() },
                                                 merchConfirmed = merchConfirmed.takeUnless { it.isEmpty() },
                                                 isBrandNew = beforeArtist == null,
+                                                images = images.ifEmpty { null },
                                             )
                                         }
 

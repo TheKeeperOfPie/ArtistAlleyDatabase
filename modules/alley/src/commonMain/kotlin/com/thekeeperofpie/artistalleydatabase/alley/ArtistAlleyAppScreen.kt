@@ -29,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.catalogImages
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
@@ -277,13 +278,15 @@ object ArtistAlleyAppScreen {
             }
 
             sharedElementEntry<AlleyDestination.Changelog> {
+                // TODO: Split by DataYear
+                val year = DataYear.ANIME_EXPO_2026
                 ChangelogScreen(
                     graph = graph,
                     onClickBack = navStack::onBack,
                     onClickSeries = {
                         navStack.navigate(
                             AlleyDestination.Series(
-                                DataYear.ANIME_EXPO_2026,
+                                year,
                                 it,
                             )
                         )
@@ -291,7 +294,7 @@ object ArtistAlleyAppScreen {
                     onClickMerch = {
                         navStack.navigate(
                             AlleyDestination.Merch(
-                                DataYear.ANIME_EXPO_2026,
+                                year,
                                 it,
                             )
                         )
@@ -299,10 +302,31 @@ object ArtistAlleyAppScreen {
                     onClickArtist = {
                         navStack.navigate(
                             AlleyDestination.ArtistDetails(
-                                year = DataYear.ANIME_EXPO_2026,
+                                year = year,
                                 id = it.artistId.toString(),
                                 booth = it.booth,
                                 name = it.name,
+                            )
+                        )
+                    },
+                    onClickImage = { changelogEntry, image ->
+                        val catalogImages = changelogEntry.catalogImages(year)
+                        navStack.navigate(
+                            AlleyDestination.Images(
+                                year = year,
+                                id = changelogEntry.artistId.toString(),
+                                type = AlleyDestination.Images.Type.Artist(
+                                    id = changelogEntry.artistId.toString(),
+                                    booth = changelogEntry.booth,
+                                    name = changelogEntry.name,
+                                    profileImage = null,
+                                    showingFallback = false,
+                                ),
+                                images = catalogImages,
+                                // Add one for the initial grid
+                                initialImageIndex = (catalogImages?.indexOf(image) ?: 0) + 1,
+                                showOpenButton = true,
+                                changelogDate = changelogEntry.date,
                             )
                         )
                     },

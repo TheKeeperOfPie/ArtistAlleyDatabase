@@ -165,6 +165,8 @@ CREATE TABLE
         merchInferred TEXT AS List<String>,
         merchConfirmed TEXT AS List<String>,
         isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
+        images TEXT AS List<DatabaseImage>,
+        isTempImages INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (artistId, date)
     );
 

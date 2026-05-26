@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.changelog
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -24,7 +23,9 @@ class ChangelogViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    internal val changes = flowFromSuspend { artistEntryDao.getChangelog() }
+    val catalogsOnly = savedStateHandle.getMutableStateFlow("catalogsOnly", false)
+
+    internal val changes = catalogsOnly.mapLatest { artistEntryDao.getChangelog(it) }
         .mapLatest {
             it.groupBy { LocalDate.parse(it.date) }
                 .toList()

@@ -1,6 +1,7 @@
 import ImageUtils.parseScaledImageWidthHeight
 import Utils.createEditDatabase
 import app.cash.sqldelight.Query
+import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistSeriesConnection
@@ -485,6 +486,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val embedLinks = (artist.portfolioLinks + socialLinks + storeLinks +
                             artist.commissions.filter { it.startsWith("http") })
                     val artistImages = calculateArtistImages(
+                        imageCacheDir = imageCacheDir,
                         embedCache = embedCache,
                         artistId = artist.id,
                         year = DataYear.ANIME_EXPO_2026,
@@ -494,7 +496,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         images = artist.images,
                         embedLinks = embedLinks,
                     )
-                    artist.copy(
+                    val newArtist = artist.copy(
                         socialLinks = socialLinks,
                         storeLinks = storeLinks,
                         seriesInferred = seriesInferred,
@@ -502,12 +504,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         linkFlags = linkFlags,
                         linkFlags2 = linkFlags2,
                         commissionFlags = commissionFlags,
-                        images = artistImages.catalogImages,
-                        tempImages = artistImages.tempImages,
+                        images = artistImages.catalogImages.map { it.final },
+                        tempImages = artistImages.tempImages.map { it.final },
                         embeds = artistImages.embeds,
                         lastEditTime = lastEditTime,
                         verifiedArtist = verifiedArtistIds.contains(artistId),
-                    ) to artistImages.imagesToCompress
+                    )
+                    val imagesToCompress = artistImages.catalogImages.map { it.imageToCompress } +
+                            artistImages.tempImages.map { it.imageToCompress }
+                    Triple(newArtist, imagesToCompress, artistImages)
                 }
             }
             .awaitAll()
@@ -517,17 +522,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 async {
                     val output =
                         outputImagesAnimeExpo2026.get().asFile.resolve(it.path)
-                    val (width, height, resized) = parseScaledImageWidthHeight(
-                        logger = logger,
-                        imageCacheDir = imageCacheDir,
-                        file = it.imageFile,
-                    )
                     ImageUtils.compressAndRename(
                         logger = logger,
                         input = it.imageFile,
-                        resized = resized,
-                        width = width,
-                        height = height,
+                        resized = it.resized,
+                        width = it.width,
+                        height = it.height,
                         target = output,
                     )
                     output
@@ -541,14 +541,32 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             .toList()
             .forEach { it.delete() }
 
+        val changelog = database.artistEntryAnimeExpo2026Queries.getChangelog(1L).executeAsList()
+            .groupBy { it.artistId }
         database.transaction {
-            artistUpdates.map { it.first }.forEach {
-                mutationQueries.updateArtistEntryAnimeExpo2026(it)
+            artistUpdates.forEach { (artist, _, artistImages) ->
+                mutationQueries.updateArtistEntryAnimeExpo2026(artist)
+                val isTempImages = artistImages.tempImages.isNotEmpty()
+                changelog[Uuid.parse(artist.id)]
+                    ?.map {
+                        it.copy(
+                            images = it.images?.mapNotNull { changelogImage ->
+                                if (isTempImages) {
+                                    artistImages.tempImages.find { it.original == changelogImage }
+                                } else {
+                                    artistImages.catalogImages.find { it.original == changelogImage }
+                                }?.final
+                            }?.ifEmpty { null }?.take(3),
+                            isTempImages = isTempImages,
+                        )
+                    }
+                    ?.forEach(mutationQueries::insertArtistEntryAnimeExpo2026Changelog)
             }
         }
     }
 
     private suspend fun calculateArtistImages(
+        imageCacheDir: File,
         embedCache: EmbedCache,
         artistId: String,
         @Suppress("SameParameterValue") year: DataYear,
@@ -592,17 +610,28 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
             val hash = ImageUtils.hash(imageFile)
             val nameWithHash = it.name.substringBeforeLast("/") + "/$imageName-$hash.webp"
-            it.copy(name = nameWithHash) to
-                    ImageToCompress(
-                        path = nameWithHash.removePrefix(year.folderName).removePrefix("/"),
-                        imageFile = imageFile,
-                    )
+            val (width, height, resized) = parseScaledImageWidthHeight(
+                logger = logger,
+                imageCacheDir = imageCacheDir,
+                file = imageFile,
+            )
+            ArtistImages.FinalImage(
+                original = it,
+                final = it.copy(name = nameWithHash, width = width, height = height),
+                imageToCompress = ImageToCompress(
+                    path = nameWithHash.removePrefix(year.folderName).removePrefix("/"),
+                    imageFile = imageFile,
+                    resized = resized,
+                    width = width,
+                    height = height,
+                ),
+            )
         }
+
         return ArtistImages(
-            catalogImages = if (isFinalCatalog) finalImages.map { it.first } else emptyList(),
-            tempImages = if (isFinalCatalog) emptyList() else finalImages.map { it.first },
+            catalogImages = if (isFinalCatalog) finalImages else emptyList(),
+            tempImages = if (isFinalCatalog) emptyList() else finalImages,
             embeds = embeds,
-            imagesToCompress = finalImages.map { it.second },
         )
     }
 
@@ -743,6 +772,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         merchInferred = it.merchInferred?.toList(),
                         merchConfirmed = it.merchConfirmed?.toList(),
                         isBrandNew = it.isBrandNew,
+                        images = it.images,
+                        isTempImages = false, // Will be set during database processing
                     )
                 )
             }
@@ -867,7 +898,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             .filterNotNull()
             .sortedBy { it.name.substringBefore("-").trim().toInt() }
             .map {
-                val (width, height, _) = ImageUtils.parseScaledImageWidthHeight(
+                val (width, height, _) = parseScaledImageWidthHeight(
                     logger = logger,
                     imageCacheDir = imageCacheDir,
                     file = it,
@@ -916,7 +947,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             .filterNotNull()
             .sortedBy { it.name.substringBefore("-").trim().toInt() }
             .map {
-                val (width, height, _) = ImageUtils.parseScaledImageWidthHeight(
+                val (width, height, _) = parseScaledImageWidthHeight(
                     logger = logger,
                     imageCacheDir = imageCacheDir,
                     file = it,
@@ -1323,7 +1354,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             if (this.isNullOrEmpty()) defaultValue() else this
 
         private fun cascadeAll(
-            valueAnimeExpo2023: com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry.() -> List<String>,
+            valueAnimeExpo2023: GetEntry.() -> List<String>,
             valueAnimeExpo2024: com.thekeeperofpie.artistalleydatabase.alley.artistEntry2024.GetEntry.() -> List<String>,
             valueAnimeExpo2025: com.thekeeperofpie.artistalleydatabase.alley.artistEntry2025.GetEntry.() -> List<String>,
             valueAnimeNyc2024: com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2024.GetEntry.() -> List<String>,
@@ -1373,14 +1404,22 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private data class ArtistImages(
-        val catalogImages: List<DatabaseImage>,
-        val tempImages: List<DatabaseImage>,
+        val catalogImages: List<FinalImage>,
+        val tempImages: List<FinalImage>,
         val embeds: Map<String, DatabaseImage>?,
-        val imagesToCompress: List<ImageToCompress>,
-    )
+    ) {
+        data class FinalImage(
+            val original: DatabaseImage,
+            val final: DatabaseImage,
+            val imageToCompress: ImageToCompress,
+        )
+    }
 
     private data class ImageToCompress(
         val path: String,
         val imageFile: File,
+        val resized: Boolean,
+        val width: Int,
+        val height: Int,
     )
 }

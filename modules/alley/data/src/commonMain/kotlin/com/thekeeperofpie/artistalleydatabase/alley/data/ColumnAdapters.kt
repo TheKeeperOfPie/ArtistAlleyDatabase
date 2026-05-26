@@ -129,6 +129,7 @@ object ColumnAdapters {
         seriesConfirmedAdapter = listStringAdapter,
         merchInferredAdapter = listStringAdapter,
         merchConfirmedAdapter = listStringAdapter,
+        imagesAdapter = listDatabaseImageAdapter,
     )
     val artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
         linksAdapter = listStringAdapter,

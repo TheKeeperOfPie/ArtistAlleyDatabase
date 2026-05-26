@@ -3,8 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.images
 import androidx.lifecycle.ViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.catalogImages
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import dev.zacsweers.metro.Inject
+import kotlin.uuid.Uuid
 
 @Inject
 class ImagesViewModel(
@@ -18,27 +20,40 @@ class ImagesViewModel(
         when (val type = route.type) {
             is AlleyDestination.Images.Type.Artist -> {
                 val artist = artistEntryDao.getEntry(route.year, route.id)?.artist ?: return null
-                val fallbackImageYear = artist.fallbackImageYear
-                val showingFallback = type.showingFallback && fallbackImageYear != null
-                type.copy(
-                    booth = type.booth ?: artist.booth,
-                    name = type.name ?: artist.name,
-                    profileImage = type.profileImage
-                        ?: AlleyImageUtils.getProfileImage(artist.embeds),
-                ) to AlleyImageUtils.getArtistImagesWithEmbedFallback(
-                    if (showingFallback) {
-                        fallbackImageYear
-                    } else {
-                        artist.year
-                    },
-                    if (showingFallback) {
-                        artist.fallbackImages
-                    } else {
-                        artist.images
-                    },
-                    tempImages = artist.tempImages,
-                    embeds = artist.embeds,
-                )
+                if (route.changelogDate != null) {
+                    val changelog =
+                        artistEntryDao.getChangelogEntry(Uuid.parse(route.id), route.changelogDate)
+                            ?: return null
+                    val images = changelog.catalogImages(route.year) ?: return null
+                    type.copy(
+                        booth = type.booth ?: artist.booth,
+                        name = type.name ?: artist.name,
+                        profileImage = type.profileImage
+                            ?: AlleyImageUtils.getProfileImage(artist.embeds),
+                    ) to images
+                } else {
+                    val fallbackImageYear = artist.fallbackImageYear
+                    val showingFallback = type.showingFallback && fallbackImageYear != null
+                    type.copy(
+                        booth = type.booth ?: artist.booth,
+                        name = type.name ?: artist.name,
+                        profileImage = type.profileImage
+                            ?: AlleyImageUtils.getProfileImage(artist.embeds),
+                    ) to AlleyImageUtils.getArtistImagesWithEmbedFallback(
+                        if (showingFallback) {
+                            fallbackImageYear
+                        } else {
+                            artist.year
+                        },
+                        if (showingFallback) {
+                            artist.fallbackImages
+                        } else {
+                            artist.images
+                        },
+                        tempImages = artist.tempImages,
+                        embeds = artist.embeds,
+                    )
+                }
             }
             is AlleyDestination.Images.Type.StampRally -> {
                 val stampRally = stampRallyEntryDao.getEntry(route.year, route.id)

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
@@ -61,9 +62,10 @@ sealed interface AlleyDestination : NavKey {
         val year: DataYear,
         val id: String,
         val type: Type,
-        val images: List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>?,
+        val images: List<CatalogImage>?,
         val initialImageIndex: Int?,
         val showOpenButton: Boolean,
+        val changelogDate: String? = null,
     ) : AlleyDestination {
 
         @Serializable
@@ -73,7 +75,7 @@ sealed interface AlleyDestination : NavKey {
                 val id: String,
                 val booth: String?,
                 val name: String?,
-                val profileImage: com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage?,
+                val profileImage: CatalogImage?,
                 val showingFallback: Boolean,
             ) : Type
 
