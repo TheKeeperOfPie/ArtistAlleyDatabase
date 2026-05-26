@@ -152,7 +152,7 @@ fun StampRallyListRow(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .matchParentSize()
-                        .sharedElement("series", series.id)
+                        .sharedElement("seriesImage", series.id)
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             } else {

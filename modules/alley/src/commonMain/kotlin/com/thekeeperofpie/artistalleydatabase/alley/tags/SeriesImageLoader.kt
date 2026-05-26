@@ -87,4 +87,6 @@ class SeriesImageLoader(
         }
         return (cached as? Request.Done)?.url
     }
+
+    fun getCachedSeriesImage(seriesId: String) = (requests[seriesId] as? Request.Done)?.url
 }

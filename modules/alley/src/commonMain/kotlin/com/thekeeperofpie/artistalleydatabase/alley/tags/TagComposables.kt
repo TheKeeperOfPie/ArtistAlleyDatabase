@@ -137,7 +137,7 @@ fun SeriesRow(
                     .width(56.dp)
                     .height(80.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .sharedElement("series", series?.id)
+                    .sharedElement("seriesImage", series?.id)
             )
 
             if (series?.tmdbId != null && series.tmdbType != null) {
@@ -370,6 +370,7 @@ fun LazyGridScope.series(
                         .fillMaxWidth()
                         .aspectRatio(0.66f)
                         .conditionally(faded, Modifier.fadingEdgeBottom(firstStop = 0.5f))
+                        .sharedElement("seriesImage", series.series.id)
                 )
 
                 if (!faded) {
