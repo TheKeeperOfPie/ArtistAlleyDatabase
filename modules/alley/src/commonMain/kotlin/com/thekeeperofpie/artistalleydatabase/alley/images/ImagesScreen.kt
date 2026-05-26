@@ -52,7 +52,7 @@ object ImagesScreen {
         graph: ArtistAlleyGraph,
         route: AlleyDestination.Images,
         onNavigateBack: () -> Unit,
-        onClickOpen: () -> Unit,
+        onClickOpen: (imageIndex: Int?) -> Unit,
         viewModel: ImagesViewModel = viewModel { graph.imagesViewModel() },
     ) {
         val data by produceState(route.type to route.images.orEmpty(), route, viewModel) {
@@ -67,6 +67,7 @@ object ImagesScreen {
             year = route.year,
             id = route.id,
             initialImageIndex = route.initialImageIndex ?: 1,
+            hasChangelogDate = route.changelogDate != null,
             type = type,
             images = images,
             onNavigateBack = onNavigateBack,
@@ -79,10 +80,11 @@ object ImagesScreen {
         year: DataYear,
         id: String,
         initialImageIndex: Int?,
+        hasChangelogDate: Boolean,
         type: AlleyDestination.Images.Type,
         images: List<CatalogImage>,
         onNavigateBack: () -> Unit,
-        onClickOpen: (() -> Unit)?,
+        onClickOpen: ((imageIndex: Int?) -> Unit)?,
     ) {
         val imagePagerState = rememberImagePagerState(
             images = images,
@@ -145,7 +147,16 @@ object ImagesScreen {
                                 icon = icon,
                                 tooltipText = text,
                                 contentDescription = text,
-                                onClick = onClickOpen,
+                                onClick = {
+                                    onClickOpen(
+                                        // Ignore image index if viewing the past
+                                        // since it's not guaranteed to be valid
+                                        // TODO: Pass CatalogImage directly so it can be searched
+                                        //  for inside the loaded images list?
+                                        imagePagerState.currentPage
+                                            .takeUnless { hasChangelogDate }
+                                    )
+                                },
                             )
                         }
                     },

@@ -333,25 +333,27 @@ object ArtistAlleyAppScreen {
                 )
             }
 
-            sharedElementEntry<AlleyDestination.Images> {
+            sharedElementEntry<AlleyDestination.Images> { route ->
                 ImagesScreen(
                     graph = graph,
-                    route = it,
+                    route = route,
                     onNavigateBack = navStack::onBack,
-                    onClickOpen = {
-                        val destination = when (it.type) {
+                    onClickOpen = { imageIndex ->
+                        val destination = when (route.type) {
                             is AlleyDestination.Images.Type.Artist -> AlleyDestination.ArtistDetails(
-                                year = it.year,
-                                id = it.id,
+                                year = route.year,
+                                id = route.id,
                                 booth = null,
                                 name = null,
+                                imageIndex = imageIndex,
                             )
                             is AlleyDestination.Images.Type.StampRally -> AlleyDestination.StampRallyDetails(
-                                year = it.year,
-                                id = it.id,
+                                year = route.year,
+                                id = route.id,
                                 hostTable = null,
                                 fandom = null,
                                 images = null,
+                                initialImageIndex = imageIndex,
                             )
                         }
                         navStack.navigate(destination)
