@@ -219,7 +219,7 @@ class ArtistFormViewModel(
                                 hostTable = tables.firstOrNull().orEmpty(),
                                 tables = tables,
                                 startTables = applyDiff(baseStampRally.startTables, stampRallyFormDiff.startTables),
-                                endTables = applyDiff(baseStampRally.endTables, stampRallyFormDiff.startTables),
+                                endTables = applyDiff(baseStampRally.endTables, stampRallyFormDiff.endTables),
                                 links = applyDiff(baseStampRally.links, stampRallyFormDiff.links),
                                 tableMin = stampRallyFormDiff.tableMin ?: baseStampRally.tableMin,
                                 prize = stampRallyFormDiff.prize ?: baseStampRally.prize,
