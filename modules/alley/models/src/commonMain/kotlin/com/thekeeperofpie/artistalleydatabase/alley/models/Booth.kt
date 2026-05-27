@@ -1,6 +1,6 @@
-package com.thekeeperofpie.artistalleydatabase.alley.forum
+package com.thekeeperofpie.artistalleydatabase.alley.models
 
-internal data class Booth(val letter: Char, val number: Int) : Comparable<Booth> {
+data class Booth(val letter: Char, val number: Int) : Comparable<Booth> {
 
     companion object {
         fun fromStringOrNull(value: String): Booth? {

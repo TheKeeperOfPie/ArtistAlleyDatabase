@@ -28,6 +28,28 @@ internal class DiscordApi(
     private val env: Env,
     private val json: Json,
 ) {
+    private val conventionOption =
+        CommandRegisterRequest.Option(
+            name = "convention",
+            type = OptionType.STRING,
+            description = "Convention and year",
+            required = true,
+            choices = listOf(
+                CommandRegisterRequest.Option.Choice(
+                    name = "AX 2026",
+                    value = DataYear.ANIME_EXPO_2026.serializedName,
+                ),
+            ),
+        )
+    private val boothOption = CommandRegisterRequest.Option(
+        name = "booth",
+        type = OptionType.STRING,
+        description = "Table number (e.g. M39)",
+        required = true,
+        minLength = 2,
+        maxLength = 3,
+    )
+
     suspend fun syncCommands(): String = registerCommand(
         CommandRegisterRequest(
             name = "aa",
@@ -35,32 +57,29 @@ internal class DiscordApi(
             description = "Interact with the artistalley.directory site",
             options = listOf(
                 CommandRegisterRequest.Option(
+                    name = "catalog",
+                    type = OptionType.SUB_COMMAND,
+                    description = "Record a catalog for an artist",
+                    options = listOf(
+                        conventionOption,
+                        boothOption,
+                        CommandRegisterRequest.Option(
+                            name = "link",
+                            type = OptionType.STRING,
+                            description = "Catalog link",
+                            required = true,
+                        ),
+                    ),
+                ),
+                CommandRegisterRequest.Option(
                     name = "verify",
                     type = OptionType.SUB_COMMAND,
                     description = "Verify as an artist tabling",
                     options = listOf(
-                        CommandRegisterRequest.Option(
-                            name = "convention",
-                            type = OptionType.STRING,
-                            description = "Convention and year",
-                            required = true,
-                            choices = listOf(
-                                CommandRegisterRequest.Option.Choice(
-                                    name = "AX 2026",
-                                    value = DataYear.ANIME_EXPO_2026.serializedName,
-                                ),
-                            ),
-                        ),
-                        CommandRegisterRequest.Option(
-                            name = "booth",
-                            type = OptionType.STRING,
-                            description = "Table number (e.g. M39)",
-                            required = true,
-                            minLength = 2,
-                            maxLength = 3,
-                        )
+                        conventionOption,
+                        boothOption,
                     ),
-                )
+                ),
             ),
         )
     )

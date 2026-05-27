@@ -3,6 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistEntryAnimeExpo2026History
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeExpo2026History
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyEntryAnimeExpo2026History
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry

@@ -1,0 +1,7 @@
+getCatalogEntry:
+SELECT * FROM artistCatalogQueueEntry
+WHERE dataYear = :dataYear AND booth = :booth;
+
+insertCatalogEntry:
+INSERT OR REPLACE INTO artistCatalogQueueEntry
+VALUES ?;

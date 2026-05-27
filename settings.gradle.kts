@@ -91,6 +91,7 @@ include(
     ":android-app",
     ":app",
     ":modules:alley",
+    ":modules:alley:backend:data",
     ":modules:alley:data",
     ":modules:alley:edit",
     ":modules:alley:form",

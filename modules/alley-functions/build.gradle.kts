@@ -31,6 +31,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.sqldelight.coroutines.extensions)
 
+            implementation(projects.modules.alley.backend.data)
             implementation(projects.modules.alley.data)
             implementation(projects.modules.alley.form.data)
             implementation(projects.modules.alley.models)
@@ -48,7 +49,7 @@ sqldelight {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
-            dependency(project(":modules:alley:data"))
+            dependency(project(":modules:alley:backend:data"))
             srcDirs(file("src/commonMain/sqldelight/alley"))
         }
         create("AlleyFormDatabase") {

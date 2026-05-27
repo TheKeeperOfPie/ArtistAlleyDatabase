@@ -67,12 +67,22 @@ class Worker {
                                     |        merchConfirmed TEXT NOT NULL,
                                     |        images TEXT NOT NULL,
                                     |        fallbackImageYear TEXT DEFAULT NULL,
+                                    |        tempImages TEXT DEFAULT NULL,
+                                    |        embeds TEXT DEFAULT NULL,
                                     |        editorNotes TEXT,
                                     |        lastEditor TEXT,
                                     |        lastEditTime TEXT,
                                     |        verifiedArtist INTEGER NOT NULL DEFAULT 0,
+                                    |        newArtist INTEGER NOT NULL DEFAULT 0,
                                     |        PRIMARY KEY (id)
-                                    |    )
+                                    |    );
+                                    |CREATE TABLE
+                                    |    IF NOT EXISTS artistCatalogQueueEntry (
+                                    |        dataYear TEXT NOT NULL,
+                                    |        booth TEXT NOT NULL,
+                                    |        link TEXT NOT NULL,
+                                    |        PRIMARY KEY (dataYear, booth)
+                                    |    ); 
                                 """.trimMargin(),
                                 parameters = 0,
                             ).await()
@@ -88,7 +98,7 @@ class Worker {
                                 """.trimMargin(),
                                 parameters = 0
                             ).await()
-                        val queries = Databases.editDatabase(env).artistEntryAnimeExpo2026Queries
+                        val queries = Databases.backendDatabase(env).discordArtistEntryAnimeExpo2026Queries
                         queries.insertTestArtist()
                         queries.updateTestArtistSocialLink(listOf(socialLink))
                         jsonResponse("Updated test artist social link to $socialLink")

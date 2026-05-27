@@ -1,10 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.discord.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.discord.Connection
 import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionPatchResponse
 import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionRequest
@@ -77,32 +79,84 @@ internal object BotBackend {
             )
 
         val response = when (command.name) {
+            "catalog" -> {
+                val userId = interaction.member?.user?.id
+                val allowedEditorUserIds = env.DISCORD_EDITORS.split(",")
+                if (userId !in allowedEditorUserIds) {
+                    return api.patchFailure(
+                        interactionToken = interaction.token,
+                        message = "You are not allowed to record catalogs, please ping <@${allowedEditorUserIds.firstOrNull()}> with the catalog instead"
+                    )
+                }
+
+                val options = when (val optionsResult = validateHasOptions(command)) {
+                    is OptionResult.Failure -> return api.fail(interaction, optionsResult)
+                    is OptionResult.Success -> optionsResult.value
+                }
+
+                val dataYear = when (val dataYearResult = parseDataYear(options)) {
+                    is OptionResult.Failure -> return api.fail(interaction, dataYearResult)
+                    is OptionResult.Success -> dataYearResult.value
+                }
+
+                val booth = when (val boothResult = parseBooth(options)) {
+                    is OptionResult.Failure -> return api.fail(interaction, boothResult)
+                    is OptionResult.Success -> boothResult.value
+                }
+
+                val link = options.first { it.name == "link" }.value ?: return api.patchFailure(
+                    interactionToken = interaction.token,
+                    message = "Link is required",
+                )
+
+                val database = Databases.backendDatabase(env)
+                val artist = database.discordArtistEntryAnimeExpo2026Queries.getArtistByBooth(booth.toString())
+                    .awaitAsOneOrNull()
+                if (artist == null) {
+                    return api.patchFailure(
+                        interactionToken = interaction.token,
+                        message = "Could not find artist for booth $booth",
+                    )
+                }
+
+                val existingEntry = database.artistCatalogQueueEntryQueries.getCatalogEntry(dataYear, booth.toString())
+                    .awaitAsOneOrNull()
+
+                database.artistCatalogQueueEntryQueries
+                    .insertCatalogEntry(
+                        ArtistCatalogQueueEntry(
+                            dataYear = dataYear,
+                            booth = booth.toString(),
+                            link = link,
+                        )
+                    )
+
+                val table = "${artist.booth} ${artist.name}"
+                val content = if (existingEntry == null) {
+                    "Recorded $table's catalog: $link"
+                } else {
+                    "Replaced $table's catalog: ${existingEntry.link} -> $link"
+                }
+                DiscordInteractionPatchResponse(
+                    content = content,
+                    flags = MessageFlags(MessageFlag.EPHEMERAL),
+                )
+            }
             "verify" -> {
-                val options = command.options
-                if (options.isNullOrEmpty()) {
-                    return api.patchFailure(
-                        interactionToken = interaction.token,
-                        message = "Invalid options, make sure the booth is formatted correctly",
-                    )
+                val options = when (val optionsResult = validateHasOptions(command)) {
+                    is OptionResult.Failure -> return api.fail(interaction, optionsResult)
+                    is OptionResult.Success -> optionsResult.value
                 }
 
-                val dataYear =
-                    DataYear.deserialize(options.first { it.name == "convention" }.value!!)
-                val boothValue = options.first { it.name == "booth" }.value
-                    ?.takeIf { it.length <= 3 }
-                val boothLetter = boothValue?.first()
-                    ?.takeIf { it.isLetter() }
-                    ?.uppercaseChar()
-                val boothNumber = boothValue?.drop(1)?.toIntOrNull()
-
-                if (dataYear == null || boothLetter == null || boothNumber == null) {
-                    return api.patchFailure(
-                        interactionToken = interaction.token,
-                        message = "Invalid inputs, make sure the booth is formatted correctly (e.g. A01)",
-                    )
+                val dataYear = when (val dataYearResult = parseDataYear(options)) {
+                    is OptionResult.Failure -> return api.fail(interaction, dataYearResult)
+                    is OptionResult.Success -> dataYearResult.value
                 }
 
-                val booth = "$boothLetter${boothNumber.toString().padStart(2, '0')}"
+                val booth = when (val boothResult = parseBooth(options)) {
+                    is OptionResult.Failure -> return api.fail(interaction, boothResult)
+                    is OptionResult.Success -> boothResult.value
+                }
 
                 val userId = member.user.id
                 env.ARTIST_ALLEY_BOT_KV.put(userId, interaction.token).await()
@@ -124,7 +178,7 @@ internal object BotBackend {
                                     env = env,
                                     userId = userId,
                                     dataYear = dataYear,
-                                    booth = booth,
+                                    booth = booth.toString(),
                                 ),
                             )
                         )
@@ -140,6 +194,39 @@ internal object BotBackend {
         api.patchInteractionResponse(interaction.token, response)
 
         return Responses.response202
+    }
+
+    private fun parseDataYear(
+        options: List<InteractionRequestData.SlashCommand.Option>,
+    ): OptionResult<DataYear> {
+        val dataYear =
+            DataYear.deserialize(options.first { it.name == "convention" }.value!!)
+        if (dataYear == null) {
+            return OptionResult.Failure("Invalid convention")
+        }
+        return OptionResult.Success(dataYear)
+    }
+
+    private fun parseBooth(
+        options: List<InteractionRequestData.SlashCommand.Option>,
+    ): OptionResult<Booth> {
+        val booth = Booth.fromStringOrNull(options.first { it.name == "booth" }.value.orEmpty())
+        return if (booth == null) {
+            OptionResult.Failure("Invalid booth")
+        } else {
+            OptionResult.Success(booth)
+        }
+    }
+
+    private fun validateHasOptions(
+        command: InteractionRequestData.SlashCommand.Option,
+    ): OptionResult<List<InteractionRequestData.SlashCommand.Option>> {
+        val options = command.options
+        return if (options.isNullOrEmpty()) {
+            OptionResult.Failure("Invalid options, make sure the booth is formatted correctly")
+        } else {
+            OptionResult.Success(options)
+        }
     }
 
     suspend fun verifyArtistBrowser(request: Request, env: Env, api: DiscordApi): Response {
@@ -235,8 +322,8 @@ internal object BotBackend {
             }
         }
 
-        val artistEntry = Databases.editDatabase(env)
-            .artistEntryAnimeExpo2026Queries
+        val artistEntry = Databases.backendDatabase(env)
+            .discordArtistEntryAnimeExpo2026Queries
             .getArtistByBooth(booth)
             .awaitAsOneOrNull()
             ?: return null
@@ -310,5 +397,18 @@ internal object BotBackend {
             ).encode(),
         )
         return "${env.DISCORD_BOT_VERIFY_URL}&state=$encryptedState"
+    }
+
+    private suspend fun DiscordApi.fail(
+        interaction: DiscordInteractionRequest,
+        failure: OptionResult.Failure<*>,
+    ) = patchFailure(
+        interactionToken = interaction.token,
+        message = failure.message,
+    )
+
+    sealed interface OptionResult<T> {
+        data class Success<T>(val value: T) : OptionResult<T>
+        data class Failure<T>(val message: String) : OptionResult<T>
     }
 }

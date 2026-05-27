@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.discord.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
@@ -13,8 +14,11 @@ internal object Databases {
     fun formSqlDriver(env: Env) =
         WorkerSqlDriver(database = env.ARTIST_ALLEY_FORM_DB)
 
-    fun editDatabase(env: Env) = AlleySqlDatabase(
+    fun backendDatabase(env: Env) = AlleySqlDatabase(
         driver = editSqlDriver(env),
+        artistCatalogQueueEntryAdapter = ArtistCatalogQueueEntry.Adapter(
+            dataYearAdapter = ColumnAdapters.dataYearAdapter,
+        ),
         artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
     )
 
