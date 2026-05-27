@@ -6,20 +6,45 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.zIndex
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_more
 import com.thekeeperofpie.artistalleydatabase.alley.edit.admin.AdminScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
@@ -50,6 +75,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionQueueScreen
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -109,22 +136,19 @@ fun ArtistAlleyEditApp(
 
                 val decoratedNavEntries = rememberDecoratedNavEntries(navStack, entryProvider)
 
+                val layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+                    currentWindowAdaptiveInfo()
+                )
+                var showOverflow by remember { mutableStateOf(false) }
                 NavigationSuiteScaffold(
+                    layoutType = layoutType,
                     navigationSuiteItems = {
-                        TopLevelStackKey.entries.forEachIndexed { index, key ->
-                            item(
-                                icon = {
-                                    Icon(
-                                        imageVector = key.icon,
-                                        contentDescription = stringResource(key.title)
-                                    )
-                                },
-                                label = { Text(stringResource(key.title)) },
-                                selected = navStack.topLevelStackIndex == index,
-                                onClick = { navStack.moveToTopLevelStack(index) },
-                                modifier = Modifier.zIndex(3f)
-                            )
-                        }
+                        navItems(
+                            layoutType = layoutType,
+                            navStack = navStack,
+                            showOverflow = { showOverflow },
+                            onChangeOverflow = { showOverflow = it },
+                        )
                     }
                 ) {
                     NavDisplay(
@@ -142,6 +166,91 @@ fun ArtistAlleyEditApp(
                     )
                 }
             }
+        }
+    }
+}
+
+private fun NavigationSuiteScope.navItems(
+    layoutType: NavigationSuiteType,
+    navStack: ArtistAlleyEditTopLevelStacks,
+    showOverflow: () -> Boolean,
+    onChangeOverflow: (Boolean) -> Unit,
+) {
+    if (layoutType == NavigationSuiteType.NavigationBar) {
+        TopLevelStackKey.entries.take(5)
+            .forEachIndexed { index, key ->
+                item(
+                    icon = {
+                        Icon(
+                            imageVector = key.icon,
+                            contentDescription = stringResource(key.title)
+                        )
+                    },
+                    label = { Text(stringResource(key.title)) },
+                    selected = navStack.topLevelStackIndex == index,
+                    onClick = { navStack.moveToTopLevelStack(index) },
+                    modifier = Modifier.zIndex(3f)
+                )
+            }
+        val remaining = TopLevelStackKey.entries.drop(5)
+        if (remaining.isNotEmpty()) {
+            item(
+                icon = {
+                    Box {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            stringResource(Res.string.alley_edit_top_level_nav_more),
+                        )
+                        if (showOverflow()) {
+                            Popup(
+                                popupPositionProvider = PlaceAbovePositionProvider,
+                                onDismissRequest = { onChangeOverflow(false) },
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .width(IntrinsicSize.Min)
+                                        .background(MaterialTheme.colorScheme.surface)
+                                ) {
+                                    remaining.forEachIndexed { index, key ->
+                                        Text(
+                                            text = stringResource(key.title),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    navStack.moveToTopLevelStack(index + 5)
+                                                    onChangeOverflow(false)
+                                                }
+                                                .padding(
+                                                    horizontal = 16.dp,
+                                                    vertical = 8.dp
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                label = { Text(stringResource(Res.string.alley_edit_top_level_nav_more)) },
+                selected = false,
+                onClick = { onChangeOverflow(!showOverflow()) },
+                modifier = Modifier.zIndex(3f)
+            )
+        }
+    } else {
+        TopLevelStackKey.entries.forEachIndexed { index, key ->
+            item(
+                icon = {
+                    Icon(
+                        imageVector = key.icon,
+                        contentDescription = stringResource(key.title)
+                    )
+                },
+                label = { Text(stringResource(key.title)) },
+                selected = navStack.topLevelStackIndex == index,
+                onClick = { navStack.moveToTopLevelStack(index) },
+                modifier = Modifier.zIndex(3f)
+            )
         }
     }
 }
@@ -490,4 +599,18 @@ private fun entryProvider(
             onClickBack = onClickBack,
         )
     }
+}
+
+private object PlaceAbovePositionProvider : PopupPositionProvider {
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize,
+    ): IntOffset {
+        val x = anchorBounds.left + (anchorBounds.width - popupContentSize.width) / 2
+        val y = anchorBounds.top - popupContentSize.height
+        return IntOffset(x, y)
+    }
+
 }

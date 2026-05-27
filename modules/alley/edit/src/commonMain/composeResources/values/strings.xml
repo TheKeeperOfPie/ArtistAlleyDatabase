@@ -9,6 +9,7 @@
     <string name="alley_edit_top_level_nav_remote_artist_data">Remote artist data</string>
     <string name="alley_edit_top_level_nav_tag_resolution">Resolution</string>
     <string name="alley_edit_top_level_nav_admin">Admin</string>
+    <string name="alley_edit_top_level_nav_more">More</string>
 
     <string name="alley_edit_artist_list_tab_all">All</string>
     <string name="alley_edit_artist_list_tab_missing_links">Missing links</string>
