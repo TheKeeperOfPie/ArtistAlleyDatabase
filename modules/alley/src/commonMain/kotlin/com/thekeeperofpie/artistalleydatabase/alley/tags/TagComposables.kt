@@ -354,7 +354,12 @@ fun LazyGridScope.series(
         val series = series[if (expanded) it else randomizedIndexes[it]]
         val imageState = rememberCoilImageState(image(series))
         val faded = !expanded && it >= columnCount
-        ThemeAwareElevatedCard(onClick = { onClick(series) }, modifier = Modifier.animateItem()) {
+        ThemeAwareElevatedCard(
+            onClick = { onClick(series) },
+            modifier = Modifier
+                .conditionally(faded, Modifier.fadingEdgeBottom(firstStop = 0.2f))
+                .animateItem()
+        ) {
             val colors = imageState.colors
             val containerColor = colors.containerColor
                 .takeOrElse { MaterialTheme.colorScheme.surfaceVariant }
@@ -369,26 +374,23 @@ fun LazyGridScope.series(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(0.66f)
-                        .conditionally(faded, Modifier.fadingEdgeBottom(firstStop = 0.5f))
                         .sharedElement("seriesImage", series.series.id)
                 )
 
-                if (!faded) {
-                    val languageOptionMedia = LocalLanguageOptionMedia.current
-                    val name = series.series.name(languageOptionMedia)
-                    val textColor = colors.textColor
-                        .takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.bodyMediumEmphasized,
-                        color = textColor,
-                        maxLines = 2,
-                        minLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+                val languageOptionMedia = LocalLanguageOptionMedia.current
+                val name = series.series.name(languageOptionMedia)
+                val textColor = colors.textColor
+                    .takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodyMediumEmphasized,
+                    color = textColor,
+                    maxLines = 2,
+                    minLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
             }
         }
     }
