@@ -8,67 +8,15 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_type_cat
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_category_stores
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_category_support
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
 import org.jetbrains.compose.resources.StringResource
 
-val Link.Type?.category: LinkCategory
+val LinkCategory.textRes: StringResource
     get() = when (this) {
-        Link.Type.ART_STATION,
-        Link.Type.CARA,
-        Link.Type.CARRD,
-        Link.Type.DEVIANT_ART,
-        Link.Type.LINKTREE,
-        Link.Type.PIXIV,
-        Link.Type.TOYHOUSE,
-        Link.Type.WEEBLY,
-            -> LinkCategory.PORTFOLIOS
-
-        Link.Type.AO3,
-        Link.Type.BLUESKY,
-        Link.Type.DISCORD,
-        Link.Type.FACEBOOK,
-        Link.Type.GAME_JOLT,
-        Link.Type.INSTAGRAM,
-        Link.Type.PICARTO,
-        Link.Type.SUBSTACK,
-        Link.Type.THREADS,
-        Link.Type.TIK_TOK,
-        Link.Type.TUMBLR,
-        Link.Type.TWITCH,
-        Link.Type.UNVALE,
-        Link.Type.X,
-        Link.Type.YOU_TUBE,
-            -> LinkCategory.SOCIALS
-
-        Link.Type.BIG_CARTEL,
-        Link.Type.ETSY,
-        Link.Type.FAIRE,
-        Link.Type.GALLERY_NUCLEUS,
-        Link.Type.GUMROAD,
-        Link.Type.INPRNT,
-        Link.Type.ITCH_IO,
-        Link.Type.REDBUBBLE,
-        Link.Type.SHOPIFY,
-        Link.Type.STORENVY,
-        Link.Type.THREADLESS,
-        Link.Type.OTHER_STORE,
-            -> LinkCategory.STORES
-
-        Link.Type.KICKSTARTER,
-        Link.Type.KO_FI,
-        Link.Type.PATREON,
-            -> LinkCategory.SUPPORT
-
-        Link.Type.VGEN -> LinkCategory.COMMISSIONS
-        Link.Type.OTHER_NON_STORE,
-        null,
-            -> LinkCategory.OTHER
+        LinkCategory.PORTFOLIOS -> Res.string.alley_link_type_category_portfolios
+        LinkCategory.SOCIALS -> Res.string.alley_link_type_category_socials
+        LinkCategory.STORES -> Res.string.alley_link_type_category_stores
+        LinkCategory.SUPPORT -> Res.string.alley_link_type_category_support
+        LinkCategory.COMMISSIONS -> Res.string.alley_link_type_category_commissions
+        LinkCategory.OTHER -> Res.string.alley_link_type_category_other
     }
-
-enum class LinkCategory(val textRes: StringResource) {
-    PORTFOLIOS(Res.string.alley_link_type_category_portfolios),
-    SOCIALS(Res.string.alley_link_type_category_socials),
-    STORES(Res.string.alley_link_type_category_stores),
-    SUPPORT(Res.string.alley_link_type_category_support),
-    COMMISSIONS(Res.string.alley_link_type_category_commissions),
-    OTHER(Res.string.alley_link_type_category_other),
-}

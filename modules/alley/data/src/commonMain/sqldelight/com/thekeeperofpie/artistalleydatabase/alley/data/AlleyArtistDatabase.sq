@@ -131,6 +131,7 @@ CREATE TABLE
         images TEXT AS List<DatabaseImage> NOT NULL,
         fallbackImageYear TEXT AS DataYear DEFAULT NULL,
         tempImages TEXT AS List<DatabaseImage> DEFAULT NULL,
+        profileImage TEXT AS DatabaseImage DEFAULT NULL,
         embeds TEXT AS Map<String, DatabaseImage> DEFAULT NULL,
         editorNotes TEXT,
         lastEditor TEXT,

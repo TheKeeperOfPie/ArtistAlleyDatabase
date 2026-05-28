@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.links
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
 
 interface LinkTagEntry {

@@ -2,7 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
@@ -19,12 +22,14 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 @Stable
 class ArtistFormState(
     val metadata: EntryEditMetadata = EntryEditMetadata(),
+    profileImage: EditImage? = null,
     val images: SnapshotStateList<EditImage> = SnapshotStateList(),
     val editorState: EditorState = EditorState(),
     val info: InfoState = InfoState(),
@@ -32,9 +37,12 @@ class ArtistFormState(
     val series: SeriesState = SeriesState(),
     val merch: MerchState = MerchState(),
 ) {
+    var profileImage by mutableStateOf(profileImage)
+
     object Saver : ComposeSaver<ArtistFormState, List<Any?>> {
         override fun SaverScope.save(value: ArtistFormState) = listOf(
             with(EntryEditMetadata.Saver) { save(value.metadata) },
+            with(StateUtils.nullableJsonSaver<EditImage>()) { save(value.profileImage) },
             with(StateUtils.snapshotListJsonSaver<EditImage>()) { save(value.images) },
             with(EditorState.Saver) { save(value.editorState) },
             with(InfoState.Saver) { save(value.info) },
@@ -46,16 +54,17 @@ class ArtistFormState(
         @Suppress("UNCHECKED_CAST")
         override fun restore(value: List<Any?>) = ArtistFormState(
             metadata = with(EntryEditMetadata.Saver) { restore(value[0] as List<Any?>) },
-            images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) },
-            editorState = with(EditorState.Saver) { restore(value[2] as List<Any>) },
-            info = with(InfoState.Saver) { restore(value[3] as List<Any>) },
-            links = with(LinksState.Saver) { restore(value[4] as List<Any>) },
-            series = with(SeriesState.Saver) { restore(value[5] as List<Any?>) },
-            merch = with(MerchState.Saver) { restore(value[6] as List<Any>) },
+            profileImage = with(StateUtils.nullableJsonSaver<EditImage>()) { restore(value[1] as String) },
+            images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[2] as String) },
+            editorState = with(EditorState.Saver) { restore(value[3] as List<Any>) },
+            info = with(InfoState.Saver) { restore(value[4] as List<Any>) },
+            links = with(LinksState.Saver) { restore(value[5] as List<Any>) },
+            series = with(SeriesState.Saver) { restore(value[6] as List<Any?>) },
+            merch = with(MerchState.Saver) { restore(value[7] as List<Any>) },
         )
     }
 
-    constructor(artistId: Uuid): this() {
+    constructor(artistId: Uuid) : this() {
         editorState.id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
     }
 
@@ -107,7 +116,10 @@ class ArtistFormState(
         metadata.lastEditTime = artist.lastEditTime
     }
 
-    fun captureDatabaseEntry(dataYear: DataYear, verifiedArtist: Boolean): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
+    fun captureDatabaseEntry(
+        dataYear: DataYear,
+        verifiedArtist: Boolean,
+    ): CapturedState {
         val (id, status, editorNotes) = editorState.captureValues()
         val (booth, name, summary, notes) = info.captureValues()
         val (socialLinks, storeLinks, portfolioLinks, catalogLinks, commissions) = links.captureValues()
@@ -116,33 +128,38 @@ class ArtistFormState(
         val (merchInferred, merchConfirmed) = merch.captureValues()
 
         val images = images.toList()
-        return images to ArtistDatabaseEntry.Impl(
-            year = dataYear,
-            id = id.toString(),
-            status = status,
-            booth = booth,
-            name = name,
-            summary = summary,
-            socialLinks = socialLinks,
-            storeLinks = storeLinks,
-            portfolioLinks = portfolioLinks,
-            catalogLinks = catalogLinks,
-            driveLink = null,
-            notes = notes,
-            commissions = commissions,
-            seriesInferred = seriesInferred,
-            seriesConfirmed = seriesConfirmed,
-            merchInferred = merchInferred,
-            merchConfirmed = merchConfirmed,
-            _images = emptyList(),
-            fallbackImageYear = null,
-            tempImages = emptyList(),
-            embeds = emptyMap(),
-            editorNotes = editorNotes,
-            lastEditor = null, // This is filled on the backend
-            lastEditTime = Clock.System.now(),
-            verifiedArtist = verifiedArtist,
-            newArtist = false,
+        return CapturedState(
+            profileImage = profileImage,
+            images = images,
+            artist = ArtistDatabaseEntry.Impl(
+                year = dataYear,
+                id = id.toString(),
+                status = status,
+                booth = booth,
+                name = name,
+                summary = summary,
+                socialLinks = socialLinks,
+                storeLinks = storeLinks,
+                portfolioLinks = portfolioLinks,
+                catalogLinks = catalogLinks,
+                driveLink = null,
+                notes = notes,
+                commissions = commissions,
+                seriesInferred = seriesInferred,
+                seriesConfirmed = seriesConfirmed,
+                merchInferred = merchInferred,
+                merchConfirmed = merchConfirmed,
+                _images = emptyList(),
+                fallbackImageYear = null,
+                profileImage = null,
+                tempImages = emptyList(),
+                embeds = emptyMap(),
+                editorNotes = editorNotes,
+                lastEditor = null, // This is filled on the backend
+                lastEditTime = Clock.System.now(),
+                verifiedArtist = verifiedArtist,
+                newArtist = false,
+            )
         )
     }
 
@@ -269,7 +286,12 @@ class ArtistFormState(
         ) {
             FormUtils.applyValue(stateSocialLinks, this.socialLinks, socialLinks, mergeBehavior)
             FormUtils.applyValue(stateStoreLinks, this.storeLinks, storeLinks, mergeBehavior)
-            FormUtils.applyValue(statePortfolioLinks, this.portfolioLinks, portfolioLinks, mergeBehavior)
+            FormUtils.applyValue(
+                statePortfolioLinks,
+                this.portfolioLinks,
+                portfolioLinks,
+                mergeBehavior
+            )
             FormUtils.applyValue(stateCatalogLinks, this.catalogLinks, catalogLinks, mergeBehavior)
             FormUtils.applyValue(stateCommissions, this.commissions, commissions, mergeBehavior)
         }
@@ -460,4 +482,12 @@ class ArtistFormState(
             )
         }
     }
+
+    // Images separated out to be uploaded and finalized before being applied to the artist
+    @Serializable
+    data class CapturedState(
+        val profileImage: EditImage?,
+        val images: List<EditImage>,
+        val artist: ArtistDatabaseEntry.Impl,
+    )
 }

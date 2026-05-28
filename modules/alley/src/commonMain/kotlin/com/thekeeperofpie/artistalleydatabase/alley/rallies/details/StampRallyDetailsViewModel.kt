@@ -91,7 +91,7 @@ class StampRallyDetailsViewModel(
         val stampRally = stampRallyWithUserData.stampRally
         val artists = entryWithArtists.artists
             .sortedBy { it.booth }
-            .map { it to AlleyImageUtils.getProfileImage(it.embeds) }
+            .map { it to AlleyImageUtils.getProfileImage(it.profileImage) }
 
         // Some stamp rallies have artists in non-AA regions, try and show those
         val otherTables = stampRally.tables

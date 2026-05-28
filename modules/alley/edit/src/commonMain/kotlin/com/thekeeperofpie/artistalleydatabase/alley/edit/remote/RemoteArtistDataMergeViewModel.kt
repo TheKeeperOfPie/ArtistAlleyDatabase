@@ -8,16 +8,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
-import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -118,14 +117,13 @@ class RemoteArtistDataMergeViewModel(
         confirmedArtistId.value = artistId
     }
 
-    fun onClickSave(images: List<EditImage>, updated: ArtistDatabaseEntry.Impl, openArtistEditAfter: Boolean) {
+    fun onClickSave(capturedState: ArtistFormState.CapturedState, openArtistEditAfter: Boolean) {
         val entry = currentEntry.value ?: return
         val initial = entryInfo.value?.second?.artist
         saveTask.triggerManual {
             SaveData(
-                images = images,
+                capturedState = capturedState,
                 initial = initial,
-                updated = updated,
                 entry = entry,
                 openArtistEditAfter = openArtistEditAfter,
             )
@@ -137,16 +135,15 @@ class RemoteArtistDataMergeViewModel(
             database.saveRemoteArtistData(
                 dataYear = dataYear,
                 initial = data.initial,
-                updated = data.updated,
+                updated = data.capturedState.artist,
                 entry = data.entry,
                 isHistory = false,
-            ) to data.updated.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
+            ) to data.capturedState.artist.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
         }
 
     private data class SaveData(
-        val images: List<EditImage>,
+        val capturedState: ArtistFormState.CapturedState,
         val initial: ArtistDatabaseEntry.Impl?,
-        val updated: ArtistDatabaseEntry.Impl,
         val entry: ArtistRemoteEntry,
         val openArtistEditAfter: Boolean,
     )

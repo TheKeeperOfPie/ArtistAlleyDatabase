@@ -6,7 +6,6 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
@@ -80,14 +79,13 @@ class RemoteArtistDataHistoryMergeViewModel(
 
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
-    fun onClickSave(images: List<EditImage>, updated: ArtistDatabaseEntry.Impl) {
+    fun onClickSave(capturedState: ArtistFormState.CapturedState) {
         val entry = entry.value ?: return
         val initial = entryInfo.value?.second?.artist
         saveTask.triggerManual {
             SaveData(
-                images = images,
+                capturedState = capturedState,
                 initial = initial,
-                updated = updated,
                 entry = entry,
             )
         }
@@ -98,16 +96,15 @@ class RemoteArtistDataHistoryMergeViewModel(
             database.saveRemoteArtistData(
                 dataYear = dataYear,
                 initial = data.initial,
-                updated = data.updated,
+                updated = data.capturedState.artist,
                 entry = data.entry,
                 isHistory = true,
             )
         }
 
     private data class SaveData(
-        val images: List<EditImage>,
+        val capturedState: ArtistFormState.CapturedState,
         val initial: ArtistDatabaseEntry.Impl?,
-        val updated: ArtistDatabaseEntry.Impl,
         val entry: ArtistRemoteEntry,
     )
 

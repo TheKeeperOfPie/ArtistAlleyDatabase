@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.remote
 
-import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 
 data class RemoteArtistDataDiff(
     val booth: String?,

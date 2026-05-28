@@ -9,5 +9,5 @@ data class StampRallyWithUserData(
     val stampRally: StampRallyDatabaseEntry,
     val userEntry: StampRallyUserEntry,
     val seriesImageInfo: List<SeriesImageInfo> = emptyList(),
-    val artistBoothToEmbeds: Map<String, Map<String, DatabaseImage>> = emptyMap(),
+    val artistBoothToProfileImages: Map<String, DatabaseImage?> = emptyMap(),
 )

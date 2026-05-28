@@ -268,10 +268,11 @@ class ArtistFormViewModel(
     fun onClickDone() {
         val artist = artist.value ?: return
         saveTask.triggerManual {
-            val (images, artist) = state.captureDatabaseEntry(artist)
+            val (profileImage, images, artist) = state.captureDatabaseEntry(artist)
             val stampRallyData = state.stampRallyStates.toList()
                 .map { it.captureDatabaseEntry(dataYear) }
             CapturedState(
+                profileImage = profileImage,
                 artistImages = images,
                 artist = artist,
                 stampRallyImages = stampRallyData.associate { it.second.id to it.first },
@@ -294,7 +295,7 @@ class ArtistFormViewModel(
             tagAutocomplete.merchById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
                 ?: return
 
-        val formEntry = state.captureDatabaseEntry(artist).second
+        val formEntry = state.captureDatabaseEntry(artist).artist
         val mergeEntry = ArtistInferenceUtils.mergeEntry(
             formEntry = formEntry,
             previousYearData = previousYearData,
@@ -340,6 +341,7 @@ class ArtistFormViewModel(
         val imagesResult = imageUploader.uploadImages(
             dataYear = dataYear,
             artistId = Uuid.parse(beforeArtist.id),
+            profileImage = data.profileImage,
             artistImages = data.artistImages,
             stampRallyImages = stampRallyImages,
         )
@@ -352,8 +354,8 @@ class ArtistFormViewModel(
             }
             is ImageUploader.UploadResult.Success -> {
                 Triple(
-                    imagesResult.artistCatalogImages,
-                    imagesResult.stampRallyCatalogImages,
+                    imagesResult.artistDatabaseImages,
+                    imagesResult.stampRallyDatabaseImages,
                     imagesResult.uploadedImages,
                 )
             }
@@ -432,6 +434,7 @@ class ArtistFormViewModel(
         val reattachedImagesResult = imageUploader.uploadImages(
             dataYear = dataYear,
             artistId = Uuid.parse(beforeArtist.id),
+            profileImage = null,
             artistImages = emptyList(),
             stampRallyImages = reattachedImages,
         )
@@ -440,7 +443,7 @@ class ArtistFormViewModel(
             ImageUploader.UploadResult.Empty -> emptyMap<String, List<DatabaseImage>>() to emptyMap()
             is ImageUploader.UploadResult.Error -> return null to reattachedImagesResult.message
             is ImageUploader.UploadResult.Success ->
-                reattachedImagesResult.stampRallyCatalogImages to reattachedImagesResult.uploadedImages
+                reattachedImagesResult.stampRallyDatabaseImages to reattachedImagesResult.uploadedImages
         }
 
         val stampRallyStates = state.stampRallyStates.toList()
@@ -466,6 +469,7 @@ class ArtistFormViewModel(
     }
 
     data class CapturedState(
+        val profileImage: EditImage?,
         val artistImages: List<EditImage>,
         val artist: ArtistDatabaseEntry.Impl,
         val stampRallyImages: Map<String, List<EditImage>>,

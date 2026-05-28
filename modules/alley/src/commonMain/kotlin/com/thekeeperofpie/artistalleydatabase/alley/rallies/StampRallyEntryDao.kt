@@ -147,9 +147,9 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
 }
 
 @Serializable
-private data class BoothAndEmbeds(
+private data class BoothAndProfileImage(
     val booth: String? = null,
-    val embeds: String? = null,
+    val profileImage: String? = null,
 )
 
 fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
@@ -180,9 +180,9 @@ fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
             lastEditTime = null,
         ),
         seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(14)!!),
-        artistBoothToEmbeds = Json.decodeFromString<List<BoothAndEmbeds>>(getString(15)!!)
+        artistBoothToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(getString(15)!!)
             .associate {
-                it.booth.orEmpty() to it.embeds?.let(ColumnAdapters.embedsAdapter::decode).orEmpty()
+                it.booth.orEmpty() to it.profileImage?.let(ColumnAdapters.databaseImageAdapter::decode)
             },
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
@@ -640,7 +640,7 @@ class StampRallyEntryDao(
                 """(
                     SELECT
                         json_group_array (
-                            json_object ('booth', a.booth, 'embeds', a.embeds)
+                            json_object ('booth', a.booth, 'profileImage', a.profileImage)
                         )
                     FROM
                         artistEntryAnimeExpo2026 a

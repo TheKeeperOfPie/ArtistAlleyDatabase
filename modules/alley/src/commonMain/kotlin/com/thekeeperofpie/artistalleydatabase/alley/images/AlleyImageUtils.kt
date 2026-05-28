@@ -3,12 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.images
 import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 
 object AlleyImageUtils {
 
@@ -52,15 +52,7 @@ object AlleyImageUtils {
         }
     }
 
-    const val EMBED_MIN_DIMENSION = 300
-
     fun getEmbedImagesMap(embeds: Map<String, DatabaseImage>) = embeds
-        .filter {
-            val width = it.value.width
-            val height = it.value.height
-            width != null && height != null &&
-                    width > EMBED_MIN_DIMENSION && height > EMBED_MIN_DIMENSION
-        }
         .mapNotNull {
             try {
                 it.key to Triple(
@@ -117,28 +109,25 @@ object AlleyImageUtils {
         .ifEmpty { getTempImages(tempImages) }
         .ifEmpty { getEmbedImages(embeds) }
 
-    fun getProfileImageWithPath(embeds: Map<String, DatabaseImage>) =
-        embeds.asSequence()
-            .filter {
-                val width = it.value.width
-                val height = it.value.height
-                width != null && height != null &&
-                        width < EMBED_MIN_DIMENSION && height < EMBED_MIN_DIMENSION
-            }
-            .firstOrNull { LinkModel.parse(it.key).type.category == LinkCategory.SOCIALS }
-            ?.let {
-                "files/embeds/${it.value.name}" to it.value
-            }
+    fun getProfileImageWithPath(profileImage: DatabaseImage?) =
+        profileImage?.let {
+            "files/embeds/${it.name}" to it
+        }
 
-    fun getProfileImage(embeds: Map<String, DatabaseImage>) =
-        getProfileImageWithPath(embeds)
+    fun getProfileImage(profileImage: DatabaseImage?) =
+        getProfileImageWithPath(profileImage)
             ?.let { (path, image) ->
-                CatalogImage(
-                    uri = Uri.parse(Res.getUri(path)),
-                    width = image.width,
-                    height = image.height,
-                    color = image.color,
-                )
+                try {
+                    CatalogImage(
+                        uri = Uri.parse(Res.getUri(path)),
+                        width = image.width,
+                        height = image.height,
+                        color = image.color,
+                    )
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    null
+                }
             }
 
     fun getRallyImages(

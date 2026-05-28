@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
     merchInferred TEXT AS List<String>,
     merchConfirmed TEXT AS List<String>,
     images TEXT AS List<DatabaseImage>,
+    profileImage TEXT AS DatabaseImage DEFAULT NULL,
     editorNotes TEXT,
     lastEditor TEXT,
     lastEditTime TEXT AS Instant NOT NULL,

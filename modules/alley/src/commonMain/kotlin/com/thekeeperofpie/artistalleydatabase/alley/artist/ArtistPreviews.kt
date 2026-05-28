@@ -30,6 +30,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 _images = emptyList(),
                 fallbackImageYear = null,
                 tempImages = emptyList(),
+                profileImage = null,
                 embeds = emptyMap(),
                 editorNotes = null,
                 lastEditor = null,

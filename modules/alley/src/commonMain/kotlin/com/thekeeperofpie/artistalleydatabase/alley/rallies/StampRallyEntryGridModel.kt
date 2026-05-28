@@ -40,7 +40,7 @@ class StampRallyEntryGridModel(
     companion object {
         fun buildFromEntry(entry: StampRallyWithUserData): StampRallyEntryGridModel {
             val stampRally = entry.stampRally
-            val artistBoothsToProfileImages = entry.artistBoothToEmbeds.mapNotNull {
+            val artistBoothsToProfileImages = entry.artistBoothToProfileImages.mapNotNull {
                 it.key to AlleyImageUtils.getProfileImage(it.value)
             }
             return StampRallyEntryGridModel(

@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -47,16 +47,14 @@ class ArtistFormHistoryViewModel(
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickSave(
-        images: List<EditImage>,
-        updated: ArtistDatabaseEntry.Impl,
+        capturedState: ArtistFormState.CapturedState,
         openArtistEditAfter: Boolean,
     ) {
         val entry = entry.value ?: return
         saveTask.triggerManual {
             SaveData(
-                images = images,
+                capturedState = capturedState,
                 initial = entry.artist,
-                updated = updated,
                 formEntryTimestamp = entry.formDiff.timestamp,
                 openArtistEditAfter = openArtistEditAfter,
             )
@@ -70,15 +68,14 @@ class ArtistFormHistoryViewModel(
                 initial = data.initial,
                 // History doesn't support restoring images because older images may have been
                 // deleted to save storage space
-                updated = data.updated.copy(_images = data.initial.images),
+                updated = data.capturedState.artist.copy(_images = data.initial.images),
                 formEntryTimestamp = data.formEntryTimestamp,
-            ) to data.updated.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
+            ) to data.capturedState.artist.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
         }
 
     private data class SaveData(
-        val images: List<EditImage>,
+        val capturedState: ArtistFormState.CapturedState,
         val initial: ArtistDatabaseEntry.Impl,
-        val updated: ArtistDatabaseEntry.Impl,
         val formEntryTimestamp: Instant,
         val openArtistEditAfter: Boolean,
     )

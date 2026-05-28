@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
@@ -38,16 +39,14 @@ class ArtistFormMergeViewModel(
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickSave(
-        images: List<EditImage>,
-        updated: ArtistDatabaseEntry.Impl,
+        capturedState: ArtistFormState.CapturedState,
         openArtistEditAfter: Boolean,
     ) {
         val entry = entry.value ?: return
         saveTask.triggerManual {
             SaveData(
-                images = images,
+                capturedState = capturedState,
                 initial = entry.artist,
-                updated = updated,
                 formEntryTimestamp = entry.formDiff.timestamp,
                 openArtistEditAfter = openArtistEditAfter,
             )
@@ -59,17 +58,17 @@ class ArtistFormMergeViewModel(
             database.saveArtistAndClearFormEntry(
                 dataYear = dataYear,
                 initial = data.initial,
-                updated = data.updated.copy(
-                    _images = data.images.map(EditImage::toCatalogImage)
+                updated = data.capturedState.artist.copy(
+                    profileImage = data.capturedState.profileImage?.let(EditImage::toCatalogImage),
+                    _images = data.capturedState.images.map(EditImage::toCatalogImage),
                 ),
                 formEntryTimestamp = data.formEntryTimestamp,
-            ) to data.updated.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
+            ) to data.capturedState.artist.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
         }
 
     private data class SaveData(
-        val images: List<EditImage>,
+        val capturedState: ArtistFormState.CapturedState,
         val initial: ArtistDatabaseEntry.Impl,
-        val updated: ArtistDatabaseEntry.Impl,
         val formEntryTimestamp: Instant,
         val openArtistEditAfter: Boolean,
     )

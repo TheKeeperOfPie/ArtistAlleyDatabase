@@ -28,6 +28,7 @@ interface ArtistDatabaseEntry {
     val images: List<DatabaseImage>
     val fallbackImages: List<DatabaseImage>
     val fallbackImageYear: DataYear?
+    val profileImage: DatabaseImage?
     val tempImages: List<DatabaseImage>
     val embeds: Map<String, DatabaseImage>
     val editorNotes: String?
@@ -57,6 +58,7 @@ interface ArtistDatabaseEntry {
         override val merchConfirmed: List<String>,
         val _images: List<DatabaseImage>,
         override val fallbackImageYear: DataYear?,
+        override val profileImage: DatabaseImage?,
         override val tempImages: List<DatabaseImage>,
         override val embeds: Map<String, DatabaseImage>,
         override val editorNotes: String?,
@@ -129,6 +131,7 @@ interface ArtistDatabaseEntry {
             _images = images,
             fallbackImageYear = fallbackImageYear,
             tempImages = emptyList(),
+            profileImage = null,
             embeds = emptyMap(),
             status = ArtistStatus.UNKNOWN,
             editorNotes = null,

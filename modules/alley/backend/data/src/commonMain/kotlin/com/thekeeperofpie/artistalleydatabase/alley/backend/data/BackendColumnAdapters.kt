@@ -15,6 +15,7 @@ object BackendColumnAdapters {
         merchConfirmedAdapter = ColumnAdapters.listStringAdapter,
         commissionsAdapter = ColumnAdapters.listStringAdapter,
         imagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
+        profileImageAdapter = ColumnAdapters.databaseImageAdapter,
         lastEditTimeAdapter = ColumnAdapters.instantAdapter,
         formTimestampAdapter = ColumnAdapters.instantAdapter,
         remoteTimestampAdapter = ColumnAdapters.instantAdapter,

@@ -25,6 +25,7 @@ data class ArtistHistoryEntry(
     val merchInferred: List<String>?,
     val merchConfirmed: List<String>?,
     val images: List<DatabaseImage>?,
+    val profileImage: DatabaseImage?,
     val editorNotes: String?,
     val lastEditor: String?,
     val timestamp: Instant,
@@ -53,6 +54,7 @@ data class ArtistHistoryEntry(
             merchInferred = after.merchInferred.takeIf { it != before?.merchInferred },
             merchConfirmed = after.merchConfirmed.takeIf { it != before?.merchConfirmed },
             images = after.images.takeIf { it != before?.images },
+            profileImage = after.profileImage.takeIf { it != before?.profileImage },
             editorNotes = after.editorNotes.takeIf { it != before?.editorNotes },
             lastEditor = after.lastEditor,
             timestamp = after.lastEditTime ?: Clock.System.now(),
@@ -80,6 +82,7 @@ data class ArtistHistoryEntry(
             var merchInferred: List<String>? = null
             var merchConfirmed: List<String>? = null
             var images: List<DatabaseImage>? = null
+            var profileImage: DatabaseImage? = null
             var editorNotes: String? = null
             var lastEditor: String? = null
 
@@ -99,6 +102,7 @@ data class ArtistHistoryEntry(
                 merchInferred = merchInferred ?: it.merchInferred
                 merchConfirmed = merchConfirmed ?: it.merchConfirmed
                 images = images ?: it.images
+                profileImage = profileImage ?: it.profileImage
                 editorNotes = editorNotes ?: it.editorNotes
                 lastEditor = lastEditor ?: it.lastEditor
             }
@@ -123,6 +127,7 @@ data class ArtistHistoryEntry(
                 merchConfirmed = merchConfirmed.orEmpty(),
                 _images = images.orEmpty(),
                 fallbackImageYear = null,
+                profileImage = profileImage,
                 tempImages = emptyList(),
                 embeds = emptyMap(),
                 editorNotes = editorNotes,
@@ -150,6 +155,7 @@ data class ArtistHistoryEntry(
                 merchInferred = entry.merchInferred ?: initial.merchInferred,
                 merchConfirmed = entry.merchConfirmed ?: initial.merchConfirmed,
                 _images = entry.images ?: initial.images,
+                profileImage = entry.profileImage ?: initial.profileImage,
                 editorNotes = entry.editorNotes ?: initial.editorNotes,
                 lastEditor = null,
                 lastEditTime = Clock.System.now(),

@@ -73,9 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.SeriesSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ShowRevertIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.rememberListRevertDialogState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
-import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -98,6 +96,8 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.TableRestaurant
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Visibility
 import com.thekeeperofpie.artistalleydatabase.icons.filled.VisibilityOff
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey

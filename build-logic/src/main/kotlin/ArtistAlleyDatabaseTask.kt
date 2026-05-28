@@ -13,8 +13,10 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -506,7 +508,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         commissionFlags = commissionFlags,
                         images = artistImages.catalogImages.map { it.final },
                         tempImages = artistImages.tempImages.map { it.final },
-                        embeds = artistImages.embeds,
+                        profileImage = artistImages.profileImage,
+                        embeds = artistImages.largeEmbeds,
                         lastEditTime = lastEditTime,
                         verifiedArtist = verifiedArtistIds.contains(artistId),
                     )
@@ -583,23 +586,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 -> throw IllegalStateException()
             DataYear.ANIME_EXPO_2026 -> inputImagesAnimeExpo2026
         }.dir("artist/$artistId").get().asFile
-        val embeds = embedLinks
-            .sortedBy {
-                // Sort Linktree last because the embed is not very useful
-                when (Link.parse(it)?.type) {
-                    Link.Type.LINKTREE -> 1
-                    else -> 0
-                }
-            }
-            .mapNotNull {
-                val (link, catalogImage) = embedCache.getEmbedCatalogImage(it)
-                    ?: return@mapNotNull null
-                Triple(it, link, catalogImage)
-            }
-            .distinctBy { it.second }
-            .distinctBy { it.third.name }
-            .associate { it.first to it.third }
-            .ifEmpty { null }
         val files = if (artistImagesDir.exists()) artistImagesDir.listFiles() else emptyArray()
         val finalImages = images.mapNotNull {
             val imageName = it.name.substringAfterLast("/").substringBeforeLast(".")
@@ -628,10 +614,41 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             )
         }
 
+        val allEmbeds = embedLinks
+            .sortedBy {
+                // Sort Linktree last because the embed is not very useful
+                when (Link.parse(it)?.type) {
+                    Link.Type.LINKTREE -> 1
+                    else -> 0
+                }
+            }
+            .mapNotNull {
+                val (link, catalogImage) = embedCache.getEmbedCatalogImage(it)
+                    ?: return@mapNotNull null
+                Triple(it, link, catalogImage)
+            }
+            .distinctBy { it.second }
+            .distinctBy { it.third.name }
+            .associate { it.first to it.third }
+
+        val (largeEmbeds, smallEmbeds) = allEmbeds
+            .toList()
+            .partition { (_, image) ->
+                val width = image.width ?: return@partition false
+                val height = image.height ?: return@partition false
+                width >= EMBED_MIN_DIMENSION || height >= EMBED_MIN_DIMENSION
+            }
+
+        val profileImage = smallEmbeds
+            .ifEmpty { largeEmbeds }
+            .minByOrNull { Link.parse(it.first)?.type?.category == LinkCategory.SOCIALS }
+            ?.second
+
         return ArtistImages(
             catalogImages = if (isFinalCatalog) finalImages else emptyList(),
             tempImages = if (isFinalCatalog) emptyList() else finalImages,
-            embeds = embeds,
+            profileImage = profileImage,
+            largeEmbeds = largeEmbeds.toMap(),
         )
     }
 
@@ -1406,7 +1423,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     private data class ArtistImages(
         val catalogImages: List<FinalImage>,
         val tempImages: List<FinalImage>,
-        val embeds: Map<String, DatabaseImage>?,
+        val profileImage: DatabaseImage?,
+        val largeEmbeds: Map<String, DatabaseImage>?,
     ) {
         data class FinalImage(
             val original: DatabaseImage,
@@ -1422,4 +1440,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val width: Int,
         val height: Int,
     )
+
+    companion object {
+        private const val EMBED_MIN_DIMENSION = 300
+    }
 }

@@ -120,7 +120,7 @@ object ArtistAlleyAppScreen {
                     type = AlleyDestination.Images.Type.Artist(
                         id = artist.id,
                         booth = artist.booth,
-                        profileImage = AlleyImageUtils.getProfileImage(artist.embeds),
+                        profileImage = AlleyImageUtils.getProfileImage(artist.profileImage),
                         name = artist.name,
                         showingFallback = entry.showingFallback,
                     ),

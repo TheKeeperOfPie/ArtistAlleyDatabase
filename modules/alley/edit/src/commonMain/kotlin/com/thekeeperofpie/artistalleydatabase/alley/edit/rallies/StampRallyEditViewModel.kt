@@ -143,6 +143,7 @@ class StampRallyEditViewModel(
             val imagesResult = imageUploader.uploadImages(
                 dataYear = dataYear,
                 artistId = null,
+                profileImage = null,
                 artistImages = emptyList(),
                 stampRallyImages = mapOf(stampRallyId to triple.first),
             )
@@ -152,7 +153,7 @@ class StampRallyEditViewModel(
                 is ImageUploader.UploadResult.Error ->
                     return@withContext BackendRequest.StampRallySave.Response.Failed(imagesResult.message)
                 is ImageUploader.UploadResult.Success ->
-                    imagesResult.stampRallyCatalogImages[stampRallyId].orEmpty() to imagesResult.uploadedImages
+                    imagesResult.stampRallyDatabaseImages[stampRallyId].orEmpty() to imagesResult.uploadedImages
             }
 
             val newStampRallyImages = state.stampRallyFormState.images.toList()

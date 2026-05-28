@@ -620,6 +620,7 @@ object ArtistHistoryScreen {
             merchInferred = entry.merchInferred.takeIf { this[ArtistField.MERCH_INFERRED] },
             merchConfirmed = entry.merchConfirmed.takeIf { this[ArtistField.MERCH_CONFIRMED] },
             images = null,
+            profileImage = null,
             editorNotes = if (this[ArtistField.EDITOR_NOTES]) {
                 entry.editorNotes.orEmpty()
             } else {

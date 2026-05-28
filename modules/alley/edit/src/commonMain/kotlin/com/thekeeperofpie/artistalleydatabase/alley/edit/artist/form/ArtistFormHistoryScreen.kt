@@ -56,17 +56,15 @@ object ArtistFormHistoryScreen {
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickSave = { images, entry ->
+            onClickSave = {
                 viewModel.onClickSave(
-                    images = images,
-                    updated = entry,
+                    capturedState = it,
                     openArtistEditAfter = false,
                 )
             },
-            onClickSaveAndEdit = { images, entry ->
+            onClickSaveAndEdit = {
                 viewModel.onClickSave(
-                    images = images,
-                    updated = entry,
+                    capturedState = it,
                     openArtistEditAfter = true,
                 )
             },

@@ -127,17 +127,15 @@ internal object ArtistFormMergeScreen {
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickSave = { images, entry ->
+            onClickSave = {
                 viewModel.onClickSave(
-                    images = images,
-                    updated = entry,
+                    capturedState = it,
                     openArtistEditAfter = false,
                 )
             },
-            onClickSaveAndEdit = { images, entry ->
+            onClickSaveAndEdit = {
                 viewModel.onClickSave(
-                    images = images,
-                    updated = entry,
+                    capturedState = it,
                     openArtistEditAfter = true,
                 )
             },
@@ -185,8 +183,8 @@ internal object ArtistFormMergeScreen {
         merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
-        onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
-        onClickSaveAndEdit: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit?,
+        onClickSave: (ArtistFormState.CapturedState) -> Unit,
+        onClickSaveAndEdit: (ArtistFormState.CapturedState) -> Unit?,
     ) {
         val entry = entry()
         val fieldState = rememberFieldState(entry()?.second)
@@ -233,7 +231,7 @@ internal object ArtistFormMergeScreen {
                             tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save_and_edit),
                             onClick = {
                                 artistFormState?.captureDatabaseEntry(dataYear, true)?.let {
-                                    onClickSaveAndEdit(it.first, it.second)
+                                    onClickSaveAndEdit(it)
                                 }
                             },
                         )
@@ -242,7 +240,7 @@ internal object ArtistFormMergeScreen {
                             tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save),
                             onClick = {
                                 artistFormState?.captureDatabaseEntry(dataYear, true)?.let {
-                                    onClickSave(it.first, it.second)
+                                    onClickSave(it)
                                 }
                             },
                         )

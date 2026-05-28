@@ -59,7 +59,7 @@ object ArtistMapScreen {
                     title = {
                         artist?.artist?.let {
                             val profileImage = remember(it) {
-                                AlleyImageUtils.getProfileImage(it.embeds)
+                                AlleyImageUtils.getProfileImage(it.profileImage)
                             }
                             ArtistTitle(
                                 year = it.year,

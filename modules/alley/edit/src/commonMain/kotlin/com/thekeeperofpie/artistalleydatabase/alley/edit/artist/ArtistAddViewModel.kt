@@ -34,7 +34,7 @@ class ArtistAddViewModel(
     @Assisted artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, BackendRequest.ArtistSave.Response> =
+    private val saveTask: ExclusiveTask<Pair<ArtistFormState.CapturedState, Boolean>, BackendRequest.ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
     private val artistFormState = savedStateHandle.saveable(
         key = "artistFormState",
@@ -66,18 +66,21 @@ class ArtistAddViewModel(
 
     private fun captureDatabaseEntry(
         isManual: Boolean,
-    ): Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean> {
-        val (images, databaseEntry) = state.artistFormState
-            .captureDatabaseEntry(dataYear = dataYear, verifiedArtist = false)
-        return Triple(images, databaseEntry, isManual)
-    }
+    ): Pair<ArtistFormState.CapturedState, Boolean> = state.artistFormState
+        .captureDatabaseEntry(dataYear = dataYear, verifiedArtist = false) to isManual
 
-    private suspend fun save(triple: Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>) =
+    private suspend fun save(pair: Pair<ArtistFormState.CapturedState, Boolean>) =
         withContext(dispatchers.io) {
-            val (images, databaseEntry, isManual) = triple
+            val (capturedState, isManual) = pair
+
+            // TODO: Adding with images doesn't work
+            val (profileImage, images, databaseEntry) = capturedState
 
             val hasChanged = ArtistDatabaseEntry.hasChanged(null, databaseEntry)
-            if (!isManual && !hasChanged && images.none { it is EditImage.LocalImage }) {
+            if (!isManual &&
+                !hasChanged &&
+                profileImage !is EditImage.LocalImage &&
+                images.none { it is EditImage.LocalImage }) {
                 // Don't save if no data has changed
                 return@withContext BackendRequest.ArtistSave.Response.Success
             }

@@ -1233,28 +1233,33 @@ object ArtistFormScreen {
 
         fun captureDatabaseEntry(
             artist: ArtistDatabaseEntry.Impl,
-        ): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
+        ): ArtistFormState.CapturedState {
             val (booth, name, summary, notes) = artistFormState.info.captureValues()
             val (socialLinks, storeLinks, portfolioLinks, catalogLinks, commissions) = artistFormState.links.captureValues()
 
             val (seriesInferred, seriesConfirmed) = artistFormState.series.captureValues()
             val (merchInferred, merchConfirmed) = artistFormState.merch.captureValues()
 
+            val profileImage = artistFormState.profileImage
             val images = artistFormState.images.toList()
-            return images to artist.copy(
-                booth = booth,
-                name = name,
-                summary = summary,
-                socialLinks = socialLinks,
-                storeLinks = storeLinks,
-                portfolioLinks = portfolioLinks,
-                catalogLinks = catalogLinks,
-                notes = notes,
-                commissions = commissions,
-                seriesInferred = seriesInferred,
-                seriesConfirmed = seriesConfirmed,
-                merchInferred = merchInferred,
-                merchConfirmed = merchConfirmed,
+            return ArtistFormState.CapturedState(
+                profileImage = profileImage,
+                images = images,
+                artist = artist.copy(
+                    booth = booth,
+                    name = name,
+                    summary = summary,
+                    socialLinks = socialLinks,
+                    storeLinks = storeLinks,
+                    portfolioLinks = portfolioLinks,
+                    catalogLinks = catalogLinks,
+                    notes = notes,
+                    commissions = commissions,
+                    seriesInferred = seriesInferred,
+                    seriesConfirmed = seriesConfirmed,
+                    merchInferred = merchInferred,
+                    merchConfirmed = merchConfirmed,
+                ),
             )
         }
 
@@ -1277,6 +1282,7 @@ object ArtistFormScreen {
 
         @Stable
         class FormState(
+            profileImage: EditImage? = null,
             val images: SnapshotStateList<EditImage> = SnapshotStateList(),
             val info: ArtistFormState.InfoState = ArtistFormState.InfoState(),
             val links: ArtistFormState.LinksState = ArtistFormState.LinksState(),
@@ -1285,8 +1291,11 @@ object ArtistFormScreen {
             val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val formNotes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
         ) {
-            object Saver : ComposeSaver<FormState, List<Any>> {
+            var profileImage by mutableStateOf(profileImage)
+
+            object Saver : ComposeSaver<FormState, List<Any?>> {
                 override fun SaverScope.save(value: FormState) = listOf(
+                    with(StateUtils.nullableJsonSaver<EditImage>()) { save(value.profileImage) },
                     with(StateUtils.snapshotListJsonSaver<EditImage>()) { save(value.images) },
                     with(ArtistFormState.InfoState.Saver) { save(value.info) },
                     with(ArtistFormState.LinksState.Saver) { save(value.links) },
@@ -1297,14 +1306,15 @@ object ArtistFormScreen {
                 )
 
                 @Suppress("UNCHECKED_CAST")
-                override fun restore(value: List<Any>) = FormState(
-                    images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[0] as String) },
-                    info = with(ArtistFormState.InfoState.Saver) { restore(value[1] as List<Any>) },
-                    links = with(ArtistFormState.LinksState.Saver) { restore(value[2] as List<Any>) },
-                    series = with(ArtistFormState.SeriesState.Saver) { restore(value[3] as List<Any>) },
-                    merch = with(ArtistFormState.MerchState.Saver) { restore(value[4] as List<Any>) },
-                    notes = with(EntryForm2.SingleTextState.Saver) { restore(value[5]) },
-                    formNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[6]) },
+                override fun restore(value: List<Any?>) = FormState(
+                    profileImage = with(StateUtils.nullableJsonSaver<EditImage>()) { (value[0] as? String)?.let { restore(it) } },
+                    images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) },
+                    info = with(ArtistFormState.InfoState.Saver) { restore(value[2] as List<Any>) },
+                    links = with(ArtistFormState.LinksState.Saver) { restore(value[3] as List<Any>) },
+                    series = with(ArtistFormState.SeriesState.Saver) { restore(value[4] as List<Any>) },
+                    merch = with(ArtistFormState.MerchState.Saver) { restore(value[5] as List<Any>) },
+                    notes = with(EntryForm2.SingleTextState.Saver) { restore(value[6]!!) },
+                    formNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[7]!!) },
                 )
             }
         }

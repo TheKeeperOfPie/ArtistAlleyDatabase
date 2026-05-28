@@ -547,7 +547,7 @@ object ArtistEditScreen {
                 val formEntry = artistFormState.captureDatabaseEntry(
                     dataYear = year,
                     verifiedArtist = false, // Shouldn't be used
-                ).second
+                ).artist
 
                 val mergeEntry = ArtistInferenceUtils.mergeEntry(
                     formEntry = formEntry,

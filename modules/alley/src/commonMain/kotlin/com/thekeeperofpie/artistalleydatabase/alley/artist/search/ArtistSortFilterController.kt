@@ -58,9 +58,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
-import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -76,6 +74,8 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibito
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates

@@ -34,6 +34,13 @@ object ColumnAdapters {
         override fun encode(value: List<DatabaseImage>) = Json.encodeToString(value)
     }
 
+    val databaseImageAdapter = object : ColumnAdapter<DatabaseImage, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<DatabaseImage>(databaseValue)
+
+        override fun encode(value: DatabaseImage) = Json.encodeToString(value)
+    }
+
     val artistStatusAdapter = object : ColumnAdapter<ArtistStatus, String> {
         override fun decode(databaseValue: String) =
             ArtistStatus.entries.find { it.name == databaseValue } ?: ArtistStatus.UNKNOWN
@@ -119,6 +126,7 @@ object ColumnAdapters {
         commissionsAdapter = listStringAdapter,
         imagesAdapter = listDatabaseImageAdapter,
         tempImagesAdapter = listDatabaseImageAdapter,
+        profileImageAdapter = databaseImageAdapter,
         fallbackImageYearAdapter = dataYearAdapter,
         embedsAdapter = embedsAdapter,
         lastEditTimeAdapter = instantAdapter,

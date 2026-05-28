@@ -55,7 +55,7 @@ class ArtistEditViewModel(
     @Assisted private val artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, BackendRequest.ArtistSave.Response> =
+    private val saveTask: ExclusiveTask<Pair<ArtistFormState.CapturedState, Boolean>, BackendRequest.ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
     private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
     private val artist =
@@ -150,7 +150,7 @@ class ArtistEditViewModel(
     fun hasPendingChanges(): Boolean = artist.value.let {
         it != null && ArtistDatabaseEntry.hasChanged(
             before = it,
-            after = state.artistFormState.captureDatabaseEntry(dataYear, it.verifiedArtist).second
+            after = state.artistFormState.captureDatabaseEntry(dataYear, it.verifiedArtist).artist
         )
     }
 
@@ -178,7 +178,7 @@ class ArtistEditViewModel(
         val formEntry = artistFormState.captureDatabaseEntry(
             dataYear = dataYear,
             verifiedArtist = false, // Shouldn't be used
-        ).second
+        ).artist
 
         val mergeEntry = ArtistInferenceUtils.mergeEntry(
             formEntry = formEntry,
@@ -208,17 +208,16 @@ class ArtistEditViewModel(
 
     private fun captureDatabaseEntry(
         isManual: Boolean,
-    ): Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean> {
-        val (images, databaseEntry) = state.artistFormState.captureDatabaseEntry(
+    ): Pair<ArtistFormState.CapturedState, Boolean> = state.artistFormState
+        .captureDatabaseEntry(
             dataYear = dataYear,
             verifiedArtist = artist.value?.verifiedArtist == true,
-        )
-        return Triple(images, databaseEntry, isManual)
-    }
+        ) to isManual
 
-    private suspend fun save(triple: Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>) =
+    private suspend fun save(pair: Pair<ArtistFormState.CapturedState, Boolean>) =
         withContext(dispatchers.io) {
-            val (images, databaseEntry, isManual) = triple
+            val (capturedState, isManual) = pair
+            val (profileImage, images, databaseEntry) = capturedState
 
             val initialArtist = artist.value
             val hasChanged = ArtistDatabaseEntry.hasChanged(initialArtist, databaseEntry)
@@ -226,19 +225,29 @@ class ArtistEditViewModel(
                 // Don't save if no data has changed
                 return@withContext BackendRequest.ArtistSave.Response.Success
             }
+
             val imagesResult = imageUploader.uploadImages(
                 dataYear = dataYear,
-                artistId = Uuid.parse(triple.second.id),
+                artistId = Uuid.parse(databaseEntry.id),
+                profileImage = profileImage,
                 artistImages = images,
                 stampRallyImages = emptyMap(),
             )
+
+            val (artistProfileImages, uploadedProfileImages) = when (imagesResult) {
+                ImageUploader.UploadResult.Empty -> emptyList<DatabaseImage>() to emptyMap()
+                is ImageUploader.UploadResult.Error ->
+                    return@withContext BackendRequest.ArtistSave.Response.Failed(imagesResult.message)
+                is ImageUploader.UploadResult.Success ->
+                    imagesResult.artistDatabaseImages to imagesResult.uploadedImages
+            }
 
             val (artistCatalogImages, uploadedImages) = when (imagesResult) {
                 ImageUploader.UploadResult.Empty -> emptyList<DatabaseImage>() to emptyMap()
                 is ImageUploader.UploadResult.Error ->
                     return@withContext BackendRequest.ArtistSave.Response.Failed(imagesResult.message)
                 is ImageUploader.UploadResult.Success ->
-                    imagesResult.artistCatalogImages to imagesResult.uploadedImages
+                    imagesResult.artistDatabaseImages to imagesResult.uploadedImages
             }
 
             val newArtistImages = state.artistFormState.images.toList()
