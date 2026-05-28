@@ -556,7 +556,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 } else {
                                     artistImages.catalogImages.find { it.original == changelogImage }
                                 }?.final
-                            }?.ifEmpty { null }?.take(3),
+                            }?.ifEmpty { null },
                             isTempImages = isTempImages,
                         )
                     }
