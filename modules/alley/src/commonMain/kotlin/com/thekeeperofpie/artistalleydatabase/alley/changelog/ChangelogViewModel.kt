@@ -34,8 +34,9 @@ class ChangelogViewModel(
                     val (added, updated) = it.second.partition { it.isBrandNew }
                     ChangelogScreen.DayChange(
                         date = it.first,
-                        added = added.sortedBy { it.booth },
-                        updated = updated.sortedBy { it.booth },
+                        added = added.sortedBy { it.booth }.sortedBy { it.images.isNullOrEmpty() },
+                        updated = updated.sortedBy { it.booth }
+                            .sortedBy { it.images.isNullOrEmpty() },
                     )
                 }
         }
