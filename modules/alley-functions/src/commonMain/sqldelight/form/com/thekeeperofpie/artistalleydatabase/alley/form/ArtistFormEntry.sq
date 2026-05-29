@@ -14,10 +14,13 @@ insertFormEntry:
 INSERT OR REPLACE INTO artistFormEntry
 VALUES ?;
 
-moveFormEntryToHistory:
-INSERT INTO artistFormEntryHistory
+getFormEntryWithTimestamp:
 SELECT * FROM artistFormEntry
 WHERE dataYear = :dataYear AND artistId = :artistId AND timestamp = :timestamp;
+
+insertFormEntryHistory:
+INSERT INTO artistFormEntryHistory
+VALUES ?;
 
 consumeFormEntry:
 DELETE FROM artistFormEntry

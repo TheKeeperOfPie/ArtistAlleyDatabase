@@ -15,7 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
@@ -313,10 +315,48 @@ object AlleyEditBackend {
             // D1 only supports transactions in a batched statement, which is hard to set up
             // A single write and delete should be consistent enough that it shouldn't matter
             val artistId = Uuid.parse(request.updated.id)
-            moveFormEntryToHistory(
+            val formEntry = getFormEntryWithTimestamp(
                 dataYear = request.dataYear,
                 artistId = artistId,
                 timestamp = request.formEntryTimestamp,
+            ).awaitAsOne()
+            insertFormEntryHistory(
+                ArtistFormEntryHistory(
+                    dataYear = formEntry.dataYear,
+                    artistId = formEntry.artistId,
+                    beforeBooth = formEntry.beforeBooth,
+                    beforeName = formEntry.beforeName,
+                    beforeSummary = formEntry.beforeSummary,
+                    beforeSocialLinks = formEntry.beforeSocialLinks,
+                    beforeStoreLinks = formEntry.beforeStoreLinks,
+                    beforePortfolioLinks = formEntry.beforePortfolioLinks,
+                    beforeCatalogLinks = formEntry.beforeCatalogLinks,
+                    beforeNotes = formEntry.beforeNotes,
+                    beforeCommissions = formEntry.beforeCommissions,
+                    beforeSeriesInferred = formEntry.beforeSeriesInferred,
+                    beforeSeriesConfirmed = formEntry.beforeSeriesConfirmed,
+                    beforeMerchInferred = formEntry.beforeMerchInferred,
+                    beforeMerchConfirmed = formEntry.beforeMerchConfirmed,
+                    beforeImages = formEntry.beforeImages,
+                    beforeProfileImage = formEntry.beforeProfileImage,
+                    afterBooth = formEntry.afterBooth,
+                    afterName = formEntry.afterName,
+                    afterSummary = formEntry.afterSummary,
+                    afterSocialLinks = formEntry.afterSocialLinks,
+                    afterStoreLinks = formEntry.afterStoreLinks,
+                    afterPortfolioLinks = formEntry.afterPortfolioLinks,
+                    afterCatalogLinks = formEntry.afterCatalogLinks,
+                    afterNotes = formEntry.afterNotes,
+                    afterCommissions = formEntry.afterCommissions,
+                    afterSeriesInferred = formEntry.afterSeriesInferred,
+                    afterSeriesConfirmed = formEntry.afterSeriesConfirmed,
+                    afterMerchInferred = formEntry.afterMerchInferred,
+                    afterMerchConfirmed = formEntry.afterMerchConfirmed,
+                    afterImages = formEntry.afterImages,
+                    afterProfileImage = formEntry.afterProfileImage,
+                    formNotes = formEntry.formNotes,
+                    timestamp = formEntry.timestamp,
+                )
             )
             consumeFormEntry(
                 dataYear = request.dataYear,
@@ -796,11 +836,44 @@ object AlleyEditBackend {
         Databases.formDatabase(context).stampRallyFormEntryQueries.run {
             // D1 only supports transactions in a batched statement, which is hard to set up
             // A single write and delete should be consistent enough that it shouldn't matter
-            moveFormEntryToHistory(
+            val formEntry = getFormEntryWithTimestamp(
                 dataYear = dataYear,
                 artistId = artistId,
                 stampRallyId = stampRallyId,
                 timestamp = formEntryTimestamp,
+            ).awaitAsOne()
+            insertFormEntryHistory(
+                StampRallyFormEntryHistory(
+                    dataYear = formEntry.dataYear,
+                    artistId = formEntry.artistId,
+                    stampRallyId = formEntry.stampRallyId,
+                    beforeFandom = formEntry.beforeFandom,
+                    beforeTables = formEntry.beforeTables,
+                    beforeStartTables = formEntry.beforeStartTables,
+                    beforeEndTables = formEntry.beforeEndTables,
+                    beforeLinks = formEntry.beforeLinks,
+                    beforeTableMin = formEntry.beforeTableMin,
+                    beforePrize = formEntry.beforePrize,
+                    beforePrizeLimit = formEntry.beforePrizeLimit,
+                    beforeSeries = formEntry.beforeSeries,
+                    beforeMerch = formEntry.beforeMerch,
+                    beforeNotes = formEntry.beforeNotes,
+                    beforeImages = formEntry.beforeImages,
+                    afterFandom = formEntry.afterFandom,
+                    afterTables = formEntry.afterTables,
+                    afterStartTables = formEntry.afterStartTables,
+                    afterEndTables = formEntry.afterEndTables,
+                    afterLinks = formEntry.afterLinks,
+                    afterTableMin = formEntry.afterTableMin,
+                    afterPrize = formEntry.afterPrize,
+                    afterPrizeLimit = formEntry.afterPrizeLimit,
+                    afterSeries = formEntry.afterSeries,
+                    afterMerch = formEntry.afterMerch,
+                    afterNotes = formEntry.afterNotes,
+                    afterImages = formEntry.afterImages,
+                    deleted = formEntry.deleted,
+                    timestamp = formEntry.timestamp,
+                )
             )
             consumeFormEntry(
                 dataYear = dataYear,

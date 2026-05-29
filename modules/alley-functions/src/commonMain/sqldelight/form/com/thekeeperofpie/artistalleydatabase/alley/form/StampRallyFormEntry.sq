@@ -20,10 +20,13 @@ SELECT artistId, stampRallyId, beforeTables, afterTables, beforeFandom, afterFan
 FROM stampRallyFormEntryHistory
 ORDER BY timestamp DESC;
 
-moveFormEntryToHistory:
-INSERT INTO stampRallyFormEntryHistory
+getFormEntryWithTimestamp:
 SELECT * FROM stampRallyFormEntry
 WHERE dataYear = :dataYear AND artistId = :artistId AND stampRallyId = :stampRallyId AND timestamp = :timestamp;
+
+insertFormEntryHistory:
+INSERT INTO stampRallyFormEntryHistory
+VALUES ?;
 
 consumeFormEntry:
 DELETE FROM stampRallyFormEntry
