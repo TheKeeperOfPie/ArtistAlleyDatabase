@@ -341,7 +341,9 @@ internal object BotBackend {
                 Connection.Type.X -> Link.Type.X
                 null -> return@any false
             }
-            val identifier = linkTypeToIdentifier[type]?.ifBlank { null }
+            val identifier = linkTypeToIdentifier[type]
+                ?.ifBlank { null }
+                ?.removePrefix("@") // TikTok is shown with an @ symbol on the site
                 ?: return@any false
             it.name.equals(identifier, ignoreCase = true)
         }

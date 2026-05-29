@@ -68,6 +68,7 @@ class Worker {
                                     |        images TEXT NOT NULL,
                                     |        fallbackImageYear TEXT DEFAULT NULL,
                                     |        tempImages TEXT DEFAULT NULL,
+                                    |        profileImage TEXT DEFAULT NULL,
                                     |        embeds TEXT DEFAULT NULL,
                                     |        editorNotes TEXT,
                                     |        lastEditor TEXT,
