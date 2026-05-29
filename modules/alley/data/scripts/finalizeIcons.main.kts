@@ -1,6 +1,6 @@
 import java.util.concurrent.TimeUnit
 
-val inputDir = __FILE__.parentFile.resolve("build/icons")
+val inputDir = __FILE__.parentFile.resolve("../icons")
 inputDir.listFiles()!!.forEach {
     // SVGO can't handle spaces somehow
     if (it.name.contains(" ")) {

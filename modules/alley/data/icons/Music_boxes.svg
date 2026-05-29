@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Music_Boxes" data-name="Music Boxes" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-width: .75px;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5 {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .cls-1, .cls-3, .cls-4, .cls-5 {
+        stroke: #000;
+      }
+
+      .cls-2 {
+        stroke: #231f20;
+        stroke-width: .2px;
+      }
+
+      .cls-3, .cls-5 {
+        stroke-width: .5px;
+      }
+
+      .cls-4 {
+        stroke-width: .3px;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="4.29" y="27.72" width="30.65" height="11.53"/>
+  <rect class="cls-5" x="2.18" y="38.9" width="34.88" height="2.95" rx="1.48" ry="1.48"/>
+  <polygon class="cls-4" points="39.57 30.16 39.57 32.72 34.76 32.72 34.76 34.14 39.57 34.14 39.57 36.7 42.88 36.7 42.88 30.16 39.57 30.16"/>
+  <rect class="cls-2" x="40.58" y="30.89" width="1.3" height="1.85"/>
+  <rect class="cls-2" x="40.58" y="34.19" width="1.3" height="1.85"/>
+  <rect class="cls-1" x="7.65" y="13.51" width="8.68" height="7.33" transform="translate(-1.91 1.51) rotate(-6.67)"/>
+  <path class="cls-1" d="M8.02,20.57h0c-1.26.15-2.38-.57-2.5-1.59l-.24-2.07c-.12-1.02.81-1.98,2.07-2.13h0s.68,5.78.68,5.78Z"/>
+  <polygon class="cls-1" points="22.99 5.74 15.88 13.03 16.73 20.31 25.1 25.15 22.99 5.74"/>
+  <path class="cls-1" d="M24.35,18.35h0c1.26-.13,2.2-1.07,2.09-2.1l-.21-2.07c-.11-1.02-1.22-1.75-2.48-1.63h0s.6,5.79.6,5.79Z"/>
+  <polygon class="cls-3" points="9.06 21.21 11.18 27.72 14.35 27.72 11.06 20.97 9.06 21.21"/>
+  <g>
+    <circle class="cls-5" cx="29.58" cy="19.45" r="1.01"/>
+    <line class="cls-1" x1="30.82" y1="14.29" x2="30.38" y2="19.34"/>
+    <polygon class="cls-5" points="30.68 15.79 33.28 16.42 30.93 14.12 30.68 15.79"/>
+  </g>
+  <g>
+    <circle class="cls-5" cx="32.59" cy="10.77" r="1.01"/>
+    <line class="cls-1" x1="33.35" y1="5.55" x2="33.49" y2="10.77"/>
+    <circle class="cls-5" cx="36.92" cy="9.26" r="1.01"/>
+    <line class="cls-1" x1="37.68" y1="4.03" x2="37.82" y2="9.26"/>
+    <line class="cls-1" x1="33.35" y1="5.55" x2="37.68" y2="4.03"/>
+  </g>
+  <path class="cls-3" d="M10.73,13.46c-.1-.75-.59-1.32-1.08-1.26l-1.52.19c-.49.06-.81.73-.72,1.48h0s3.31-.42,3.31-.42Z"/>
+  <path d="M21.7,14.3c-.41-.17-1,.3-1.38,1.07-.62-.59-1.33-.84-1.66-.54-.36.33-.12,1.18.53,1.9.34.37.71.63,1.05.76.03.03.07.06.11.07.1.04.21.04.33.01,0,0,.02,0,.02,0,0,0,.02,0,.02,0,.12-.01.22-.05.3-.12.03-.03.06-.07.08-.11.28-.23.55-.61.74-1.07.37-.9.31-1.78-.14-1.97Z"/>
+</svg>
