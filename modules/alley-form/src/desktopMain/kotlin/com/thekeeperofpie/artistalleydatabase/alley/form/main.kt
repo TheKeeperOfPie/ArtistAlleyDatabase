@@ -109,7 +109,7 @@ fun main() {
 
         LaunchedEffect(Unit) {
             runBlocking {
-                DebugTestData.initialize(graph.editDatabase, graph.formDatabase)
+                DebugTestData.initialize(graph.editRemoteDatabase, graph.formRemoteDatabase)
             }
         }
 

@@ -333,7 +333,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         ) : UploadResult
 
         data class Success(
-            val profileDatabaseImages: DatabaseImage?,
+            val profileDatabaseImage: DatabaseImage?,
             val artistDatabaseImages: List<DatabaseImage>,
             val stampRallyDatabaseImages: Map<String, List<DatabaseImage>>,
             val uploadedImages: Map<EditImage, EditImage>,

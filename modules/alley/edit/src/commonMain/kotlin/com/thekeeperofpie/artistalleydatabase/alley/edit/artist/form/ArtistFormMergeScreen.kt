@@ -47,6 +47,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_portfolio_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_profile_image
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
@@ -64,7 +65,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
@@ -408,6 +408,7 @@ internal object ArtistFormMergeScreen {
                     val fieldText = when (field) {
                         ArtistField.IMAGES_ADDED -> diff?.images?.added?.joinToString()
                         ArtistField.IMAGES_REMOVED -> diff?.images?.deleted?.joinToString()
+                        ArtistField.PROFILE_IMAGE -> diff?.profileImage.toString()
                         ArtistField.BOOTH -> diff?.booth
                         ArtistField.NAME -> diff?.name
                         ArtistField.SUMMARY -> diff?.summary
@@ -486,6 +487,7 @@ internal object ArtistFormMergeScreen {
                     ArtistField.IMAGES_ADDED,
                     ArtistField.IMAGES_REMOVED,
                 ),
+                profileImage = applyDiff(base.profileImage, diff.profileImage, ArtistField.PROFILE_IMAGE),
                 booth = applyDiff(base.booth, diff.booth, ArtistField.BOOTH),
                 name = applyDiff(base.name, diff.name, ArtistField.NAME),
                 summary = applyDiff(base.summary, diff.summary, ArtistField.SUMMARY),
@@ -552,6 +554,7 @@ internal object ArtistFormMergeScreen {
                     merchById = merchById,
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 ).apply {
+                    profileImage = artist.profileImage?.let(ImageUtils::toEditImage)
                     images.replaceAll(artist.images.map(ImageUtils::toEditImage))
                 }
         }
@@ -566,6 +569,7 @@ internal object ArtistFormMergeScreen {
                     val include = when (it) {
                         ArtistField.IMAGES_ADDED -> diff.images?.added != null
                         ArtistField.IMAGES_REMOVED -> diff.images?.deleted != null
+                        ArtistField.PROFILE_IMAGE -> diff.profileImage != null
                         ArtistField.BOOTH -> diff.booth != null
                         ArtistField.NAME -> diff.name != null
                         ArtistField.SUMMARY -> diff.summary != null
@@ -600,6 +604,7 @@ internal object ArtistFormMergeScreen {
     private enum class ArtistField(val label: StringResource) {
         IMAGES_ADDED(Res.string.alley_edit_artist_field_label_images),
         IMAGES_REMOVED(Res.string.alley_edit_artist_field_label_images),
+        PROFILE_IMAGE(Res.string.alley_edit_artist_field_label_profile_image),
         BOOTH(Res.string.alley_edit_artist_field_label_booth),
         NAME(Res.string.alley_edit_artist_field_label_name),
         SUMMARY(Res.string.alley_edit_artist_field_label_summary),
@@ -626,6 +631,7 @@ internal object ArtistFormMergeScreen {
 
         val isRemoved: Boolean
             get() = when (this) {
+                PROFILE_IMAGE,
                 IMAGES_ADDED,
                 BOOTH,
                 NAME,

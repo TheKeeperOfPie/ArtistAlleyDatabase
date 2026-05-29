@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntry (
     beforeMerchInferred TEXT AS List<String>,
     beforeMerchConfirmed TEXT AS List<String>,
     beforeImages TEXT AS List<DatabaseImage>,
+    beforeProfileImage TEXT AS DatabaseImage DEFAULT NULL,
     afterBooth TEXT,
     afterName TEXT,
     afterSummary TEXT,
@@ -53,6 +54,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntry (
     afterMerchInferred TEXT AS List<String>,
     afterMerchConfirmed TEXT AS List<String>,
     afterImages TEXT AS List<DatabaseImage>,
+    afterProfileImage TEXT AS DatabaseImage DEFAULT NULL,
     formNotes TEXT,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId)
@@ -75,6 +77,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntryHistory (
     beforeMerchInferred TEXT AS List<String>,
     beforeMerchConfirmed TEXT AS List<String>,
     beforeImages TEXT AS List<DatabaseImage>,
+    beforeProfileImage TEXT AS DatabaseImage DEFAULT NULL,
     afterBooth TEXT,
     afterName TEXT,
     afterSummary TEXT,
@@ -89,6 +92,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntryHistory (
     afterMerchInferred TEXT AS List<String>,
     afterMerchConfirmed TEXT AS List<String>,
     afterImages TEXT AS List<DatabaseImage>,
+    afterProfileImage TEXT AS DatabaseImage DEFAULT NULL,
     formNotes TEXT,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId, timestamp)

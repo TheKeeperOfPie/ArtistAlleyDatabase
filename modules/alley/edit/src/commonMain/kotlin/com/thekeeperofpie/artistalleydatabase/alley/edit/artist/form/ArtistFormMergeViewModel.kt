@@ -59,8 +59,8 @@ class ArtistFormMergeViewModel(
                 dataYear = dataYear,
                 initial = data.initial,
                 updated = data.capturedState.artist.copy(
-                    profileImage = data.capturedState.profileImage?.let(EditImage::toCatalogImage),
                     _images = data.capturedState.images.map(EditImage::toCatalogImage),
+                    profileImage = data.capturedState.profileImage?.let(EditImage::toCatalogImage),
                 ),
                 formEntryTimestamp = data.formEntryTimestamp,
             ) to data.capturedState.artist.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)

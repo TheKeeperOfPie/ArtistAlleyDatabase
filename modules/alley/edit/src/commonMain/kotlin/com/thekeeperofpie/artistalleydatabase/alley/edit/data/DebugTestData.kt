@@ -18,12 +18,12 @@ object DebugTestData {
     private var initialized = false
 
     suspend fun initialize(
-        editDatabase: AlleyEditRemoteDatabase,
-        formDatabase: AlleyFormRemoteDatabase,
+        editRemoteDatabase: AlleyEditRemoteDatabase,
+        formRemoteDatabase: AlleyFormRemoteDatabase,
     ) {
         if (initialized) return
         initialized = true
-        val artist = initializeTestArtist(editDatabase)
+        val artist = initializeTestArtist(editRemoteDatabase)
         val artistAfter = artist.copy(
             name = artist.name + " - edited",
             summary = "New description",
@@ -31,7 +31,7 @@ object DebugTestData {
             merchConfirmed = artist.merchConfirmed.drop(1) + "Photocards",
         )
 
-        val stampRally = initializeTestStampRally(editDatabase)
+        val stampRally = initializeTestStampRally(editRemoteDatabase)
         val stampRallyAfter = stampRally.copy(
             fandom = stampRally.fandom + " - edited",
             tables = listOf("C38", "C39", "C41"),
@@ -40,7 +40,7 @@ object DebugTestData {
             merch = stampRally.merch.drop(1) + "Photocards",
         )
 
-        editDatabase
+        editRemoteDatabase
             .generateFormLink(
                 dataYear = artist.year,
                 artistId = Uuid.parse(artist.id),
@@ -48,7 +48,7 @@ object DebugTestData {
             )
             ?.substringAfter("${AlleyCryptography.ACCESS_KEY_PARAM}=")
             ?.let(ArtistFormAccessKey::setKey)
-        formDatabase.saveArtist(
+        formRemoteDatabase.saveArtist(
             artist.year,
             beforeArtist = artist,
             afterArtist = artistAfter,
@@ -58,7 +58,7 @@ object DebugTestData {
             formNotes = "Some test artist form notes",
         )
 
-        editDatabase.submitRemoteArtistData(
+        editRemoteDatabase.submitRemoteArtistData(
             dataYear = DataYear.ANIME_EXPO_2026,
             data = listOf(
                 ArtistRemoteEntry(
@@ -81,7 +81,11 @@ object DebugTestData {
         )
     }
 
-    private suspend fun initializeTestArtist(database: AlleyEditRemoteDatabase): ArtistDatabaseEntry.Impl {
+    private suspend fun initializeTestArtist(
+        remoteDatabase: AlleyEditRemoteDatabase,
+    ): ArtistDatabaseEntry.Impl {
+        val dataYear = DataYear.ANIME_EXPO_2026
+
         // Seed some initial data to make it easier to test out features locally
         val artistUpdates = listOf<(ArtistDatabaseEntry.Impl) -> ArtistDatabaseEntry.Impl>(
             { it.copy(name = "First Last", lastEditor = "firstlast@example.org") },
@@ -135,7 +139,7 @@ object DebugTestData {
         )
         var previous =
             ArtistDatabaseEntry.Impl(
-                year = DataYear.ANIME_EXPO_2026,
+                year = dataYear,
                 id = AlleyCryptography.FAKE_ARTIST_ID.toString(),
                 status = ArtistStatus.UNKNOWN,
                 booth = "C38",
@@ -163,23 +167,23 @@ object DebugTestData {
                 verifiedArtist = false,
                 newArtist = false,
             )
-        database.saveArtist(dataYear = DataYear.ANIME_EXPO_2026, initial = null, updated = previous)
-        database.saveArtist(
-            dataYear = DataYear.ANIME_EXPO_2026, initial = null, updated = previous.copy(
+        remoteDatabase.saveArtist(dataYear = dataYear, initial = null, updated = previous)
+        remoteDatabase.saveArtist(
+            dataYear = dataYear, initial = null, updated = previous.copy(
                 booth = "C39",
                 name = "Test artist 2",
             )
         )
-        database.saveArtist(
-            dataYear = DataYear.ANIME_EXPO_2026, initial = null, updated = previous.copy(
+        remoteDatabase.saveArtist(
+            dataYear = dataYear, initial = null, updated = previous.copy(
                 booth = "C40",
                 name = "Test artist 3",
             )
         )
         artistUpdates.forEach {
             val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.seconds)
-            database.saveArtist(
-                dataYear = DataYear.ANIME_EXPO_2026,
+            remoteDatabase.saveArtist(
+                dataYear = dataYear,
                 initial = previous,
                 updated = next
             )

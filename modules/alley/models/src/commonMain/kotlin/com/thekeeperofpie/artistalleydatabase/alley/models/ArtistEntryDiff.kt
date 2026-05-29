@@ -7,6 +7,7 @@ import kotlin.time.Instant
 @Serializable
 data class ArtistEntryDiff(
     val images: ListDiff<DatabaseImage>?,
+    val profileImage: DatabaseImage?,
     val booth: String?,
     val name: String?,
     val summary: String?,

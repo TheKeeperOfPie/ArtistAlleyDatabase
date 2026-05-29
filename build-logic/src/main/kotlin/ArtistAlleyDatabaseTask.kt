@@ -495,6 +495,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         isFinalCatalog = artist.catalogLinks.isNotEmpty() ||
                                 artist.seriesConfirmed.isNotEmpty() ||
                                 artist.merchConfirmed.isNotEmpty(),
+                        profileImage = artist.profileImage,
                         images = artist.images,
                         embedLinks = embedLinks,
                     )
@@ -508,13 +509,16 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         commissionFlags = commissionFlags,
                         images = artistImages.catalogImages.map { it.final },
                         tempImages = artistImages.tempImages.map { it.final },
-                        profileImage = artistImages.profileImage,
+                        profileImage = artistImages.customProfileImage?.final
+                            ?: artistImages.embedProfileImage,
                         embeds = artistImages.largeEmbeds,
                         lastEditTime = lastEditTime,
                         verifiedArtist = verifiedArtistIds.contains(artistId),
                     )
-                    val imagesToCompress = artistImages.catalogImages.map { it.imageToCompress } +
-                            artistImages.tempImages.map { it.imageToCompress }
+                    val imagesToCompress =
+                        listOfNotNull(artistImages.customProfileImage?.imageToCompress) +
+                                artistImages.catalogImages.map { it.imageToCompress } +
+                                artistImages.tempImages.map { it.imageToCompress }
                     Triple(newArtist, imagesToCompress, artistImages)
                 }
             }
@@ -574,6 +578,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         artistId: String,
         @Suppress("SameParameterValue") year: DataYear,
         isFinalCatalog: Boolean,
+        profileImage: DatabaseImage?,
         images: List<DatabaseImage>,
         embedLinks: List<String>,
     ): ArtistImages {
@@ -588,30 +593,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }.dir("artist/$artistId").get().asFile
         val files = if (artistImagesDir.exists()) artistImagesDir.listFiles() else emptyArray()
         val finalImages = images.mapNotNull {
-            val imageName = it.name.substringAfterLast("/").substringBeforeLast(".")
-            val imageFile = files.find { it.name.startsWith(imageName) }
-            if (imageFile == null) {
-                logger.error("Failed to find $it")
-                return@mapNotNull null
-            }
-            val hash = ImageUtils.hash(imageFile)
-            val nameWithHash = it.name.substringBeforeLast("/") + "/$imageName-$hash.webp"
-            val (width, height, resized) = parseScaledImageWidthHeight(
-                logger = logger,
-                imageCacheDir = imageCacheDir,
-                file = imageFile,
-            )
-            ArtistImages.FinalImage(
-                original = it,
-                final = it.copy(name = nameWithHash, width = width, height = height),
-                imageToCompress = ImageToCompress(
-                    path = nameWithHash.removePrefix(year.folderName).removePrefix("/"),
-                    imageFile = imageFile,
-                    resized = resized,
-                    width = width,
-                    height = height,
-                ),
-            )
+            finalizeImage(imageCacheDir, year, files, it)
         }
 
         val allEmbeds = embedLinks
@@ -639,7 +621,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 width >= EMBED_MIN_DIMENSION || height >= EMBED_MIN_DIMENSION
             }
 
-        val profileImage = smallEmbeds
+
+        val customProfileImage = profileImage?.let {
+            finalizeImage(imageCacheDir, year, files, it)
+        }
+
+        val embedProfileImage = smallEmbeds
             .ifEmpty { largeEmbeds }
             .minByOrNull { Link.parse(it.first)?.type?.category == LinkCategory.SOCIALS }
             ?.second
@@ -647,8 +634,41 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         return ArtistImages(
             catalogImages = if (isFinalCatalog) finalImages else emptyList(),
             tempImages = if (isFinalCatalog) emptyList() else finalImages,
-            profileImage = profileImage,
+            customProfileImage = customProfileImage,
+            embedProfileImage = embedProfileImage,
             largeEmbeds = largeEmbeds.toMap(),
+        )
+    }
+
+    private fun finalizeImage(
+        imageCacheDir: File,
+        year: DataYear,
+        files: Array<File>,
+        it: DatabaseImage,
+    ): ArtistImages.FinalImage? {
+        val imageName = it.name.substringAfterLast("/").substringBeforeLast(".")
+        val imageFile = files.find { it.name.startsWith(imageName) }
+        if (imageFile == null) {
+            logger.error("Failed to find $it")
+            return null
+        }
+        val hash = ImageUtils.hash(imageFile)
+        val nameWithHash = it.name.substringBeforeLast("/") + "/$imageName-$hash.webp"
+        val (width, height, resized) = parseScaledImageWidthHeight(
+            logger = logger,
+            imageCacheDir = imageCacheDir,
+            file = imageFile,
+        )
+        return ArtistImages.FinalImage(
+            original = it,
+            final = it.copy(name = nameWithHash, width = width, height = height),
+            imageToCompress = ImageToCompress(
+                path = nameWithHash.removePrefix(year.folderName).removePrefix("/"),
+                imageFile = imageFile,
+                resized = resized,
+                width = width,
+                height = height,
+            ),
         )
     }
 
@@ -1423,7 +1443,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     private data class ArtistImages(
         val catalogImages: List<FinalImage>,
         val tempImages: List<FinalImage>,
-        val profileImage: DatabaseImage?,
+        val customProfileImage: FinalImage?,
+        val embedProfileImage: DatabaseImage?,
         val largeEmbeds: Map<String, DatabaseImage>?,
     ) {
         data class FinalImage(

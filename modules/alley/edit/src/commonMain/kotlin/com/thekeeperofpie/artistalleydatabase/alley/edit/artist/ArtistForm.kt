@@ -1,16 +1,22 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.LayoutScopeMarker
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.allCaps
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,10 +26,12 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
@@ -31,7 +39,9 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_hide_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_show_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_booth
@@ -44,6 +54,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_portfolio_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_profile_image
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_social_links
@@ -61,7 +72,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImagesSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditableImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHeaderIconAndTitle
@@ -87,6 +100,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.Assignment
+import com.thekeeperofpie.artistalleydatabase.icons.filled.AddPhotoAlternate
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Badge
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Brush
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Diversity3
@@ -102,6 +116,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -142,6 +159,61 @@ interface ArtistFormScope : EntryFormScope {
 
     @Composable
     fun InfoSections(state: ArtistFormState.InfoState, boothErrorMessage: (() -> String?)? = null)
+
+    @Composable
+    fun ProfileImageSection(
+        image: () -> EditImage?,
+        onImageSelected: (EditImage?) -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        val scope = rememberCoroutineScope()
+        val addLauncher = rememberFilePickerLauncher(
+            type = FileKitType.Image,
+            mode = FileKitMode.Single,
+        ) {
+            if (it != null) {
+                scope.launch {
+                    val imageKey = PlatformImageCache.add(it)
+                    onImageSelected(EditImage.LocalImage(imageKey, it))
+                }
+            }
+        }
+
+        OutlinedCard(onClick = { addLauncher.launch() }, modifier = modifier.size(72.dp)) {
+            val profileImage = image()
+            if (profileImage == null) {
+                Box(
+                    contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()
+                        .padding(4.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AddPhotoAlternate,
+                            contentDescription = stringResource(Res.string.alley_edit_artist_action_add_images)
+                        )
+                        val textStyle = MaterialTheme.typography.labelSmall
+                        Text(
+                            text = stringResource(Res.string.alley_edit_artist_edit_profile_image),
+                            style = textStyle,
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 6.sp,
+                                maxFontSize = textStyle.fontSize,
+                            ),
+                        )
+                    }
+                }
+            } else {
+                EditableImage(
+                    image = profileImage,
+                    onImageSelected = onImageSelected,
+                    targetSize = 72.dp,
+                )
+            }
+        }
+    }
 
     @Composable
     fun BoothSection(
@@ -932,11 +1004,21 @@ object ArtistForm {
                     },
                 )
             }
-            IdSection(
-                state = state.editorState.id,
-                forceLock = forceLockId,
-                errorText = errorState.idErrorMessage,
-            )
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
+                this@ArtistFormScope.ProfileImageSection(
+                    image = { state.profileImage },
+                    onImageSelected = { state.profileImage = it },
+                )
+
+                this@ArtistFormScope.IdSection(
+                    state = state.editorState.id,
+                    forceLock = forceLockId,
+                    errorText = errorState.idErrorMessage,
+                )
+            }
             InfoSections(state.info, boothErrorMessage = errorState.boothErrorMessage)
 
             LinkSections(

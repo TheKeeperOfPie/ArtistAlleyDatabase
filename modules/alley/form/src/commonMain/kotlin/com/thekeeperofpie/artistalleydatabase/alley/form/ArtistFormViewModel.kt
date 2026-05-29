@@ -147,6 +147,7 @@ class ArtistFormViewModel(
             } else {
                 baseArtist.copy(
                     _images = applyDiff(baseArtist.images, artistFormDiff.images),
+                    profileImage = artistFormDiff.profileImage ?: baseArtist.profileImage,
                     booth = artistFormDiff.booth ?: baseArtist.booth,
                     name = artistFormDiff.name ?: baseArtist.name,
                     summary = artistFormDiff.summary ?: baseArtist.summary,
@@ -218,8 +219,14 @@ class ArtistFormViewModel(
                                 fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
                                 hostTable = tables.firstOrNull().orEmpty(),
                                 tables = tables,
-                                startTables = applyDiff(baseStampRally.startTables, stampRallyFormDiff.startTables),
-                                endTables = applyDiff(baseStampRally.endTables, stampRallyFormDiff.endTables),
+                                startTables = applyDiff(
+                                    baseStampRally.startTables,
+                                    stampRallyFormDiff.startTables
+                                ),
+                                endTables = applyDiff(
+                                    baseStampRally.endTables,
+                                    stampRallyFormDiff.endTables
+                                ),
                                 links = applyDiff(baseStampRally.links, stampRallyFormDiff.links),
                                 tableMin = stampRallyFormDiff.tableMin ?: baseStampRally.tableMin,
                                 prize = stampRallyFormDiff.prize ?: baseStampRally.prize,
@@ -346,19 +353,18 @@ class ArtistFormViewModel(
             stampRallyImages = stampRallyImages,
         )
 
-        val (artistCatalogImages, stampRallyCatalogImages, uploadedImages) = when (imagesResult) {
-            ImageUploader.UploadResult.Empty -> Triple(emptyList(), emptyMap(), emptyMap())
+        val (profileDatabaseImage, artistDatabaseImages, stampRallyDatabaseImages, uploadedImages) = when (imagesResult) {
+            ImageUploader.UploadResult.Empty -> ImageUploader.UploadResult.Success(
+                null,
+                emptyList(),
+                emptyMap(),
+                emptyMap()
+            )
             is ImageUploader.UploadResult.Error -> {
                 progress.value = ArtistFormScreen.State.Progress.LOADED
                 return ArtistFormScreen.State.SaveResult.ImageUploadFailed(imagesResult.message)
             }
-            is ImageUploader.UploadResult.Success -> {
-                Triple(
-                    imagesResult.artistDatabaseImages,
-                    imagesResult.stampRallyDatabaseImages,
-                    imagesResult.uploadedImages,
-                )
-            }
+            is ImageUploader.UploadResult.Success -> imagesResult
         }
 
         val newArtistImages = state.artistFormState.images.toList()
@@ -372,9 +378,10 @@ class ArtistFormViewModel(
             it.images.replaceAll(newStampRallyImages)
         }
 
-        val afterArtist = data.artist.copy(_images = artistCatalogImages)
+        val afterArtist =
+            data.artist.copy(_images = artistDatabaseImages, profileImage = profileDatabaseImage)
         val afterStampRallies = afterRallies.map {
-            it.copy(images = stampRallyCatalogImages[it.id].orEmpty())
+            it.copy(images = stampRallyDatabaseImages[it.id].orEmpty())
         }
         var artistResult = formDatabase.saveArtist(
             dataYear = dataYear,
@@ -439,7 +446,7 @@ class ArtistFormViewModel(
             stampRallyImages = reattachedImages,
         )
 
-        val (reattachedStampRallyCatalogImages, reattachedUploadedImages) = when (reattachedImagesResult) {
+        val (reattachedStampRallyDatabaseImages, reattachedUploadedImages) = when (reattachedImagesResult) {
             ImageUploader.UploadResult.Empty -> emptyMap<String, List<DatabaseImage>>() to emptyMap()
             is ImageUploader.UploadResult.Error -> return null to reattachedImagesResult.message
             is ImageUploader.UploadResult.Success ->
@@ -461,7 +468,7 @@ class ArtistFormViewModel(
                 rally.copy(id = initialArtistResult.stampRallies.getOrNull(index)?.id ?: rally.id)
             },
             afterStampRallies = initialArtistResult.stampRallies.map { entry ->
-                entry.copy(images = entry.images.ifEmpty { reattachedStampRallyCatalogImages[entry.id].orEmpty() })
+                entry.copy(images = entry.images.ifEmpty { reattachedStampRallyDatabaseImages[entry.id].orEmpty() })
             },
             deletedRallyIds = emptyList(),
             formNotes = formNotes,

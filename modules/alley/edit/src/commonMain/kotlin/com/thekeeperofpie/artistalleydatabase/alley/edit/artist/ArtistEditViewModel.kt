@@ -22,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -130,6 +129,8 @@ class ArtistEditViewModel(
                 )
                 state.artistFormState.images
                     .replaceAll(artist.images.map(ImageUtils::toEditImage))
+                state.artistFormState.profileImage =
+                    artist.profileImage?.let(ImageUtils::toEditImage)
                 formMetadata.value = ArtistEditScreen.State.FormMetadata(
                     hasPendingFormSubmission = response.hasPendingFormSubmission,
                     hasFormLink = response.hasFormLink,
@@ -234,27 +235,26 @@ class ArtistEditViewModel(
                 stampRallyImages = emptyMap(),
             )
 
-            val (artistProfileImages, uploadedProfileImages) = when (imagesResult) {
-                ImageUploader.UploadResult.Empty -> emptyList<DatabaseImage>() to emptyMap()
+            val (artistProfileImage, artistCatalogImages, uploadedImages) = when (imagesResult) {
+                ImageUploader.UploadResult.Empty -> Triple(null, emptyList(), emptyMap())
                 is ImageUploader.UploadResult.Error ->
                     return@withContext BackendRequest.ArtistSave.Response.Failed(imagesResult.message)
                 is ImageUploader.UploadResult.Success ->
-                    imagesResult.artistDatabaseImages to imagesResult.uploadedImages
-            }
-
-            val (artistCatalogImages, uploadedImages) = when (imagesResult) {
-                ImageUploader.UploadResult.Empty -> emptyList<DatabaseImage>() to emptyMap()
-                is ImageUploader.UploadResult.Error ->
-                    return@withContext BackendRequest.ArtistSave.Response.Failed(imagesResult.message)
-                is ImageUploader.UploadResult.Success ->
-                    imagesResult.artistDatabaseImages to imagesResult.uploadedImages
+                    Triple(
+                        imagesResult.profileDatabaseImage,
+                        imagesResult.artistDatabaseImages,
+                        imagesResult.uploadedImages,
+                    )
             }
 
             val newArtistImages = state.artistFormState.images.toList()
                 .map { uploadedImages[it] ?: it }
             state.artistFormState.images.replaceAll(newArtistImages)
 
-            val updatedArtist = databaseEntry.copy(_images = artistCatalogImages)
+            val updatedArtist = databaseEntry.copy(
+                _images = artistCatalogImages,
+                profileImage = artistProfileImage,
+            )
             database.saveArtist(
                 dataYear = dataYear,
                 initial = initialArtist,

@@ -17,8 +17,8 @@ import dev.zacsweers.metro.SingleIn
 @DependencyGraph
 internal interface ArtistAlleyFormDesktopGraph : ArtistAlleyFormGraph, ArtistAlleyEditGraph {
 
-    val editDatabase: AlleyEditRemoteDatabase
-    val formDatabase: AlleyFormRemoteDatabase
+    val editRemoteDatabase: AlleyEditRemoteDatabase
+    val formRemoteDatabase: AlleyFormRemoteDatabase
 
     @Provides
     @SingleIn(AppScope::class)

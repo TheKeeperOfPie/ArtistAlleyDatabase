@@ -221,6 +221,7 @@ internal object AlleyFormBackend {
                 beforeMerchInferred = beforeArtist.merchInferred,
                 beforeMerchConfirmed = beforeArtist.merchConfirmed,
                 beforeImages = beforeArtist.images,
+                beforeProfileImage = beforeArtist.profileImage,
                 afterBooth = afterArtist.booth,
                 afterName = afterArtist.name,
                 afterSummary = afterArtist.summary,
@@ -235,6 +236,7 @@ internal object AlleyFormBackend {
                 afterMerchInferred = afterArtist.merchInferred,
                 afterMerchConfirmed = afterArtist.merchConfirmed,
                 afterImages = afterArtist.images,
+                afterProfileImage = afterArtist.profileImage,
                 formNotes = request.formNotes,
                 timestamp = timestamp,
             )

@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptographyKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -44,7 +43,6 @@ actual class AlleyEditRemoteDatabase(
         mutableMapOf<DataYear, MutableMap<String, ArtistDatabaseEntry.Impl>>()
     private val artistHistoryByDataYearAndId =
         mutableMapOf<DataYear, MutableMap<String, MutableList<ArtistHistoryEntry>>>()
-    private val images = mutableMapOf<String, EditImage>()
 
     private val series = mutableMapOf<Uuid, SeriesInfo>()
     private val merch = mutableMapOf<Uuid, MerchInfo>()
@@ -600,6 +598,7 @@ actual class AlleyEditRemoteDatabase(
     ) {
         fun toArtistEntryDiff() = ArtistEntryDiff(
             images = ListDiff.diffList(before.images, after.images),
+            profileImage = after.profileImage.takeIf { it != before.profileImage },
             booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
             name = after.name.takeIf { it != before.name },
             summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },

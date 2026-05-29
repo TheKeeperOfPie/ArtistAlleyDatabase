@@ -54,6 +54,7 @@ internal object Databases {
             beforeMerchInferredAdapter = ColumnAdapters.listStringAdapter,
             beforeMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
             beforeImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
+            beforeProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
             afterSocialLinksAdapter = ColumnAdapters.listStringAdapter,
             afterStoreLinksAdapter = ColumnAdapters.listStringAdapter,
             afterPortfolioLinksAdapter = ColumnAdapters.listStringAdapter,
@@ -64,6 +65,7 @@ internal object Databases {
             afterMerchInferredAdapter = ColumnAdapters.listStringAdapter,
             afterMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
             afterImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
+            afterProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
             timestampAdapter = ColumnAdapters.instantAdapter,
         ),
         artistFormEntryHistoryAdapter = ArtistFormEntryHistory.Adapter(
@@ -79,6 +81,7 @@ internal object Databases {
             beforeMerchInferredAdapter = ColumnAdapters.listStringAdapter,
             beforeMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
             beforeImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
+            beforeProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
             afterSocialLinksAdapter = ColumnAdapters.listStringAdapter,
             afterStoreLinksAdapter = ColumnAdapters.listStringAdapter,
             afterPortfolioLinksAdapter = ColumnAdapters.listStringAdapter,
@@ -89,6 +92,7 @@ internal object Databases {
             afterMerchInferredAdapter = ColumnAdapters.listStringAdapter,
             afterMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
             afterImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
+            afterProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
             timestampAdapter = ColumnAdapters.instantAdapter,
         ),
         artistFormNonceAdapter = ArtistFormNonce.Adapter(

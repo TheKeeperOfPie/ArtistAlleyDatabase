@@ -326,6 +326,7 @@ internal object Utils {
                 beforeMerchInferredAdapter = listStringAdapter,
                 beforeMerchConfirmedAdapter = listStringAdapter,
                 beforeImagesAdapter = listDatabaseImageAdapter,
+                beforeProfileImageAdapter = databaseImageAdapter,
                 afterSocialLinksAdapter = listStringAdapter,
                 afterStoreLinksAdapter = listStringAdapter,
                 afterPortfolioLinksAdapter = listStringAdapter,
@@ -336,6 +337,7 @@ internal object Utils {
                 afterMerchInferredAdapter = listStringAdapter,
                 afterMerchConfirmedAdapter = listStringAdapter,
                 afterImagesAdapter = listDatabaseImageAdapter,
+                afterProfileImageAdapter = databaseImageAdapter,
                 timestampAdapter = instantAdapter,
             )
         )

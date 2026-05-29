@@ -79,6 +79,8 @@ internal object BackendUtils {
                 formEntry.beforeImages,
                 formEntry.afterImages
             ),
+            profileImage = formEntry.afterProfileImage
+                .takeIf { it != formEntry.beforeProfileImage },
             booth = formEntry.afterBooth.orEmpty()
                 .takeIf { it != formEntry.beforeBooth.orEmpty() },
             name = formEntry.afterName.orEmpty()
@@ -144,6 +146,8 @@ internal object BackendUtils {
                 formEntry.beforeImages,
                 formEntry.afterImages,
             ),
+            profileImage = formEntry.afterProfileImage
+                .takeIf { it != formEntry.beforeProfileImage },
             booth = formEntry.afterBooth.orEmpty()
                 .takeIf { it != formEntry.beforeBooth.orEmpty() },
             name = formEntry.afterName.orEmpty()

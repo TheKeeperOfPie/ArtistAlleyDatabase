@@ -68,7 +68,10 @@ class AdminViewModel(
     private suspend fun createDatabases() {
         database.databaseCreate()
         if (BuildKonfig.isWasmDebug) {
-            DebugTestData.initialize(editRemoteDatabase, formRemoteDatabase)
+            DebugTestData.initialize(
+                editRemoteDatabase = editRemoteDatabase,
+                formRemoteDatabase = formRemoteDatabase,
+            )
         }
     }
 

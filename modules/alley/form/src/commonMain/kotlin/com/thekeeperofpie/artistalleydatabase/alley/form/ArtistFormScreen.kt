@@ -436,11 +436,6 @@ object ArtistFormScreen {
                                 )
 
                                 HorizontalDivider()
-                                Text(
-                                    text = stringResource(Res.string.alley_form_artist_header),
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    modifier = Modifier.padding(16.dp)
-                                )
 
                                 ArtistForm(
                                     formState = state.artistFormState,
@@ -558,6 +553,22 @@ object ArtistFormScreen {
             initialArtist = initialArtist,
             focusState = focusState,
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                this@ArtistForm.ProfileImageSection(
+                    image = { formState.profileImage },
+                    onImageSelected = { formState.profileImage = it },
+                )
+
+                Text(
+                    text = stringResource(Res.string.alley_form_artist_header),
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.weight(1f)
+                )
+            }
             BoothSection(
                 state = formState.info.booth,
                 label = { Text(stringResource(Res.string.alley_form_artist_booth_placeholder)) },
@@ -1307,7 +1318,13 @@ object ArtistFormScreen {
 
                 @Suppress("UNCHECKED_CAST")
                 override fun restore(value: List<Any?>) = FormState(
-                    profileImage = with(StateUtils.nullableJsonSaver<EditImage>()) { (value[0] as? String)?.let { restore(it) } },
+                    profileImage = with(StateUtils.nullableJsonSaver<EditImage>()) {
+                        (value[0] as? String)?.let {
+                            restore(
+                                it
+                            )
+                        }
+                    },
                     images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) },
                     info = with(ArtistFormState.InfoState.Saver) { restore(value[2] as List<Any>) },
                     links = with(ArtistFormState.LinksState.Saver) { restore(value[3] as List<Any>) },

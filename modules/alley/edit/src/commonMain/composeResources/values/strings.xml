@@ -25,6 +25,7 @@
     <string name="alley_edit_artist_edit_title_editing_name">Editing %1$s - %2$s</string>
     <string name="alley_edit_artist_edit_title_editing_booth_name">Editing %1$s - %2$s - %3$s</string>
     <string name="alley_edit_artist_edit_title_adding">Adding %1$s</string>
+    <string name="alley_edit_artist_edit_profile_image">Profile</string>
     <string name="alley_edit_artist_edit_id">ID</string>
     <string name="alley_edit_artist_edit_status">Status</string>
     <string name="alley_edit_artist_edit_booth">Booth</string>
@@ -199,6 +200,7 @@
 
     <string name="alley_edit_artist_field_label_status">Status:</string>
     <string name="alley_edit_artist_field_label_images">Images:</string>
+    <string name="alley_edit_artist_field_label_profile_image">Profile image:</string>
     <string name="alley_edit_artist_field_label_booth">Booth:</string>
     <string name="alley_edit_artist_field_label_name">Name:</string>
     <string name="alley_edit_artist_field_label_summary">Description:</string>

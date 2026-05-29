@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
@@ -101,67 +102,16 @@ internal fun EditImagesSection(
                 ) {
                     itemsIndexed(
                         items = images,
-                        key = { _, image -> image.coilImageModel.toString() }) { index, image ->
-                        Box {
-                            val scope = rememberCoroutineScope()
-                            val replaceLauncher = rememberFilePickerLauncher(
-                                type = FileKitType.Image,
-                                mode = FileKitMode.Single,
-                            ) {
-                                if (it != null) {
-                                    scope.launch {
-                                        val imageKey = PlatformImageCache.add(it)
-                                        try {
-                                            Snapshot.withMutableSnapshot {
-                                                images[index] = EditImage.LocalImage(imageKey, it)
-                                            }
-                                        } catch (_: Throwable) {
-                                        }
-                                    }
+                        key = { _, image -> image.coilImageModel.toString() },
+                    ) { index, image ->
+                        EditableImage(
+                            image = image,
+                            onImageSelected = {
+                                Snapshot.withMutableSnapshot {
+                                    images[index] = it
                                 }
-                            }
-
-                            val imageWidth = image.width
-                            val imageHeight = image.height
-                            val width = if (imageWidth == null || imageHeight == null) {
-                                null
-                            } else {
-                                200.dp * (imageWidth.toFloat() / imageHeight)
-                            }
-                            val placeholder = rememberVectorPainter(image = Icons.Default.MoreHoriz)
-                            AsyncImage(
-                                model = image.coilImageModel,
-                                contentDescription = null,
-                                contentScale = ContentScale.FillHeight,
-                                placeholder = rememberTintPainter(placeholder),
-                                error = rememberVectorPainter(Icons.Default.Error),
-                                modifier = Modifier
-                                    .conditionallyNonNull(width) { width(it) }
-                                    .height(200.dp)
-                                    .clickable(onClick = replaceLauncher::launch)
-                            )
-                            if (image is EditImage.LocalImage) {
-                                val size = remember(image.key) {
-                                    PlatformImageCache[image.key]?.size()?.asBytes()
-                                }
-                                if (size != null && size > ImageUtils.MAX_UPLOAD_SIZE) {
-                                    Text(
-                                        text = stringResource(
-                                            Res.string.alley_edit_artist_images_size_megabytes,
-                                            size.inWholeMegabytes,
-                                        ),
-                                        color = MaterialTheme.colorScheme.onErrorContainer,
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .background(
-                                                MaterialTheme.colorScheme.errorContainer,
-                                                RoundedCornerShape(topStart = 12.dp)
-                                            )
-                                            .padding(16.dp)
-                                    )
-                                }
-                            }
-                        }
+                            },
+                        )
                     }
                     if (addLauncher != null) {
                         item {
@@ -213,6 +163,72 @@ internal fun EditImagesSection(
                     }
                     .padding(horizontal = 16.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun EditableImage(
+    image: EditImage,
+    onImageSelected: (EditImage) -> Unit,
+    targetSize: Dp = 200.dp,
+) {
+    Box {
+        val scope = rememberCoroutineScope()
+        val replaceLauncher = rememberFilePickerLauncher(
+            type = FileKitType.Image,
+            mode = FileKitMode.Single,
+        ) {
+            if (it != null) {
+                scope.launch {
+                    val imageKey = PlatformImageCache.add(it)
+                    try {
+                        onImageSelected(EditImage.LocalImage(imageKey, it))
+                    } catch (_: Throwable) {
+                    }
+                }
+            }
+        }
+
+        val imageWidth = image.width
+        val imageHeight = image.height
+        val width = if (imageWidth == null || imageHeight == null) {
+            null
+        } else {
+            targetSize * (imageWidth.toFloat() / imageHeight)
+        }
+        val placeholder = rememberVectorPainter(image = Icons.Default.MoreHoriz)
+        AsyncImage(
+            model = image.coilImageModel,
+            contentDescription = null,
+            contentScale = ContentScale.FillHeight,
+            placeholder = rememberTintPainter(placeholder),
+            error = rememberVectorPainter(Icons.Default.Error),
+            modifier = Modifier
+                .conditionallyNonNull(width) { width(it) }
+                .height(targetSize)
+                .clickable(onClick = replaceLauncher::launch)
+        )
+        if (image is EditImage.LocalImage) {
+            val size = remember(image.key) {
+                PlatformImageCache[image.key]?.size()?.asBytes()
+            }
+            if (size != null && size > ImageUtils.MAX_UPLOAD_SIZE) {
+                Text(
+                    text = stringResource(
+                        Res.string.alley_edit_artist_images_size_megabytes,
+                        size.inWholeMegabytes,
+                    ),
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .background(
+                            MaterialTheme.colorScheme.errorContainer,
+                            RoundedCornerShape(topStart = 12.dp)
+                        )
+                        .padding(16.dp)
+                )
+            }
         }
     }
 }

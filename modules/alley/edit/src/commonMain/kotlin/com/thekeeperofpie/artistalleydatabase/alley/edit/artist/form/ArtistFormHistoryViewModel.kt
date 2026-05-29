@@ -68,7 +68,10 @@ class ArtistFormHistoryViewModel(
                 initial = data.initial,
                 // History doesn't support restoring images because older images may have been
                 // deleted to save storage space
-                updated = data.capturedState.artist.copy(_images = data.initial.images),
+                updated = data.capturedState.artist.copy(
+                    _images = data.initial.images,
+                    profileImage = data.initial.profileImage,
+                ),
                 formEntryTimestamp = data.formEntryTimestamp,
             ) to data.capturedState.artist.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
         }

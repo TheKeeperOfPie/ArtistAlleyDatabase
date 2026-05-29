@@ -64,6 +64,7 @@ class ArtistHistoryViewModel(
                 merchInferred = entry.merchInferred ?: initial.merchInferred,
                 merchConfirmed = entry.merchConfirmed ?: initial.merchConfirmed,
                 _images = entry.images ?: initial.images,
+                profileImage = entry.profileImage ?: initial.profileImage,
                 editorNotes = entry.editorNotes ?: initial.editorNotes,
                 lastEditor = null,
                 lastEditTime = Clock.System.now(),
