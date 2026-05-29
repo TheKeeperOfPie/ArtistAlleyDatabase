@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.material3.AssistChip
@@ -51,6 +52,7 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -227,26 +229,6 @@ fun SeriesRow(
 
 @Composable
 fun MerchRow(
-    merch: String?,
-    expanded: Boolean,
-    onClick: () -> Unit,
-) {
-    Text(
-        text = merch.orEmpty(),
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier
-            .fillMaxWidth()
-            .optionalClickable(onClick = onClick.takeIf { expanded })
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .placeholder(
-                visible = merch == null,
-                highlight = PlaceholderHighlight.shimmer(),
-            )
-    )
-}
-
-@Composable
-fun MerchRow(
     data: MerchWithUserData?,
     onFavoriteToggle: (Boolean) -> Unit,
     showNotes: Boolean = true,
@@ -266,9 +248,19 @@ fun MerchRow(
             title = merch?.name,
         )
 
+        val name = merch?.name
+        val icon = name?.let { MerchUtils.toIcon(it, required = true) }
+        if (icon != null) {
+            Icon(
+                imageVector = icon, contentDescription = null, modifier = Modifier
+                    .size(40.dp)
+            )
+            Spacer(Modifier.width(16.dp))
+        }
+
         Column {
             Text(
-                text = merch?.name.orEmpty(),
+                text = name.orEmpty(),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -423,7 +415,22 @@ fun MerchChips(
             },
         ) {
             merch.forEach {
-                AssistChip(label = { Text(it) }, onClick = { onClick(it) })
+                val icon = MerchUtils.toIcon(it, required = false)
+                AssistChip(
+                    leadingIcon = if (icon == null) null else {
+                        {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .size(40.dp)
+                            )
+                        }
+                    },
+                    label = { Text(it) },
+                    onClick = { onClick(it) },
+                )
             }
         }
     }
