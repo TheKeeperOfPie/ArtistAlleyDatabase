@@ -281,6 +281,7 @@ fun ArtistListRow(
                 hasMoreSeries = entry.hasMoreSeries,
                 onSeriesClick = onSeriesClick,
                 onMoreClick = onMoreClick,
+                modifier = Modifier.padding(start = 12.dp)
             )
         }
     }
