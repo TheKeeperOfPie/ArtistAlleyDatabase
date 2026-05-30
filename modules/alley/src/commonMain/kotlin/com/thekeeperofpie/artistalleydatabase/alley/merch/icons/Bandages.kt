@@ -23,7 +23,7 @@ val MerchIcons.Bandages: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -45,7 +45,7 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(10.63f, 10.63f, 0f, isMoreThanHalf = false, isPositiveArc = true, 7.935f, -1.867f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -65,8 +65,8 @@ val MerchIcons.Bandages: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -78,8 +78,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -96,8 +96,8 @@ val MerchIcons.Bandages: ImageVector
                 curveToRelative(0f, -0.164f, 0.128f, -0.29f, 0.29f, -0.29f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -109,8 +109,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -127,8 +127,8 @@ val MerchIcons.Bandages: ImageVector
                 curveToRelative(0f, -0.163f, 0.127f, -0.29f, 0.29f, -0.29f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -140,8 +140,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -158,8 +158,8 @@ val MerchIcons.Bandages: ImageVector
                 curveToRelative(0f, -0.163f, 0.126f, -0.29f, 0.29f, -0.29f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -171,8 +171,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -189,8 +189,8 @@ val MerchIcons.Bandages: ImageVector
                 curveToRelative(0f, -0.163f, 0.126f, -0.29f, 0.29f, -0.29f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -202,8 +202,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -220,8 +220,8 @@ val MerchIcons.Bandages: ImageVector
                 curveToRelative(0f, -0.164f, 0.127f, -0.29f, 0.29f, -0.29f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -233,8 +233,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -251,8 +251,8 @@ val MerchIcons.Bandages: ImageVector
                 curveToRelative(0f, -0.163f, 0.127f, -0.29f, 0.29f, -0.29f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -264,8 +264,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -282,8 +282,8 @@ val MerchIcons.Bandages: ImageVector
                 curveToRelative(0f, -0.162f, 0.127f, -0.29f, 0.29f, -0.29f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -295,8 +295,8 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.54f, 0.54f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.54f, 0.54f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -312,7 +312,7 @@ val MerchIcons.Bandages: ImageVector
                 arcToRelative(0.286f, 0.286f, 0f, isMoreThanHalf = false, isPositiveArc = true, -0.29f, -0.29f)
                 curveToRelative(0f, -0.162f, 0.128f, -0.29f, 0.29f, -0.29f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(23.26f, 23.91f)
                 curveToRelative(0.3f, -0.09f, 0.58f, -0.08f, 0.83f, 0.02f)
                 reflectiveCurveToRelative(0.62f, 0.5f, 1.11f, 1.19f)
@@ -353,7 +353,7 @@ val MerchIcons.Bandages: ImageVector
                 quadToRelative(0.03f, 0.345f, -0.21f, 0.81f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveToRelative(25.94f, 24.92f)
                 lineToRelative(1.61f, -1.14f)
                 curveToRelative(0.21f, 0.3f, 0.35f, 0.49f, 0.41f, 0.56f)

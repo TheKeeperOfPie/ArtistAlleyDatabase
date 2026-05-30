@@ -22,7 +22,7 @@ val MerchIcons.PhoneAccessories: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineJoin = StrokeJoin.Round
             ) {
                 moveToRelative(19.082f, 0.477f)
@@ -41,7 +41,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineJoin = StrokeJoin.Round
             ) {
                 moveTo(22.824f, 15.866f)
@@ -56,7 +56,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 reflectiveCurveToRelative(1.755f, -5.811f, 4.94f, -6.284f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineJoin = StrokeJoin.Round
             ) {
                 moveToRelative(23.166f, 18.111f)
@@ -75,7 +75,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 curveToRelative(0.014f, -0.17f, 0.008f, -0.42f, -0.025f, -0.728f)
                 arcToRelative(8.5f, 8.5f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.6f, -2.307f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveToRelative(23.152f, 18.143f)
                 lineToRelative(-0.084f, 0.234f)
                 reflectiveCurveToRelative(1.724f, 0.63f, 3.412f, 0.477f)
@@ -100,7 +100,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 curveToRelative(-1.611f, 0.147f, -3.307f, -0.462f, -3.307f, -0.462f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineJoin = StrokeJoin.Round
             ) {
                 moveToRelative(26.818f, 22.936f)
@@ -116,7 +116,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 arcToRelative(0.125f, 0.125f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.178f, -0.014f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineJoin = StrokeJoin.Round
             ) {
                 moveTo(22.256f, 22.321f)
@@ -131,7 +131,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 curveToRelative(-0.009f, -0.302f, 0.227f, -0.552f, 0.529f, -0.56f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineJoin = StrokeJoin.Round
             ) {
                 moveTo(25.456f, 19.552f)
@@ -145,7 +145,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 arcToRelative(0.543f, 0.543f, 133.37f, isMoreThanHalf = false, isPositiveArc = true, -0.559f, -0.529f)
                 curveToRelative(-0.009f, -0.303f, 0.226f, -0.552f, 0.528f, -0.56f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveToRelative(20.744f, 19.707f)
                 lineToRelative(-0.055f, 0.002f)
                 lineToRelative(-0.048f, 0.022f)
@@ -187,7 +187,7 @@ val MerchIcons.PhoneAccessories: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineJoin = StrokeJoin.Round
             ) {
                 moveToRelative(24.244f, 16.086f)
@@ -214,8 +214,8 @@ val MerchIcons.PhoneAccessories: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.304f, -0.177f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -227,8 +227,8 @@ val MerchIcons.PhoneAccessories: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -290,8 +290,8 @@ val MerchIcons.PhoneAccessories: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -301,8 +301,8 @@ val MerchIcons.PhoneAccessories: ImageVector
                 lineToRelative(-0.68f, 0.66f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineJoin = StrokeJoin.Round
             ) {

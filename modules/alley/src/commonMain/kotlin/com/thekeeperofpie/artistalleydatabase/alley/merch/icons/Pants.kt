@@ -23,7 +23,7 @@ val MerchIcons.Pants: ImageVector
             viewportHeight = 35.25f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -70,7 +70,7 @@ val MerchIcons.Pants: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.356f, -0.227f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -121,7 +121,7 @@ val MerchIcons.Pants: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.233f, -0.266f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -137,7 +137,7 @@ val MerchIcons.Pants: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.325f, -0.14f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -153,7 +153,7 @@ val MerchIcons.Pants: ImageVector
                 curveToRelative(-3.892f, -1.852f, -8.82f, -4.75f, -12.056f, -7.72f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -180,7 +180,7 @@ val MerchIcons.Pants: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.354f, -0.01f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -233,7 +233,7 @@ val MerchIcons.Pants: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.354f, -0.012f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -270,8 +270,8 @@ val MerchIcons.Pants: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.35f, -0.035f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -281,8 +281,8 @@ val MerchIcons.Pants: ImageVector
                 curveToRelative(-9.3f, -0.78f, -18.72f, -0.59f, -28.03f, 0.18f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round

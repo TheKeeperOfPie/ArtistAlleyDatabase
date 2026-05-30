@@ -23,7 +23,7 @@ val MerchIcons.Clocks: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -48,8 +48,8 @@ val MerchIcons.Clocks: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -65,8 +65,8 @@ val MerchIcons.Clocks: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -94,7 +94,7 @@ val MerchIcons.Clocks: ImageVector
                 curveToRelative(-0.08f, -0.062f, -0.09f, -0.022f, -0.168f, -0.056f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(23.68f, 1.785f)
                 curveToRelative(-12.071f, 0f, -21.875f, 9.804f, -21.875f, 21.875f)
                 reflectiveCurveToRelative(9.804f, 21.875f, 21.875f, 21.875f)
@@ -106,7 +106,7 @@ val MerchIcons.Clocks: ImageVector
                 reflectiveCurveToRelative(-20.125f, -9f, -20.125f, -20.125f)
                 reflectiveCurveToRelative(9f, -20.125f, 20.125f, -20.125f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(34.53f, 26.5f)
                 verticalLineToRelative(0.107f)
                 curveToRelative(-0.579f, 0.022f, -1.165f, 0.061f, -1.67f, 0.27f)
@@ -153,35 +153,35 @@ val MerchIcons.Clocks: ImageVector
                 curveToRelative(4.142f, 0f, 7.766f, -2.192f, 9.828f, -5.453f)
                 curveToRelative(0.554f, -0.217f, 1.139f, -0.358f, 1.625f, -0.283f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveToRelative(13.11f, 27.158f)
                 lineToRelative(-0.03f, 14.762f)
                 lineToRelative(1f, 0.002f)
                 lineToRelative(0.03f, -14.762f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(20.23f, 32.64f)
                 verticalLineToRelative(11.47f)
                 horizontalLineToRelative(1f)
                 verticalLineTo(32.64f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(27.09f, 32.25f)
                 verticalLineToRelative(11.86f)
                 horizontalLineToRelative(1f)
                 verticalLineTo(32.25f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(32.76f, 27.26f)
                 verticalLineToRelative(14.55f)
                 horizontalLineToRelative(1f)
                 verticalLineTo(27.26f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(23.5f, 21.62f)
                 arcToRelative(2.29f, 2.29f, 0f, isMoreThanHalf = false, isPositiveArc = false, -2.28f, 2.28f)
                 arcToRelative(2.286f, 2.286f, 0f, isMoreThanHalf = false, isPositiveArc = false, 2.28f, 2.28f)
@@ -194,8 +194,8 @@ val MerchIcons.Clocks: ImageVector
                 curveToRelative(0f, -0.712f, 0.567f, -1.28f, 1.28f, -1.28f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 1f
             ) {
                 moveTo(10.21f, 24.02f)
@@ -206,8 +206,8 @@ val MerchIcons.Clocks: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 1f
             ) {
                 moveTo(6.07f, 21.62f)
@@ -225,8 +225,8 @@ val MerchIcons.Clocks: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 1f
             ) {
                 moveTo(37.09f, 24.02f)
@@ -237,8 +237,8 @@ val MerchIcons.Clocks: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 1f
             ) {
                 moveTo(36.59f, 21.62f)

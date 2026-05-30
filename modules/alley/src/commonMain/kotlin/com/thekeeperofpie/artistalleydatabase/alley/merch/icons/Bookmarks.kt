@@ -110,7 +110,7 @@ val MerchIcons.Bookmarks: ImageVector
                 lineToRelative(1.78f, -0.55f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveToRelative(12.86f, 33.17f)
                 lineToRelative(0.07f, -0.08f)
                 curveToRelative(0.64f, -0.72f, 1.48f, -0.96f, 2.51f, -0.71f)
@@ -137,7 +137,7 @@ val MerchIcons.Bookmarks: ImageVector
                 curveToRelative(0.13f, -0.5f, 0.35f, -0.93f, 0.67f, -1.28f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(17.33f, 28.14f)
                 horizontalLineToRelative(0.02f)
                 lineToRelative(4.05f, 5.31f)
@@ -146,7 +146,7 @@ val MerchIcons.Bookmarks: ImageVector
                 lineToRelative(-4.05f, -5.31f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(19.7f, 25.5f)
                 horizontalLineToRelative(0.02f)
                 lineToRelative(1.54f, 1.83f)
@@ -181,7 +181,7 @@ val MerchIcons.Bookmarks: ImageVector
                 lineToRelative(0.85f, -0.97f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(24.63f, 19.93f)
                 horizontalLineToRelative(0.02f)
                 curveToRelative(1.36f, 1.67f, 2.11f, 2.59f, 2.25f, 2.75f)

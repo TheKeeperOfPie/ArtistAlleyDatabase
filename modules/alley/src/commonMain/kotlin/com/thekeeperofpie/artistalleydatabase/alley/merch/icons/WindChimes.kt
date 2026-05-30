@@ -22,7 +22,7 @@ val MerchIcons.WindChimes: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(20.977f, 5.295f)
@@ -47,7 +47,7 @@ val MerchIcons.WindChimes: ImageVector
                 arcToRelative(10f, 10f, 0f, isMoreThanHalf = false, isPositiveArc = true, 3.976f, -0.426f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(29.307f, 20.719f)
@@ -61,7 +61,7 @@ val MerchIcons.WindChimes: ImageVector
                 arcToRelative(0.375f, 0.375f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.154f, -0.508f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(10.24f, 1.006f)
@@ -86,8 +86,8 @@ val MerchIcons.WindChimes: ImageVector
                 curveToRelative(0.026f, -0.27f, 0.081f, -0.31f, 0.16f, -0.344f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.75f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -101,8 +101,8 @@ val MerchIcons.WindChimes: ImageVector
                 lineToRelative(-3.21f, -1.43f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.75f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -127,8 +127,8 @@ val MerchIcons.WindChimes: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.75f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -142,8 +142,8 @@ val MerchIcons.WindChimes: ImageVector
                 lineTo(30f, 14.32f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.75f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -169,7 +169,7 @@ val MerchIcons.WindChimes: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveToRelative(28.643f, 32.625f)
@@ -184,7 +184,7 @@ val MerchIcons.WindChimes: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveToRelative(35.395f, 29.129f)
@@ -199,7 +199,7 @@ val MerchIcons.WindChimes: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveToRelative(21.143f, 34.707f)
@@ -214,7 +214,7 @@ val MerchIcons.WindChimes: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(19.771f, 19.484f)
@@ -226,7 +226,7 @@ val MerchIcons.WindChimes: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.334f, -0.118f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(20.025f, 19.803f)
@@ -242,7 +242,7 @@ val MerchIcons.WindChimes: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.332f, -0.122f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(19.988f, 19.504f)
@@ -258,7 +258,7 @@ val MerchIcons.WindChimes: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.348f, -0.064f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(24.207f, 7.545f)
@@ -272,7 +272,7 @@ val MerchIcons.WindChimes: ImageVector
                 curveToRelative(-0.575f, -0.344f, -1.025f, -0.43f, -1.025f, -0.43f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(22.94f, 6.977f)
@@ -285,8 +285,8 @@ val MerchIcons.WindChimes: ImageVector
                 reflectiveCurveToRelative(-0.204f, -0.143f, -0.506f, -0.242f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -294,8 +294,8 @@ val MerchIcons.WindChimes: ImageVector
                 reflectiveCurveToRelative(2.67f, 0.38f, 3.64f, -2.45f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -311,8 +311,8 @@ val MerchIcons.WindChimes: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -320,8 +320,8 @@ val MerchIcons.WindChimes: ImageVector
                 reflectiveCurveToRelative(2.37f, 0.05f, 3.33f, -2.56f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -337,8 +337,8 @@ val MerchIcons.WindChimes: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -346,8 +346,8 @@ val MerchIcons.WindChimes: ImageVector
                 reflectiveCurveToRelative(0.46f, 2.31f, 3.75f, 1.89f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {

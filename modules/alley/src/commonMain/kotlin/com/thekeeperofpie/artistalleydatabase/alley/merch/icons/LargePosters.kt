@@ -247,13 +247,13 @@ val MerchIcons.LargePosters: ImageVector
                 curveToRelative(0.028f, -0.299f, 0.094f, -0.545f, 0.183f, -0.716f)
                 curveToRelative(0.09f, -0.171f, 0.193f, -0.261f, 0.307f, -0.3f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(10.31f, 5.28f)
                 moveToRelative(-0.78f, 0f)
                 arcToRelative(0.78f, 0.78f, 0f, isMoreThanHalf = true, isPositiveArc = true, 1.56f, 0f)
                 arcToRelative(0.78f, 0.78f, 0f, isMoreThanHalf = true, isPositiveArc = true, -1.56f, 0f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(36.73f, 5.28f)
                 moveToRelative(-0.78f, 0f)
                 arcToRelative(0.78f, 0.78f, 0f, isMoreThanHalf = true, isPositiveArc = true, 1.56f, 0f)

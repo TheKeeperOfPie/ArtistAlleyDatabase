@@ -23,7 +23,7 @@ val MerchIcons.WritingInstruments: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -43,7 +43,7 @@ val MerchIcons.WritingInstruments: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -85,7 +85,7 @@ val MerchIcons.WritingInstruments: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.32f, -0.149f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -125,7 +125,7 @@ val MerchIcons.WritingInstruments: ImageVector
                 curveToRelative(-0.553f, -0.21f, -1.075f, -0.131f, -1.075f, -0.131f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -156,7 +156,7 @@ val MerchIcons.WritingInstruments: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.12f, -0.008f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -188,7 +188,7 @@ val MerchIcons.WritingInstruments: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.325f, -0.138f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -260,7 +260,7 @@ val MerchIcons.WritingInstruments: ImageVector
                 arcToRelative(0.73f, 0.73f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.482f, -0.48f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {

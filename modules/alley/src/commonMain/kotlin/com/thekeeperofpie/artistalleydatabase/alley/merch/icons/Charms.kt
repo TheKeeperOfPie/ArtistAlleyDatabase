@@ -22,7 +22,7 @@ val MerchIcons.Charms: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveToRelative(17.746f, 17.965f)
@@ -66,7 +66,7 @@ val MerchIcons.Charms: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveToRelative(9.727f, 32.74f)
@@ -102,7 +102,7 @@ val MerchIcons.Charms: ImageVector
                 arcToRelative(5.02f, 5.02f, 0f, isMoreThanHalf = false, isPositiveArc = true, 5.025f, -5.023f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(22.963f, 12.895f)
@@ -154,7 +154,7 @@ val MerchIcons.Charms: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(31.723f, 21.77f)
@@ -173,7 +173,7 @@ val MerchIcons.Charms: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.007f, -0.353f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(31.846f, 15.012f)
@@ -220,7 +220,7 @@ val MerchIcons.Charms: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveToRelative(26.914f, 19.488f)
@@ -344,8 +344,8 @@ val MerchIcons.Charms: ImageVector
                 arcToRelative(0.5f, 0.5f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.641f, -0.3f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -362,8 +362,8 @@ val MerchIcons.Charms: ImageVector
                 lineToRelative(-3.11f, 0.86f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -409,8 +409,8 @@ val MerchIcons.Charms: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.75f,
                 strokeLineCap = StrokeCap.Round
             ) {

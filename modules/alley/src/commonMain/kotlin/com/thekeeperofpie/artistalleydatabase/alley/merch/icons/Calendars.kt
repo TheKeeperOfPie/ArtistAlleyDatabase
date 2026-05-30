@@ -162,7 +162,7 @@ val MerchIcons.Calendars: ImageVector
                 lineTo(2.574f, 16.765f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(19.54f, 24.43f)
                 curveToRelative(0f, 0.57f, -0.12f, 1.08f, -0.37f, 1.52f)
                 curveToRelative(-0.25f, 0.45f, -0.64f, 0.79f, -1.18f, 1.05f)
@@ -211,7 +211,7 @@ val MerchIcons.Calendars: ImageVector
                 curveToRelative(0.17f, 0.38f, 0.25f, 0.78f, 0.25f, 1.21f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(24.33f, 28.03f)
                 verticalLineToRelative(-4.36f)
                 lineToRelative(-2.85f, 0.81f)

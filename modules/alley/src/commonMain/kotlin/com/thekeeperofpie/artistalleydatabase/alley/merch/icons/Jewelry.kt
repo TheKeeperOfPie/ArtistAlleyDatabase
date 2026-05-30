@@ -21,7 +21,7 @@ val MerchIcons.Jewelry: ImageVector
             viewportWidth = 48f,
             viewportHeight = 48f
         ).apply {
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(17.041f, 12.541f)
                 reflectiveCurveToRelative(-0.697f, -0.082f, -1.855f, 0.174f)
                 curveToRelative(-1.158f, 0.255f, -2.801f, 0.846f, -4.766f, 2.178f)
@@ -38,7 +38,7 @@ val MerchIcons.Jewelry: ImageVector
                 reflectiveCurveToRelative(1.686f, -0.166f, 1.686f, -0.166f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(12.334f, 19.854f)
                 curveToRelative(-1.309f, -0.08f, -2.899f, -0.001f, -4.809f, 0.34f)
                 lineToRelative(0.088f, 0.492f)
@@ -69,7 +69,7 @@ val MerchIcons.Jewelry: ImageVector
                 curveToRelative(-0.159f, -1.093f, -0.45f, -2.57f, -0.828f, -4.295f)
                 curveToRelative(-0.758f, -3.449f, -1.866f, -7.876f, -2.961f, -12.092f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveToRelative(37.371f, 18.588f)
                 lineToRelative(-0.482f, 0.125f)
                 curveToRelative(0.26f, 1.002f, 0.539f, 2.032f, 0.808f, 3.08f)
@@ -81,7 +81,7 @@ val MerchIcons.Jewelry: ImageVector
                 lineToRelative(0.483f, -0.13f)
                 curveToRelative(-0.5f, -1.86f, -0.95f, -3.51f, -1.299f, -4.8f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(25.658f, 1.016f)
                 curveToRelative(-0.951f, -0.003f, -1.982f, 0.18f, -3.088f, 0.611f)
                 curveToRelative(-2.795f, 1.084f, -4.872f, 3.935f, -6.29f, 6.518f)
@@ -106,8 +106,8 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(7f, 7f, 0f, isMoreThanHalf = false, isPositiveArc = false, -2.612f, -0.507f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f
             ) {
                 moveTo(23.7f, 11.02f)
@@ -118,8 +118,8 @@ val MerchIcons.Jewelry: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f
             ) {
                 moveTo(26.684f, 8.67f)
@@ -157,7 +157,7 @@ val MerchIcons.Jewelry: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(10.55f, 18.74f)
@@ -186,7 +186,7 @@ val MerchIcons.Jewelry: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(10.584f, 21.88f)
@@ -212,7 +212,7 @@ val MerchIcons.Jewelry: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(12.434f, 33.492f)
@@ -278,7 +278,7 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.328f, -0.133f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(17.234f, 25.02f)
@@ -306,7 +306,7 @@ val MerchIcons.Jewelry: ImageVector
                 reflectiveCurveToRelative(-0.461f, -0.267f, -0.71f, -0.164f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(19.5f, 28.02f)
@@ -335,7 +335,7 @@ val MerchIcons.Jewelry: ImageVector
                 curveToRelative(-0.058f, -0.052f, -0.101f, -0.099f, -0.21f, -0.13f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(21.342f, 30.582f)
@@ -379,7 +379,7 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.072f, -0.346f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(36.844f, 25.959f)
@@ -407,7 +407,7 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.078f, -0.346f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(34.072f, 28.521f)
@@ -435,7 +435,7 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.275f, -0.22f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(31.809f, 30.727f)
@@ -478,7 +478,7 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(16f, 16f, 0f, isMoreThanHalf = false, isPositiveArc = false, -1.344f, -1.479f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(29.277f, 32.52f)
@@ -502,8 +502,8 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.354f, -0.007f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -513,8 +513,8 @@ val MerchIcons.Jewelry: ImageVector
                 lineToRelative(-0.5f, 2.46f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round
             ) {
@@ -537,7 +537,7 @@ val MerchIcons.Jewelry: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(27.402f, 37.541f)
@@ -591,7 +591,7 @@ val MerchIcons.Jewelry: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(26.33f, 35.885f)
@@ -615,7 +615,7 @@ val MerchIcons.Jewelry: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.301f, -0.185f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round
             ) {
                 moveTo(36.31f, 14.855f)

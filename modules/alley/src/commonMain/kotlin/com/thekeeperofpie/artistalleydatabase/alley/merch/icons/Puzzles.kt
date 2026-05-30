@@ -23,8 +23,8 @@ val MerchIcons.Puzzles: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -38,8 +38,8 @@ val MerchIcons.Puzzles: ImageVector
                 reflectiveCurveToRelative(0.723f, -1.62f, 1.62f, -1.62f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -59,8 +59,8 @@ val MerchIcons.Puzzles: ImageVector
                 curveToRelative(0f, -0.764f, 0.608f, -1.37f, 1.37f, -1.37f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -72,8 +72,8 @@ val MerchIcons.Puzzles: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.5f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -94,7 +94,7 @@ val MerchIcons.Puzzles: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -285,7 +285,7 @@ val MerchIcons.Puzzles: ImageVector
                 curveToRelative(1.12f, -3.058f, 1.873f, -4.995f, 2.725f, -6.166f)
                 reflectiveCurveToRelative(1.759f, -1.627f, 3.437f, -1.83f)
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(15.06f, 18.625f)
                 verticalLineToRelative(0.75f)
                 horizontalLineToRelative(6.29f)
@@ -293,14 +293,14 @@ val MerchIcons.Puzzles: ImageVector
                 horizontalLineToRelative(-3.14f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(19.506f, 19.18f)
                 verticalLineTo(22f)
                 horizontalLineToRelative(0.75f)
                 verticalLineToRelative(-2.82f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(25.91f, 18.625f)
                 verticalLineToRelative(0.75f)
                 horizontalLineToRelative(6.3f)
@@ -308,14 +308,14 @@ val MerchIcons.Puzzles: ImageVector
                 horizontalLineToRelative(-3.15f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(30.365f, 19.18f)
                 verticalLineTo(22f)
                 horizontalLineToRelative(0.75f)
                 verticalLineToRelative(-2.82f)
                 close()
             }
-            path(fill = SolidColor(Color(0xFF231F20))) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(21.35f, 24.215f)
                 verticalLineToRelative(0.75f)
                 horizontalLineToRelative(4.24f)
