@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.merch
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.AirFresheners
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.ApparelOther
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Aprons
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bags
@@ -44,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.WritingInstrumen
 object MerchUtils {
 
     fun toIcon(name: String, required: Boolean): ImageVector? = when (name) {
+        "Air fresheners" -> MerchIcons.AirFresheners
         "Apparel - Other" -> MerchIcons.ApparelOther
         "Aprons" -> MerchIcons.Aprons
         "Bags" -> MerchIcons.Bags
