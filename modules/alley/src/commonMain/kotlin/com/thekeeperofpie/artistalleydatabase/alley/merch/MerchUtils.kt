@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Candles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Charms
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Clocks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Construction
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Fans
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Hats
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.HeadAccessories
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Jackets
@@ -52,6 +53,7 @@ object MerchUtils {
         "Candles" -> MerchIcons.Candles
         "Charms" -> MerchIcons.Charms
         "Clocks" -> MerchIcons.Clocks
+        "Fans" -> MerchIcons.Fans
         "Hats" -> MerchIcons.Hats
         "Head accessories" -> MerchIcons.HeadAccessories
         "Jackets" -> MerchIcons.Jackets

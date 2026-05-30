@@ -200,6 +200,7 @@ private fun Header(onOpenLibraries: () -> Unit) {
                     - [${BuildKonfig.merchIconArtistOne}](${BuildKonfig.merchIconArtistOneLink})
                     - [${BuildKonfig.merchIconArtistTwo}](${BuildKonfig.merchIconArtistTwoLink})
                     - [${BuildKonfig.merchIconArtistThree}](${BuildKonfig.merchIconArtistThreeLink})
+                    - [${BuildKonfig.merchIconArtistFour}](${BuildKonfig.merchIconArtistFourLink})
                 """.trimIndent(),
                     typography = markdownTypography,
                     padding = markdownPadding,

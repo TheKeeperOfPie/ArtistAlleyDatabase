@@ -252,8 +252,11 @@ fun MerchRow(
         val icon = name?.let { MerchUtils.toIcon(it, required = true) }
         if (icon != null) {
             Icon(
-                imageVector = icon, contentDescription = null, modifier = Modifier
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier
                     .size(40.dp)
+                    .sharedElement("merchIcon", merch.name)
             )
             Spacer(Modifier.width(16.dp))
         }
@@ -425,6 +428,7 @@ fun MerchChips(
                                 modifier = Modifier
                                     .padding(4.dp)
                                     .size(40.dp)
+                                    .sharedElement("merchIcon", it)
                             )
                         }
                     },
