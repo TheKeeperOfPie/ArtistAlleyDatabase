@@ -130,7 +130,7 @@ object FavoritesScreen {
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenExport: () -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenArtistChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         viewModel: FavoritesViewModel = viewModel {
             graph.favoritesViewModelFactory.create(createSavedStateHandle())
@@ -181,7 +181,8 @@ object FavoritesScreen {
                     onOpenStampRally = onOpenStampRally,
                     onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenChangelog,
+                    // TODO: Split changelog opens
+                    onOpenChangelog = onOpenArtistChangelog,
                     onOpenSettings = onOpenSettings,
                 )
             },

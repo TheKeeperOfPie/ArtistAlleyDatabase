@@ -60,7 +60,8 @@ object AlleyRootScreen {
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenExport: () -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenArtistChangelog: () -> Unit,
+        onOpenStampRallyChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
     ) {
         val settings = remember(graph) { graph.settings }
@@ -97,7 +98,7 @@ object AlleyRootScreen {
                             onOpenMerch = onOpenMerch,
                             onOpenSeries = onOpenSeries,
                             onOpenExport = onOpenExport,
-                            onOpenChangelog = onOpenChangelog,
+                            onOpenChangelog = onOpenArtistChangelog,
                             onOpenSettings = onOpenSettings,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.ARTISTS.name,
@@ -110,7 +111,7 @@ object AlleyRootScreen {
                             onSeriesClick = onOpenSeries,
                             onMerchClick = onOpenMerch,
                             onOpenExport = onOpenExport,
-                            onOpenChangelog = onOpenChangelog,
+                            onOpenChangelog = onOpenArtistChangelog,
                             onOpenSettings = onOpenSettings,
                         )
                     AlleyRootDestination.FAVORITES ->
@@ -151,7 +152,7 @@ object AlleyRootScreen {
                             onOpenStampRally = onOpenStampRally,
                             onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                             onOpenExport = onOpenExport,
-                            onOpenChangelog = onOpenChangelog,
+                            onOpenArtistChangelog = onOpenArtistChangelog,
                             onOpenSettings = onOpenSettings,
                         )
                     AlleyRootDestination.MAP ->
@@ -170,7 +171,7 @@ object AlleyRootScreen {
                             onOpenStampRally = onOpenStampRally,
                             onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                             onOpenExport = onOpenExport,
-                            onOpenChangelog = onOpenChangelog,
+                            onOpenChangelog = onOpenStampRallyChangelog,
                             onOpenSettings = onOpenSettings,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.STAMP_RALLIES.name,

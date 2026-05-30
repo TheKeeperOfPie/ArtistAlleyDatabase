@@ -411,7 +411,8 @@ internal fun MerchRow(
             .padding(bottom = 8.dp)
             .fillMaxWidth()
             .fadingEdgeEnd(
-                startOpaque = 12.dp,
+                startOpaque = 0.dp,
+                startTransparent = 0.dp,
                 endOpaque = 32.dp,
                 endTransparent = 16.dp,
             )

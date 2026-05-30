@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.LocalDate
 
 @AssistedInject
-class ChangelogViewModel(
+class ArtistChangelogViewModel(
     artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
     val seriesEntryCache: SeriesEntryCache,
@@ -32,7 +32,7 @@ class ChangelogViewModel(
                 .sortedByDescending { it.first }
                 .map {
                     val (added, updated) = it.second.partition { it.isBrandNew }
-                    ChangelogScreen.DayChange(
+                    ArtistChangelogScreen.DayChange(
                         date = it.first,
                         added = added.sortedBy { it.booth }.sortedBy { it.images.isNullOrEmpty() },
                         updated = updated.sortedBy { it.booth }
@@ -45,6 +45,6 @@ class ChangelogViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ChangelogViewModel
+        fun create(savedStateHandle: SavedStateHandle): ArtistChangelogViewModel
     }
 }

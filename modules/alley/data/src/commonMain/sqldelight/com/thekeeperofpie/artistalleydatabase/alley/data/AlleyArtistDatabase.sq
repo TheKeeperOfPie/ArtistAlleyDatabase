@@ -377,6 +377,14 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026_fts USING FTS5 (
 );
 
 CREATE TABLE
+    IF NOT EXISTS stampRallyEntryAnimeExpo2026Changelog (
+        stampRallyId TEXT AS Uuid NOT NULL,
+        date TEXT NOT NULL,
+        images TEXT AS List<DatabaseImage>,
+        PRIMARY KEY (stampRallyId, date)
+    );
+
+CREATE TABLE
     IF NOT EXISTS stampRallyArtistConnection (
         stampRallyId TEXT NOT NULL,
         artistId TEXT NOT NULL,

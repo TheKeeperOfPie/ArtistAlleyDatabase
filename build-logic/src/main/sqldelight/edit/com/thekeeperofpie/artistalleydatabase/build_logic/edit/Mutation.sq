@@ -25,6 +25,10 @@ insertArtistEntryAnimeExpo2026Changelog:
 INSERT OR REPLACE INTO artistEntryAnimeExpo2026Changelog
 VALUES ?;
 
+insertStampRallyEntryAnimeExpo2026Changelog:
+INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026Changelog
+VALUES ?;
+
 updateArtistEntryAnimeExpo2023Images:
 UPDATE artistEntry2023 SET images = :images WHERE id = :id;
 
@@ -85,6 +89,9 @@ updateArtistEntryAnimeExpo2026:
 INSERT OR REPLACE INTO artistEntryAnimeExpo2026
 VALUES ?;
 
+getAllStampRallyEntryAnimeExpo2026:
+SELECT * FROM stampRallyEntryAnimeExpo2026;
+
 getAllArtistEntryAnimeNyc2024:
 SELECT * FROM artistEntryAnimeNyc2024;
 
@@ -105,6 +112,10 @@ WHERE id = :id;
 
 updateArtistEntryAnimeNyc2025:
 INSERT OR REPLACE INTO artistEntryAnimeNyc2025
+VALUES ?;
+
+updateStampRallyEntryAnimeExpo2026:
+INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026
 VALUES ?;
 
 updateSeriesTagCounts:

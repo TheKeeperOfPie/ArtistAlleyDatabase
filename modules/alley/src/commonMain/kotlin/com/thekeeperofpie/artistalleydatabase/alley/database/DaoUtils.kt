@@ -37,6 +37,7 @@ object DaoUtils {
             dataYearAdapter = ColumnAdapters.dataYearAdapter),
         seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
         stampRallySeriesConnectionAdapter = ColumnAdapters.stampRallySeriesConnectionAdapter,
+        stampRallyEntryAnimeExpo2026ChangelogAdapter = ColumnAdapters.stampRallyEntryAnimeExpo2026ChangelogAdapter,
     )
 
     fun <T : Any> queryPagingSource(

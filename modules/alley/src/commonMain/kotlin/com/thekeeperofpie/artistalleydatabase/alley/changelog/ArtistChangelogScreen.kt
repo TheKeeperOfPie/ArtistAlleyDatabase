@@ -93,9 +93,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.stringResource
 
-internal object ChangelogScreen {
-
-    private val ImageHeight = 200.dp
+internal object ArtistChangelogScreen {
 
     @Composable
     operator fun invoke(
@@ -105,14 +103,14 @@ internal object ChangelogScreen {
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
         onClickImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
-        viewModel: ChangelogViewModel = viewModel {
-            graph.changelogViewModelFactory.create(createSavedStateHandle())
+        viewModel: ArtistChangelogViewModel = viewModel {
+            graph.artistChangelogViewModelFactory.create(createSavedStateHandle())
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()
         val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         var catalogsOnly by viewModel.catalogsOnly.collectAsMutableStateWithLifecycle()
-        ChangelogScreen(
+        ArtistChangelogScreen(
             changes = { changes },
             seriesTitles = { seriesTitles },
             catalogsOnly = { catalogsOnly },
@@ -360,7 +358,7 @@ internal object ChangelogScreen {
                                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                                 contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                                 modifier = Modifier
-                                    .height(ImageHeight)
+                                    .height(ChangelogUtils.ImageHeight)
                                     .widthIn(min = 48.dp)
                                     .sharedElement(state = sharedContentState)
                                     .clip(RoundedCornerShape(12.dp))
@@ -369,7 +367,7 @@ internal object ChangelogScreen {
                         }
                     }
 
-                    val scrollSize = with(LocalDensity.current) { ImageHeight.toPx() }
+                    val scrollSize = with(LocalDensity.current) { ChangelogUtils.ImageHeight.toPx() }
                     val scope = rememberCoroutineScope()
 
                     val previousPageInteractionSource = remember { MutableInteractionSource() }

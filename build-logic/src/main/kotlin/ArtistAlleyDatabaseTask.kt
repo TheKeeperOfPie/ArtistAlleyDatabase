@@ -1,3 +1,4 @@
+
 import ImageUtils.parseScaledImageWidthHeight
 import Utils.createEditDatabase
 import app.cash.sqldelight.Query
@@ -6,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo202
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyArtistConnection
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
@@ -159,8 +161,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 fixLegacySeriesSources(database)
                             }
 
-                            val artistChangelog =
-                                trackStage("ArtistChangelog") { addArtistChangelog(database) }
+                            val alleyChangelog =
+                                trackStage("ArtistChangelog") { addChangelog(database) }
 
                             trackStage("LegacyArtistImages") {
                                 fixLegacyArtistImages(
@@ -179,15 +181,34 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                         .get().asFile.apply { mkdir() },
                                 )
                             }
-                            trackStage("FinalizeAnimeExpo2026") {
-                                finalizeAnimeExpo2026(
+
+                            val retainedImageAnimeExpo2026 = mutableSetOf<File>()
+
+                            retainedImageAnimeExpo2026 += trackStage("FinalizeArtistsAnimeExpo2026") {
+                                finalizeArtistsAnimeExpo2026(
                                     database = database,
                                     imageCacheDir = imageCacheDir,
                                     embedCache = embedCache,
                                     artistLastEditTimes =
-                                        artistChangelog?.lastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
+                                        alleyChangelog?.artistLastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
                                 )
                             }
+                            retainedImageAnimeExpo2026 += trackStage("FinalizeRalliesAnimeExpo2026") {
+                                finalizeRalliesAnimeExpo2026(
+                                    database = database,
+                                    imageCacheDir = imageCacheDir,
+                                    rallyLastEditTimes =
+                                        alleyChangelog?.rallyLastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
+                                )
+                            }
+
+                            outputImagesAnimeExpo2026.get().asFile
+                                .walkTopDown()
+                                .filter { it.isFile }
+                                .filterNot { it in retainedImageAnimeExpo2026 }
+                                .toList()
+                                .forEach { it.delete() }
+
                             trackStage("NewArtists") { calculateNewArtists(database) }
 
                             trackStage("FinalizeCache") {
@@ -425,7 +446,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
     }
 
-    private suspend fun finalizeAnimeExpo2026(
+    private suspend fun finalizeArtistsAnimeExpo2026(
         database: BuildLogicEditDatabase,
         imageCacheDir: File,
         embedCache: EmbedCache,
@@ -541,12 +562,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
             }
             .awaitAll()
-        outputImagesAnimeExpo2026.get().asFile
-            .walkTopDown()
-            .filter { it.isFile }
-            .filterNot { it in allRetainedImages }
-            .toList()
-            .forEach { it.delete() }
 
         val changelog = database.artistEntryAnimeExpo2026Queries.getChangelog(1L).executeAsList()
             .groupBy { it.artistId }
@@ -570,6 +585,80 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     ?.forEach(mutationQueries::insertArtistEntryAnimeExpo2026Changelog)
             }
         }
+        allRetainedImages
+    }
+
+    private suspend fun finalizeRalliesAnimeExpo2026(
+        database: BuildLogicEditDatabase,
+        imageCacheDir: File,
+        rallyLastEditTimes: Map<Uuid, Instant>,
+    ) = coroutineScope {
+        val mutationQueries = database.mutationQueries
+        val rallyUpdates = mutationQueries.getAllStampRallyEntryAnimeExpo2026()
+            .executeAsList()
+            .map { rally ->
+                async {
+                    val rallyId = Uuid.parse(rally.id)
+
+                    // Don't expose raw edit times from backend, just mirror the changelog dates
+                    val lastEditTime = rallyLastEditTimes[rallyId]
+                        ?.toLocalDateTime(TimeZone.UTC)
+                        ?.date
+                        ?.atStartOfDayIn(TimeZone.UTC)
+                    val rallyImages = calculateRallyImages(
+                        imageCacheDir = imageCacheDir,
+                        rallyId = rally.id,
+                        year = DataYear.ANIME_EXPO_2026,
+                        images = rally.images,
+                    )
+                    val newRally = rally.copy(
+                        images = rallyImages.map { it.final },
+                        lastEditTime = lastEditTime,
+                    )
+                    val imagesToCompress = rallyImages.map { it.imageToCompress }
+                    Triple(newRally, imagesToCompress, rallyImages)
+                }
+            }
+            .awaitAll()
+
+        val allRetainedImages = rallyUpdates.flatMap { it.second }
+            .map {
+                async {
+                    val output =
+                        outputImagesAnimeExpo2026.get().asFile.resolve(it.path)
+                    ImageUtils.compressAndRename(
+                        logger = logger,
+                        input = it.imageFile,
+                        resized = it.resized,
+                        width = it.width,
+                        height = it.height,
+                        target = output,
+                    )
+                    output
+                }
+            }
+            .awaitAll()
+
+        val changelog = database.stampRallyEntryAnimeExpo2026Queries
+            .getChangelog()
+            .executeAsList()
+            .groupBy { it.stampRallyId }
+        database.transaction {
+            rallyUpdates.forEach { (rally, _, rallyImages) ->
+                mutationQueries.updateStampRallyEntryAnimeExpo2026(rally)
+                changelog[Uuid.parse(rally.id)]
+                    ?.map {
+                        it.copy(
+                            images = it.images?.mapNotNull { changelogImage ->
+                                rallyImages.find { it.original == changelogImage }?.final
+                            }?.ifEmpty { null },
+                        )
+                    }
+                    ?.forEach(mutationQueries::insertStampRallyEntryAnimeExpo2026Changelog)
+            }
+        }
+
+        allRetainedImages
     }
 
     private suspend fun calculateArtistImages(
@@ -640,12 +729,33 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         )
     }
 
+    private fun calculateRallyImages(
+        imageCacheDir: File,
+        rallyId: String,
+        @Suppress("SameParameterValue") year: DataYear,
+        images: List<DatabaseImage>,
+    ): List<FinalImage> {
+        val rallyImagesDir = when (year) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> throw IllegalStateException()
+            DataYear.ANIME_EXPO_2026 -> inputImagesAnimeExpo2026
+        }.dir("rally/$rallyId").get().asFile
+        val files = if (rallyImagesDir.exists()) rallyImagesDir.listFiles() else emptyArray()
+        return images.mapNotNull {
+            finalizeImage(imageCacheDir, year, files, it)
+        }
+    }
+
     private fun finalizeImage(
         imageCacheDir: File,
         year: DataYear,
         files: Array<File>,
         it: DatabaseImage,
-    ): ArtistImages.FinalImage? {
+    ): FinalImage? {
         val imageName = it.name.substringAfterLast("/").substringBeforeLast(".")
         val imageFile = files.find { it.name.startsWith(imageName) }
         if (imageFile == null) {
@@ -659,7 +769,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             imageCacheDir = imageCacheDir,
             file = imageFile,
         )
-        return ArtistImages.FinalImage(
+        return FinalImage(
             original = it,
             final = it.copy(name = nameWithHash, width = width, height = height),
             imageToCompress = ImageToCompress(
@@ -790,14 +900,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
     }
 
-    private fun addArtistChangelog(database: BuildLogicEditDatabase): ArtistChangelog? {
+    private fun addChangelog(database: BuildLogicEditDatabase): AlleyChangelog? {
         val file = inputChangelog.get().asFile
         if (!file.exists()) return null
-        val artistChangelog = file.inputStream().use {
-            Json.decodeFromStream<ArtistChangelog>(it)
+        val alleyChangelog = file.inputStream().use {
+            Json.decodeFromStream<AlleyChangelog>(it)
         }
         database.transaction {
-            artistChangelog.additions.forEach {
+            alleyChangelog.artistDiffs.forEach {
                 database.mutationQueries.insertArtistEntryAnimeExpo2026Changelog(
                     ArtistEntryAnimeExpo2026Changelog(
                         artistId = it.artistId,
@@ -816,7 +926,19 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
         }
 
-        return artistChangelog
+        database.transaction {
+            alleyChangelog.rallyDiffs.forEach {
+                database.mutationQueries.insertStampRallyEntryAnimeExpo2026Changelog(
+                    StampRallyEntryAnimeExpo2026Changelog(
+                        stampRallyId = it.stampRallyId,
+                        date = it.date.toString(),
+                        images = it.images,
+                    )
+                )
+            }
+        }
+
+        return alleyChangelog
     }
 
     private suspend fun fixLegacyArtistImages(
@@ -1446,13 +1568,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val customProfileImage: FinalImage?,
         val embedProfileImage: DatabaseImage?,
         val largeEmbeds: Map<String, DatabaseImage>?,
-    ) {
-        data class FinalImage(
-            val original: DatabaseImage,
-            val final: DatabaseImage,
-            val imageToCompress: ImageToCompress,
-        )
-    }
+    )
+
+    private data class FinalImage(
+        val original: DatabaseImage,
+        val final: DatabaseImage,
+        val imageToCompress: ImageToCompress,
+    )
 
     private data class ImageToCompress(
         val path: String,

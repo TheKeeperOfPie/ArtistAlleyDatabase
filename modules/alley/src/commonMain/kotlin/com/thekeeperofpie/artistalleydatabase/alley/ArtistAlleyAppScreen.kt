@@ -28,7 +28,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.catalogImages
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
@@ -169,7 +170,8 @@ object ArtistAlleyAppScreen {
                 )
             }
         val onOpenExport = { navStack.navigate(AlleyDestination.Export) }
-        val onOpenChangelog = { navStack.navigate(AlleyDestination.Changelog) }
+        val onOpenArtistChangelog = { navStack.navigate(AlleyDestination.ArtistChangelog) }
+        val onOpenStampRallyChangelog = { navStack.navigate(AlleyDestination.StampRallyChangelog) }
         val onOpenSettings = { navStack.navigate(AlleyDestination.Settings) }
         // Real navigate up doesn't work
         val navigateUp = navStack::onBack
@@ -184,7 +186,8 @@ object ArtistAlleyAppScreen {
                     onOpenStampRally = onOpenStampRally,
                     onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenChangelog,
+                    onOpenArtistChangelog = onOpenArtistChangelog,
+                    onOpenStampRallyChangelog = onOpenStampRallyChangelog,
                     onOpenSettings = onOpenSettings,
                 )
             }
@@ -261,7 +264,7 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenChangelog,
+                    onOpenChangelog = onOpenArtistChangelog,
                     onOpenSettings = onOpenSettings,
                 )
             }
@@ -277,10 +280,10 @@ object ArtistAlleyAppScreen {
                 )
             }
 
-            sharedElementEntry<AlleyDestination.Changelog> {
+            sharedElementEntry<AlleyDestination.ArtistChangelog> {
                 // TODO: Split by DataYear
                 val year = DataYear.ANIME_EXPO_2026
-                ChangelogScreen(
+                ArtistChangelogScreen(
                     graph = graph,
                     onClickBack = navStack::onBack,
                     onClickSeries = {
@@ -391,8 +394,63 @@ object ArtistAlleyAppScreen {
                     onOpenStampRally = onOpenStampRally,
                     onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenChangelog,
+                    onOpenChangelog = onOpenStampRallyChangelog,
                     onOpenSettings = onOpenSettings,
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.StampRallyChangelog> {
+                // TODO: Split by DataYear
+                val year = DataYear.ANIME_EXPO_2026
+                StampRallyChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = {
+                        navStack.navigate(
+                            AlleyDestination.Series(
+                                year,
+                                it,
+                            )
+                        )
+                    },
+                    onClickMerch = {
+                        navStack.navigate(
+                            AlleyDestination.Merch(
+                                year,
+                                it,
+                            )
+                        )
+                    },
+                    onClickStampRally = {
+                        navStack.navigate(
+                            AlleyDestination.StampRallyDetails(
+                                year = year,
+                                id = it.stampRallyId.toString(),
+                                hostTable = null,
+                                fandom = it.rally.fandom,
+                            )
+                        )
+                    },
+                    onClickImage = { changelogEntry, image ->
+                        val images = changelogEntry.images
+                        navStack.navigate(
+                            AlleyDestination.Images(
+                                year = year,
+                                id = changelogEntry.stampRallyId.toString(),
+                                type = AlleyDestination.Images.Type.StampRally(
+                                    id = changelogEntry.stampRallyId.toString(),
+                                    hostTable = null,
+                                    fandom = changelogEntry.rally.fandom,
+                                ),
+                                images = images,
+                                // Add one for the initial grid
+                                initialImageIndex = (images.indexOf(image)) + 1,
+                                showOpenButton = true,
+                                changelogDate = changelogEntry.date.toString(),
+                            )
+                        )
+                    },
                 )
             }
 
@@ -465,7 +523,7 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenChangelog,
+                    onOpenChangelog = onOpenArtistChangelog,
                     onOpenSettings = onOpenSettings,
                 )
             }
@@ -486,7 +544,7 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenChangelog,
+                    onOpenChangelog = onOpenArtistChangelog,
                     onOpenSettings = onOpenSettings,
                 )
             }

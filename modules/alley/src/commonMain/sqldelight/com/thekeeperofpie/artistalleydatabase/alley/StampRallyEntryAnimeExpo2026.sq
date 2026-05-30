@@ -11,3 +11,6 @@ getArtistEntries:
 SELECT artistEntryAnimeExpo2026.* FROM stampRallyArtistConnection
 INNER JOIN artistEntryAnimeExpo2026 ON (stampRallyArtistConnection.artistId = artistEntryAnimeExpo2026.id)
 WHERE stampRallyArtistConnection.stampRallyId = :stampRallyId;
+
+getChangelog:
+SELECT * FROM stampRallyEntryAnimeExpo2026Changelog;

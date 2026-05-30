@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
@@ -272,6 +273,10 @@ internal object Utils {
                 merchAdapter = listStringAdapter,
                 imagesAdapter = listDatabaseImageAdapter,
                 lastEditTimeAdapter = instantAdapter,
+            ),
+            stampRallyEntryAnimeExpo2026ChangelogAdapter = StampRallyEntryAnimeExpo2026Changelog.Adapter(
+                stampRallyIdAdapter = uuidAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
             ),
             artistNotesAdapter = ArtistNotes.Adapter(
                 dataYearAdapter = dataYearAdapter,

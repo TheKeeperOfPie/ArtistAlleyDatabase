@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
@@ -38,9 +39,9 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
@@ -790,7 +791,7 @@ class StampRallyEntryDao(
         )
     }
 
-    suspend fun getAllEntries(year: DataYear) = withContext(dispatchers.io) {
+    suspend fun getAllEntries(year: DataYear) =
         when (year) {
             DataYear.ANIME_EXPO_2023 -> dao2023().getAllEntries().awaitAsList()
                 .map { StampRallySummary(it.id, it.fandom, it.hostTable, it.tables, emptyList()) }
@@ -798,10 +799,32 @@ class StampRallyEntryDao(
                 .map { StampRallySummary(it.id, it.fandom, it.hostTable, it.tables, emptyList()) }
             DataYear.ANIME_EXPO_2025 -> dao2025().getAllEntries().awaitAsList()
                 .map { StampRallySummary(it.id, it.fandom, it.hostTable, it.tables, it.series) }
-            DataYear.ANIME_EXPO_2026 -> emptyList() // TODO: Load remote
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
+                .map {
+                    StampRallySummary(
+                        id = it.id,
+                        fandom = it.fandom,
+                        hostTable = it.tables.firstOrNull().orEmpty(),
+                        tables = it.tables,
+                        series = it.series,
+                    )
+                }
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> emptyList()
         }
-    }
+
+    suspend fun getAllEntriesForChangelog(year: DataYear) =
+        when (year) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025 -> emptyMap()
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
+                .associateBy { Uuid.parse(it.id) }
+        }
+
+    // TODO: Split by DataYear
+    suspend fun getChangelog(year: DataYear): List<StampRallyEntryAnimeExpo2026Changelog> = daoAnimeExpo2026().getChangelog().awaitAsList()
 }

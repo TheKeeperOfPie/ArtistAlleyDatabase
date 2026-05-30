@@ -52,7 +52,7 @@ sealed interface AlleyDestination : NavKey {
     data class ArtistsList(val year: DataYear, val serializedBooths: String) : AlleyDestination
 
     @Serializable
-    data object Changelog : AlleyDestination
+    data object ArtistChangelog : AlleyDestination
 
     @Serializable
     data object Export : AlleyDestination
@@ -110,12 +110,15 @@ sealed interface AlleyDestination : NavKey {
     data class StampRallies(val year: DataYear?, val series: String) : AlleyDestination
 
     @Serializable
+    data object StampRallyChangelog : AlleyDestination
+
+    @Serializable
     data class StampRallyDetails(
         val year: DataYear,
         val id: String,
         val hostTable: String?,
         val fandom: String?,
-        val images: List<DatabaseImage>?,
+        val images: List<DatabaseImage>? = null,
         val initialImageIndex: Int? = null,
     ) : AlleyDestination {
         constructor(entry: StampRallyDatabaseEntry, initialImageIndex: Int? = null) : this(
@@ -136,7 +139,7 @@ sealed interface AlleyDestination : NavKey {
         is ArtistDetails -> "artist/${year.serializedName}/$id"
         is ArtistMap -> "artist/map/$id"
         is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
-        Changelog -> "changelog"
+        ArtistChangelog -> "changelog"
         Export -> "export"
         Home -> ""
         is Images -> {
@@ -153,6 +156,7 @@ sealed interface AlleyDestination : NavKey {
         is SeriesMap -> "series/map/${year.serializedNameOrAll}/${Uri.encode(series)}"
         Settings -> "settings"
         is StampRallies -> "stamp_rallies/${year.serializedNameOrAll}/${Uri.encode(series)}"
+        is StampRallyChangelog -> "stampRallyChangelog"
         is StampRallyDetails -> "stamp_rally/${year.serializedName}/$id"
         is StampRallyMap -> "stamp_rally/map/${year.serializedName}/$id"
     }
@@ -187,7 +191,7 @@ sealed interface AlleyDestination : NavKey {
                             serializedBooths = parts[2]
                         )
                     } else null
-                    "changelog" -> Changelog
+                    "changelog" -> ArtistChangelog
                     "export" -> Export
                     "images" -> {
                         val dataYear = parts.getOrNull(1).toDataYearOrNull() ?: return null

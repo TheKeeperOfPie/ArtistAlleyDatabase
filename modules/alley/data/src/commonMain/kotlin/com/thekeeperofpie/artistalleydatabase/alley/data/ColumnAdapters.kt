@@ -214,4 +214,9 @@ object ColumnAdapters {
     val stampRallySeriesConnectionAdapter = StampRallySeriesConnection.Adapter(
         dataYearAdapter = dataYearAdapter,
     )
+
+    val stampRallyEntryAnimeExpo2026ChangelogAdapter = StampRallyEntryAnimeExpo2026Changelog.Adapter(
+        stampRallyIdAdapter = uuidAdapter,
+        imagesAdapter = listDatabaseImageAdapter,
+    )
 }

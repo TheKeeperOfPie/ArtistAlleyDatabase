@@ -5,7 +5,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
@@ -32,12 +33,13 @@ interface ArtistAlleyGraph {
     val artistMerchViewModelFactory: ArtistMerchViewModel.Factory
     val artistSearchViewModelFactory: ArtistSearchViewModel.Factory
     val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
-    val changelogViewModelFactory: ChangelogViewModel.Factory
+    val artistChangelogViewModelFactory: ArtistChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory
     val favoritesSortFilterViewModelFactory: FavoritesSortFilterViewModel.Factory
     val imagesViewModel: Provider<ImagesViewModel>
     val importViewModelFactory: ImportViewModel.Factory
     val mapViewModelFactory: MapViewModel.Factory
+    val stampRallyChangelogViewModelFactory: StampRallyChangelogViewModel.Factory
     val stampRallyDetailsViewModelFactory: StampRallyDetailsViewModel.Factory
     val stampRallyMapViewModelFactory: StampRallyMapViewModel.Factory
     val stampRallySearchViewModelFactory: StampRallySearchViewModel.Factory
