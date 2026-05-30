@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +35,9 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -46,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_author_link
 import artistalleydatabase.modules.alley.generated.resources.alley_server_link
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_about_libraries
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_action
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_cancel
@@ -58,8 +61,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_file
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_open_libraries
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.markdownPadding
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
@@ -71,6 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Description
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -141,53 +147,69 @@ internal fun AlleySettingsScreen(
 @Composable
 private fun Header(onOpenLibraries: () -> Unit) {
     OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            val colorScheme = MaterialTheme.colorScheme
-            val typography = MaterialTheme.typography
-            val text = remember(colorScheme, typography) {
-                buildAnnotatedString {
-                    append("Built by ")
-                    withStyle(SpanStyle(color = colorScheme.primary)) {
-                        withLink(LinkAnnotation.Url(BuildKonfig.authorOneUrl)) {
-                            append(BuildKonfig.authorOneName)
-                        }
-                    }
-                    append(" and ")
-                    withStyle(SpanStyle(color = colorScheme.primary)) {
-                        withLink(LinkAnnotation.Url(BuildKonfig.authorTwoUrl)) {
-                            append(BuildKonfig.authorTwoName)
-                        }
-                    }
-                    append(" for the ")
-                    withStyle(SpanStyle(color = colorScheme.primary)) {
-                        withLink(LinkAnnotation.Url(BuildKonfig.serverUrl)) {
-                            append(BuildKonfig.serverName)
-                        }
-                    }
-                    append(
-                        "\n\nAnime NYC data provided by ${BuildKonfig.authorAnycOneName}, " +
-                                "${BuildKonfig.authorAnycTwoName}, and "
-                    )
-                    withStyle(SpanStyle(color = colorScheme.primary)) {
-                        withLink(LinkAnnotation.Url(BuildKonfig.authorAnycThreeUrl)) {
-                            append(BuildKonfig.authorAnycThreeName)
-                        }
-                    }
-                }
-            }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f).padding(16.dp)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            val markdownTypography = markdownTypography(
+                text = MaterialTheme.typography.titleMedium,
+                paragraph = MaterialTheme.typography.titleMedium,
+                textLink = TextLinkStyles(
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = TextDecoration.Underline,
+                        color = MaterialTheme.colorScheme.primary,
+                    ).toSpanStyle()
+                ),
+            )
+            val markdownPadding = markdownPadding(
+                list = 0.dp,
+                listItemTop = 0.dp,
+                listItemBottom = 2.dp,
             )
 
             Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.weight(1f)
             ) {
-                Row {
-                    val uriHandler = LocalUriHandler.current
+                Markdown(
+                    content = """
+                    Built by [${BuildKonfig.authorOneName}](${BuildKonfig.authorOneUrl}) and
+                    [${BuildKonfig.authorTwoName}](${BuildKonfig.authorTwoUrl}) for the
+                    [${BuildKonfig.serverName}](${BuildKonfig.serverUrl})
+                """.trimIndent(),
+                    typography = markdownTypography,
+                    padding = markdownPadding,
+                    modifier = Modifier.wrapContentHeight()
+                )
+                Markdown(
+                    content = """
+                    Anime NYC data provided by volunteers
+                    - ${BuildKonfig.authorAnycOneName}
+                    - ${BuildKonfig.authorAnycTwoName}
+                    - [${BuildKonfig.authorAnycThreeName}](${BuildKonfig.authorAnycThreeUrl})
+                """.trimIndent(),
+                    typography = markdownTypography,
+                    padding = markdownPadding,
+                    modifier = Modifier.wrapContentHeight()
+                )
+                Markdown(
+                    content = """
+                    Merch icons created by
+                    - [${BuildKonfig.merchIconArtistOne}](${BuildKonfig.merchIconArtistOneLink})
+                    - [${BuildKonfig.merchIconArtistTwo}](${BuildKonfig.merchIconArtistTwoLink})
+                    - [${BuildKonfig.merchIconArtistThree}](${BuildKonfig.merchIconArtistThreeLink})
+                """.trimIndent(),
+                    typography = markdownTypography,
+                    padding = markdownPadding,
+                    modifier = Modifier.wrapContentHeight()
+                )
+            }
 
+            Column {
+                val uriHandler = LocalUriHandler.current
+                Row {
                     TooltipIconButton(
                         icon = Logo.GITHUB.icon,
                         tooltipText = BuildKonfig.authorTwoUrl,
@@ -201,17 +223,22 @@ private fun Header(onOpenLibraries: () -> Unit) {
                         onClick = { uriHandler.openUri(BuildKonfig.serverUrl) },
                         contentDescription = stringResource(Res.string.alley_server_link),
                     )
+                }
 
+                Row {
                     TooltipIconButton(
                         icon = Icons.Default.Description,
                         tooltipText = BuildKonfig.sheetLink,
                         onClick = { uriHandler.openUri(BuildKonfig.sheetLink) },
                         contentDescription = stringResource(Res.string.alley_sheet_link),
                     )
-                }
-
-                FilledTonalButton(onClick = onOpenLibraries) {
-                    Text(stringResource(Res.string.alley_settings_open_libraries))
+                    val aboutLibraries = stringResource(Res.string.alley_settings_about_libraries)
+                    TooltipIconButton(
+                        icon = Icons.Default.Info,
+                        tooltipText = aboutLibraries,
+                        onClick = onOpenLibraries,
+                        contentDescription = aboutLibraries,
+                    )
                 }
             }
         }
@@ -572,8 +599,10 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
         QuestionAnswer(
             question = "I'm a tabling artist and my info is missing or incorrect",
             answer = {
-                append("If you're tabling at the latest convention ($latestConvention), see the" +
-                        "\"Is this you?\" prompt at the bottom of your artist page.")
+                append(
+                    "If you're tabling at the latest convention ($latestConvention), see the " +
+                            "\"Is this you?\" prompt at the bottom of your artist page."
+                )
             }
         )
 

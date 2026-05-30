@@ -35,7 +35,6 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
 
-            implementation(libs.jetBrainsCompose.material3.adaptive.navigation.suite)
             implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
@@ -44,7 +43,9 @@ kotlin {
             implementation(libs.human.readable)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.jetBrainsAndroidX.navigationevent.compose)
+            implementation(libs.jetBrainsCompose.material3.adaptive.navigation.suite)
             implementation(libs.jetBrainsCompose.material3.windowSizeClass)
+            implementation(libs.multiplatform.markdown.renderer.m3)
             implementation(libs.paging.common)
             implementation(libs.paging.compose)
             implementation(libs.qrose)
