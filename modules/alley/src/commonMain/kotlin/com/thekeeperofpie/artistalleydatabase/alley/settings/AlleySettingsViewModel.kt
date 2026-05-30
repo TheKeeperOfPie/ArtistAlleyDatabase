@@ -87,7 +87,6 @@ class AlleySettingsViewModel(
                     val hash = CryptographyProvider.Default.get(SHA512)
                         .hasher()
                         .hash(event.data.encodeToByteString())
-                    println("hash = ${hash.toHexString()}")
                     if (hash.toHexString() == "b5bca36023f56465bf80f1a09b4ff80f298fa4e4c9ee7cb21976e6e5809a14f8f2d93a2fad301b5fc54bf3b79085cafcd3e1747f343b61266e0627949a52edaa") {
                         settings.easterEggEnabled.value = true
                         settings.appTheme.value = AppThemeSetting.MIKU

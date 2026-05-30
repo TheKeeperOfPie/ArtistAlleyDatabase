@@ -15,10 +15,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -92,7 +92,9 @@ internal object QrCodeScreen {
                     }
 
                     OutlinedCard(
-                        Modifier.fillMaxWidth().padding(top = 16.dp, end = 16.dp, bottom = 12.dp)
+                        onClick = onClickDownload,
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 16.dp, end = 16.dp, bottom = 12.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -103,10 +105,11 @@ internal object QrCodeScreen {
                                 text = stringResource(Res.string.alley_export_notes_warning),
                                 modifier = Modifier.weight(1f)
                             )
-                            FilledTonalIconButton(onClickDownload) {
+                            OutlinedIconButton(onClickDownload) {
                                 Icon(
                                     imageVector = Icons.Default.Download,
-                                    contentDescription = stringResource(Res.string.alley_export_download_content_description),
+                                    contentDescription =
+                                        stringResource(Res.string.alley_export_download_content_description),
                                 )
                             }
                         }
