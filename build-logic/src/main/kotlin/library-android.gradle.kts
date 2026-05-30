@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     android {
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 28
 
         androidResources {

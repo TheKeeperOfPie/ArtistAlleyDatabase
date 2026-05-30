@@ -44,7 +44,7 @@ kotlin {
     android {
         namespace = "com.thekeeperofpie.artistalleydatabase"
         compileSdk {
-            version = release(36)
+            version = release(37)
         }
         androidResources { enable = true }
     }

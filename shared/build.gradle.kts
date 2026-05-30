@@ -10,8 +10,8 @@ repositories {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.multiplatform") version "2.4.0-Beta2"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0-Beta2"
+    id("org.jetbrains.kotlin.multiplatform") version "2.4.0-RC2"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0-RC2"
     id("com.android.kotlin.multiplatform.library") version "9.2.1"
 }
 
@@ -21,7 +21,7 @@ version = "0.0.1"
 kotlin {
     android {
         namespace = "com.thekeeperofpie.artistalleydatabase.shared"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 28
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_18)

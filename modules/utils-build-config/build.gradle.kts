@@ -14,7 +14,7 @@ kotlin {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.utils.buildconfig"
-    compileSdk = 36
+    compileSdk = 37
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_18
         targetCompatibility = JavaVersion.VERSION_18
