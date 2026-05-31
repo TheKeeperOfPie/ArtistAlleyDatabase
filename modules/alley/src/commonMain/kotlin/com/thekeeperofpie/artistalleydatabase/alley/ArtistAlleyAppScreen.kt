@@ -530,8 +530,8 @@ object ArtistAlleyAppScreen {
                 TagChangelogScreen(
                     graph = graph,
                     dataYear = year,
-                    series = route.series,
-                    merch = null,
+                    seriesId = route.series,
+                    merchId = null,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
                     onClickMerch = { onOpenMerch(year, it) },
@@ -573,8 +573,8 @@ object ArtistAlleyAppScreen {
                 TagChangelogScreen(
                     graph = graph,
                     dataYear = year,
-                    series = null,
-                    merch = route.merch,
+                    seriesId = null,
+                    merchId = route.merch,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
                     onClickMerch = { onOpenMerch(year, it) },
