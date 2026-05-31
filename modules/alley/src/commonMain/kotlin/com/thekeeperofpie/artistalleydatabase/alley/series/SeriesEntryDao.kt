@@ -135,7 +135,19 @@ class SeriesEntryDao(
         "confirmedAnimeNyc2025",
     ).joinToString { "seriesEntry.$it" }
 
-    suspend fun getSeriesIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
+    suspend fun getSeriesAndImageIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
+        .map {
+            SeriesImageInfo(
+                id = it.id,
+                aniListId = it.aniListId,
+                wikipediaId = it.wikipediaId,
+                tmdbId = it.tmdbId,
+                tmdbType = it.tmdbType,
+                steamId = it.steamId,
+                openLibraryId = it.openLibraryId,
+            )
+        }
+        .associateBy { it.id }
 
     fun getSeriesById(id: String): Flow<SeriesInfo> =
         flowFromSuspend { seriesDao() }

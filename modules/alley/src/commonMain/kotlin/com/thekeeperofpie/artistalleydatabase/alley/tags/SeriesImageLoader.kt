@@ -27,7 +27,8 @@ class SeriesImageLoader(
 ) {
     private val requests = mutableStateMapOf<String, Request>()
 
-    private val requestChannel = Channel<SeriesImageInfo>(200, BufferOverflow.DROP_OLDEST)
+    private val idRequestChannel = Channel<String>(200, BufferOverflow.DROP_OLDEST)
+    private val imageInfoRequestChannel = Channel<SeriesImageInfo>(200, BufferOverflow.DROP_OLDEST)
 
     init {
         appScope.launch(dispatchers.io) {
@@ -36,11 +37,29 @@ class SeriesImageLoader(
             allCached.staleIds.forEach {
                 seriesImagesStore.deleteStale(it)
             }
+
+            launch {
+                while (isActive) {
+                    val chunk = mutableSetOf(idRequestChannel.receive())
+                    withTimeoutOrNull(1.seconds) {
+                        while (isActive && chunk.size < 25) {
+                            chunk += idRequestChannel.receive()
+                        }
+                    }
+
+                    val seriesAndImageIds = seriesImagesStore.seriesAndImageIds.await()
+                    chunk.mapNotNull { seriesAndImageIds[it] }
+                        .forEach {
+                            imageInfoRequestChannel.send(it)
+                        }
+                }
+            }
+
             while (isActive) {
-                val chunk = mutableSetOf(requestChannel.receive())
+                val chunk = mutableSetOf(imageInfoRequestChannel.receive())
                 withTimeoutOrNull(1.seconds) {
                     while (isActive && chunk.size < 25) {
-                        chunk += requestChannel.receive()
+                        chunk += imageInfoRequestChannel.receive()
                     }
                 }
                 Snapshot.withMutableSnapshot {
@@ -78,12 +97,20 @@ class SeriesImageLoader(
         data object Failed : Request
     }
 
+    fun getSeriesImage(seriesId: String): String? {
+        val cached = requests[seriesId]
+        if (cached == null) {
+            idRequestChannel.trySend(seriesId)
+        }
+        return (cached as? Request.Done)?.url
+    }
+
     fun getSeriesImage(series: SeriesInfo) = getSeriesImage(series.toImageInfo())
 
     fun getSeriesImage(series: SeriesImageInfo): String? {
         val cached = requests[series.id]
         if (cached == null) {
-            requestChannel.trySend(series)
+            imageInfoRequestChannel.trySend(series)
         }
         return (cached as? Request.Done)?.url
     }

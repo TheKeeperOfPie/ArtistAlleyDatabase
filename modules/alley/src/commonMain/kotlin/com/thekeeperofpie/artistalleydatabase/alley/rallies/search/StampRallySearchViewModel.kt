@@ -8,11 +8,11 @@ import androidx.paging.cachedIn
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
@@ -161,7 +161,7 @@ class StampRallySearchViewModel(
         .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
+    fun seriesImage(info: SeriesImageInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun toggleFavorite(entry: StampRallyEntryGridModel, favorite: Boolean) {
         mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))

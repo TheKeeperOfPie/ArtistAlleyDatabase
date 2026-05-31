@@ -565,26 +565,7 @@ class StampRallyEntryDao(
                 "ORDER BY $tableName.totalCost $ascending NULLS LAST"
         }
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
-        val imageSubquery = """(
-            SELECT
-                json_group_array (
-                    json_object (
-                        'id', s.id,
-                        'uuid', s.uuid,
-                        'aniListId', s.aniListId,
-                        'wikipediaId', s.wikipediaId,
-                        'tmdbId', s.tmdbId,
-                        'tmdbType', s.tmdbType,
-                        'steamId', s.steamId,
-                        'openLibraryId', s.openLibraryId
-                    )
-                )
-            FROM
-                seriesEntry s
-                JOIN stampRallySeriesConnection sc ON sc.seriesId = s.id
-            WHERE
-                sc.stampRallyId = $tableName.id
-        )""".trimIndent()
+        val imageSubquery = StampRallyUtils.imageSubquery("$tableName.id")
         val selectFields = when (year) {
             DataYear.ANIME_EXPO_2023 -> listOf(
                 "$tableName.id",
@@ -820,11 +801,13 @@ class StampRallyEntryDao(
             DataYear.ANIME_EXPO_2024,
             DataYear.ANIME_EXPO_2025,
             DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025 -> emptyMap()
+            DataYear.ANIME_NYC_2025,
+                -> emptyMap()
             DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
                 .associateBy { Uuid.parse(it.id) }
         }
 
     // TODO: Split by DataYear
-    suspend fun getChangelog(year: DataYear): List<StampRallyEntryAnimeExpo2026Changelog> = daoAnimeExpo2026().getChangelog().awaitAsList()
+    suspend fun getChangelog(year: DataYear): List<StampRallyEntryAnimeExpo2026Changelog> =
+        daoAnimeExpo2026().getChangelog().awaitAsList()
 }

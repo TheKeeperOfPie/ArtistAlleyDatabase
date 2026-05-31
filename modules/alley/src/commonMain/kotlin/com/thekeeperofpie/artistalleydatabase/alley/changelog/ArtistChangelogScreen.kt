@@ -1,12 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,23 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,14 +27,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
@@ -55,17 +37,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_catalogs_only
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_catalogs_only_warning
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_added
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_updated
-import artistalleydatabase.modules.alley.generated.resources.alley_next_page
-import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
@@ -78,17 +54,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
-import com.thekeeperofpie.artistalleydatabase.icons.Icons
-import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLeft
-import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowRight
-import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.stringResource
@@ -327,117 +295,22 @@ internal object ArtistChangelogScreen {
 
             val images = artist.images
             if (!images.isNullOrEmpty()) {
-                Box {
-                    // TODO: Split by DataYear
-                    val catalogImages = remember(artist, images) {
-                        if (artist.isTempImages) {
-                            AlleyImageUtils.getTempImages(images)
-                        } else {
-                            AlleyImageUtils.getArtistImages(
-                                DataYear.ANIME_EXPO_2026,
-                                images
-                            )
-                        }
-                    }
-                    val listState = rememberLazyListState()
-                    LazyRow(
-                        state = listState,
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.heightIn(max = 200.dp)
-                    ) {
-                        items(items = catalogImages, key = { it.coilImageModel.toString() }) {
-                            val sharedContentState =
-                                rememberSharedContentState("image", it.coilImageModel)
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalPlatformContext.current)
-                                    .data(it.coilImageModel)
-                                    .placeholderMemoryCacheKey(it.coilImageModel.toString())
-                                    .build(),
-                                contentScale = ContentScale.Fit,
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                                modifier = Modifier
-                                    .height(ChangelogUtils.ImageHeight)
-                                    .widthIn(min = 48.dp)
-                                    .sharedElement(state = sharedContentState)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { onClickImage(it) }
-                            )
-                        }
-                    }
-
-                    val scrollSize = with(LocalDensity.current) { ChangelogUtils.ImageHeight.toPx() }
-                    val scope = rememberCoroutineScope()
-
-                    val previousPageInteractionSource = remember { MutableInteractionSource() }
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                if (listState.firstVisibleItemScrollOffset > scrollSize / 10) {
-                                    listState.animateScrollToItem(listState.firstVisibleItemIndex)
-                                } else {
-                                    val target = listState.firstVisibleItemIndex - 1
-                                    if (target >= 0) {
-                                        listState.animateScrollToItem(target)
-                                    }
-                                    if (listState.firstVisibleItemIndex == target + 1) {
-                                        listState.animateScrollBy(-scrollSize)
-                                    }
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .sharedElement("previousPage", artist.artistId, zIndexInOverlay = 1f)
-                            .align(Alignment.CenterStart)
-                            .hoverable(previousPageInteractionSource)
-                            .visible(listState.canScrollBackward)
-                    ) {
-                        val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowLeft,
-                            contentDescription = stringResource(Res.string.alley_previous_page),
-                            modifier = Modifier.padding(8.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceDim
-                                        .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
-                                    shape = CircleShape,
-                                )
-                        )
-                    }
-
-                    val nextPageInteractionSource = remember { MutableInteractionSource() }
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                val target = listState.layoutInfo.visibleItemsInfo.lastIndex + 1
-                                if (target < listState.layoutInfo.totalItemsCount) {
-                                    listState.animateScrollToItem(target)
-                                }
-                                if (listState.layoutInfo.visibleItemsInfo.lastIndex == target - 1) {
-                                    listState.animateScrollBy(scrollSize)
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .sharedElement("nextPage", artist.artistId, zIndexInOverlay = 1f)
-                            .align(Alignment.CenterEnd)
-                            .hoverable(nextPageInteractionSource)
-                            .visible(listState.canScrollForward)
-                    ) {
-                        val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowRight,
-                            contentDescription = stringResource(Res.string.alley_next_page),
-                            modifier = Modifier.padding(8.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceDim
-                                        .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
-                                    shape = CircleShape,
-                                )
+                // TODO: Split by DataYear
+                val catalogImages = remember(artist, images) {
+                    if (artist.isTempImages) {
+                        AlleyImageUtils.getTempImages(images)
+                    } else {
+                        AlleyImageUtils.getArtistImages(
+                            DataYear.ANIME_EXPO_2026,
+                            images
                         )
                     }
                 }
+                ChangelogImages(
+                    sharedElementId = artist.artistId,
+                    images = catalogImages,
+                    onClickImage = onClickImage
+                )
             }
 
             val series = TagUtils.combineForDisplay(

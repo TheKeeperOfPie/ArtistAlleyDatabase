@@ -54,8 +54,8 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistProfileImage
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
@@ -119,11 +119,57 @@ fun StampRallyTitle(
 }
 
 @Composable
+fun StampRallySeriesImage(
+    stampRallyId: String,
+    seriesId: String?,
+    hostTable: String?,
+    image: () -> String?,
+) {
+    val sizeResolver = rememberConstraintsSizeResolver()
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxHeight()
+            .width(72.dp)
+            .heightIn(min = 80.dp)
+            .then(sizeResolver)
+    ) {
+        val image = image()
+        if (image != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(image)
+                    .size(sizeResolver)
+                    .build(),
+                null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .matchParentSize()
+                    .sharedElement("seriesImage", seriesId)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+        } else {
+            val textStyle = MaterialTheme.typography.titleLarge
+            Text(
+                text = hostTable.orEmpty(),
+                style = textStyle.copy(fontFamily = FontFamily.Monospace),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 12.sp,
+                    maxFontSize = textStyle.fontSize,
+                ),
+                modifier = Modifier
+                    .sharedElement("hostTable", stampRallyId, zIndexInOverlay = 1f)
+                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun StampRallyListRow(
     entry: StampRallyEntryGridModel,
     onFavoriteToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    seriesImage: (SeriesInfo) -> String? = { null },
+    seriesImage: (SeriesImageInfo) -> String? = { null },
 ) {
     val stampRally = entry.stampRally
     Row(
@@ -133,43 +179,12 @@ fun StampRallyListRow(
             .height(IntrinsicSize.Min)
     ) {
         val series = entry.seriesImageInfo.firstOrNull()
-        val image = series?.toSeriesInfo()?.let(seriesImage)
-        val sizeResolver = rememberConstraintsSizeResolver()
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxHeight()
-                .width(72.dp)
-                .heightIn(min = 80.dp)
-                .then(sizeResolver)
-        ) {
-            if (image != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                        .data(image)
-                        .size(sizeResolver)
-                        .build(),
-                    null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .matchParentSize()
-                        .sharedElement("seriesImage", series.id)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                )
-            } else {
-                val textStyle = MaterialTheme.typography.titleLarge
-                Text(
-                    text = stampRally.hostTable,
-                    style = textStyle.copy(fontFamily = FontFamily.Monospace),
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 12.sp,
-                        maxFontSize = textStyle.fontSize,
-                    ),
-                    modifier = Modifier
-                        .sharedElement("hostTable", stampRally.id, zIndexInOverlay = 1f)
-                        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
-                )
-            }
-        }
+        StampRallySeriesImage(
+            stampRallyId = stampRally.id,
+            seriesId = series?.id,
+            hostTable = stampRally.hostTable,
+            image = { series?.let(seriesImage) }
+        )
 
         Spacer(Modifier.width(16.dp))
 

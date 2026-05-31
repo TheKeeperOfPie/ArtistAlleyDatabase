@@ -9,9 +9,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageType
 import com.thekeeperofpie.artistalleydatabase.alley.user.ImageEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
@@ -20,17 +23,23 @@ import kotlin.time.Instant
 @Inject
 class SeriesImagesStore(
     private val aniListApi: AlleyAniListApi,
+    appScope: ApplicationScope,
     private val imageEntryDao: ImageEntryDao,
     private val imageCache: ImageCache,
     private val seriesEntryDao: SeriesEntryDao,
     private val tmdbApi: AlleyTmdbApi,
     private val wikipediaApi: AlleyWikipediaApi,
 ) {
+    val seriesAndImageIds = appScope.async(start = CoroutineStart.LAZY) {
+        seriesEntryDao.getSeriesAndImageIds()
+    }
+
     suspend fun getAllCachedImages(): AllCachedResult {
         val imageEntries = imageEntryDao.getAllImages()
             .groupBy { ImageType.fromSerializedName(it.type) }
             .mapValues { it.value.associateBy { it.imageId } }
-        val images = seriesEntryDao.getSeriesIds()
+        val images = seriesAndImageIds.await()
+            .values
             .mapNotNull {
                 val image =
                     it.aniListId?.toString()?.let { imageEntries[ImageType.ANILIST]?.get(it) }

@@ -6,6 +6,7 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Assisted
@@ -21,6 +22,7 @@ class StampRallyChangelogViewModel(
     stampRallyEntryDao: StampRallyEntryDao,
     dispatchers: CustomDispatchers,
     val seriesEntryCache: SeriesEntryCache,
+    private val seriesImageLoader: SeriesImageLoader,
     @Assisted dataYear: DataYear,
 ) : ViewModel() {
 
@@ -53,4 +55,6 @@ class StampRallyChangelogViewModel(
             }
             .flowOn(dispatchers.io)
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    fun seriesImage(seriesId: String) = seriesImageLoader.getSeriesImage(seriesId)
 }

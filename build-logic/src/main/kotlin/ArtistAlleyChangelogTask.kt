@@ -123,6 +123,11 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                     }
                                 }
                                 .awaitAll()
+                                .also {
+                                    if (it.any { it == null }) {
+                                        throw IllegalStateException("Failed to read snapshot files")
+                                    }
+                                }
                                 .filterNotNull()
                                 .fold(Diffs()) { before, current ->
                                     val artistDiffs = diffArtists(
@@ -242,7 +247,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         val timestamp = current.timestamp
         val date = current.date
         val rallies = current.rallies
-        val beforeRallies = before.latestRallies.orEmpty()
+        val beforeRallies = before.latestRallies
         return rallies
             .map { afterRally -> beforeRallies.find { it.id == afterRally.id } to afterRally }
             .mapNotNull { (beforeRally, afterRally) ->

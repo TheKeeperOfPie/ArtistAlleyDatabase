@@ -143,14 +143,14 @@ internal object Utils {
             .inheritIO()
             .redirectErrorStream(true)
             .start()
-        val success = process.waitFor(30, TimeUnit.SECONDS)
+        val success = process.waitFor(90, TimeUnit.SECONDS)
         if (!success) {
             val errorText = process.inputStream.use {
                 it.reader().use {
                     it.readText()
                 }
             }
-            task.logger.error("Failed to apply ${sqlFile.absolutePath}")
+            task.logger.error("Failed to apply ${sqlFile.absolutePath}, exited with ${process.exitValue()}")
             errorText.lines().forEach(task.logger::error)
         }
         return success

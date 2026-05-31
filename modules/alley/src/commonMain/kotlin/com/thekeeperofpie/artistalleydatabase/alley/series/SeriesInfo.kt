@@ -6,7 +6,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 
 fun SeriesInfo.toImageInfo() = SeriesImageInfo(
     id = id,
-    uuid = uuid,
     aniListId = aniListId,
     wikipediaId = wikipediaId,
     tmdbId = tmdbId,

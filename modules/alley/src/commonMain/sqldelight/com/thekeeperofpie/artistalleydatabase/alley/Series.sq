@@ -2,7 +2,7 @@ getSeries:
 SELECT * FROM seriesEntry;
 
 getSeriesAndImageIds:
-SELECT id, aniListId, openLibraryId, steamId, tmdbId, wikipediaId FROM seriesEntry;
+SELECT id, aniListId, openLibraryId, steamId, tmdbId, tmdbType, wikipediaId FROM seriesEntry;
 
 getSeriesById:
 SELECT * FROM seriesEntry

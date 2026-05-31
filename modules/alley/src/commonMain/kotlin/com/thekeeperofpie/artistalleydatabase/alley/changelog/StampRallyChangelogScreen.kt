@@ -1,14 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,65 +13,42 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_added
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_updated
-import artistalleydatabase.modules.alley.generated.resources.alley_next_page
-import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
-import com.thekeeperofpie.artistalleydatabase.alley.artist.MerchRow
-import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
-import com.thekeeperofpie.artistalleydatabase.icons.Icons
-import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLeft
-import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowRight
-import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import kotlinx.coroutines.launch
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.stringResource
@@ -100,6 +73,7 @@ internal object StampRallyChangelogScreen {
         StampRallyChangelogScreen(
             changes = { changes },
             seriesTitles = { seriesTitles },
+            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickStampRally = onClickStampRally,
             onClickSeries = onClickSeries,
@@ -112,6 +86,7 @@ internal object StampRallyChangelogScreen {
     operator fun invoke(
         changes: () -> List<DayChange>,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
+        seriesImage: (seriesId: String) -> String?,
         onClickBack: () -> Unit,
         onClickStampRally: (StampRallyChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
@@ -139,6 +114,7 @@ internal object StampRallyChangelogScreen {
                             day(
                                 dayChange = it,
                                 seriesTitles = seriesTitles,
+                                seriesImage = seriesImage,
                                 onClickStampRally = onClickStampRally,
                                 onClickSeries = onClickSeries,
                                 onClickMerch = onClickMerch,
@@ -156,6 +132,7 @@ internal object StampRallyChangelogScreen {
     private fun LazyListScope.day(
         dayChange: DayChange,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
+        seriesImage: (seriesId: String) -> String?,
         onClickStampRally: (StampRallyChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
@@ -190,6 +167,7 @@ internal object StampRallyChangelogScreen {
                     stampRally = change,
                     isLast = index == dayChange.added.lastIndex,
                     seriesTitles = seriesTitles,
+                    seriesImage = seriesImage,
                     onClick = { onClickStampRally(change) },
                     onClickSeries = onClickSeries,
                     onClickMerch = onClickMerch,
@@ -224,6 +202,7 @@ internal object StampRallyChangelogScreen {
                     stampRally = change,
                     isLast = index == dayChange.updated.lastIndex,
                     seriesTitles = seriesTitles,
+                    seriesImage = seriesImage,
                     onClick = { onClickStampRally(change) },
                     onClickSeries = onClickSeries,
                     onClickMerch = onClickMerch,
@@ -242,159 +221,96 @@ internal object StampRallyChangelogScreen {
         stampRally: StampRallyChangelogEntry,
         isLast: Boolean,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
+        seriesImage: (seriesId: String) -> String?,
         onClick: () -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
         onClickImage: (CatalogImage) -> Unit,
     ) {
+        val seriesId = stampRally.rally.series.firstOrNull()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .conditionallyNonNull(seriesId, Modifier.heightIn(min = 80.dp))
+                .height(IntrinsicSize.Min)
                 .clickable(onClick = onClick)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
-            ) {
-                Text(
-                    text = stampRally.rally.fandom,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleMedium,
+            Row {
+                StampRallySeriesImage(
+                    stampRallyId = stampRally.rally.id,
+                    seriesId = seriesId,
+                    hostTable = stampRally.rally.tables.firstOrNull(),
+                    image = { seriesId?.let(seriesImage) }
                 )
-            }
 
-            val images = stampRally.images
-            if (images.isNotEmpty()) {
-                Box {
-                    // TODO: Split by DataYear
-                    val listState = rememberLazyListState()
-                    LazyRow(
-                        state = listState,
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.heightIn(max = 200.dp)
+                Column {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     ) {
-                        items(items = images, key = { it.coilImageModel.toString() }) {
-                            val sharedContentState =
-                                rememberSharedContentState("image", it.coilImageModel)
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalPlatformContext.current)
-                                    .data(it.coilImageModel)
-                                    .placeholderMemoryCacheKey(it.coilImageModel.toString())
-                                    .build(),
-                                contentScale = ContentScale.Fit,
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                                modifier = Modifier
-                                    .height(ChangelogUtils.ImageHeight)
-                                    .widthIn(min = 48.dp)
-                                    .sharedElement(state = sharedContentState)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { onClickImage(it) }
+                        Text(
+                            text = stampRally.rally.fandom,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+
+                    val images = stampRally.images
+                    if (images.isNotEmpty()) {
+                        ChangelogImages(
+                            sharedElementId = stampRally.stampRallyId,
+                            images = images,
+                            onClickImage = onClickImage,
+                        )
+                    }
+
+                    val series = stampRally.rally.series
+                    val merch = stampRally.rally.merch
+
+                    if (series.isNotEmpty() || merch.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .padding(start = 16.dp, bottom = 8.dp)
+                                .fillMaxWidth()
+                                .fadingEdgeEnd(
+                                    startOpaque = 0.dp,
+                                    startTransparent = 0.dp,
+                                    endOpaque = 32.dp,
+                                    endTransparent = 16.dp,
+                                )
+                        ) {
+                            val colors = AssistChipDefaults.assistChipColors(
+                                labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                             )
+                            val border = AssistChipDefaults.assistChipBorder(false)
+                            val seriesTitles = seriesTitles()
+                            val languageOption = LocalLanguageOptionMedia.current
+                            series.forEach {
+                                AssistChip(
+                                    colors = colors,
+                                    border = border,
+                                    onClick = { onClickSeries(it) },
+                                    label = {
+                                        Text(text = seriesTitles[it]?.name(languageOption) ?: it)
+                                    },
+                                    modifier = Modifier.height(24.dp)
+                                )
+                            }
+                            merch.forEach {
+                                AssistChip(
+                                    colors = colors,
+                                    border = border,
+                                    onClick = { onClickMerch(it) },
+                                    label = { Text(text = it) },
+                                    modifier = Modifier.height(24.dp)
+                                )
+                            }
                         }
                     }
-
-                    val scrollSize = with(LocalDensity.current) { ChangelogUtils.ImageHeight.toPx() }
-                    val scope = rememberCoroutineScope()
-
-                    val previousPageInteractionSource = remember { MutableInteractionSource() }
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                if (listState.firstVisibleItemScrollOffset > scrollSize / 10) {
-                                    listState.animateScrollToItem(listState.firstVisibleItemIndex)
-                                } else {
-                                    val target = listState.firstVisibleItemIndex - 1
-                                    if (target >= 0) {
-                                        listState.animateScrollToItem(target)
-                                    }
-                                    if (listState.firstVisibleItemIndex == target + 1) {
-                                        listState.animateScrollBy(-scrollSize)
-                                    }
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .sharedElement("previousPage", stampRally.stampRallyId, zIndexInOverlay = 1f)
-                            .align(Alignment.CenterStart)
-                            .hoverable(previousPageInteractionSource)
-                            .visible(listState.canScrollBackward)
-                    ) {
-                        val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowLeft,
-                            contentDescription = stringResource(Res.string.alley_previous_page),
-                            modifier = Modifier.padding(8.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceDim
-                                        .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
-                                    shape = CircleShape,
-                                )
-                        )
-                    }
-
-                    val nextPageInteractionSource = remember { MutableInteractionSource() }
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                val target = listState.layoutInfo.visibleItemsInfo.lastIndex + 1
-                                if (target < listState.layoutInfo.totalItemsCount) {
-                                    listState.animateScrollToItem(target)
-                                }
-                                if (listState.layoutInfo.visibleItemsInfo.lastIndex == target - 1) {
-                                    listState.animateScrollBy(scrollSize)
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .sharedElement("nextPage", stampRally.stampRallyId, zIndexInOverlay = 1f)
-                            .align(Alignment.CenterEnd)
-                            .hoverable(nextPageInteractionSource)
-                            .visible(listState.canScrollForward)
-                    ) {
-                        val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowRight,
-                            contentDescription = stringResource(Res.string.alley_next_page),
-                            modifier = Modifier.padding(8.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceDim
-                                        .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
-                                    shape = CircleShape,
-                                )
-                        )
-                    }
                 }
-            }
-
-            val series = stampRally.rally.series
-            val merch = stampRally.rally.merch
-
-            if (series.isNotEmpty() || merch.isNotEmpty()) {
-                Spacer(Modifier.height(16.dp))
-            }
-
-            val seriesTitles = seriesTitles()
-            if (series.isNotEmpty()) {
-                SeriesRow(
-                    series = series.take(TagUtils.TAGS_TO_SHOW).mapNotNull { seriesTitles[it] },
-                    hasMoreSeries = series.size > TagUtils.TAGS_TO_SHOW,
-                    onSeriesClick = onClickSeries,
-                    onMoreClick = onClick,
-                    modifier = Modifier.padding(start = 32.dp)
-                )
-            }
-
-            if (merch.isNotEmpty()) {
-                MerchRow(
-                    merch = merch.take(TagUtils.TAGS_TO_SHOW),
-                    hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
-                    onMerchClick = onClickMerch,
-                    onMoreClick = onClick,
-                    modifier = Modifier.padding(start = 48.dp)
-                )
             }
 
             if (!isLast) {
