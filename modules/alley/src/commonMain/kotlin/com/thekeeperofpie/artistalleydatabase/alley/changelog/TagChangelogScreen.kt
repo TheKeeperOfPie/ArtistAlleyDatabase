@@ -2,12 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.alley.changelog
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,50 +27,61 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_changelog_catalogs_only
-import artistalleydatabase.modules.alley.generated.resources.alley_changelog_catalogs_only_warning
+import artistalleydatabase.modules.alley.generated.resources.alley_changelog_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
-internal object ArtistChangelogScreen {
+object TagChangelogScreen {
 
     @Composable
     operator fun invoke(
         graph: ArtistAlleyGraph,
-        route: AlleyDestination.ArtistChangelog,
+        dataYear: DataYear,
+        series: String?,
+        merch: String?,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistEntryAnimeExpo2026Changelog) -> Unit,
+        onClickStampRally: (StampRallyChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
-        onClickImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
-        viewModel: ArtistChangelogViewModel = viewModel {
-            graph.artistChangelogViewModelFactory.create(createSavedStateHandle())
+        onClickArtistImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
+        onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
+        viewModel: TagChangelogViewModel = viewModel {
+            graph.tagChangelogViewModelFactory.create(
+                dataYear = dataYear,
+                series = series,
+                merch = merch,
+                savedStateHandle = createSavedStateHandle(),
+            )
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()
         val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        var catalogsOnly by viewModel.catalogsOnly.collectAsMutableStateWithLifecycle()
-        ArtistChangelogScreen(
+        var showOnlyConfirmedTags by viewModel.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+        TagChangelogScreen(
             changes = { changes },
             seriesTitles = { seriesTitles },
-            catalogsOnly = { catalogsOnly },
-            onChangeCatalogsOnly = { catalogsOnly = it },
+            seriesImage = viewModel::seriesImage,
+            showOnlyConfirmedTags = { showOnlyConfirmedTags },
+            onChangeShowOnlyConfirmedTags = { showOnlyConfirmedTags = it },
             onClickBack = onClickBack,
             onClickArtist = onClickArtist,
+            onClickStampRally = onClickStampRally,
             onClickSeries = onClickSeries,
             onClickMerch = onClickMerch,
-            onClickImage = onClickImage,
+            onClickArtistImage = onClickArtistImage,
+            onClickStampRallyImage = onClickStampRallyImage,
         )
     }
 
@@ -77,13 +89,16 @@ internal object ArtistChangelogScreen {
     operator fun invoke(
         changes: () -> List<DayChange>,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
-        catalogsOnly: () -> Boolean,
-        onChangeCatalogsOnly: (Boolean) -> Unit,
+        seriesImage: (seriesId: String) -> String?,
+        showOnlyConfirmedTags: () -> Boolean,
+        onChangeShowOnlyConfirmedTags: (Boolean) -> Unit,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistEntryAnimeExpo2026Changelog) -> Unit,
+        onClickStampRally: (StampRallyChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
-        onClickImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
+        onClickArtistImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
+        onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
     ) {
         Scaffold(
             topBar = {
@@ -104,8 +119,8 @@ internal object ArtistChangelogScreen {
                     ) {
                         item("changelogFilterHeader") {
                             FilterHeader(
-                                catalogsOnly = { catalogsOnly() },
-                                onChangeCatalogsOnly = onChangeCatalogsOnly,
+                                showOnlyConfirmedTags = { showOnlyConfirmedTags() },
+                                onChangeShowOnlyConfirmedTags = onChangeShowOnlyConfirmedTags,
                             )
                         }
 
@@ -115,13 +130,24 @@ internal object ArtistChangelogScreen {
                             }
                             artistChangelogDay(
                                 date = it.date,
-                                added = it.added,
-                                updated = it.updated,
+                                added = it.addedArtists,
+                                updated = it.updatedArtists,
                                 seriesTitles = seriesTitles,
                                 onClickArtist = onClickArtist,
                                 onClickSeries = onClickSeries,
                                 onClickMerch = onClickMerch,
-                                onClickImage = onClickImage,
+                                onClickImage = onClickArtistImage,
+                            )
+                            stampRallyChangelogDay(
+                                date = it.date,
+                                added = it.addedRallies,
+                                updated = it.updatedRallies,
+                                seriesTitles = seriesTitles,
+                                seriesImage = seriesImage,
+                                onClickStampRally = onClickStampRally,
+                                onClickSeries = onClickSeries,
+                                onClickMerch = onClickMerch,
+                                onClickImage = onClickStampRallyImage,
                             )
                         }
                     }
@@ -133,29 +159,28 @@ internal object ArtistChangelogScreen {
     }
 
     @Composable
-    fun FilterHeader(catalogsOnly: () -> Boolean, onChangeCatalogsOnly: (Boolean) -> Unit) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
-                FilterChip(
-                    selected = catalogsOnly(),
-                    label = {
-                        Text(stringResource(Res.string.alley_changelog_catalogs_only))
-                    },
-                    onClick = { onChangeCatalogsOnly(!catalogsOnly()) },
-                )
-            }
-
-            if (catalogsOnly()) {
-                Text(
-                    text = stringResource(Res.string.alley_changelog_catalogs_only_warning),
-                )
-            }
+    fun FilterHeader(
+        showOnlyConfirmedTags: () -> Boolean,
+        onChangeShowOnlyConfirmedTags: (Boolean) -> Unit,
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+            Spacer(Modifier.width(16.dp))
+            FilterChip(
+                selected = showOnlyConfirmedTags(),
+                label = {
+                    Text(stringResource(Res.string.alley_changelog_show_only_confirmed_tags))
+                },
+                onClick = { onChangeShowOnlyConfirmedTags(!showOnlyConfirmedTags()) },
+            )
+            Spacer(Modifier.width(16.dp))
         }
     }
 
     data class DayChange(
         val date: LocalDate,
-        val added: List<ArtistEntryAnimeExpo2026Changelog>,
-        val updated: List<ArtistEntryAnimeExpo2026Changelog>,
+        val addedArtists: List<ArtistEntryAnimeExpo2026Changelog>,
+        val updatedArtists: List<ArtistEntryAnimeExpo2026Changelog>,
+        val addedRallies: List<StampRallyChangelogEntry>,
+        val updatedRallies: List<StampRallyChangelogEntry>,
     )
 }

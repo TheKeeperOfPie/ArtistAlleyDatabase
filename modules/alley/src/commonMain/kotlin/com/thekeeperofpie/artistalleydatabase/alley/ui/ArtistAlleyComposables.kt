@@ -662,14 +662,14 @@ fun DataYearHeader(
             }
         }
 
-        if (state.lockedYear) {
-            Text(
-                text = stringResource(state.year.fullName),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (state.lockedYear) {
+                Text(
+                    text = stringResource(state.year.fullName),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            } else {
                 ConventionDropdown(
                     dataYear = { state.year },
                     onDataYearChange = { state.year = it },
@@ -678,26 +678,26 @@ fun DataYearHeader(
                     dataYear = { state.year },
                     onDataYearChange = { state.year = it },
                 )
+            }
 
-                Spacer(Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
 
-                if (additionalActions != null) {
-                    additionalActions()
-                }
+            if (additionalActions != null) {
+                additionalActions()
+            }
 
-                IconButton(onClick = onOpenChangelog) {
-                    Icon(
-                        imageVector = Icons.Default.ChangeHistory,
-                        contentDescription = stringResource(Res.string.alley_changelog),
-                    )
-                }
+            IconButton(onClick = onOpenChangelog) {
+                Icon(
+                    imageVector = Icons.Default.ChangeHistory,
+                    contentDescription = stringResource(Res.string.alley_changelog),
+                )
+            }
 
-                IconButton(onClick = onOpenSettings) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(Res.string.alley_settings),
-                    )
-                }
+            IconButton(onClick = onOpenSettings) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = stringResource(Res.string.alley_settings),
+                )
             }
         }
     }

@@ -29,10 +29,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.catalogImages
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -171,7 +175,78 @@ object ArtistAlleyAppScreen {
             }
         val onOpenExport = { navStack.navigate(AlleyDestination.Export) }
         val onOpenArtistChangelog = { navStack.navigate(AlleyDestination.ArtistChangelog) }
+        val onOpenSeriesChangelog: (String) -> Unit =
+            { navStack.navigate(AlleyDestination.SeriesChangelog(it)) }
+        val onOpenMerchChangelog: (String) -> Unit =
+            { navStack.navigate(AlleyDestination.MerchChangelog(it)) }
         val onOpenStampRallyChangelog = { navStack.navigate(AlleyDestination.StampRallyChangelog) }
+
+        val onClickChangelogArtist: (DataYear, ArtistEntryAnimeExpo2026Changelog) -> Unit =
+            { year, artist ->
+                navStack.navigate(
+                    AlleyDestination.ArtistDetails(
+                        year = year,
+                        id = artist.artistId.toString(),
+                        booth = artist.booth,
+                        name = artist.name,
+                    )
+                )
+            }
+        val onClickChangelogArtistImage: (DataYear, ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit =
+            { year, changelogEntry, image ->
+                val catalogImages = changelogEntry.catalogImages(year)
+                navStack.navigate(
+                    AlleyDestination.Images(
+                        year = year,
+                        id = changelogEntry.artistId.toString(),
+                        type = AlleyDestination.Images.Type.Artist(
+                            id = changelogEntry.artistId.toString(),
+                            booth = changelogEntry.booth,
+                            name = changelogEntry.name,
+                            profileImage = null,
+                            showingFallback = false,
+                        ),
+                        images = catalogImages,
+                        // Add one for the initial grid
+                        initialImageIndex = (catalogImages?.indexOf(image) ?: 0) + 1,
+                        showOpenButton = true,
+                        changelogDate = changelogEntry.date,
+                    )
+                )
+            }
+
+        val onClickChangelogStampRally: (DataYear, StampRallyChangelogEntry) -> Unit =
+            { year, stampRally ->
+                navStack.navigate(
+                    AlleyDestination.StampRallyDetails(
+                        year = year,
+                        id = stampRally.stampRallyId.toString(),
+                        hostTable = stampRally.rally.tables.firstOrNull(),
+                        fandom = stampRally.rally.fandom,
+                    )
+                )
+            }
+        val onClickChangelogStampRallyImage: (DataYear, StampRallyChangelogEntry, CatalogImage) -> Unit =
+            { year, changelogEntry, image ->
+                val images = changelogEntry.images
+                navStack.navigate(
+                    AlleyDestination.Images(
+                        year = year,
+                        id = changelogEntry.stampRallyId.toString(),
+                        type = AlleyDestination.Images.Type.StampRally(
+                            id = changelogEntry.stampRallyId.toString(),
+                            hostTable = null,
+                            fandom = changelogEntry.rally.fandom,
+                        ),
+                        images = images,
+                        // Add one for the initial grid
+                        initialImageIndex = (images.indexOf(image)) + 1,
+                        showOpenButton = true,
+                        changelogDate = changelogEntry.date.toString(),
+                    )
+                )
+            }
+
         val onOpenSettings = { navStack.navigate(AlleyDestination.Settings) }
         // Real navigate up doesn't work
         val navigateUp = navStack::onBack
@@ -285,53 +360,13 @@ object ArtistAlleyAppScreen {
                 val year = DataYear.ANIME_EXPO_2026
                 ArtistChangelogScreen(
                     graph = graph,
+                    route = it,
                     onClickBack = navStack::onBack,
-                    onClickSeries = {
-                        navStack.navigate(
-                            AlleyDestination.Series(
-                                year,
-                                it,
-                            )
-                        )
-                    },
-                    onClickMerch = {
-                        navStack.navigate(
-                            AlleyDestination.Merch(
-                                year,
-                                it,
-                            )
-                        )
-                    },
-                    onClickArtist = {
-                        navStack.navigate(
-                            AlleyDestination.ArtistDetails(
-                                year = year,
-                                id = it.artistId.toString(),
-                                booth = it.booth,
-                                name = it.name,
-                            )
-                        )
-                    },
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickArtist = { onClickChangelogArtist(year, it) },
                     onClickImage = { changelogEntry, image ->
-                        val catalogImages = changelogEntry.catalogImages(year)
-                        navStack.navigate(
-                            AlleyDestination.Images(
-                                year = year,
-                                id = changelogEntry.artistId.toString(),
-                                type = AlleyDestination.Images.Type.Artist(
-                                    id = changelogEntry.artistId.toString(),
-                                    booth = changelogEntry.booth,
-                                    name = changelogEntry.name,
-                                    profileImage = null,
-                                    showingFallback = false,
-                                ),
-                                images = catalogImages,
-                                // Add one for the initial grid
-                                initialImageIndex = (catalogImages?.indexOf(image) ?: 0) + 1,
-                                showOpenButton = true,
-                                changelogDate = changelogEntry.date,
-                            )
-                        )
+                        onClickChangelogArtistImage(year, changelogEntry, image)
                     },
                 )
             }
@@ -406,50 +441,11 @@ object ArtistAlleyAppScreen {
                     graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,
-                    onClickSeries = {
-                        navStack.navigate(
-                            AlleyDestination.Series(
-                                year,
-                                it,
-                            )
-                        )
-                    },
-                    onClickMerch = {
-                        navStack.navigate(
-                            AlleyDestination.Merch(
-                                year,
-                                it,
-                            )
-                        )
-                    },
-                    onClickStampRally = {
-                        navStack.navigate(
-                            AlleyDestination.StampRallyDetails(
-                                year = year,
-                                id = it.stampRallyId.toString(),
-                                hostTable = null,
-                                fandom = it.rally.fandom,
-                            )
-                        )
-                    },
-                    onClickImage = { changelogEntry, image ->
-                        val images = changelogEntry.images
-                        navStack.navigate(
-                            AlleyDestination.Images(
-                                year = year,
-                                id = changelogEntry.stampRallyId.toString(),
-                                type = AlleyDestination.Images.Type.StampRally(
-                                    id = changelogEntry.stampRallyId.toString(),
-                                    hostTable = null,
-                                    fandom = changelogEntry.rally.fandom,
-                                ),
-                                images = images,
-                                // Add one for the initial grid
-                                initialImageIndex = (images.indexOf(image)) + 1,
-                                showOpenButton = true,
-                                changelogDate = changelogEntry.date.toString(),
-                            )
-                        )
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
                     },
                 )
             }
@@ -523,8 +519,30 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenArtistChangelog,
+                    onOpenChangelog = { onOpenSeriesChangelog(route.series) },
                     onOpenSettings = onOpenSettings,
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.SeriesChangelog> { route ->
+                // TODO: Split by year
+                val year = DataYear.ANIME_EXPO_2026
+                TagChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    series = route.series,
+                    merch = null,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickArtist = { onClickChangelogArtist(year, it) },
+                    onClickArtistImage = { changelogEntry, image ->
+                        onClickChangelogArtistImage(year, changelogEntry, image)
+                    },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickStampRallyImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
+                    },
                 )
             }
 
@@ -544,8 +562,30 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenArtistChangelog,
+                    onOpenChangelog = { onOpenMerchChangelog(route.merch) },
                     onOpenSettings = onOpenSettings,
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.MerchChangelog> { route ->
+                // TODO: Split by year
+                val year = DataYear.ANIME_EXPO_2026
+                TagChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    series = null,
+                    merch = route.merch,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickArtist = { onClickChangelogArtist(year, it) },
+                    onClickArtistImage = { changelogEntry, image ->
+                        onClickChangelogArtistImage(year, changelogEntry, image)
+                    },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickStampRallyImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
+                    },
                 )
             }
 

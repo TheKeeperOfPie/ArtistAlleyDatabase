@@ -8,20 +8,31 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -32,23 +43,42 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_added
+import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_updated
 import artistalleydatabase.modules.alley.generated.resources.alley_next_page
 import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
+import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
+import com.thekeeperofpie.artistalleydatabase.alley.artist.MerchRow
+import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLeft
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowRight
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -156,5 +186,380 @@ fun ChangelogImages(
                     )
             )
         }
+    }
+}
+
+@Composable
+fun ChangelogArtistRow(
+    artist: ArtistEntryAnimeExpo2026Changelog,
+    isLast: Boolean,
+    seriesTitles: () -> Map<String, GetSeriesTitles>,
+    onClick: () -> Unit,
+    onClickSeries: (String) -> Unit,
+    onClickMerch: (String) -> Unit,
+    onClickImage: (CatalogImage) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+        ) {
+            val lineHeightStyle = LineHeightStyle(
+                alignment = LineHeightStyle.Alignment.Center,
+                trim = LineHeightStyle.Trim.Both,
+            )
+            val booth = artist.booth
+            Text(
+                // Always render 3 characters
+                text = booth?.ifEmpty { null } ?: "   ",
+                style = MaterialTheme.typography.titleMedium
+                    .copy(
+                        fontFamily = FontFamily.Monospace,
+                        lineHeightStyle = lineHeightStyle,
+                    ),
+            )
+
+            Text(
+                text = artist.name,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium
+                    .copy(lineHeightStyle = lineHeightStyle),
+            )
+        }
+
+        val images = artist.images
+        if (!images.isNullOrEmpty()) {
+            // TODO: Split by DataYear
+            val catalogImages = remember(artist, images) {
+                if (artist.isTempImages) {
+                    AlleyImageUtils.getTempImages(images)
+                } else {
+                    AlleyImageUtils.getArtistImages(
+                        DataYear.ANIME_EXPO_2026,
+                        images
+                    )
+                }
+            }
+            ChangelogImages(
+                sharedElementId = artist.artistId,
+                images = catalogImages,
+                onClickImage = onClickImage
+            )
+        }
+
+        val series = TagUtils.combineForDisplay(
+            inferred = artist.seriesInferred.orEmpty(),
+            confirmed = artist.seriesConfirmed.orEmpty(),
+            randomSeed = LocalStableRandomSeed.current,
+        )
+        val merch = TagUtils.combineForDisplay(
+            inferred = artist.merchInferred.orEmpty(),
+            confirmed = artist.merchConfirmed.orEmpty(),
+            randomSeed = LocalStableRandomSeed.current,
+        )
+
+        if (series.isNotEmpty() || merch.isNotEmpty()) {
+            Spacer(Modifier.height(16.dp))
+        }
+
+        val seriesTitles = seriesTitles()
+        if (series.isNotEmpty()) {
+            SeriesRow(
+                series = series.take(TagUtils.TAGS_TO_SHOW).mapNotNull { seriesTitles[it] },
+                hasMoreSeries = series.size > TagUtils.TAGS_TO_SHOW,
+                onSeriesClick = onClickSeries,
+                onMoreClick = onClick,
+                modifier = Modifier.padding(start = 32.dp)
+            )
+        }
+
+        if (merch.isNotEmpty()) {
+            MerchRow(
+                merch = merch.take(TagUtils.TAGS_TO_SHOW),
+                hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
+                onMerchClick = onClickMerch,
+                onMoreClick = onClick,
+                modifier = Modifier.padding(start = 48.dp)
+            )
+        }
+
+        if (!isLast) {
+            HorizontalDivider(modifier = Modifier.padding(start = 12.dp))
+        }
+    }
+}
+
+
+@Composable
+fun ChangelogStampRallyRow(
+    stampRally: StampRallyChangelogEntry,
+    isLast: Boolean,
+    seriesTitles: () -> Map<String, GetSeriesTitles>,
+    seriesImage: (seriesId: String) -> String?,
+    onClick: () -> Unit,
+    onClickSeries: (String) -> Unit,
+    onClickMerch: (String) -> Unit,
+    onClickImage: (CatalogImage) -> Unit,
+) {
+    val seriesId = stampRally.rally.series.firstOrNull()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .conditionallyNonNull(seriesId, Modifier.heightIn(min = 80.dp))
+            .height(IntrinsicSize.Min)
+            .clickable(onClick = onClick)
+    ) {
+        Row {
+            StampRallySeriesImage(
+                stampRallyId = stampRally.rally.id,
+                seriesId = seriesId,
+                hostTable = stampRally.rally.tables.firstOrNull(),
+                image = { seriesId?.let(seriesImage) }
+            )
+
+            Column {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                ) {
+                    Text(
+                        text = stampRally.rally.fandom,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+
+                val images = stampRally.images
+                if (images.isNotEmpty()) {
+                    ChangelogImages(
+                        sharedElementId = stampRally.stampRallyId,
+                        images = images,
+                        onClickImage = onClickImage,
+                    )
+                }
+
+                val series = stampRally.rally.series
+                val merch = stampRally.rally.merch
+
+                if (series.isNotEmpty() || merch.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .padding(start = 16.dp, bottom = 8.dp)
+                            .fillMaxWidth()
+                            .fadingEdgeEnd(
+                                startOpaque = 0.dp,
+                                startTransparent = 0.dp,
+                                endOpaque = 32.dp,
+                                endTransparent = 16.dp,
+                            )
+                    ) {
+                        val colors = AssistChipDefaults.assistChipColors(
+                            labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        )
+                        val border = AssistChipDefaults.assistChipBorder(false)
+                        val seriesTitles = seriesTitles()
+                        val languageOption = LocalLanguageOptionMedia.current
+                        series.forEach {
+                            AssistChip(
+                                colors = colors,
+                                border = border,
+                                onClick = { onClickSeries(it) },
+                                label = {
+                                    Text(text = seriesTitles[it]?.name(languageOption) ?: it)
+                                },
+                                modifier = Modifier.height(24.dp)
+                            )
+                        }
+                        merch.forEach {
+                            AssistChip(
+                                colors = colors,
+                                border = border,
+                                onClick = { onClickMerch(it) },
+                                label = { Text(text = it) },
+                                modifier = Modifier.height(24.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!isLast) {
+            HorizontalDivider(modifier = Modifier.padding(start = 12.dp))
+        }
+    }
+}
+
+@Composable
+fun ChangelogDayHeader(date: LocalDate) {
+    Text(
+        text = date.format(LocalDate.Formats.ISO),
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = Modifier.padding(
+            start = 16.dp,
+            end = 16.dp,
+            top = 16.dp,
+        )
+    )
+}
+
+fun LazyListScope.artistChangelogDay(
+    date: LocalDate,
+    added: List<ArtistEntryAnimeExpo2026Changelog>,
+    updated: List<ArtistEntryAnimeExpo2026Changelog>,
+    seriesTitles: () -> Map<String, GetSeriesTitles>,
+    onClickArtist: (ArtistEntryAnimeExpo2026Changelog) -> Unit,
+    onClickSeries: (String) -> Unit,
+    onClickMerch: (String) -> Unit,
+    onClickImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
+) {
+    if (added.isNotEmpty()) {
+        item(key = listOf("artistHeaderAdded", date), contentType = "headerAdded") {
+            Text(
+                text = stringResource(Res.string.alley_changelog_title_added),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        itemsIndexed(
+            items = added,
+            key = { _, change -> listOf("artist", change.artistId, change.date) },
+            contentType = { _, _ -> "artistRow" },
+        ) { index, change ->
+            ChangelogArtistRow(
+                artist = change,
+                isLast = index == added.lastIndex,
+                seriesTitles = seriesTitles,
+                onClick = { onClickArtist(change) },
+                onClickSeries = onClickSeries,
+                onClickMerch = onClickMerch,
+                onClickImage = { onClickImage(change, it) },
+            )
+        }
+    }
+
+    if (updated.isNotEmpty()) {
+        if (added.isNotEmpty()) {
+            item(
+                key = listOf("artistDividerUpdated", date),
+                contentType = "dividerUpdated"
+            ) {
+                HorizontalDivider(modifier = Modifier.padding(start = 8.dp))
+            }
+        }
+        item(key = listOf("artistHeaderUpdated", date), contentType = "headerUpdated") {
+            Text(
+                text = stringResource(Res.string.alley_changelog_title_updated),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        itemsIndexed(
+            items = updated,
+            key = { _, change -> listOf("artist", change.artistId, change.date) },
+            contentType = { _, _ -> "artistRow" },
+        ) { index, change ->
+            ChangelogArtistRow(
+                artist = change,
+                isLast = index == updated.lastIndex,
+                seriesTitles = seriesTitles,
+                onClick = { onClickArtist(change) },
+                onClickSeries = onClickSeries,
+                onClickMerch = onClickMerch,
+                onClickImage = { onClickImage(change, it) },
+            )
+        }
+    }
+
+    item(key = listOf("artistDivider", date), contentType = "divider") {
+        HorizontalDivider(thickness = 2.dp)
+    }
+}
+
+fun LazyListScope.stampRallyChangelogDay(
+    date: LocalDate,
+    added: List<StampRallyChangelogEntry>,
+    updated: List<StampRallyChangelogEntry>,
+    seriesTitles: () -> Map<String, GetSeriesTitles>,
+    seriesImage: (seriesId: String) -> String?,
+    onClickStampRally: (StampRallyChangelogEntry) -> Unit,
+    onClickSeries: (String) -> Unit,
+    onClickMerch: (String) -> Unit,
+    onClickImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
+) {
+    if (added.isNotEmpty()) {
+        item(key = listOf("rallyHeaderAdded", date), contentType = "headerAdded") {
+            Text(
+                text = stringResource(Res.string.alley_changelog_title_added),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        itemsIndexed(
+            items = added,
+            key = { _, change -> listOf("rally", change.stampRallyId, change.date) },
+            contentType = { _, _ -> "stampRallyRow" },
+        ) { index, change ->
+            ChangelogStampRallyRow(
+                stampRally = change,
+                isLast = index == added.lastIndex,
+                seriesTitles = seriesTitles,
+                seriesImage = seriesImage,
+                onClick = { onClickStampRally(change) },
+                onClickSeries = onClickSeries,
+                onClickMerch = onClickMerch,
+                onClickImage = { onClickImage(change, it) },
+            )
+        }
+    }
+
+    if (updated.isNotEmpty()) {
+        if (added.isNotEmpty()) {
+            item(
+                key = listOf("rallyDividerUpdated", date),
+                contentType = "dividerUpdated"
+            ) {
+                HorizontalDivider(modifier = Modifier.padding(start = 8.dp))
+            }
+        }
+        item(key = listOf("rallyHeaderUpdated", date), contentType = "headerUpdated") {
+            Text(
+                text = stringResource(Res.string.alley_changelog_title_updated),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        itemsIndexed(
+            items = updated,
+            key = { _, change -> listOf("rally", change.stampRallyId, change.date) },
+            contentType = { _, _ -> "stampRallyRow" },
+        ) { index, change ->
+            ChangelogStampRallyRow(
+                stampRally = change,
+                isLast = index == updated.lastIndex,
+                seriesTitles = seriesTitles,
+                seriesImage = seriesImage,
+                onClick = { onClickStampRally(change) },
+                onClickSeries = onClickSeries,
+                onClickMerch = onClickMerch,
+                onClickImage = { onClickImage(change, it) },
+            )
+        }
+    }
+
+    item(key = listOf("rallyDivider", date), contentType = "divider") {
+        HorizontalDivider(thickness = 2.dp)
     }
 }

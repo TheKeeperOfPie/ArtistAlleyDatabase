@@ -134,6 +134,14 @@ sealed interface AlleyDestination : NavKey {
     @Serializable
     data class StampRallyMap(val year: DataYear, val id: String) : AlleyDestination
 
+    // TODO: Split by year
+    @Serializable
+    data class SeriesChangelog(val series: String) : AlleyDestination
+
+    // TODO: Split by year
+    @Serializable
+    data class MerchChangelog(val merch: String) : AlleyDestination
+
     fun toEncodedRoute() = when (this) {
         AboutLibraries -> "libraries"
         is ArtistDetails -> "artist/${year.serializedName}/$id"
@@ -151,12 +159,14 @@ sealed interface AlleyDestination : NavKey {
         }
         is Import -> "import/${data}"
         is Merch -> "merch/${year.serializedNameOrAll}/${Uri.encode(merch)}"
+        is MerchChangelog -> "changelog/merch/${Uri.encode(merch)}"
         is MerchMap -> "merch/map/${year.serializedNameOrAll}/${Uri.encode(merch)}"
         is Series -> "series/${year.serializedNameOrAll}/${Uri.encode(series)}"
+        is SeriesChangelog -> "changelog/series/${Uri.encode(series)}"
         is SeriesMap -> "series/map/${year.serializedNameOrAll}/${Uri.encode(series)}"
         Settings -> "settings"
         is StampRallies -> "stamp_rallies/${year.serializedNameOrAll}/${Uri.encode(series)}"
-        is StampRallyChangelog -> "stampRallyChangelog"
+        is StampRallyChangelog -> "changelog/rallies"
         is StampRallyDetails -> "stamp_rally/${year.serializedName}/$id"
         is StampRallyMap -> "stamp_rally/map/${year.serializedName}/$id"
     }
@@ -191,7 +201,14 @@ sealed interface AlleyDestination : NavKey {
                             serializedBooths = parts[2]
                         )
                     } else null
-                    "changelog" -> ArtistChangelog
+                    "changelog" -> {
+                        when (parts.getOrNull(1)) {
+                            "series" -> SeriesChangelog(Uri.decode(parts[2]))
+                            "merch" -> MerchChangelog(Uri.decode(parts[2]))
+                            "rallies" -> StampRallyChangelog
+                            else -> ArtistChangelog
+                        }
+                    }
                     "export" -> Export
                     "images" -> {
                         val dataYear = parts.getOrNull(1).toDataYearOrNull() ?: return null

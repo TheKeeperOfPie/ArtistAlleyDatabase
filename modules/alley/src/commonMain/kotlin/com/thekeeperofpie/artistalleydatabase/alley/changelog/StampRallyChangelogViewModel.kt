@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.changelog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.datetime.LocalDate
 
 @AssistedInject
 class StampRallyChangelogViewModel(
@@ -30,15 +28,7 @@ class StampRallyChangelogViewModel(
         flowFromSuspend { stampRallyEntryDao.getAllEntriesForChangelog(dataYear) }
             .mapLatest { allRallies ->
                 stampRallyEntryDao.getChangelog(dataYear)
-                    .mapNotNull {
-                        val rally = allRallies[it.stampRallyId] ?: return@mapNotNull null
-                        StampRallyChangelogEntry(
-                            stampRallyId = it.stampRallyId,
-                            date = LocalDate.parse(it.date),
-                            images = AlleyImageUtils.getRallyImages(dataYear, it.images.orEmpty()),
-                            rally = rally,
-                        )
-                    }
+                    .mapNotNull { it.toChangelogEntry(dataYear, allRallies) }
             }
             .mapLatest {
                 it.groupBy { it.date }
@@ -48,8 +38,8 @@ class StampRallyChangelogViewModel(
                         val (added, updated) = it.second.partition { it.images.isEmpty() }
                         StampRallyChangelogScreen.DayChange(
                             date = it.first,
-                            added = added.sortedBy { it.rally.fandom },
-                            updated = updated.sortedBy { it.rally.fandom },
+                            added = added.sortRalliesForChangelog(),
+                            updated = updated.sortRalliesForChangelog(),
                         )
                     }
             }

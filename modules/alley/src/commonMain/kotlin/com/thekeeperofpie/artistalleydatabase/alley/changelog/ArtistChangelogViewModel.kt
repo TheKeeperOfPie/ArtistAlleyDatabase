@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
@@ -20,6 +20,7 @@ class ArtistChangelogViewModel(
     artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
     val seriesEntryCache: SeriesEntryCache,
+    val settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -43,8 +44,4 @@ class ArtistChangelogViewModel(
         .flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    @AssistedFactory
-    interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ArtistChangelogViewModel
-    }
 }
