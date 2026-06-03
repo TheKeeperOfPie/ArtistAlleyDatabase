@@ -13,6 +13,9 @@ insertSeries:
 INSERT OR REPLACE INTO seriesEntry
 VALUES ?;
 
+getMerch:
+SELECT * FROM merchEntry;
+
 insertArtistConnection:
 INSERT OR REPLACE INTO stampRallyArtistConnection
 VALUES ?;
@@ -27,6 +30,14 @@ VALUES ?;
 
 insertStampRallyEntryAnimeExpo2026Changelog:
 INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026Changelog
+VALUES ?;
+
+insertSeriesChangelog:
+INSERT OR REPLACE INTO seriesEntryChangelog
+VALUES ?;
+
+insertMerchChangelog:
+INSERT OR REPLACE INTO merchEntryChangelog
 VALUES ?;
 
 updateArtistEntryAnimeExpo2023Images:

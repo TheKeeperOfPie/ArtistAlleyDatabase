@@ -380,6 +380,8 @@ class SeriesEntryDao(
 
     suspend fun getSeriesTitles() = seriesDao().getSeriesTitles().awaitAsList()
 
+    suspend fun getSeriesChangelog() = seriesDao().getSeriesChangelog().awaitAsList()
+
     private fun getFilteredSourcesStatement(
         seriesFilterParams: SeriesSortFilterController.FilterParams,
         sourceKey: String = "source",

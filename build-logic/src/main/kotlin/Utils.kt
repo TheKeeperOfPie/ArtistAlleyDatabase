@@ -7,7 +7,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo202
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
@@ -301,8 +303,14 @@ internal object Utils {
                     override fun encode(value: TmdbType) = value.name
                 },
             ),
+            seriesEntryChangelogAdapter = SeriesEntryChangelog.Adapter(
+                seriesIdsAdapter = setStringAdapter,
+            ),
             stampRallySeriesConnectionAdapter = StampRallySeriesConnection.Adapter(
                 dataYearAdapter = dataYearAdapter,
+            ),
+            merchEntryChangelogAdapter = MerchEntryChangelog.Adapter(
+                merchIdsAdapter = setStringAdapter,
             ),
         )
         return driver to database

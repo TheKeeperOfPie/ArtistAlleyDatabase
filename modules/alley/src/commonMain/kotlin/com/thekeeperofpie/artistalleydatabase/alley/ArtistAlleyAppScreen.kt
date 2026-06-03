@@ -29,6 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogScreen
@@ -175,10 +177,10 @@ object ArtistAlleyAppScreen {
             }
         val onOpenExport = { navStack.navigate(AlleyDestination.Export) }
         val onOpenArtistChangelog = { navStack.navigate(AlleyDestination.ArtistChangelog) }
-        val onOpenSeriesChangelog: (String) -> Unit =
-            { navStack.navigate(AlleyDestination.SeriesChangelog(it)) }
-        val onOpenMerchChangelog: (String) -> Unit =
-            { navStack.navigate(AlleyDestination.MerchChangelog(it)) }
+        val onOpenSeriesTagChangelog: (String) -> Unit =
+            { navStack.navigate(AlleyDestination.SeriesTagChangelog(it)) }
+        val onOpenMerchTagChangelog: (String) -> Unit =
+            { navStack.navigate(AlleyDestination.MerchTagChangelog(it)) }
         val onOpenStampRallyChangelog = { navStack.navigate(AlleyDestination.StampRallyChangelog) }
 
         val onClickChangelogArtist: (DataYear, ArtistEntryAnimeExpo2026Changelog) -> Unit =
@@ -263,6 +265,12 @@ object ArtistAlleyAppScreen {
                     onOpenExport = onOpenExport,
                     onOpenArtistChangelog = onOpenArtistChangelog,
                     onOpenStampRallyChangelog = onOpenStampRallyChangelog,
+                    onOpenSeriesChangelog = {
+                        navStack.navigate(AlleyDestination.SeriesChangelog(it))
+                    },
+                    onOpenMerchChangelog = {
+                        navStack.navigate(AlleyDestination.MerchChangelog(it))
+                    },
                     onOpenSettings = onOpenSettings,
                 )
             }
@@ -519,12 +527,20 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = { onOpenSeriesChangelog(route.series) },
+                    onOpenChangelog = { onOpenSeriesTagChangelog(route.series) },
                     onOpenSettings = onOpenSettings,
                 )
             }
 
             sharedElementEntry<AlleyDestination.SeriesChangelog> { route ->
+                SeriesChangelogScreen(
+                    graph = graph,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(route.year, it) },
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.SeriesTagChangelog> { route ->
                 // TODO: Split by year
                 val year = DataYear.ANIME_EXPO_2026
                 TagChangelogScreen(
@@ -562,12 +578,20 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
-                    onOpenChangelog = { onOpenMerchChangelog(route.merch) },
+                    onOpenChangelog = { onOpenMerchTagChangelog(route.merch) },
                     onOpenSettings = onOpenSettings,
                 )
             }
 
             sharedElementEntry<AlleyDestination.MerchChangelog> { route ->
+                MerchChangelogScreen(
+                    graph = graph,
+                    onClickBack = navStack::onBack,
+                    onClickMerch = { onOpenMerch(route.year, it) },
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.MerchTagChangelog> { route ->
                 // TODO: Split by year
                 val year = DataYear.ANIME_EXPO_2026
                 TagChangelogScreen(

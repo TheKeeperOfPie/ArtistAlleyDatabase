@@ -211,6 +211,10 @@ object ColumnAdapters {
         },
     )
 
+    val seriesEntryChangelogAdapter = SeriesEntryChangelog.Adapter(
+        seriesIdsAdapter = setStringAdapter,
+    )
+
     val stampRallySeriesConnectionAdapter = StampRallySeriesConnection.Adapter(
         dataYearAdapter = dataYearAdapter,
     )
@@ -218,5 +222,9 @@ object ColumnAdapters {
     val stampRallyEntryAnimeExpo2026ChangelogAdapter = StampRallyEntryAnimeExpo2026Changelog.Adapter(
         stampRallyIdAdapter = uuidAdapter,
         imagesAdapter = listDatabaseImageAdapter,
+    )
+
+    val merchEntryChangelogAdapter = MerchEntryChangelog.Adapter(
+        merchIdsAdapter = setStringAdapter,
     )
 }

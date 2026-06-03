@@ -9,4 +9,6 @@ internal data class AlleyChangelog(
     val artistLastEditTimes: Map<DataYear, Map<Uuid, Instant>>,
     val rallyDiffs: List<StampRallyDiff>,
     val rallyLastEditTimes: Map<DataYear, Map<Uuid, Instant>>,
+    val seriesDiffs: List<SeriesDiff>,
+    val merchDiffs: List<MerchDiff>,
 )

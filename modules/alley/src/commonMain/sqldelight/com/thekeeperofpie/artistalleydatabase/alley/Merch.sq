@@ -106,3 +106,6 @@ SELECT artistEntryAnimeNyc2025.booth FROM artistMerchConnection
 INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2025.id)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 512) != 0;
+
+getMerchChangelog:
+SELECT * FROM merchEntryChangelog;

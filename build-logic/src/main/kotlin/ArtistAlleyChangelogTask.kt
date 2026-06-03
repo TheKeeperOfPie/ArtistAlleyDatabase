@@ -17,6 +17,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -40,6 +41,14 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     @get:Inject
     abstract val layout: ProjectLayout
 
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val legacySeriesFile: RegularFileProperty
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val legacyMerchFile: RegularFileProperty
+
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val snapshotsDirectory: DirectoryProperty
@@ -55,6 +64,8 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     private val filteredTableNames = listOf(
         "artistEntryAnimeExpo2026",
         "stampRallyEntryAnimeExpo2026",
+        "seriesEntry",
+        "merchEntry",
     ).map { "\"$it\"" }.toSet()
 
     @TaskAction
@@ -68,6 +79,10 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     withContext(it.asCoroutineDispatcher()) {
                         val artistLastEditTimes = mutableMapOf<Uuid, Instant>()
                         val rallyLastEditTimes = mutableMapOf<Uuid, Instant>()
+
+                        val legacySeriesIds = loadLegacySeriesIds()
+                        val legacyMerchIds = loadLegacyMerchIds()
+
                         val diffs = trackStage("ArtistChangelogDiffs") {
                             snapshotsDirectory.get().asFileTree.files
                                 .sortedBy {
@@ -114,11 +129,21 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                         val rallies =
                                             mutationQueries.getAllStampRallyEntryAnimeExpo2026()
                                                 .executeAsList()
+                                        val seriesIds = mutationQueries.getSeries()
+                                            .executeAsList()
+                                            .map { it.id }
+                                            .toSet()
+                                        val merchIds = mutationQueries.getMerch()
+                                            .executeAsList()
+                                            .map { it.name }
+                                            .toSet()
                                         SnapshotData(
                                             timestamp = instant,
                                             date = date,
                                             artists = artists,
                                             rallies = rallies,
+                                            seriesIds = seriesIds,
+                                            merchIds = merchIds,
                                         )
                                     }
                                 }
@@ -129,7 +154,12 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                     }
                                 }
                                 .filterNotNull()
-                                .fold(Diffs()) { before, current ->
+                                .fold(
+                                    Diffs(
+                                        latestSeriesIds = legacySeriesIds,
+                                        latestMerchIds = legacyMerchIds,
+                                    )
+                                ) { before, current ->
                                     val artistDiffs = diffArtists(
                                         lastEditTimes = artistLastEditTimes,
                                         before = before,
@@ -140,22 +170,39 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                         before = before,
                                         current = current,
                                     )
+                                    val seriesDiff = diffSeries(
+                                        before = before,
+                                        current = current,
+                                    )
+                                    val merchDiff = diffMerch(
+                                        before = before,
+                                        current = current,
+                                    )
+
                                     before.copy(
                                         artistDiffs = before.artistDiffs + artistDiffs,
                                         rallyDiffs = before.rallyDiffs + rallyDiffs,
+                                        seriesDiffs = before.seriesDiffs + listOfNotNull(seriesDiff),
+                                        merchDiffs = before.merchDiffs + listOfNotNull(merchDiff),
                                         latestArtists = current.artists,
                                         latestRallies = current.rallies,
+                                        latestSeriesIds = before.latestSeriesIds + current.seriesIds,
+                                        latestMerchIds = before.latestMerchIds + current.merchIds,
                                     )
                                 }
                         }
 
                         outputFile.get().asFile.outputStream().use {
+                            // TODO: Filter to values that still exist in the latest snapshot, to
+                            //  ignore deleted entries
                             Json.encodeToStream(
                                 value = AlleyChangelog(
                                     artistDiffs = diffs.artistDiffs,
                                     artistLastEditTimes = mapOf(DataYear.ANIME_EXPO_2026 to artistLastEditTimes),
                                     rallyDiffs = diffs.rallyDiffs,
                                     rallyLastEditTimes = mapOf(DataYear.ANIME_EXPO_2026 to rallyLastEditTimes),
+                                    seriesDiffs = diffs.seriesDiffs,
+                                    merchDiffs = diffs.merchDiffs,
                                 ),
                                 stream = it,
                             )
@@ -163,6 +210,33 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     }
                 }
         }
+    }
+
+    private fun loadLegacySeriesIds(): Set<String> {
+        val seriesDatabaseFile =
+            temporaryDir.resolve("database-series-legacy.sqlite")
+                .apply(::verifyDelete)
+        val seriesLegacySql = legacySeriesFile.get().asFile
+        // First, create and immediately close the databases to initialize the schemas
+        Utils.createEditDatabase(seriesDatabaseFile).first.close()
+        if (!Utils.readSqlFile(seriesDatabaseFile, seriesLegacySql)) {
+            throw IllegalStateException("Failed to read ${seriesLegacySql.absolutePath}")
+        }
+        val seriesDatabase = Utils.createEditDatabase(seriesDatabaseFile).second
+        return seriesDatabase.mutationQueries.getSeries().executeAsList().map { it.id }.toSet()
+    }
+
+    private fun loadLegacyMerchIds(): Set<String> {
+        val merchDatabaseFile = temporaryDir.resolve("database-merch-legacy.sqlite")
+            .apply(::verifyDelete)
+        val merchLegacySql = legacyMerchFile.get().asFile
+        // First, create and immediately close the databases to initialize the schemas
+        Utils.createEditDatabase(merchDatabaseFile).first.close()
+        if (!Utils.readSqlFile(merchDatabaseFile, merchLegacySql)) {
+            throw IllegalStateException("Failed to read ${merchLegacySql.absolutePath}")
+        }
+        val merchDatabase = Utils.createEditDatabase(merchDatabaseFile).second
+        return merchDatabase.mutationQueries.getMerch().executeAsList().map { it.name } .toSet()
     }
 
     private fun filterSnapshot(source: File, target: File) {
@@ -276,17 +350,35 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             }
     }
 
+    private fun diffSeries(before: Diffs, current: SnapshotData): SeriesDiff? {
+        val diff = current.seriesIds - before.latestSeriesIds
+        if (diff.isEmpty()) return null
+        return SeriesDiff(date = current.date, diff)
+    }
+
+    private fun diffMerch(before: Diffs, current: SnapshotData): MerchDiff? {
+        val diff = current.merchIds - before.latestMerchIds
+        if (diff.isEmpty()) return null
+        return MerchDiff(date = current.date, diff)
+    }
+
     private data class SnapshotData(
         val timestamp: Instant,
         val date: LocalDate,
         val artists: List<ArtistEntryAnimeExpo2026>,
         val rallies: List<StampRallyEntryAnimeExpo2026>,
+        val seriesIds: Set<String>,
+        val merchIds: Set<String>,
     )
 
     private data class Diffs(
         val artistDiffs: List<ArtistDiff> = emptyList(),
         val rallyDiffs: List<StampRallyDiff> = emptyList(),
+        val seriesDiffs: List<SeriesDiff> = emptyList(),
+        val merchDiffs: List<MerchDiff> = emptyList(),
         val latestArtists: List<ArtistEntryAnimeExpo2026> = emptyList(),
         val latestRallies: List<StampRallyEntryAnimeExpo2026> = emptyList(),
+        val latestSeriesIds: Set<String> = emptySet(),
+        val latestMerchIds: Set<String> = emptySet(),
     )
 }

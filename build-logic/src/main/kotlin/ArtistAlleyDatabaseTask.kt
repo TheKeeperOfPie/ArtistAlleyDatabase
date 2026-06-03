@@ -6,6 +6,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistSeriesConnection
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
@@ -162,7 +164,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             }
 
                             val alleyChangelog =
-                                trackStage("ArtistChangelog") { addChangelog(database) }
+                                trackStage("Changelog") { addChangelog(database) }
 
                             trackStage("LegacyArtistImages") {
                                 fixLegacyArtistImages(
@@ -933,6 +935,28 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         stampRallyId = it.stampRallyId,
                         date = it.date.toString(),
                         images = it.images,
+                    )
+                )
+            }
+        }
+
+        database.transaction {
+            alleyChangelog.seriesDiffs.forEach {
+                database.mutationQueries.insertSeriesChangelog(
+                    SeriesEntryChangelog(
+                        date = it.date.toString(),
+                        seriesIds = it.seriesIds,
+                    )
+                )
+            }
+        }
+
+        database.transaction {
+            alleyChangelog.merchDiffs.forEach {
+                database.mutationQueries.insertMerchChangelog(
+                    MerchEntryChangelog(
+                        date = it.date.toString(),
+                        merchIds = it.merchIds,
                     )
                 )
             }

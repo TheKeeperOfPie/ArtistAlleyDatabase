@@ -62,6 +62,8 @@ object AlleyRootScreen {
         onOpenExport: () -> Unit,
         onOpenArtistChangelog: () -> Unit,
         onOpenStampRallyChangelog: () -> Unit,
+        onOpenSeriesChangelog: (DataYear) -> Unit,
+        onOpenMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) {
         val settings = remember(graph) { graph.settings }
@@ -111,7 +113,8 @@ object AlleyRootScreen {
                             onSeriesClick = onOpenSeries,
                             onMerchClick = onOpenMerch,
                             onOpenExport = onOpenExport,
-                            onOpenChangelog = onOpenArtistChangelog,
+                            onOpenSeriesChangelog = onOpenSeriesChangelog,
+                            onOpenMerchChangelog = onOpenMerchChangelog,
                             onOpenSettings = onOpenSettings,
                         )
                     AlleyRootDestination.FAVORITES ->

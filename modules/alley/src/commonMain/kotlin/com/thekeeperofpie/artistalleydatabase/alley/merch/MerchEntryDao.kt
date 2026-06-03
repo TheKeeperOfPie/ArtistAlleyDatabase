@@ -141,15 +141,7 @@ class MerchEntryDao(
     ): PagingSource<Int, MerchWithUserData> {
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
-
-        val yearFilter = when (year) {
-            DataYear.ANIME_EXPO_2023 -> ""
-            else -> {
-                val flag = TagYearFlag.getFlag(year, false)
-                "(yearFlags & $flag) != 0 AND "
-            }
-        }
-        val likeAndQuery = yearFilter + DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)
+        val likeAndQuery = DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)
 
         val matchQuery = "'{ name notes } : $matchOrQuery'"
 
@@ -158,8 +150,21 @@ class MerchEntryDao(
             ON uuidAsKey = merchUserEntry.merchId
         """.trimIndent()
 
-        val favoriteStatement = "WHERE merchUserEntry.favorite = 1"
-            .takeIf { favoriteOnly }.orEmpty()
+        val andClauses = buildList {
+            if (favoriteOnly) {
+                add("WHERE merchUserEntry.favorite = 1")
+            }
+
+            when (year) {
+                DataYear.ANIME_EXPO_2023 -> ""
+                else -> {
+                    val flag = TagYearFlag.getFlag(year, false)
+                    add("(yearFlags & $flag) != 0")
+                }
+            }
+        }
+        val andStatement = andClauses.takeIf { it.isNotEmpty() }
+            ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
 
         val countStatement = DaoUtils.buildSearchCountStatement(
             tableName = "merchEntry",
@@ -169,7 +174,7 @@ class MerchEntryDao(
             likeStatement = likeAndQuery,
             additionalSelectStatement = ", merchEntry_fts.uuid as uuidAsKey",
             additionalJoinStatement = joinStatement,
-            andStatement = favoriteStatement,
+            andStatement = andStatement,
         )
         val statement = DaoUtils.buildSearchStatement(
             tableName = "merchEntry",
@@ -181,7 +186,7 @@ class MerchEntryDao(
             likeStatement = likeAndQuery,
             additionalSelectStatement = ", merchEntry_fts.uuid as uuidAsKey",
             additionalJoinStatement = joinStatement,
-            andStatement = favoriteStatement,
+            andStatement = andStatement,
         )
 
         return DaoUtils.queryPagingSource(
@@ -195,4 +200,6 @@ class MerchEntryDao(
     }
 
     suspend fun getMerch() = merchDao().getMerch().awaitAsList()
+
+    suspend fun getMerchChangelog() = merchDao().getMerchChangelog().awaitAsList()
 }

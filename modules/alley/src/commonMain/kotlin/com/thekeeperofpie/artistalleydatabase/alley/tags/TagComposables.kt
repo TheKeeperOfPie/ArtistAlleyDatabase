@@ -142,6 +142,7 @@ fun SeriesRow(
                     .sharedElement("seriesImage", series?.id)
             )
 
+            // TODO: Show on other series image usages
             if (series?.tmdbId != null && series.tmdbType != null) {
                 Icon(
                     imageVector = Logo.TMDB.icon,
@@ -326,6 +327,54 @@ private fun FavoriteIconButton(
     }
 }
 
+@Composable
+fun SmallSeriesCard(
+    seriesId: String,
+    seriesTitle: String,
+    image: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    faded: Boolean = false,
+) {
+    val imageState = rememberCoilImageState(image)
+    ThemeAwareElevatedCard(
+        onClick = onClick,
+        modifier = modifier
+            .conditionally(faded, Modifier.fadingEdgeBottom(firstStop = 0.2f))
+    ) {
+        val colors = imageState.colors
+        val containerColor = colors.containerColor
+            .takeOrElse { MaterialTheme.colorScheme.surfaceVariant }
+        Column(modifier = Modifier.background(containerColor)) {
+            CoilImage(
+                state = imageState,
+                model = imageState.request()
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.Crop,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(0.66f)
+                    .sharedElement("seriesImage", seriesId)
+            )
+
+            val textColor = colors.textColor
+                .takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
+            Text(
+                text = seriesTitle,
+                style = MaterialTheme.typography.bodyMediumEmphasized,
+                color = textColor,
+                maxLines = 2,
+                minLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+    }
+}
+
 fun LazyGridScope.series(
     key: String,
     series: List<SeriesWithUserData>,
@@ -347,47 +396,16 @@ fun LazyGridScope.series(
     ) {
         val expanded = expanded() || !canExpand
         val series = series[if (expanded) it else randomizedIndexes[it]]
-        val imageState = rememberCoilImageState(image(series))
         val faded = !expanded && it >= columnCount
-        ThemeAwareElevatedCard(
+        val languageOptionMedia = LocalLanguageOptionMedia.current
+        SmallSeriesCard(
+            seriesId = series.series.id,
+            seriesTitle = series.series.name(languageOptionMedia),
+            image = image(series),
+            faded = faded,
             onClick = { onClick(series) },
-            modifier = Modifier
-                .conditionally(faded, Modifier.fadingEdgeBottom(firstStop = 0.2f))
-                .animateItem()
-        ) {
-            val colors = imageState.colors
-            val containerColor = colors.containerColor
-                .takeOrElse { MaterialTheme.colorScheme.surfaceVariant }
-            Column(modifier = Modifier.background(containerColor)) {
-                CoilImage(
-                    state = imageState,
-                    model = imageState.request()
-                        .crossfade(true)
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(0.66f)
-                        .sharedElement("seriesImage", series.series.id)
-                )
-
-                val languageOptionMedia = LocalLanguageOptionMedia.current
-                val name = series.series.name(languageOptionMedia)
-                val textColor = colors.textColor
-                    .takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.bodyMediumEmphasized,
-                    color = textColor,
-                    maxLines = 2,
-                    minLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
-        }
+            modifier = Modifier.animateItem()
+        )
     }
 
     if (!expanded() && canExpand) {

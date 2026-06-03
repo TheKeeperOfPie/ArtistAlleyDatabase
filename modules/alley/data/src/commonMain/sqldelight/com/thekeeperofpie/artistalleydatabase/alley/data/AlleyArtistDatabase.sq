@@ -462,6 +462,13 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
 );
 
 CREATE TABLE
+    IF NOT EXISTS seriesEntryChangelog (
+        date TEXT NOT NULL,
+        seriesIds TEXT AS Set<String>,
+        PRIMARY KEY (date)
+    );
+
+CREATE TABLE
     IF NOT EXISTS merchEntry (
         name TEXT NOT NULL,
         uuid TEXT NOT NULL,
@@ -479,3 +486,10 @@ CREATE VIRTUAL TABLE IF NOT EXISTS merchEntry_fts USING FTS5 (
     content=merchEntry,
     tokenize="unicode61 remove_diacritics 2"
 );
+
+CREATE TABLE
+    IF NOT EXISTS merchEntryChangelog (
+        date TEXT NOT NULL,
+        merchIds TEXT AS Set<String>,
+        PRIMARY KEY (date)
+    );

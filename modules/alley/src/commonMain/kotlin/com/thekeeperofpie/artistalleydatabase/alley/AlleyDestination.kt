@@ -134,13 +134,19 @@ sealed interface AlleyDestination : NavKey {
     @Serializable
     data class StampRallyMap(val year: DataYear, val id: String) : AlleyDestination
 
-    // TODO: Split by year
     @Serializable
-    data class SeriesChangelog(val series: String) : AlleyDestination
+    data class SeriesChangelog(val year: DataYear) : AlleyDestination
 
     // TODO: Split by year
     @Serializable
-    data class MerchChangelog(val merch: String) : AlleyDestination
+    data class SeriesTagChangelog(val series: String) : AlleyDestination
+
+    @Serializable
+    data class MerchChangelog(val year: DataYear) : AlleyDestination
+
+    // TODO: Split by year
+    @Serializable
+    data class MerchTagChangelog(val merch: String) : AlleyDestination
 
     fun toEncodedRoute() = when (this) {
         AboutLibraries -> "libraries"
@@ -159,10 +165,12 @@ sealed interface AlleyDestination : NavKey {
         }
         is Import -> "import/${data}"
         is Merch -> "merch/${year.serializedNameOrAll}/${Uri.encode(merch)}"
-        is MerchChangelog -> "changelog/merch/${Uri.encode(merch)}"
+        is MerchChangelog -> "changelog/merch"
+        is MerchTagChangelog -> "changelog/merch/${Uri.encode(merch)}"
         is MerchMap -> "merch/map/${year.serializedNameOrAll}/${Uri.encode(merch)}"
         is Series -> "series/${year.serializedNameOrAll}/${Uri.encode(series)}"
-        is SeriesChangelog -> "changelog/series/${Uri.encode(series)}"
+        is SeriesChangelog -> "changelog/series"
+        is SeriesTagChangelog -> "changelog/series/${Uri.encode(series)}"
         is SeriesMap -> "series/map/${year.serializedNameOrAll}/${Uri.encode(series)}"
         Settings -> "settings"
         is StampRallies -> "stamp_rallies/${year.serializedNameOrAll}/${Uri.encode(series)}"
@@ -203,8 +211,22 @@ sealed interface AlleyDestination : NavKey {
                     } else null
                     "changelog" -> {
                         when (parts.getOrNull(1)) {
-                            "series" -> SeriesChangelog(Uri.decode(parts[2]))
-                            "merch" -> MerchChangelog(Uri.decode(parts[2]))
+                            "series" -> {
+                                val seriesId = parts.getOrNull(2)
+                                if (seriesId == null) {
+                                    SeriesChangelog(DataYear.LATEST)
+                                } else {
+                                    SeriesTagChangelog(Uri.decode(seriesId))
+                                }
+                            }
+                            "merch" -> {
+                                val merchId = parts.getOrNull(2)
+                                if (merchId == null) {
+                                    MerchChangelog(DataYear.LATEST)
+                                } else {
+                                    MerchTagChangelog(Uri.decode(merchId))
+                                }
+                            }
                             "rallies" -> StampRallyChangelog
                             else -> ArtistChangelog
                         }

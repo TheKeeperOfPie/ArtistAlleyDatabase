@@ -98,7 +98,8 @@ object BrowseScreen {
         onSeriesClick: (DataYear, String) -> Unit,
         onMerchClick: (DataYear, String) -> Unit,
         onOpenExport: () -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenSeriesChangelog: (DataYear) -> Unit,
+        onOpenMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         tagsViewModel: TagsViewModel = viewModel {
             graph.tagsViewModelFactory.create(createSavedStateHandle())
@@ -202,7 +203,9 @@ object BrowseScreen {
                                         )
                                     },
                                     onOpenExport = onOpenExport,
-                                    onOpenChangelog = onOpenChangelog,
+                                    onOpenChangelog = {
+                                        onOpenSeriesChangelog(dataYearHeaderState.year)
+                                    },
                                     onOpenSettings = onOpenSettings,
                                     scrollStateSaver = scrollStateSaver,
                                     additionalHeader = {
@@ -250,7 +253,9 @@ object BrowseScreen {
                                     )
                                 },
                                 onOpenExport = onOpenExport,
-                                onOpenChangelog = onOpenChangelog,
+                                onOpenChangelog = {
+                                    onOpenMerchChangelog(dataYearHeaderState.year)
+                                },
                                 onOpenSettings = onOpenSettings,
                                 scrollStateSaver = scrollStateSaver,
                             )
