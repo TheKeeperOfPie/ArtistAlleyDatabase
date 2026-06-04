@@ -34,7 +34,6 @@ import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -49,10 +48,10 @@ internal object ArtistChangelogScreen {
         graph: ArtistAlleyGraph,
         route: AlleyDestination.ArtistChangelog,
         onClickBack: () -> Unit,
-        onClickArtist: (ArtistEntryAnimeExpo2026Changelog) -> Unit,
+        onClickArtist: (ArtistChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
-        onClickImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
+        onClickImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
         viewModel: ArtistChangelogViewModel = viewModel {
             graph.artistChangelogViewModelFactory.create(createSavedStateHandle())
         },
@@ -80,10 +79,10 @@ internal object ArtistChangelogScreen {
         catalogsOnly: () -> Boolean,
         onChangeCatalogsOnly: (Boolean) -> Unit,
         onClickBack: () -> Unit,
-        onClickArtist: (ArtistEntryAnimeExpo2026Changelog) -> Unit,
+        onClickArtist: (ArtistChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
-        onClickImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
+        onClickImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
     ) {
         Scaffold(
             topBar = {
@@ -155,7 +154,7 @@ internal object ArtistChangelogScreen {
 
     data class DayChange(
         val date: LocalDate,
-        val added: List<ArtistEntryAnimeExpo2026Changelog>,
-        val updated: List<ArtistEntryAnimeExpo2026Changelog>,
+        val added: List<ArtistChangelogEntry>,
+        val updated: List<ArtistChangelogEntry>,
     )
 }

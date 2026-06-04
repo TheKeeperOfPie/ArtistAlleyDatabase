@@ -56,11 +56,8 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
-import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
-import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
@@ -72,7 +69,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLeft
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowRight
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
@@ -191,7 +187,7 @@ fun ChangelogImages(
 
 @Composable
 fun ChangelogArtistRow(
-    artist: ArtistEntryAnimeExpo2026Changelog,
+    artist: ArtistChangelogEntry,
     isLast: Boolean,
     seriesTitles: () -> Map<String, GetSeriesTitles>,
     onClick: () -> Unit,
@@ -233,55 +229,38 @@ fun ChangelogArtistRow(
         }
 
         val images = artist.images
-        if (!images.isNullOrEmpty()) {
-            // TODO: Split by DataYear
-            val catalogImages = remember(artist, images) {
-                if (artist.isTempImages) {
-                    AlleyImageUtils.getTempImages(images)
-                } else {
-                    AlleyImageUtils.getArtistImages(
-                        DataYear.ANIME_EXPO_2026,
-                        images
-                    )
-                }
-            }
+        if (images.isNotEmpty()) {
             ChangelogImages(
                 sharedElementId = artist.artistId,
-                images = catalogImages,
+                images = images,
                 onClickImage = onClickImage
             )
         }
 
-        val series = TagUtils.combineForDisplay(
-            inferred = artist.seriesInferred.orEmpty(),
-            confirmed = artist.seriesConfirmed.orEmpty(),
-            randomSeed = LocalStableRandomSeed.current,
-        )
-        val merch = TagUtils.combineForDisplay(
-            inferred = artist.merchInferred.orEmpty(),
-            confirmed = artist.merchConfirmed.orEmpty(),
-            randomSeed = LocalStableRandomSeed.current,
-        )
+        val hasSeries = artist.seriesHighlighted.isNotEmpty() || artist.seriesRemaining.isNotEmpty()
+        val hasMerch = artist.merchHighlighted.isNotEmpty() || artist.merchRemaining.isNotEmpty()
 
-        if (series.isNotEmpty() || merch.isNotEmpty()) {
+        if (hasSeries || hasMerch) {
             Spacer(Modifier.height(16.dp))
         }
 
         val seriesTitles = seriesTitles()
-        if (series.isNotEmpty()) {
+        if (hasSeries) {
             SeriesRow(
-                series = series.take(TagUtils.TAGS_TO_SHOW).mapNotNull { seriesTitles[it] },
-                hasMoreSeries = series.size > TagUtils.TAGS_TO_SHOW,
+                seriesHighlighted = artist.seriesHighlighted.mapNotNull { seriesTitles[it] },
+                seriesRemaining = artist.seriesRemaining.mapNotNull { seriesTitles[it] },
+                hasMoreSeries = (artist.seriesHighlighted.size + artist.seriesRemaining.size) > TagUtils.TAGS_TO_SHOW,
                 onSeriesClick = onClickSeries,
                 onMoreClick = onClick,
                 modifier = Modifier.padding(start = 32.dp)
             )
         }
 
-        if (merch.isNotEmpty()) {
+        if (hasMerch) {
             MerchRow(
-                merch = merch.take(TagUtils.TAGS_TO_SHOW),
-                hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
+                merchHighlighted = artist.merchHighlighted,
+                merchRemaining = artist.merchRemaining,
+                hasMoreMerch = (artist.merchHighlighted.size + artist.merchRemaining.size) > TagUtils.TAGS_TO_SHOW,
                 onMerchClick = onClickMerch,
                 onMoreClick = onClick,
                 modifier = Modifier.padding(start = 48.dp)
@@ -413,13 +392,13 @@ fun ChangelogDayHeader(date: LocalDate) {
 
 fun LazyListScope.artistChangelogDay(
     date: LocalDate,
-    added: List<ArtistEntryAnimeExpo2026Changelog>,
-    updated: List<ArtistEntryAnimeExpo2026Changelog>,
+    added: List<ArtistChangelogEntry>,
+    updated: List<ArtistChangelogEntry>,
     seriesTitles: () -> Map<String, GetSeriesTitles>,
-    onClickArtist: (ArtistEntryAnimeExpo2026Changelog) -> Unit,
+    onClickArtist: (ArtistChangelogEntry) -> Unit,
     onClickSeries: (String) -> Unit,
     onClickMerch: (String) -> Unit,
-    onClickImage: (ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit,
+    onClickImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
 ) {
     if (added.isNotEmpty()) {
         item(key = listOf("artistHeaderAdded", date), contentType = "headerAdded") {

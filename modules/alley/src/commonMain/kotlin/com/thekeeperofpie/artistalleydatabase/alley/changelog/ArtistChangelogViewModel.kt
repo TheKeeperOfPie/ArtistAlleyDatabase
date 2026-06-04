@@ -6,14 +6,17 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.datetime.LocalDate
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 @AssistedInject
 class ArtistChangelogViewModel(
@@ -26,18 +29,23 @@ class ArtistChangelogViewModel(
 
     val catalogsOnly = savedStateHandle.getMutableStateFlow("catalogsOnly", false)
 
+    private val randomSeed =
+        savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
+
     internal val changes = catalogsOnly.mapLatest { artistEntryDao.getChangelog(it) }
         .mapLatest {
-            it.groupBy { LocalDate.parse(it.date) }
+            // TODO: Split by year
+            it.map { it.toChangelogEntry(DataYear.ANIME_EXPO_2026, randomSeed, false) }
+                .groupBy { it.date }
                 .toList()
                 .sortedByDescending { it.first }
                 .map {
                     val (added, updated) = it.second.partition { it.isBrandNew }
                     ArtistChangelogScreen.DayChange(
                         date = it.first,
-                        added = added.sortedBy { it.booth }.sortedBy { it.images.isNullOrEmpty() },
+                        added = added.sortedBy { it.booth }.sortedBy { it.images.isEmpty() },
                         updated = updated.sortedBy { it.booth }
-                            .sortedBy { it.images.isNullOrEmpty() },
+                            .sortedBy { it.images.isEmpty() },
                     )
                 }
         }

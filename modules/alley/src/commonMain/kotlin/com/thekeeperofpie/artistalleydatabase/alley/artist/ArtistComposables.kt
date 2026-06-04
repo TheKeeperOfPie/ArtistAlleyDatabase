@@ -348,7 +348,7 @@ fun ArtistProfileImage(
     }
 }
 
-private val chipHeightModifier = Modifier.height(24.dp)
+private val ChipHeightModifier = Modifier.height(24.dp)
 
 @Composable
 internal fun SeriesRow(
@@ -357,8 +357,25 @@ internal fun SeriesRow(
     hasMoreSeries: Boolean,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
+) = SeriesRow(
+    seriesHighlighted = emptyList(),
+    seriesRemaining = series,
+    onSeriesClick = onSeriesClick,
+    hasMoreSeries = hasMoreSeries,
+    onMoreClick = onMoreClick,
+    modifier = modifier,
+)
+
+@Composable
+internal fun SeriesRow(
+    seriesHighlighted: List<GetSeriesTitles>,
+    seriesRemaining: List<GetSeriesTitles>,
+    onSeriesClick: (String) -> Unit,
+    hasMoreSeries: Boolean,
+    onMoreClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    if (series.isEmpty()) return
+    if (seriesHighlighted.isEmpty() && seriesRemaining.isEmpty()) return
     val languageOption = LocalLanguageOptionMedia.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -373,26 +390,41 @@ internal fun SeriesRow(
             )
             .then(modifier)
     ) {
-        val colors = AssistChipDefaults.assistChipColors(
+        val highlightedColors = AssistChipDefaults.assistChipColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            labelColor = MaterialTheme.colorScheme.onPrimary,
+        )
+        val remainingColors = AssistChipDefaults.assistChipColors(
             labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
-        val border = AssistChipDefaults.assistChipBorder(false)
-        series.forEach {
+        val highlightedBorder = AssistChipDefaults.assistChipBorder(enabled = true)
+        val remainingBorder = AssistChipDefaults.assistChipBorder(enabled = false)
+        seriesHighlighted.take(TagUtils.TAGS_TO_SHOW).forEach {
             AssistChip(
-                colors = colors,
-                border = border,
+                colors = highlightedColors,
+                border = highlightedBorder,
                 onClick = { onSeriesClick(it.id) },
                 label = { Text(text = it.name(languageOption)) },
-                modifier = chipHeightModifier
+                modifier = ChipHeightModifier
             )
         }
+        seriesRemaining.take((TagUtils.TAGS_TO_SHOW - seriesHighlighted.size).coerceAtLeast(0))
+            .forEach {
+                AssistChip(
+                    colors = remainingColors,
+                    border = remainingBorder,
+                    onClick = { onSeriesClick(it.id) },
+                    label = { Text(text = it.name(languageOption)) },
+                    modifier = ChipHeightModifier
+                )
+            }
         if (hasMoreSeries) {
             AssistChip(
-                colors = colors,
-                border = border,
+                colors = remainingColors,
+                border = remainingBorder,
                 onClick = { onMoreClick() },
                 label = { Text("...") },
-                modifier = chipHeightModifier
+                modifier = ChipHeightModifier
             )
         }
     }
@@ -400,7 +432,8 @@ internal fun SeriesRow(
 
 @Composable
 internal fun MerchRow(
-    merch: List<String>,
+    merchHighlighted: List<String>,
+    merchRemaining: List<String>,
     hasMoreMerch: Boolean,
     onMerchClick: (String) -> Unit,
     onMoreClick: () -> Unit,
@@ -418,23 +451,38 @@ internal fun MerchRow(
                 endTransparent = 16.dp,
             )
     ) {
-        val colors = AssistChipDefaults.assistChipColors(
+        val highlightedColors = AssistChipDefaults.assistChipColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            labelColor = MaterialTheme.colorScheme.onPrimary,
+        )
+        val remainingColors = AssistChipDefaults.assistChipColors(
             labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
-        val border = AssistChipDefaults.assistChipBorder(false)
-        merch.take(TagUtils.TAGS_TO_SHOW).forEach {
+        val highlightedBorder = AssistChipDefaults.assistChipBorder(enabled = true)
+        val remainingBorder = AssistChipDefaults.assistChipBorder(enabled = false)
+        merchHighlighted.take(TagUtils.TAGS_TO_SHOW).forEach {
             AssistChip(
-                colors = colors,
-                border = border,
+                colors = highlightedColors,
+                border = highlightedBorder,
                 onClick = { onMerchClick(it) },
                 label = { Text(text = it) },
                 modifier = Modifier.height(24.dp)
             )
         }
+        merchRemaining.take((TagUtils.TAGS_TO_SHOW - merchHighlighted.size).coerceAtLeast(0))
+            .forEach {
+                AssistChip(
+                    colors = remainingColors,
+                    border = remainingBorder,
+                    onClick = { onMerchClick(it) },
+                    label = { Text(text = it) },
+                    modifier = Modifier.height(24.dp)
+                )
+            }
         if (hasMoreMerch) {
             AssistChip(
-                colors = colors,
-                border = border,
+                colors = remainingColors,
+                border = remainingBorder,
                 onClick = onMoreClick,
                 label = { Text("...") },
                 modifier = Modifier.height(24.dp)

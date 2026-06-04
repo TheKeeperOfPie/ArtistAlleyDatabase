@@ -58,6 +58,9 @@ sealed interface AlleyDestination : NavKey {
     data object Export : AlleyDestination
 
     @Serializable
+    data class FavoritesChangelog(val dataYear: DataYear) : AlleyDestination
+
+    @Serializable
     data class Images(
         val year: DataYear,
         val id: String,
@@ -155,6 +158,7 @@ sealed interface AlleyDestination : NavKey {
         is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
         ArtistChangelog -> "changelog"
         Export -> "export"
+        is FavoritesChangelog -> "changelog/favorites"
         Home -> ""
         is Images -> {
             val typePath = when (type) {
@@ -227,6 +231,7 @@ sealed interface AlleyDestination : NavKey {
                                     MerchTagChangelog(Uri.decode(merchId))
                                 }
                             }
+                            "favorites" -> FavoritesChangelog(DataYear.LATEST)
                             "rallies" -> StampRallyChangelog
                             else -> ArtistChangelog
                         }

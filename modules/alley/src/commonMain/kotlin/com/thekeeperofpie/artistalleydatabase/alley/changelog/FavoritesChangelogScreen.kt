@@ -45,14 +45,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilter
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
-object TagChangelogScreen {
+object FavoritesChangelogScreen {
 
     @Composable
     operator fun invoke(
         graph: ArtistAlleyGraph,
         dataYear: DataYear,
-        seriesId: String?,
-        merchId: String?,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistChangelogEntry) -> Unit,
         onClickStampRally: (StampRallyChangelogEntry) -> Unit,
@@ -60,11 +58,9 @@ object TagChangelogScreen {
         onClickMerch: (String) -> Unit,
         onClickArtistImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
         onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
-        viewModel: TagChangelogViewModel = viewModel {
-            graph.tagChangelogViewModelFactory.create(
+        viewModel: FavoritesChangelogViewModel = viewModel {
+            graph.favoritesChangelogViewModelFactory.create(
                 dataYear = dataYear,
-                seriesId = seriesId,
-                merchId = merchId,
                 savedStateHandle = createSavedStateHandle(),
             )
         },
@@ -72,13 +68,9 @@ object TagChangelogScreen {
         val changes by viewModel.changes.collectAsStateWithLifecycle()
         val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         var showOnlyConfirmedTags by viewModel.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
-        val series by viewModel.series.collectAsStateWithLifecycle()
-        val merch by viewModel.merch.collectAsStateWithLifecycle()
-        TagChangelogScreen(
+        FavoritesChangelogScreen(
             dataYear = dataYear,
             changes = { changes },
-            series = { series },
-            merch = { merch },
             seriesTitles = { seriesTitles },
             seriesImage = viewModel::seriesImage,
             showOnlyConfirmedTags = { showOnlyConfirmedTags },
@@ -90,8 +82,6 @@ object TagChangelogScreen {
             onClickMerch = onClickMerch,
             onClickArtistImage = onClickArtistImage,
             onClickStampRallyImage = onClickStampRallyImage,
-            onSeriesFavoriteToggle = viewModel::onSeriesFavoriteToggle,
-            onMerchFavoriteToggle = viewModel::onMerchFavoriteToggle,
         )
     }
 
@@ -101,8 +91,6 @@ object TagChangelogScreen {
         changes: () -> List<DayChange>,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
         seriesImage: (seriesId: String) -> String?,
-        series: () -> SeriesWithUserData?,
-        merch: () -> MerchWithUserData?,
         showOnlyConfirmedTags: () -> Boolean,
         onChangeShowOnlyConfirmedTags: (Boolean) -> Unit,
         onClickBack: () -> Unit,
@@ -112,8 +100,6 @@ object TagChangelogScreen {
         onClickMerch: (String) -> Unit,
         onClickArtistImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
         onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
-        onSeriesFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
-        onMerchFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
     ) {
         Scaffold(
             topBar = {
@@ -132,24 +118,6 @@ object TagChangelogScreen {
                         contentPadding = PaddingValues(bottom = 200.dp),
                         modifier = Modifier.widthIn(max = 960.dp)
                     ) {
-                        item("changelogFilterHeader") {
-                            SeriesHeader(
-                                year = dataYear,
-                                series = series,
-                                seriesImage = { series()?.let { seriesImage(it.series.id) } },
-                                showOnlyConfirmedTags = { showOnlyConfirmedTags() },
-                                onChangeShowOnlyConfirmedTags = onChangeShowOnlyConfirmedTags,
-                                onFavoriteToggle = onSeriesFavoriteToggle,
-                            )
-                            MerchHeader(
-                                year = dataYear,
-                                merch = merch,
-                                showOnlyConfirmedTags = { showOnlyConfirmedTags() },
-                                onChangeShowOnlyConfirmedTags = onChangeShowOnlyConfirmedTags,
-                                onFavoriteToggle = onMerchFavoriteToggle,
-                            )
-                        }
-
                         changes().forEach {
                             item(key = listOf("header", it.date), contentType = "header") {
                                 ChangelogDayHeader(it.date)

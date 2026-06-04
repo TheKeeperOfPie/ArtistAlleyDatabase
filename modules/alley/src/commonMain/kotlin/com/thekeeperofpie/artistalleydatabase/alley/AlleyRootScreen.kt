@@ -64,6 +64,7 @@ object AlleyRootScreen {
         onOpenStampRallyChangelog: () -> Unit,
         onOpenSeriesChangelog: (DataYear) -> Unit,
         onOpenMerchChangelog: (DataYear) -> Unit,
+        onOpenFavoritesChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) {
         val settings = remember(graph) { graph.settings }
@@ -155,7 +156,7 @@ object AlleyRootScreen {
                             onOpenStampRally = onOpenStampRally,
                             onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                             onOpenExport = onOpenExport,
-                            onOpenArtistChangelog = onOpenArtistChangelog,
+                            onOpenFavoritesChangelog = onOpenFavoritesChangelog,
                             onOpenSettings = onOpenSettings,
                         )
                     AlleyRootDestination.MAP ->

@@ -15,8 +15,8 @@ fun ArtistEntryAnimeExpo2026Changelog.catalogImages(year: DataYear): List<Catalo
     }
 }
 
-fun List<ArtistEntryAnimeExpo2026Changelog>.sortArtistsForChangelog() =
-    sortedBy { it.booth }.sortedBy { it.images.isNullOrEmpty() }
+fun List<ArtistChangelogEntry>.sortArtistsForChangelog() =
+    sortedBy { it.booth }.sortedBy { it.images.isEmpty() }
 
 fun List<StampRallyChangelogEntry>.sortRalliesForChangelog() = sortedBy { it.rally.fandom }
 

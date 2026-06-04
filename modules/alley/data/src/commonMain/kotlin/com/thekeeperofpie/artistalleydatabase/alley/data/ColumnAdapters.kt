@@ -133,10 +133,10 @@ object ColumnAdapters {
     )
     val artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(
         artistIdAdapter = uuidAdapter,
-        seriesInferredAdapter = listStringAdapter,
-        seriesConfirmedAdapter = listStringAdapter,
-        merchInferredAdapter = listStringAdapter,
-        merchConfirmedAdapter = listStringAdapter,
+        seriesInferredAdapter = setStringAdapter,
+        seriesConfirmedAdapter = setStringAdapter,
+        merchInferredAdapter = setStringAdapter,
+        merchConfirmedAdapter = setStringAdapter,
         imagesAdapter = listDatabaseImageAdapter,
     )
     val artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(

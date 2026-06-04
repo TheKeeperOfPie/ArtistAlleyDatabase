@@ -75,3 +75,15 @@ WHERE merchId = :merchId;
 insertMerchUserEntry:
 INSERT OR REPLACE INTO merchUserEntry
 VALUES ?;
+
+getSeriesFavorites:
+SELECT seriesEntry.id FROM seriesUserEntry
+LEFT OUTER JOIN seriesEntry
+ON seriesEntry.uuid = seriesUserEntry.seriesId
+WHERE seriesUserEntry.favorite = 1;
+
+getMerchFavorites:
+SELECT merchEntry.name FROM merchUserEntry
+LEFT OUTER JOIN merchEntry
+ON merchEntry.uuid = merchUserEntry.merchId
+WHERE merchUserEntry.favorite = 1;

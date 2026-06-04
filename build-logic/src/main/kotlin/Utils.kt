@@ -217,10 +217,10 @@ internal object Utils {
             ),
             artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(
                 artistIdAdapter = uuidAdapter,
-                seriesInferredAdapter = listStringAdapter,
-                seriesConfirmedAdapter = listStringAdapter,
-                merchInferredAdapter = listStringAdapter,
-                merchConfirmedAdapter = listStringAdapter,
+                seriesInferredAdapter = setStringAdapter,
+                seriesConfirmedAdapter = setStringAdapter,
+                merchInferredAdapter = setStringAdapter,
+                merchConfirmedAdapter = setStringAdapter,
                 imagesAdapter = listDatabaseImageAdapter,
             ),
             artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(

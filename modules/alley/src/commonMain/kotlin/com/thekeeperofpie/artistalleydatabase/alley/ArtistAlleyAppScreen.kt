@@ -28,14 +28,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.FavoritesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogScreen
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.catalogImages
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
@@ -183,7 +183,7 @@ object ArtistAlleyAppScreen {
             { navStack.navigate(AlleyDestination.MerchTagChangelog(it)) }
         val onOpenStampRallyChangelog = { navStack.navigate(AlleyDestination.StampRallyChangelog) }
 
-        val onClickChangelogArtist: (DataYear, ArtistEntryAnimeExpo2026Changelog) -> Unit =
+        val onClickChangelogArtist: (DataYear, ArtistChangelogEntry) -> Unit =
             { year, artist ->
                 navStack.navigate(
                     AlleyDestination.ArtistDetails(
@@ -194,9 +194,9 @@ object ArtistAlleyAppScreen {
                     )
                 )
             }
-        val onClickChangelogArtistImage: (DataYear, ArtistEntryAnimeExpo2026Changelog, CatalogImage) -> Unit =
+        val onClickChangelogArtistImage: (DataYear, ArtistChangelogEntry, CatalogImage) -> Unit =
             { year, changelogEntry, image ->
-                val catalogImages = changelogEntry.catalogImages(year)
+                val catalogImages = changelogEntry.images
                 navStack.navigate(
                     AlleyDestination.Images(
                         year = year,
@@ -210,9 +210,9 @@ object ArtistAlleyAppScreen {
                         ),
                         images = catalogImages,
                         // Add one for the initial grid
-                        initialImageIndex = (catalogImages?.indexOf(image) ?: 0) + 1,
+                        initialImageIndex = (catalogImages.indexOf(image) ?: 0) + 1,
                         showOpenButton = true,
-                        changelogDate = changelogEntry.date,
+                        changelogDate = changelogEntry.date.toString(),
                     )
                 )
             }
@@ -270,6 +270,9 @@ object ArtistAlleyAppScreen {
                     },
                     onOpenMerchChangelog = {
                         navStack.navigate(AlleyDestination.MerchChangelog(it))
+                    },
+                    onOpenFavoritesChangelog = {
+                        navStack.navigate(AlleyDestination.FavoritesChangelog(it))
                     },
                     onOpenSettings = onOpenSettings,
                 )
@@ -375,6 +378,25 @@ object ArtistAlleyAppScreen {
                     onClickArtist = { onClickChangelogArtist(year, it) },
                     onClickImage = { changelogEntry, image ->
                         onClickChangelogArtistImage(year, changelogEntry, image)
+                    },
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.FavoritesChangelog> { route ->
+                val year = route.dataYear
+                FavoritesChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickArtist = { onClickChangelogArtist(year, it) },
+                    onClickArtistImage = { changelogEntry, image ->
+                        onClickChangelogArtistImage(year, changelogEntry, image)
+                    },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickStampRallyImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
                     },
                 )
             }

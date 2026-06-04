@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.SqlDriver
+import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
@@ -26,8 +28,10 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlin.time.Duration.Companion.milliseconds
 
 private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
@@ -230,4 +234,20 @@ class UserEntryDao(
             driver().notifyListeners("merchEntry", "merchUserEntry")
         }
     }
+
+    fun getTagFavorites() = flowFromSuspend { dao() }
+        .flatMapLatest {
+            combine(
+                it.getSeriesFavorites().asFlow()
+                    .mapLatest { it.awaitAsList().mapNotNull { it.id } },
+                it.getMerchFavorites().asFlow()
+                    .mapLatest { it.awaitAsList().mapNotNull { it.name } },
+                ::TagFavorites,
+            )
+        }
+
+    data class TagFavorites(
+        val seriesIds: List<String>,
+        val merchIds: List<String>,
+    )
 }
