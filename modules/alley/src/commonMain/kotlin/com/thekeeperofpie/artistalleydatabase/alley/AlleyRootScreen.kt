@@ -64,7 +64,10 @@ object AlleyRootScreen {
         onOpenStampRallyChangelog: () -> Unit,
         onOpenSeriesChangelog: (DataYear) -> Unit,
         onOpenMerchChangelog: (DataYear) -> Unit,
-        onOpenFavoritesChangelog: (DataYear) -> Unit,
+        onOpenFavoriteArtistsChangelog: (DataYear) -> Unit,
+        onOpenFavoriteStampRalliesChangelog: (DataYear) -> Unit,
+        onOpenFavoriteSeriesChangelog: (DataYear) -> Unit,
+        onOpenFavoriteMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) {
         val settings = remember(graph) { graph.settings }
@@ -156,7 +159,10 @@ object AlleyRootScreen {
                             onOpenStampRally = onOpenStampRally,
                             onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                             onOpenExport = onOpenExport,
-                            onOpenFavoritesChangelog = onOpenFavoritesChangelog,
+                            onOpenFavoriteArtistsChangelog = onOpenFavoriteArtistsChangelog,
+                            onOpenFavoriteStampRalliesChangelog = onOpenFavoriteStampRalliesChangelog,
+                            onOpenFavoriteSeriesChangelog = onOpenFavoriteSeriesChangelog,
+                            onOpenFavoriteMerchChangelog = onOpenFavoriteMerchChangelog,
                             onOpenSettings = onOpenSettings,
                         )
                     AlleyRootDestination.MAP ->

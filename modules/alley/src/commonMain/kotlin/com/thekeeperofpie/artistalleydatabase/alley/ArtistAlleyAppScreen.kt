@@ -30,12 +30,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogScreen
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.FavoritesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteMerchChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteSeriesChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoritesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
@@ -271,8 +273,19 @@ object ArtistAlleyAppScreen {
                     onOpenMerchChangelog = {
                         navStack.navigate(AlleyDestination.MerchChangelog(it))
                     },
-                    onOpenFavoritesChangelog = {
+                    onOpenFavoriteArtistsChangelog = {
+                        // TODO
                         navStack.navigate(AlleyDestination.FavoritesChangelog(it))
+                    },
+                    onOpenFavoriteStampRalliesChangelog = {
+                        // TODO
+                        navStack.navigate(AlleyDestination.FavoritesChangelog(it))
+                    },
+                    onOpenFavoriteSeriesChangelog = {
+                        navStack.navigate(AlleyDestination.FavoriteSeriesChangelog(it))
+                    },
+                    onOpenFavoriteMerchChangelog = {
+                        navStack.navigate(AlleyDestination.FavoriteMerchChangelog(it))
                     },
                     onOpenSettings = onOpenSettings,
                 )
@@ -385,6 +398,44 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.FavoritesChangelog> { route ->
                 val year = route.dataYear
                 FavoritesChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickArtist = { onClickChangelogArtist(year, it) },
+                    onClickArtistImage = { changelogEntry, image ->
+                        onClickChangelogArtistImage(year, changelogEntry, image)
+                    },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickStampRallyImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
+                    },
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.FavoriteSeriesChangelog> { route ->
+                val year = route.dataYear
+                FavoriteSeriesChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickArtist = { onClickChangelogArtist(year, it) },
+                    onClickArtistImage = { changelogEntry, image ->
+                        onClickChangelogArtistImage(year, changelogEntry, image)
+                    },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickStampRallyImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
+                    },
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.FavoriteMerchChangelog> { route ->
+                val year = route.dataYear
+                FavoriteMerchChangelogScreen(
                     graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,

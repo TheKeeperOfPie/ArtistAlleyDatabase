@@ -6,11 +6,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.FavoritesChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteMerchChangelogViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteSeriesChangelogViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoritesChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
@@ -39,6 +41,8 @@ interface ArtistAlleyGraph {
     val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
     val artistChangelogViewModelFactory: ArtistChangelogViewModel.Factory
     val favoritesChangelogViewModelFactory: FavoritesChangelogViewModel.Factory
+    val favoriteSeriesChangelogViewModelFactory: FavoriteSeriesChangelogViewModel.Factory
+    val favoriteMerchChangelogViewModelFactory: FavoriteMerchChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory
     val favoritesSortFilterViewModelFactory: FavoritesSortFilterViewModel.Factory
     val imagesViewModel: Provider<ImagesViewModel>

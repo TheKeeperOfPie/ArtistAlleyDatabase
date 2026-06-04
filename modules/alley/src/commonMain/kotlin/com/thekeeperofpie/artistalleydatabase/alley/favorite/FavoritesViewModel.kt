@@ -324,7 +324,10 @@ class FavoritesViewModel(
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenExport: () -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenFavoriteArtistsChangelog: (DataYear) -> Unit,
+        onOpenFavoriteStampRalliesChangelog: (DataYear) -> Unit,
+        onOpenFavoriteSeriesChangelog: (DataYear) -> Unit,
+        onOpenFavoriteMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) = when (event) {
         is FavoritesScreen.Event.OpenMerch -> onOpenMerch(year.value, event.merch)
@@ -394,7 +397,15 @@ class FavoritesViewModel(
             seriesMutationUpdates.tryEmit(event.series.userEntry.copy(favorite = event.favorite))
         is FavoritesScreen.Event.MerchFavoriteToggle ->
             merchMutationUpdates.tryEmit(event.merch.userEntry.copy(favorite = event.favorite))
-        FavoritesScreen.Event.OpenChangelog -> onOpenChangelog()
+        FavoritesScreen.Event.OpenChangelog -> {
+            val year = year.value
+            when (tab.value) {
+                FavoritesScreen.EntryTab.ARTISTS -> onOpenFavoriteArtistsChangelog(year)
+                FavoritesScreen.EntryTab.RALLIES -> onOpenFavoriteStampRalliesChangelog(year)
+                FavoritesScreen.EntryTab.SERIES -> onOpenFavoriteSeriesChangelog(year)
+                FavoritesScreen.EntryTab.MERCH -> onOpenFavoriteMerchChangelog(year)
+            }
+        }
         FavoritesScreen.Event.OpenExport -> onOpenExport()
         FavoritesScreen.Event.OpenSettings -> onOpenSettings()
     }
