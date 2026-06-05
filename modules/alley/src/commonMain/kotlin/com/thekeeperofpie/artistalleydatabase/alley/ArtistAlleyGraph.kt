@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogView
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteArtistsChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteMerchChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteSeriesChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoritesChangelogViewModel
@@ -41,6 +42,7 @@ interface ArtistAlleyGraph {
     val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
     val artistChangelogViewModelFactory: ArtistChangelogViewModel.Factory
     val favoritesChangelogViewModelFactory: FavoritesChangelogViewModel.Factory
+    val favoriteArtistsChangelogViewModelFactory: FavoriteArtistsChangelogViewModel.Factory
     val favoriteSeriesChangelogViewModelFactory: FavoriteSeriesChangelogViewModel.Factory
     val favoriteMerchChangelogViewModelFactory: FavoriteMerchChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory

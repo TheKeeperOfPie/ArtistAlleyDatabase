@@ -7,7 +7,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.toChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
-import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -21,36 +20,44 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+import kotlin.uuid.Uuid
 
 @AssistedInject
-class FavoriteSeriesChangelogViewModel(
+class FavoriteArtistsChangelogViewModel(
     dispatchers: CustomDispatchers,
     val seriesEntryCache: SeriesEntryCache,
     private val seriesImageLoader: SeriesImageLoader,
-    settings: ArtistAlleySettings,
     useCaseFactory: FavoritesChangelogUseCase.Factory,
     userEntryDao: UserEntryDao,
     @Assisted private val dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    val showOnlyConfirmedTags = savedStateHandle.getMutableStateFlow(
-        key = "showOnlyConfirmedTags",
-        initialValue = settings.showOnlyConfirmedTags.value,
-    )
-
     private val randomSeed =
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
     val useCase = useCaseFactory.create(
         dataYear = dataYear,
-        input = combine(showOnlyConfirmedTags, userEntryDao.getSeriesFavorites(), ::Input),
-        filterArtist = { input ->
-            (artist.seriesConfirmed?.any { it in input.favoriteSeriesIds } == true) ||
-                    (!input.showOnlyConfirmedTags && (artist.seriesInferred?.any { it in input.favoriteSeriesIds } == true))
+        input = combine(
+            userEntryDao.getArtistFavorites(dataYear)
+                .mapLatest {
+                    // TODO: Are all artists guaranteed to be UUIDs?
+                    it.map { Uuid.parse(it) }.toSet()
+                },
+            userEntryDao.getTagFavorites(),
+        ) { favoriteArtists, tagFavorites ->
+            Input(
+                favoriteArtistIds = favoriteArtists,
+                favoriteSeriesIds = tagFavorites.seriesIds,
+                favoriteMerchIds = tagFavorites.merchIds
+            )
         },
-        filterRally = { input ->
-            rally.series.any { it in input.favoriteSeriesIds }
+        filterArtist = { input ->
+            this.artist.artistId in input.favoriteArtistIds
+        },
+        filterRally = {
+            // TODO: Include rallies by favorite artists
+            false
         },
     )
 
@@ -73,15 +80,16 @@ class FavoriteSeriesChangelogViewModel(
         artist.toChangelogEntry(
             dataYear = dataYear,
             randomSeed = randomSeed,
-            showOnlyConfirmedTags = changes.input.showOnlyConfirmedTags,
+            showOnlyConfirmedTags = false,
             seriesIdsToHighlight = changes.input.favoriteSeriesIds,
-            merchIdsToHighlight = emptySet()
+            merchIdsToHighlight = changes.input.favoriteMerchIds,
         )
 
     fun seriesImage(seriesId: String) = seriesImageLoader.getSeriesImage(seriesId)
 
     data class Input(
-        val showOnlyConfirmedTags: Boolean,
+        val favoriteArtistIds: Set<Uuid>,
         val favoriteSeriesIds: Set<String>,
+        val favoriteMerchIds: Set<String>,
     )
 }

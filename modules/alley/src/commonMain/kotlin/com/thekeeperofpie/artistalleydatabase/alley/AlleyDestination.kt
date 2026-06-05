@@ -61,6 +61,9 @@ sealed interface AlleyDestination : NavKey {
     data class FavoritesChangelog(val dataYear: DataYear) : AlleyDestination
 
     @Serializable
+    data class FavoriteArtistsChangelog(val dataYear: DataYear) : AlleyDestination
+
+    @Serializable
     data class FavoriteSeriesChangelog(val dataYear: DataYear) : AlleyDestination
 
     @Serializable
@@ -165,6 +168,7 @@ sealed interface AlleyDestination : NavKey {
         ArtistChangelog -> "changelog"
         Export -> "export"
         is FavoritesChangelog -> "changelog/favorites"
+        is FavoriteArtistsChangelog -> "changelog/favorites/artists"
         is FavoriteSeriesChangelog -> "changelog/favorites/series"
         is FavoriteMerchChangelog -> "changelog/favorites/merch"
         Home -> ""
@@ -241,6 +245,7 @@ sealed interface AlleyDestination : NavKey {
                             }
                             "favorites" -> {
                                 when (parts.getOrNull(2)) {
+                                    "artists" -> FavoriteArtistsChangelog(DataYear.LATEST)
                                     "series" -> FavoriteSeriesChangelog(DataYear.LATEST)
                                     "merch" -> FavoriteMerchChangelog(DataYear.LATEST)
                                     else -> FavoritesChangelog(DataYear.LATEST)

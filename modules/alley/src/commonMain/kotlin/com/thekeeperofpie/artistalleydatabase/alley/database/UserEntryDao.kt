@@ -136,9 +136,12 @@ class UserEntryDao(
         settings: ArtistAlleySettings,
     ) : this(driver = database::driver, database = database::database, settings = settings)
 
-    suspend fun getArtistFavorites() = dao()
-        .getArtistFavorites()
-        .asFlow()
+    fun getArtistFavorites(dataYear: DataYear) = flowFromSuspend { dao() }
+        .flatMapLatest { it.getArtistFavorites(dataYear).asFlow() }
+        .mapToList(PlatformDispatchers.IO)
+
+    fun getAllArtistFavorites() = flowFromSuspend { dao() }
+        .flatMapLatest { it.getAllArtistFavorites().asFlow() }
         .mapToList(PlatformDispatchers.IO)
 
     fun getBoothsWithFavorites() = settings.dataYear
@@ -235,19 +238,26 @@ class UserEntryDao(
         }
     }
 
-    fun getTagFavorites() = flowFromSuspend { dao() }
+    fun getTagFavorites() = combine(
+        getSeriesFavorites(),
+        getMerchFavorites(),
+        ::TagFavorites,
+    )
+
+    fun getSeriesFavorites() = flowFromSuspend { dao() }
         .flatMapLatest {
-            combine(
-                it.getSeriesFavorites().asFlow()
-                    .mapLatest { it.awaitAsList().mapNotNull { it.id } },
-                it.getMerchFavorites().asFlow()
-                    .mapLatest { it.awaitAsList().mapNotNull { it.name } },
-                ::TagFavorites,
-            )
+            it.getSeriesFavorites().asFlow()
+                .mapLatest { it.awaitAsList().mapNotNull { it.id }.toSet() }
+        }
+
+    fun getMerchFavorites() = flowFromSuspend { dao() }
+        .flatMapLatest {
+            it.getMerchFavorites().asFlow()
+                .mapLatest { it.awaitAsList().mapNotNull { it.name }.toSet() }
         }
 
     data class TagFavorites(
-        val seriesIds: List<String>,
-        val merchIds: List<String>,
+        val seriesIds: Set<String>,
+        val merchIds: Set<String>,
     )
 }

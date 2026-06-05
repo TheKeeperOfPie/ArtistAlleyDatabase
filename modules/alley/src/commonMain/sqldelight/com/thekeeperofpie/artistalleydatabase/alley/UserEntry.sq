@@ -57,7 +57,11 @@ SELECT * FROM stampRallyUserEntry
 WHERE stampRallyId = :stampRallyId;
 
 getArtistFavorites:
-SELECT artistId, favorite FROM artistUserEntry
+SELECT artistId FROM artistUserEntry
+WHERE favorite = 1 AND dataYear = :dataYear;
+
+getAllArtistFavorites:
+SELECT artistId FROM artistUserEntry
 WHERE favorite = 1;
 
 getSeriesUserEntry:

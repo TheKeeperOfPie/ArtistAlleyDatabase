@@ -417,6 +417,7 @@
     <string name="alley_series_changelog_title">Series changelog</string>
     <string name="alley_merch_changelog_title">Merch changelog</string>
     <string name="alley_tag_changelog_title">%1$s changelog</string>
+    <string name="alley_favorite_artists_changelog_title">Favorite artists changelog</string>
     <string name="alley_favorite_series_changelog_title">Favorite series changelog</string>
     <string name="alley_favorite_merch_changelog_title">Favorite merch changelog</string>
 

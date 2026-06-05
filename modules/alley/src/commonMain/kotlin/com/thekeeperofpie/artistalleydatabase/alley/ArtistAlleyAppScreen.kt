@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogScr
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteArtistsChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteMerchChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteSeriesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoritesChangelogScreen
@@ -274,8 +275,7 @@ object ArtistAlleyAppScreen {
                         navStack.navigate(AlleyDestination.MerchChangelog(it))
                     },
                     onOpenFavoriteArtistsChangelog = {
-                        // TODO
-                        navStack.navigate(AlleyDestination.FavoritesChangelog(it))
+                        navStack.navigate(AlleyDestination.FavoriteArtistsChangelog(it))
                     },
                     onOpenFavoriteStampRalliesChangelog = {
                         // TODO
@@ -398,6 +398,25 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.FavoritesChangelog> { route ->
                 val year = route.dataYear
                 FavoritesChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
+                    onClickArtist = { onClickChangelogArtist(year, it) },
+                    onClickArtistImage = { changelogEntry, image ->
+                        onClickChangelogArtistImage(year, changelogEntry, image)
+                    },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickStampRallyImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
+                    },
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.FavoriteArtistsChangelog> { route ->
+                val year = route.dataYear
+                FavoriteArtistsChangelogScreen(
                     graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,

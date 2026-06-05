@@ -21,6 +21,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
@@ -35,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
@@ -84,7 +86,7 @@ object FavoritesChangelogScreen {
         changes: () -> List<DayChange>,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
         seriesImage: (seriesId: String) -> String?,
-        showOnlyConfirmedTags: () -> Boolean,
+        showOnlyConfirmedTags: (() -> Boolean)?,
         onChangeShowOnlyConfirmedTags: (Boolean) -> Unit,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistChangelogEntry) -> Unit,
@@ -113,6 +115,16 @@ object FavoritesChangelogScreen {
                         contentPadding = PaddingValues(bottom = 200.dp),
                         modifier = Modifier.widthIn(max = 960.dp)
                     ) {
+                        if (showOnlyConfirmedTags != null) {
+                            item(key = "showOnlyConfirmedTagsSetting") {
+                                SortAndFilterComposables.SwitchRow(
+                                    title = Res.string.alley_filter_show_only_confirmed_tags,
+                                    enabled = showOnlyConfirmedTags,
+                                    onEnabledChanged = onChangeShowOnlyConfirmedTags,
+                                    showDivider = false,
+                                )
+                            }
+                        }
                         changes().forEach {
                             item(key = listOf("header", it.date), contentType = "header") {
                                 ChangelogDayHeader(it.date)

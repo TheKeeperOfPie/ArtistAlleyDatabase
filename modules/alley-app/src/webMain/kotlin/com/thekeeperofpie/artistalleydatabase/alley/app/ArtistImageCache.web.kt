@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.GetArtistFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
@@ -35,9 +34,10 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
     init {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch(CustomDispatchers.IO) {
-            val initialPair = null as List<GetArtistFavorites>? to emptyList<GetArtistFavorites>()
+            val initialPair = null as List<String>? to emptyList<String>()
             handleEvents(listOf(Event.Verify))
-            userEntryDao.getArtistFavorites()
+            // TODO: Filter to specific DataYear
+            userEntryDao.getAllArtistFavorites()
                 .scan(initialPair) { (previousPrevious, previous), next ->
                     if (previousPrevious == null) {
                         next to next
@@ -49,11 +49,11 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                 .map { (previous, next) ->
                     if (previous == null) return@map emptyList()
                     val additions = next
-                        .filter { artist -> previous.none { it.artistId == artist.artistId } }
-                        .map { Event.Save(it.artistId) }
+                        .filter { artistId -> previous.none { it == artistId } }
+                        .map { Event.Save(it) }
                     val removals = previous
-                        .filter { artist -> next.none { it.artistId == artist.artistId } }
-                        .map { Event.Delete(it.artistId) }
+                        .filter { artistId -> next.none { it == artistId } }
+                        .map { Event.Delete(it) }
                     additions + removals
                 }
                 .collect { handleEvents(it) }
@@ -140,10 +140,10 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                     stale.forEach {
                         cache.delete(it, CacheQueryOptions())
                     }
-                    val favorites = userEntryDao.getArtistFavorites().firstOrNull()
-                    favorites?.forEach { artist ->
+                    val favorites = userEntryDao.getAllArtistFavorites().firstOrNull()
+                    favorites?.forEach { artistId ->
                         DataYear.entries.forEach {
-                            val artist = artistEntryDao.getEntry(it, artist.artistId)
+                            val artist = artistEntryDao.getEntry(it, artistId)
                                 ?: return@forEach
                             val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
                                 year = it,

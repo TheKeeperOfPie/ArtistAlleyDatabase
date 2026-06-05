@@ -7,31 +7,23 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelo
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.sortArtistsForChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.sortRalliesForChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.toChangelogEntry
-import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.LocalDate
 
-@AssistedInject
-class FavoritesChangelogUseCase(
+class FavoritesChangelogUseCase<Input>(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
-    userEntryDao: UserEntryDao,
     @Assisted dataYear: DataYear,
-    @Assisted showOnlyConfirmedTags: Flow<Boolean>,
-    @Assisted private val filterArtist: ChangelogEntry.Artist.(showOnlyConfirmedTags: Boolean, favorites: TagFavorites) -> Boolean,
-    @Assisted private val filterRally: StampRallyChangelogEntry.(favorites: TagFavorites) -> Boolean,
+    @Assisted input: Flow<Input>,
+    @Assisted private val filterArtist: ChangelogEntry.Artist.(Input) -> Boolean,
+    @Assisted private val filterRally: StampRallyChangelogEntry.(Input) -> Boolean,
 ) {
-    private val favorites = userEntryDao.getTagFavorites()
-        .mapLatest {
-            TagFavorites(seriesIds = it.seriesIds.toSet(), merchIds = it.merchIds.toSet())
-        }
-
     private val changelog = flowFromSuspend {
         val artists = artistEntryDao.getChangelog(false)
             .map(ChangelogEntry::Artist)
@@ -48,16 +40,16 @@ class FavoritesChangelogUseCase(
         }
 
 
-    internal val changes = combine(changelog, showOnlyConfirmedTags, favorites, ::Triple)
-        .mapLatest { (changelog, showOnlyConfirmedTags, favorites) ->
+    internal val changes = combine(changelog, input, ::Pair)
+        .mapLatest { (changelog, input) ->
             val changes = changelog.mapNotNull {
                 val artists = it.second.filterIsInstance<ChangelogEntry.Artist>()
                 val rallies = it.second.filterIsInstance<ChangelogEntry.StampRally>()
                     .map { it.stampRally }
                 val (addedArtists, updatedArtists) =
-                    artists.filterArtists(showOnlyConfirmedTags, favorites)
+                    artists.filterArtists(input)
                         .partition { it.artist.isBrandNew }
-                val (addedRallies, updatedRallies) = rallies.filterRallies(favorites)
+                val (addedRallies, updatedRallies) = rallies.filterRallies(input)
                     .partition { it.images.isEmpty() }
                 if (addedArtists.isEmpty() &&
                     updatedArtists.isEmpty() &&
@@ -76,23 +68,19 @@ class FavoritesChangelogUseCase(
             }
             Changes(
                 changes = changes,
-                showOnlyConfirmedTags = showOnlyConfirmedTags,
-                favorites = favorites,
+                input = input,
             )
         }
 
-    private fun List<ChangelogEntry.Artist>.filterArtists(
-        showOnlyConfirmedTags: Boolean,
-        favorites: TagFavorites,
-    ) = filter { it.filterArtist(showOnlyConfirmedTags, favorites) }
+    private fun List<ChangelogEntry.Artist>.filterArtists(input: Input) =
+        filter { it.filterArtist(input) }
 
-    private fun List<StampRallyChangelogEntry>.filterRallies(favorites: TagFavorites) =
-        filter { it.filterRally(favorites) }
+    private fun List<StampRallyChangelogEntry>.filterRallies(input: Input) =
+        filter { it.filterRally(input) }
 
-    data class Changes(
+    data class Changes<Input>(
         val changes: List<Change>,
-        val showOnlyConfirmedTags: Boolean,
-        val favorites: TagFavorites,
+        val input: Input,
     )
 
     data class Change(
@@ -107,4 +95,25 @@ class FavoritesChangelogUseCase(
         val seriesIds: Set<String>,
         val merchIds: Set<String>,
     )
+
+
+    @Inject
+    class Factory(
+        private val artistEntryDao: ArtistEntryDao,
+        private val stampRallyEntryDao: StampRallyEntryDao,
+    ) {
+        fun <Input> create(
+            @Assisted dataYear: DataYear,
+            @Assisted input: Flow<Input>,
+            @Assisted filterArtist: ChangelogEntry.Artist.(Input) -> Boolean,
+            @Assisted filterRally: StampRallyChangelogEntry.(Input) -> Boolean,
+        ) = FavoritesChangelogUseCase(
+            artistEntryDao = artistEntryDao,
+            stampRallyEntryDao = stampRallyEntryDao,
+            dataYear = dataYear,
+            input = input,
+            filterArtist = filterArtist,
+            filterRally = filterRally,
+        )
+    }
 }
