@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
+import artistalleydatabase.modules.alley.generated.resources.alley_merch_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
@@ -60,7 +60,7 @@ object MerchChangelogScreen {
             topBar = {
                 TopAppBar(
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
-                    title = { Text(stringResource(Res.string.alley_changelog_title)) },
+                    title = { Text(stringResource(Res.string.alley_merch_changelog_title)) },
                 )
             },
         ) {

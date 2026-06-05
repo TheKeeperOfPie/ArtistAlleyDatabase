@@ -93,12 +93,14 @@ object FavoritesChangelogScreen {
         onClickMerch: (String) -> Unit,
         onClickArtistImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
         onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
+        title: @Composable () -> Unit = { Text(stringResource(Res.string.alley_changelog_title)) },
+
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
-                    title = { Text(stringResource(Res.string.alley_changelog_title)) },
+                    title = title,
                 )
             },
         ) {

@@ -25,8 +25,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
+import artistalleydatabase.modules.alley.generated.resources.alley_tag_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
@@ -35,9 +35,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
@@ -119,7 +121,11 @@ object TagChangelogScreen {
             topBar = {
                 TopAppBar(
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
-                    title = { Text(stringResource(Res.string.alley_changelog_title)) },
+                    title = {
+                        val name = series()?.series?.name(LocalLanguageOptionMedia.current)
+                            ?: merch()?.merch?.name.orEmpty()
+                        Text(stringResource(Res.string.alley_tag_changelog_title, name))
+                    },
                 )
             },
         ) {

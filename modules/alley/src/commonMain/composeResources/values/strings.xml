@@ -414,6 +414,11 @@
     <string name="alley_changelog_catalogs_only">Catalogs</string>
     <string name="alley_changelog_catalogs_only_warning">Note: artists may edit their uploaded images and finalize their catalogs before con starts</string>
     <string name="alley_changelog_show_only_confirmed_tags">Only confirmed tags</string>
+    <string name="alley_series_changelog_title">Series changelog</string>
+    <string name="alley_merch_changelog_title">Merch changelog</string>
+    <string name="alley_tag_changelog_title">%1$s changelog</string>
+    <string name="alley_favorite_series_changelog_title">Favorite series changelog</string>
+    <string name="alley_favorite_merch_changelog_title">Favorite merch changelog</string>
 
     <string name="alley_libraries_title">Libraries</string>
 
