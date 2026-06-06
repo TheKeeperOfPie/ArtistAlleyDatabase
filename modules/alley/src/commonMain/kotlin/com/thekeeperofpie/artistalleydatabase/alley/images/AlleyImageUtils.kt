@@ -142,7 +142,15 @@ object AlleyImageUtils {
         images: List<DatabaseImage>,
     ) = images.mapNotNull {
         try {
-            val path = "files/images/${year.folderName}/rallies/${it.name}"
+            val path = when (year) {
+                DataYear.ANIME_EXPO_2023,
+                DataYear.ANIME_EXPO_2024,
+                DataYear.ANIME_EXPO_2025,
+                DataYear.ANIME_NYC_2024,
+                DataYear.ANIME_NYC_2025,
+                    -> "files/images/${year.folderName}/rallies/${it.name}"
+                DataYear.ANIME_EXPO_2026 -> "files/images/${it.name}"
+            }
             CatalogImage(
                 uri = Uri.parse(Res.getUri(path)),
                 width = it.width,
