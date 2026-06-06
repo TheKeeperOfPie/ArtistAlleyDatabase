@@ -48,7 +48,7 @@ object StampRallySearchScreen {
         onClickBack: (() -> Unit)? = null,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenExport: () -> Unit,
+        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         viewModel: StampRallySearchViewModel = viewModel {

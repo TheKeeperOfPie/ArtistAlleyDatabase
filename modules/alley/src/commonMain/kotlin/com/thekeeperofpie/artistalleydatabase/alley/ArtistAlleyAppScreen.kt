@@ -181,7 +181,9 @@ object ArtistAlleyAppScreen {
                     )
                 )
             }
-        val onOpenExport = { navStack.navigate(AlleyDestination.Export) }
+        val onOpenExport: (DataYear) -> Unit = {
+            navStack.navigate(AlleyDestination.Export(it))
+        }
         val onOpenArtistChangelog = { navStack.navigate(AlleyDestination.ArtistChangelog) }
         val onOpenSeriesTagChangelog: (String) -> Unit =
             { navStack.navigate(AlleyDestination.SeriesTagChangelog(it)) }
@@ -507,7 +509,8 @@ object ArtistAlleyAppScreen {
                     graph = graph,
                     onNavigateBack = navStack::onBack,
                     onOpenExport = {
-                        navStack.navigate(AlleyDestination.Export)
+                        // TODO: Is it worth proxying the DataYear that opened Settings?
+                        navStack.navigate(AlleyDestination.Export(DataYear.LATEST))
                     },
                     onOpenLibraries = {
                         navStack.navigate(AlleyDestination.AboutLibraries)

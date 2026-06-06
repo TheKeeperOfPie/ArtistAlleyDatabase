@@ -55,7 +55,7 @@ sealed interface AlleyDestination : NavKey {
     data object ArtistChangelog : AlleyDestination
 
     @Serializable
-    data object Export : AlleyDestination
+    data class Export(val dataYear: DataYear) : AlleyDestination
 
     @Serializable
     data class FavoritesChangelog(val dataYear: DataYear) : AlleyDestination
@@ -166,7 +166,7 @@ sealed interface AlleyDestination : NavKey {
         is ArtistMap -> "artist/map/$id"
         is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
         ArtistChangelog -> "changelog"
-        Export -> "export"
+        is Export -> "export/${dataYear.serializedName}"
         is FavoritesChangelog -> "changelog/favorites"
         is FavoriteArtistsChangelog -> "changelog/favorites/artists"
         is FavoriteSeriesChangelog -> "changelog/favorites/series"
@@ -255,7 +255,7 @@ sealed interface AlleyDestination : NavKey {
                             else -> ArtistChangelog
                         }
                     }
-                    "export" -> Export
+                    "export" -> Export( parts.getOrNull(1).toDataYearOrLatest())
                     "images" -> {
                         val dataYear = parts.getOrNull(1).toDataYearOrNull() ?: return null
                         val isStampRally = when (parts.getOrNull(2)) {

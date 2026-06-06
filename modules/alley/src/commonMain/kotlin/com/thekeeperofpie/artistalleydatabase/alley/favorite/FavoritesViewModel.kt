@@ -323,7 +323,7 @@ class FavoritesViewModel(
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenExport: () -> Unit,
+        onOpenExport: (DataYear) -> Unit,
         onOpenFavoriteArtistsChangelog: (DataYear) -> Unit,
         onOpenFavoriteStampRalliesChangelog: (DataYear) -> Unit,
         onOpenFavoriteSeriesChangelog: (DataYear) -> Unit,
@@ -406,7 +406,7 @@ class FavoritesViewModel(
                 FavoritesScreen.EntryTab.MERCH -> onOpenFavoriteMerchChangelog(year)
             }
         }
-        FavoritesScreen.Event.OpenExport -> onOpenExport()
+        is FavoritesScreen.Event.OpenExport -> onOpenExport(event.dataYear)
         FavoritesScreen.Event.OpenSettings -> onOpenSettings()
     }
 

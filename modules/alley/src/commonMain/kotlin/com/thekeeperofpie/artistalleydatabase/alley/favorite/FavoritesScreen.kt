@@ -13,10 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.SheetValue
@@ -49,6 +50,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_show_qr
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_go_to_artists
@@ -80,17 +82,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridM
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.QrCode2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -129,7 +133,7 @@ object FavoritesScreen {
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenExport: () -> Unit,
+        onOpenExport: (DataYear) -> Unit,
         onOpenFavoriteArtistsChangelog: (DataYear) -> Unit,
         onOpenFavoriteStampRalliesChangelog: (DataYear) -> Unit,
         onOpenFavoriteSeriesChangelog: (DataYear) -> Unit,
@@ -293,7 +297,6 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
-                                    scaffoldState = scaffoldState,
                                     eventSink = eventSink,
                                 )
                             },
@@ -325,7 +328,6 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
-                                    scaffoldState = scaffoldState,
                                     eventSink = eventSink,
                                 )
                             },
@@ -340,7 +342,6 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
-                                    scaffoldState = null,
                                     eventSink = eventSink,
                                 )
                             },
@@ -354,7 +355,6 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
-                                    scaffoldState = null,
                                     eventSink = eventSink,
                                 )
                             },
@@ -676,17 +676,22 @@ object FavoritesScreen {
         tab: () -> EntryTab,
         onTabChange: (EntryTab) -> Unit,
         dataYearHeaderState: DataYearHeaderState,
-        scaffoldState: BottomSheetScaffoldState?,
         eventSink: (Event) -> Unit,
     ) {
         Column {
-            BottomSheetFilterDataYearHeader(
-                dataYearHeaderState = dataYearHeaderState,
-                scaffoldState = scaffoldState,
-                onOpenExport = { eventSink(Event.OpenExport) },
+            DataYearHeader(
+                state = dataYearHeaderState,
+                onOpenExport = { eventSink(Event.OpenExport(it)) },
                 onOpenChangelog = { eventSink(Event.OpenChangelog) },
                 onOpenSettings = { eventSink(Event.OpenSettings) },
-            )
+            ) {
+                IconButton(onClick = { eventSink(Event.OpenExport(dataYearHeaderState.year)) }) {
+                    Icon(
+                        imageVector = Icons.Default.QrCode2,
+                        contentDescription = stringResource(Res.string.alley_con_upcoming_show_qr),
+                    )
+                }
+            }
             val tab = tab()
             PrimaryScrollableTabRow(EntryTab.entries.indexOf(tab)) {
                 EntryTab.entries.forEach {
@@ -770,7 +775,7 @@ object FavoritesScreen {
         data class SearchEvent(val event: SearchScreen.Event<*>) : Event
         data class OpenSeries(val series: String) : Event
         data class OpenMerch(val merch: String) : Event
-        data object OpenExport : Event
+        data class OpenExport(val dataYear: DataYear) : Event
         data object OpenChangelog : Event
         data object OpenSettings : Event
         data object NavigateToArtists : Event

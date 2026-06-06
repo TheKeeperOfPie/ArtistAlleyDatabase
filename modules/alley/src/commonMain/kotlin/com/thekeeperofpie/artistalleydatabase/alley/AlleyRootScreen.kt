@@ -59,7 +59,7 @@ object AlleyRootScreen {
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenExport: () -> Unit,
+        onOpenExport: (DataYear) -> Unit,
         onOpenArtistChangelog: () -> Unit,
         onOpenStampRallyChangelog: () -> Unit,
         onOpenSeriesChangelog: (DataYear) -> Unit,

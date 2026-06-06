@@ -113,7 +113,7 @@ object ArtistSearchScreen {
         onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenExport: () -> Unit,
+        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         viewModel: ArtistSearchViewModel = viewModel {

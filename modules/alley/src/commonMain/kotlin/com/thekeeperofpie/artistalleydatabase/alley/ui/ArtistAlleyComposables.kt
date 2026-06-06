@@ -591,7 +591,7 @@ private val UPCOMING_PROMPT_DURATION = 15.days
 fun DataYearHeader(
     state: DataYearHeaderState,
     showFeedbackReminder: Boolean = true,
-    onOpenExport: () -> Unit,
+    onOpenExport: (DataYear) -> Unit,
     onOpenChangelog: () -> Unit,
     onOpenSettings: () -> Unit,
     additionalActions: (@Composable () -> Unit)? = null,
@@ -635,7 +635,7 @@ fun DataYearHeader(
                         text = text,
                         modifier = Modifier.weight(1f)
                     )
-                    Button(onClick = onOpenExport) {
+                    Button(onClick = { onOpenExport(state.year) }) {
                         Text(stringResource(Res.string.alley_con_upcoming_show_qr))
                     }
                 }

@@ -394,6 +394,7 @@
 
     <string name="alley_export_notes_warning">Note: QR code will not export notes field or series/merch favorites, consider downloading the data to a file to include them</string>
     <string name="alley_export_download_content_description">Download</string>
+    <string name="alley_export_qr_code_intro">Browser data is unreliable; export often to avoid data loss</string>
     <string name="alley_export_qr_code_explanation">Scan with another device's camera</string>
     <string name="alley_export_qr_code_content_description">Import link QR code</string>
     <string name="alley_export_qr_code_or_open_explanation">Or open this URL on the other device</string>

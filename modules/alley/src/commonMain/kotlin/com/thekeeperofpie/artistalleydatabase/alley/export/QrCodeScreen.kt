@@ -42,6 +42,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_export_notes_
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_data_year_label
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_intro
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_or_open_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_url_label
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
@@ -119,9 +120,11 @@ internal object QrCodeScreen {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
+                    Text(stringResource(Res.string.alley_export_qr_code_intro))
+
                     var dataYear by rememberSaveable(stateSaver = DataYearSaver) {
                         mutableStateOf(
                             DataYear.LATEST
