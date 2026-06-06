@@ -18,6 +18,7 @@ data class StampRallyHistoryEntry(
     val totalCost: Long?,
     val prize: String?,
     val prizeLimit: Long?,
+    val prizeMerch: List<String>?,
     val series: List<String>?,
     val merch: List<String>?,
     val notes: String?,
@@ -42,6 +43,7 @@ data class StampRallyHistoryEntry(
             totalCost = after.totalCost.takeIf { it != before?.totalCost },
             prize = after.prize.takeIf { it != before?.prize },
             prizeLimit = after.prizeLimit.takeIf { it != before?.prizeLimit },
+            prizeMerch = after.prizeMerch.takeIf { it != before?.prizeMerch },
             series = after.series.takeIf { it != before?.series },
             merch = after.merch.takeIf { it != before?.merch },
             notes = after.notes.takeIf { it != before?.notes },
@@ -66,6 +68,7 @@ data class StampRallyHistoryEntry(
             var totalCost: Long? = null
             var prize: String? = null
             var prizeLimit: Long? = null
+            var prizeMerch: List<String>? = null
             var series: List<String>? = null
             var merch: List<String>? = null
             var notes: String? = null
@@ -83,6 +86,7 @@ data class StampRallyHistoryEntry(
                 totalCost = totalCost ?: it.totalCost
                 prize = prize ?: it.prize
                 prizeLimit = prizeLimit ?: it.prizeLimit
+                prizeMerch = prizeMerch ?: it.prizeMerch
                 series = series ?: it.series
                 merch = merch ?: it.merch
                 notes = notes ?: it.notes
@@ -104,6 +108,7 @@ data class StampRallyHistoryEntry(
                 totalCost = totalCost,
                 prize = prize,
                 prizeLimit = prizeLimit,
+                prizeMerch = prizeMerch.orEmpty(),
                 series = series.orEmpty(),
                 merch = merch.orEmpty(),
                 notes = notes,
@@ -126,6 +131,7 @@ data class StampRallyHistoryEntry(
                 totalCost = entry.totalCost ?: initial.totalCost,
                 prize = entry.prize ?: initial.prize,
                 prizeLimit = entry.prizeLimit ?: initial.prizeLimit,
+                prizeMerch = entry.prizeMerch ?: initial.prizeMerch,
                 series = entry.series ?: initial.series,
                 notes = entry.notes ?: initial.notes,
                 images = entry.images ?: initial.images,

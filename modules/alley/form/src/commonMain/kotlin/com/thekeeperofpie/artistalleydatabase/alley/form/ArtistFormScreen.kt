@@ -837,6 +837,12 @@ object ArtistFormScreen {
                                     state = formState.prizeLimit,
                                     label = { Text(stringResource(Res.string.alley_form_stamp_rally_prize_limit_placeholder)) },
                                 )
+                                PrizeMerchSection(
+                                    formState.statePrizeMerch,
+                                    formState.prizeMerch,
+                                    merchById,
+                                    merchPredictions
+                                )
                                 SeriesSection(
                                     state = formState.stateSeries,
                                     series = formState.series,

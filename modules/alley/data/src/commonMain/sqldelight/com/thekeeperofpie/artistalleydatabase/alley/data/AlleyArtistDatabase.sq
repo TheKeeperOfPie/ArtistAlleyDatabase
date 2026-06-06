@@ -355,6 +355,7 @@ CREATE TABLE
         totalCost INTEGER,
         prize TEXT,
         prizeLimit INTEGER,
+        prizeMerch TEXT AS List<String> DEFAULT NULL,
         series TEXT AS List<String> NOT NULL,
         merch TEXT AS List<String> NOT NULL,
         notes TEXT,
@@ -370,7 +371,9 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026_fts USING FTS5 (
     fandom,
     tables,
     prize,
+    prizeMerch,
     series,
+    merch,
     notes,
     content=stampRallyEntryAnimeExpo2026,
     tokenize="unicode61 remove_diacritics 2"

@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     totalCost INTEGER,
     prize TEXT,
     prizeLimit INTEGER,
+    prizeMerch TEXT AS List<String> DEFAULT NULL,
     series TEXT AS List<String>,
     merch TEXT AS List<String>,
     notes TEXT,

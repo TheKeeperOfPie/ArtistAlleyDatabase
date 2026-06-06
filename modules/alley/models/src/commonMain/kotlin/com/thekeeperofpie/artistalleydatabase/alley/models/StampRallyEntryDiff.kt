@@ -17,6 +17,7 @@ data class StampRallyEntryDiff(
     val tableMin: TableMin?,
     val prize: String?,
     val prizeLimit: Long?,
+    val prizeMerch: ListDiff<String>?,
     val series: ListDiff<String>?,
     val merch: ListDiff<String>?,
     val notes: String?,

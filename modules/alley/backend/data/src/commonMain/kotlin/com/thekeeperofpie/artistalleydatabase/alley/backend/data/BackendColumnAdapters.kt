@@ -39,6 +39,7 @@ object BackendColumnAdapters {
         endTablesAdapter = ColumnAdapters.setStringAdapter,
         linksAdapter = ColumnAdapters.listStringAdapter,
         tableMinAdapter = ColumnAdapters.tableMinAdapter,
+        prizeMerchAdapter = ColumnAdapters.listStringAdapter,
         seriesAdapter = ColumnAdapters.listStringAdapter,
         merchAdapter = ColumnAdapters.listStringAdapter,
         imagesAdapter = ColumnAdapters.listDatabaseImageAdapter,

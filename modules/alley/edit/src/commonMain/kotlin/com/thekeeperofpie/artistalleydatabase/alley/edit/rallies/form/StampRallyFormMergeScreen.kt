@@ -48,6 +48,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize_limit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_start_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_table_min
@@ -439,6 +440,8 @@ internal object StampRallyFormMergeScreen {
                         StampRallyField.TABLE_MIN -> diff?.tableMin?.toString()
                         StampRallyField.PRIZE -> diff?.prize
                         StampRallyField.PRIZE_LIMIT -> diff?.prizeLimit?.toString()
+                        StampRallyField.PRIZE_MERCH_ADDED -> diff?.prizeMerch?.added?.joinToString()
+                        StampRallyField.PRIZE_MERCH_REMOVED -> diff?.prizeMerch?.deleted?.joinToString()
                         StampRallyField.SERIES_ADDED -> diff?.series?.added?.joinToString()
                         StampRallyField.SERIES_REMOVED -> diff?.series?.deleted?.joinToString()
                         StampRallyField.MERCH_ADDED -> diff?.merch?.added?.joinToString()
@@ -556,6 +559,12 @@ internal object StampRallyFormMergeScreen {
                     diff.prizeLimit,
                     StampRallyField.PRIZE_LIMIT
                 ),
+                prizeMerch = applyDiff(
+                    base.prizeMerch,
+                    diff.prizeMerch,
+                    StampRallyField.PRIZE_MERCH_ADDED,
+                    StampRallyField.PRIZE_MERCH_REMOVED,
+                ),
                 series = applyDiff(
                     base.series,
                     diff.series,
@@ -603,6 +612,8 @@ internal object StampRallyFormMergeScreen {
                         StampRallyField.TABLE_MIN -> diff.tableMin != null
                         StampRallyField.PRIZE -> diff.prize != null
                         StampRallyField.PRIZE_LIMIT -> diff.prizeLimit != null
+                        StampRallyField.PRIZE_MERCH_ADDED -> diff.prizeMerch?.added != null
+                        StampRallyField.PRIZE_MERCH_REMOVED -> diff.prizeMerch?.deleted != null
                         StampRallyField.SERIES_ADDED -> diff.series?.added != null
                         StampRallyField.SERIES_REMOVED -> diff.series?.deleted != null
                         StampRallyField.MERCH_ADDED -> diff.merch?.added != null
@@ -632,6 +643,8 @@ internal object StampRallyFormMergeScreen {
         TABLE_MIN(Res.string.alley_edit_stamp_rally_field_label_table_min),
         PRIZE(Res.string.alley_edit_stamp_rally_field_label_prize),
         PRIZE_LIMIT(Res.string.alley_edit_stamp_rally_field_label_prize_limit),
+        PRIZE_MERCH_ADDED(Res.string.alley_edit_stamp_rally_field_label_prize_merch),
+        PRIZE_MERCH_REMOVED(Res.string.alley_edit_stamp_rally_field_label_prize_merch),
         SERIES_ADDED(Res.string.alley_edit_stamp_rally_field_label_series),
         SERIES_REMOVED(Res.string.alley_edit_stamp_rally_field_label_series),
         MERCH_ADDED(Res.string.alley_edit_stamp_rally_field_label_merch),
@@ -650,6 +663,7 @@ internal object StampRallyFormMergeScreen {
                 TABLE_MIN,
                 PRIZE,
                 PRIZE_LIMIT,
+                PRIZE_MERCH_ADDED,
                 SERIES_ADDED,
                 MERCH_ADDED,
                 NOTES,
@@ -659,6 +673,7 @@ internal object StampRallyFormMergeScreen {
                 START_TABLES_REMOVED,
                 END_TABLES_REMOVED,
                 LINKS_REMOVED,
+                PRIZE_MERCH_REMOVED,
                 SERIES_REMOVED,
                 MERCH_REMOVED,
                     -> true

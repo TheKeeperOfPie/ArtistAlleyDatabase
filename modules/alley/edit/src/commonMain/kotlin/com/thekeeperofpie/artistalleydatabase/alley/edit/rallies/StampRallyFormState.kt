@@ -42,6 +42,8 @@ class StampRallyFormState(
     val tableMin: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val prize: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val prizeLimit: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+    val statePrizeMerch: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+    val prizeMerch: SnapshotStateList<MerchInfo> = SnapshotStateList(),
     val stateSeries: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val series: SnapshotStateList<SeriesInfo> = SnapshotStateList(),
     val stateMerch: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
@@ -66,6 +68,8 @@ class StampRallyFormState(
             with(EntryForm2.SingleTextState.Saver) { save(value.tableMin) },
             with(EntryForm2.SingleTextState.Saver) { save(value.prize) },
             with(EntryForm2.SingleTextState.Saver) { save(value.prizeLimit) },
+            with(EntryForm2.SingleTextState.Saver) { save(value.statePrizeMerch) },
+            with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { save(value.prizeMerch) },
             with(EntryForm2.SingleTextState.Saver) { save(value.stateSeries) },
             with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { save(value.series) },
             with(EntryForm2.SingleTextState.Saver) { save(value.stateMerch) },
@@ -90,11 +94,13 @@ class StampRallyFormState(
             tableMin = with(EntryForm2.SingleTextState.Saver) { restore(value[12]!!) },
             prize = with(EntryForm2.SingleTextState.Saver) { restore(value[13]!!) },
             prizeLimit = with(EntryForm2.SingleTextState.Saver) { restore(value[14]!!) },
-            stateSeries = with(EntryForm2.SingleTextState.Saver) { restore(value[15]!!) },
-            series = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[16] as String) },
-            stateMerch = with(EntryForm2.SingleTextState.Saver) { restore(value[17]!!) },
-            merch = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[18] as String) },
-            notes = with(EntryForm2.SingleTextState.Saver) { restore(value[19]!!) },
+            statePrizeMerch = with(EntryForm2.SingleTextState.Saver) { restore(value[15]!!) },
+            prizeMerch = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[16] as String) },
+            stateSeries = with(EntryForm2.SingleTextState.Saver) { restore(value[17]!!) },
+            series = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[18] as String) },
+            stateMerch = with(EntryForm2.SingleTextState.Saver) { restore(value[19]!!) },
+            merch = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[20] as String) },
+            notes = with(EntryForm2.SingleTextState.Saver) { restore(value[21]!!) },
         )
     }
 
@@ -149,6 +155,9 @@ class StampRallyFormState(
         FormUtils.applyValue(this.prize, stampRally.prize, mergeBehavior)
         FormUtils.applyValue(this.prizeLimit, stampRally.prizeLimit?.toString(), mergeBehavior)
 
+        val prizeMerch = stampRally.prizeMerch.map { merchById[it] ?: MerchInfo.fake(it) }
+        FormUtils.applyValue(this.statePrizeMerch, this.prizeMerch, prizeMerch, mergeBehavior)
+
         val series = stampRally.series.map { seriesById[it] ?: SeriesInfo.fake(it) }
         FormUtils.applyValue(this.stateSeries, this.series, series, mergeBehavior)
 
@@ -188,6 +197,7 @@ class StampRallyFormState(
             },
             prize = prize.value.text.toString(),
             prizeLimit = prizeLimit.value.text.toString().toLongOrNull(),
+            prizeMerch = prizeMerch.toList().map { it.name },
             startTables = startTables.toMutableSet().apply { retainAll(booths) },
             endTables = endTables.toMutableSet().apply { retainAll(booths) },
             series = series.toList().map { it.id },

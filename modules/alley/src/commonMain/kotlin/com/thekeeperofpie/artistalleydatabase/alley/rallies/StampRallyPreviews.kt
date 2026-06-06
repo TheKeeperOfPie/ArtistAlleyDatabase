@@ -22,6 +22,7 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 totalCost = 30,
                 prize = null,
                 prizeLimit = 100,
+                prizeMerch = emptyList(),
                 series = emptyList(),
                 merch = emptyList(),
                 notes = null,

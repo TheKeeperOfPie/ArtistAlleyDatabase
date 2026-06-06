@@ -32,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -63,6 +62,7 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
             totalCost = null,
             prize = null,
             prizeLimit = null,
+            prizeMerch = emptyList(),
             series = emptyList(),
             merch = emptyList(),
             notes = null,
@@ -96,6 +96,7 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
             totalCost = getLong(6),
             prize = null,
             prizeLimit = getLong(7),
+            prizeMerch = emptyList(),
             series = emptyList(),
             merch = emptyList(),
             notes = getString(8),
@@ -129,6 +130,7 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             totalCost = getLong(6),
             prize = getString(7),
             prizeLimit = getLong(8),
+            prizeMerch = emptyList(),
             series = getString(9)!!.let(Json::decodeFromString),
             merch = emptyList(),
             notes = getString(10),
@@ -171,24 +173,25 @@ fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
             totalCost = getLong(7),
             prize = getString(8),
             prizeLimit = getLong(9),
-            series = getString(10)!!.let(Json::decodeFromString),
-            merch = getString(11)!!.let(Json::decodeFromString),
-            notes = getString(12),
-            images = getString(13)!!.let(Json::decodeFromString),
+            prizeMerch = getString(10)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty(),
+            series = getString(11)!!.let(Json::decodeFromString),
+            merch = getString(12)!!.let(Json::decodeFromString),
+            notes = getString(13),
+            images = getString(14)!!.let(Json::decodeFromString),
             confirmed = links.isNotEmpty(),
             editorNotes = null,
             lastEditor = null,
             lastEditTime = null,
         ),
-        seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(14)!!),
-        artistBoothToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(getString(15)!!)
+        seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(15)!!),
+        artistBoothToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(getString(16)!!)
             .associate {
                 it.booth.orEmpty() to it.profileImage?.let(ColumnAdapters.databaseImageAdapter::decode)
             },
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(16),
-            ignored = getBooleanFixed(17),
+            favorite = getBooleanFixed(17),
+            ignored = getBooleanFixed(18),
         )
     )
 }
@@ -207,6 +210,7 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
         totalCost = null,
         prize = null,
         prizeLimit = null,
+        prizeMerch = emptyList(),
         series = emptyList(),
         merch = emptyList(),
         notes = null,
@@ -237,6 +241,7 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
         totalCost = totalCost,
         prize = null,
         prizeLimit = prizeLimit,
+        prizeMerch = emptyList(),
         series = emptyList(),
         merch = emptyList(),
         notes = notes,
@@ -267,6 +272,7 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
         totalCost = totalCost,
         prize = prize,
         prizeLimit = prizeLimit,
+        prizeMerch = emptyList(),
         series = series,
         merch = emptyList(),
         notes = notes,
@@ -297,6 +303,7 @@ private fun GetEntryAnimeExpo2026.toStampRallyWithUserData() = StampRallyWithUse
         totalCost = totalCost,
         prize = prize,
         prizeLimit = prizeLimit,
+        prizeMerch = prizeMerch.orEmpty(),
         series = series,
         merch = merch,
         notes = notes,
@@ -326,6 +333,7 @@ fun StampRallyEntry2023.toStampRallyEntry() = StampRallyDatabaseEntry(
     totalCost = null,
     prize = null,
     prizeLimit = null,
+    prizeMerch = emptyList(),
     series = emptyList(),
     merch = emptyList(),
     notes = null,
@@ -349,6 +357,7 @@ fun StampRallyEntry2024.toStampRallyEntry() = StampRallyDatabaseEntry(
     totalCost = totalCost,
     prize = null,
     prizeLimit = prizeLimit,
+    prizeMerch = emptyList(),
     series = emptyList(),
     merch = emptyList(),
     notes = notes,
@@ -372,6 +381,7 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyDatabaseEntry(
     totalCost = totalCost,
     prize = prize,
     prizeLimit = prizeLimit,
+    prizeMerch = emptyList(),
     series = series,
     merch = emptyList(),
     notes = notes,
@@ -395,6 +405,7 @@ fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyDatabaseEntry(
     totalCost = totalCost,
     prize = prize,
     prizeLimit = prizeLimit,
+    prizeMerch = prizeMerch.orEmpty(),
     series = series,
     merch = merch,
     notes = notes,
@@ -409,17 +420,15 @@ fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyDatabaseEntry(
 class StampRallyEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val dispatchers: CustomDispatchers,
     private val dao2023: suspend () -> StampRallyEntry2023Queries = { database().stampRallyEntry2023Queries },
     private val dao2024: suspend () -> StampRallyEntry2024Queries = { database().stampRallyEntry2024Queries },
     private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
     private val daoAnimeExpo2026: suspend () -> StampRallyEntryAnimeExpo2026Queries = { database().stampRallyEntryAnimeExpo2026Queries },
 ) {
     @Inject
-    constructor(database: ArtistAlleyDatabase, dispatchers: CustomDispatchers) : this(
+    constructor(database: ArtistAlleyDatabase) : this(
         driver = database::driver,
         database = database::database,
-        dispatchers = dispatchers,
     )
 
     suspend fun getEntry(year: DataYear, stampRallyId: String) =
@@ -614,6 +623,7 @@ class StampRallyEntryDao(
                 "$tableName.totalCost",
                 "$tableName.prize",
                 "$tableName.prizeLimit",
+                "$tableName.prizeMerch",
                 "$tableName.series",
                 "$tableName.merch",
                 "$tableName.notes",

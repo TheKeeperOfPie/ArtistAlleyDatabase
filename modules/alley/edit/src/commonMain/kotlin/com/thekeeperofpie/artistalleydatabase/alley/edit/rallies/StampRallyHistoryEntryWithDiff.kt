@@ -8,6 +8,7 @@ data class StampRallyHistoryEntryWithDiff(
     val entry: StampRallyHistoryEntry,
     val tablesDiff: ListDiff<String>?,
     val linksDiff: ListDiff<String>?,
+    val prizeMerchDiff: ListDiff<String>?,
     val seriesDiff: ListDiff<String>?,
     val merchDiff: ListDiff<String>?,
 ) {
@@ -16,24 +17,28 @@ data class StampRallyHistoryEntryWithDiff(
             val oldestEntry = entries.lastOrNull()
             var lastTables = oldestEntry?.tables.orEmpty()
             var lastLinks = oldestEntry?.links.orEmpty()
+            var lastPrizeMerch = oldestEntry?.prizeMerch.orEmpty()
             var lastSeries = oldestEntry?.series.orEmpty()
             var lastMerch = oldestEntry?.merch.orEmpty()
             val results = mutableListOf<StampRallyHistoryEntryWithDiff>()
             entries.fastForEachReversed {
                 val tablesDiff = ListDiff.diffList(lastTables, it.tables)
                 val linksDiff = ListDiff.diffList(lastLinks, it.links)
+                val prizeMerchDiff = ListDiff.diffList(lastPrizeMerch, it.prizeMerch)
                 val seriesDiff = ListDiff.diffList(lastSeries, it.series)
                 val merchDiff = ListDiff.diffList(lastMerch, it.merch)
                 results += StampRallyHistoryEntryWithDiff(
                     entry = it,
                     tablesDiff = tablesDiff,
                     linksDiff = linksDiff,
+                    prizeMerchDiff = prizeMerchDiff,
                     seriesDiff = seriesDiff,
                     merchDiff = merchDiff,
                 )
 
                 lastTables = it.tables ?: lastTables
                 lastLinks = it.links ?: lastLinks
+                lastPrizeMerch = it.prizeMerch ?: lastPrizeMerch
                 lastSeries = it.series ?: lastSeries
                 lastMerch = it.merch ?: lastMerch
             }

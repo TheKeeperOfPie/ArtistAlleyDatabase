@@ -249,6 +249,7 @@ internal object BackendUtils {
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
+                prizeMerch = ListDiff.diffList(formEntry.beforePrizeMerch, formEntry.afterPrizeMerch),
                 series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
@@ -294,6 +295,7 @@ internal object BackendUtils {
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
+                prizeMerch = ListDiff.diffList(formEntry.beforePrizeMerch, formEntry.afterPrizeMerch),
                 series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
@@ -340,6 +342,7 @@ internal object BackendUtils {
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
+                prizeMerch = ListDiff.diffList(formEntry.beforePrizeMerch, formEntry.afterPrizeMerch),
                 series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries

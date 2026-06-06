@@ -282,8 +282,11 @@
     <string name="alley_edit_stamp_rally_edit_table_min">Table min</string>
     <string name="alley_edit_stamp_rally_edit_prize">Prize</string>
     <string name="alley_edit_stamp_rally_edit_prize_limit">Prize limit</string>
+    <string name="alley_edit_stamp_rally_edit_prize_merch">Prize merch</string>
+    <string name="alley_edit_stamp_rally_edit_prize_merch_label">Types of merch contained in the prize pack</string>
     <string name="alley_edit_stamp_rally_edit_series">Series</string>
-    <string name="alley_edit_stamp_rally_edit_merch">Merch</string>
+    <string name="alley_edit_stamp_rally_edit_merch">Fandom merch</string>
+    <string name="alley_edit_stamp_rally_edit_merch_label">Types of merch for the fandom sold by participating artists</string>
     <string name="alley_edit_stamp_rally_edit_notes">Notes</string>
     <string name="alley_edit_stamp_rally_edit_editor_notes">Editor notes</string>
     <string name="alley_edit_stamp_rally_edit_delete_failed">Failed to delete</string>
@@ -319,8 +322,9 @@
     <string name="alley_edit_stamp_rally_field_label_table_min">Table min:</string>
     <string name="alley_edit_stamp_rally_field_label_prize">Prize:</string>
     <string name="alley_edit_stamp_rally_field_label_prize_limit">Prize limit:</string>
+    <string name="alley_edit_stamp_rally_field_label_prize_merch">Prize merch:</string>
     <string name="alley_edit_stamp_rally_field_label_series">Series:</string>
-    <string name="alley_edit_stamp_rally_field_label_merch">Merch:</string>
+    <string name="alley_edit_stamp_rally_field_label_merch">Fandom merch:</string>
     <string name="alley_edit_stamp_rally_field_label_notes">Notes:</string>
     <string name="alley_edit_stamp_rally_field_label_editor_notes">Editor notes:</string>
 

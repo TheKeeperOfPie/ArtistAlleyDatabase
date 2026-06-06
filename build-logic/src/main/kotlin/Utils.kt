@@ -271,6 +271,7 @@ internal object Utils {
                 endTablesAdapter = setStringAdapter,
                 linksAdapter = listStringAdapter,
                 tableMinAdapter = tableMinAdapter,
+                prizeMerchAdapter = listStringAdapter,
                 seriesAdapter = listStringAdapter,
                 merchAdapter = listStringAdapter,
                 imagesAdapter = listDatabaseImageAdapter,

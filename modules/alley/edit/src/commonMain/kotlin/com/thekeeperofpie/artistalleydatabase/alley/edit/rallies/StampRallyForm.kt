@@ -39,9 +39,12 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_images_subtitle_megabytes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_merch
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_merch_label
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_prize
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_prize_limit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_prize_merch
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_prize_merch_label
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_start_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_table_min
@@ -129,6 +132,7 @@ object StampRallyForm {
                 state.tableMin,
                 state.prize,
                 state.prizeLimit,
+                state.statePrizeMerch,
                 state.stateSeries,
                 state.stateMerch,
                 state.notes,
@@ -185,6 +189,7 @@ object StampRallyForm {
             TableMinSection(state.tableMin)
             PrizeSection(state.prize)
             PrizeLimitSection(state.prizeLimit)
+            PrizeMerchSection(state.statePrizeMerch, state.prizeMerch, merchById, merchPredictions)
             SeriesSection(
                 state = state.stateSeries,
                 series = state.series,
@@ -641,11 +646,28 @@ abstract class StampRallyFormScope(
     }
 
     @Composable
+    fun PrizeMerchSection(
+        state: EntryForm2.SingleTextState,
+        merch: SnapshotStateList<MerchInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+    ) = MerchSection(
+        state = state,
+        merch = merch,
+        merchById = merchById,
+        merchPredictions = merchPredictions,
+        headerText = Res.string.alley_edit_stamp_rally_edit_prize_merch,
+        labelText = Res.string.alley_edit_stamp_rally_edit_prize_merch_label,
+    )
+
+    @Composable
     fun MerchSection(
         state: EntryForm2.SingleTextState,
         merch: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        headerText: StringResource = Res.string.alley_edit_stamp_rally_edit_merch,
+        labelText: StringResource = Res.string.alley_edit_stamp_rally_edit_merch_label,
     ) {
         val merchById = merchById()
         val initialMerch = remember(merchById, initialStampRally?.merch) {
@@ -657,7 +679,7 @@ abstract class StampRallyFormScope(
             header = {
                 FormHeaderIconAndTitle(
                     CustomIcons.Package2,
-                    Res.string.alley_edit_stamp_rally_edit_merch
+                    headerText,
                 )
             },
             initialItems = initialMerch,
@@ -680,12 +702,13 @@ abstract class StampRallyFormScope(
                     it.name
                 }
             },
+            label = { Text(stringResource(labelText)) },
             listRevertDialogState = listRevertDialogState,
         )
 
         ListFieldRevertDialog(
             dialogState = listRevertDialogState,
-            label = Res.string.alley_edit_stamp_rally_edit_merch,
+            label = headerText,
             items = merch,
             itemsToText = { it.joinToString() },
         )
