@@ -29,7 +29,7 @@ class ImagesViewModel(
                         booth = type.booth ?: artist.booth,
                         name = type.name ?: artist.name,
                         profileImage = type.profileImage
-                            ?: AlleyImageUtils.getProfileImage(artist.profileImage),
+                            ?: AlleyImageUtils.getProfileImage(artist.year, artist.profileImage),
                     ) to images
                 } else {
                     val fallbackImageYear = artist.fallbackImageYear
@@ -38,7 +38,7 @@ class ImagesViewModel(
                         booth = type.booth ?: artist.booth,
                         name = type.name ?: artist.name,
                         profileImage = type.profileImage
-                            ?: AlleyImageUtils.getProfileImage(artist.profileImage),
+                            ?: AlleyImageUtils.getProfileImage(artist.year, artist.profileImage),
                     ) to AlleyImageUtils.getArtistImagesWithEmbedFallback(
                         if (showingFallback) {
                             fallbackImageYear

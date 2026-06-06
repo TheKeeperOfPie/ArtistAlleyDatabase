@@ -41,7 +41,7 @@ class StampRallyEntryGridModel(
         fun buildFromEntry(entry: StampRallyWithUserData): StampRallyEntryGridModel {
             val stampRally = entry.stampRally
             val artistBoothsToProfileImages = entry.artistBoothToProfileImages.mapNotNull {
-                it.key to AlleyImageUtils.getProfileImage(it.value)
+                it.key to AlleyImageUtils.getProfileImage(stampRally.year, it.value)
             }
             return StampRallyEntryGridModel(
                 stampRally = stampRally,

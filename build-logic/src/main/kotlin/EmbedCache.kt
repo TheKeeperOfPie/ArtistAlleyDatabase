@@ -1,4 +1,3 @@
-
 import ImageUtils.parseScaledImageWidthHeight
 import androidx.annotation.ColorInt
 import androidx.compose.ui.graphics.toArgb
@@ -200,6 +199,7 @@ internal class EmbedCache(
                                 logger = logger,
                                 imageCacheDir = imageCacheDir,
                                 file = imageFile,
+                                resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
                             )
                             ImageUtils.compressAndRename(
                                 logger = logger,
@@ -229,7 +229,10 @@ internal class EmbedCache(
             } else {
                 FetchResult(
                     fileName = fileName,
-                    fileHash = ImageUtils.hash(outputFile),
+                    fileHash = ImageUtils.hash(
+                        file = outputFile,
+                        resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
+                    ),
                     width = image.width,
                     height = image.height,
                     color = Palette.from(image.toComposeImageBitmap())
@@ -256,7 +259,10 @@ internal class EmbedCache(
 
         FetchResult(
             fileName = fileName,
-            fileHash = ImageUtils.hash(outputFile),
+            fileHash = ImageUtils.hash(
+                file = outputFile,
+                resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
+            ),
             width = image.width,
             height = image.height,
             color = Palette.from(image.toComposeImageBitmap())

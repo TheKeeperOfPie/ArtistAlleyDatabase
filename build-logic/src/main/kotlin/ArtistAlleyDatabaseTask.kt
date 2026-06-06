@@ -684,7 +684,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }.dir("artist/$artistId").get().asFile
         val files = if (artistImagesDir.exists()) artistImagesDir.listFiles() else emptyArray()
         val finalImages = images.mapNotNull {
-            finalizeImage(imageCacheDir, year, files, it)
+            finalizeImage(
+                imageCacheDir = imageCacheDir,
+                year = year,
+                files = files,
+                it = it,
+                resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
+            )
         }
 
         val allEmbeds = embedLinks
@@ -714,7 +720,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
 
         val customProfileImage = profileImage?.let {
-            finalizeImage(imageCacheDir, year, files, it)
+            finalizeImage(
+                imageCacheDir = imageCacheDir,
+                year = year,
+                files = files,
+                it = it,
+                // TODO: Center crop here rather than at runtime
+                resizeTarget = ImageUtils.THUMBNAIL_RESIZE_TARGET,
+                finalNamePrefix = "custom-" // TODO: Use a better mechanism for this
+            )
         }
 
         val embedProfileImage = smallEmbeds
@@ -748,7 +762,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }.dir("rally/$rallyId").get().asFile
         val files = if (rallyImagesDir.exists()) rallyImagesDir.listFiles() else emptyArray()
         return images.mapNotNull {
-            finalizeImage(imageCacheDir, year, files, it)
+            finalizeImage(
+                imageCacheDir = imageCacheDir,
+                year = year,
+                files = files,
+                it = it,
+                resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
+            )
         }
     }
 
@@ -757,6 +777,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         year: DataYear,
         files: Array<File>,
         it: DatabaseImage,
+        resizeTarget: Int,
+        finalNamePrefix: String = "",
     ): FinalImage? {
         val imageName = it.name.substringAfterLast("/").substringBeforeLast(".")
         val imageFile = files.find { it.name.startsWith(imageName) }
@@ -764,16 +786,17 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             logger.error("Failed to find $it")
             return null
         }
-        val hash = ImageUtils.hash(imageFile)
+        val hash = ImageUtils.hash(imageFile, resizeTarget)
         val nameWithHash = it.name.substringBeforeLast("/") + "/$imageName-$hash.webp"
         val (width, height, resized) = parseScaledImageWidthHeight(
             logger = logger,
             imageCacheDir = imageCacheDir,
             file = imageFile,
+            resizeTarget = resizeTarget,
         )
         return FinalImage(
             original = it,
-            final = it.copy(name = nameWithHash, width = width, height = height),
+            final = it.copy(name = finalNamePrefix + nameWithHash, width = width, height = height),
             imageToCompress = ImageToCompress(
                 path = nameWithHash.removePrefix(year.folderName).removePrefix("/"),
                 imageFile = imageFile,
@@ -1085,6 +1108,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     logger = logger,
                     imageCacheDir = imageCacheDir,
                     file = it,
+                    resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
                 )
                 DatabaseImage("${folder.name}/${it.name}", width, height)
             }
@@ -1134,6 +1158,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     logger = logger,
                     imageCacheDir = imageCacheDir,
                     file = it,
+                    resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
                 )
                 DatabaseImage("${folder.name}/${it.name}", width, height)
             }

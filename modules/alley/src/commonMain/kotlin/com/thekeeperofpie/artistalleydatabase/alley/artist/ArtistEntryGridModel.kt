@@ -78,7 +78,7 @@ class ArtistEntryGridModel(
                 embeds = artist.embeds.takeIf { showEmbeds }.orEmpty(),
             )
 
-            val profileImage = AlleyImageUtils.getProfileImage(artist.profileImage)
+            val profileImage = AlleyImageUtils.getProfileImage(artist.year, artist.profileImage)
 
             return ArtistEntryGridModel(
                 artist = artist,

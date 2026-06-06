@@ -12,23 +12,26 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 
 object AlleyImageUtils {
 
+    private fun getArtistImagePath(
+        year: DataYear,
+        imageName: String,
+    ) = when (year) {
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025,
+            -> "files/images/${year.folderName}/catalogs/$imageName"
+        DataYear.ANIME_EXPO_2026 -> "files/images/$imageName"
+    }
+
     fun getArtistImages(
         year: DataYear,
         images: List<DatabaseImage>,
     ) = images.mapNotNull {
         try {
-            val path = when (year) {
-                DataYear.ANIME_EXPO_2023,
-                DataYear.ANIME_EXPO_2024,
-                DataYear.ANIME_EXPO_2025,
-                DataYear.ANIME_NYC_2024,
-                DataYear.ANIME_NYC_2025,
-                    -> "files/images/${year.folderName}/catalogs/${it.name}"
-                DataYear.ANIME_EXPO_2026 -> "files/images/${it.name}"
-            }
-
             CatalogImage(
-                uri = Uri.parse(Res.getUri(path)),
+                uri = Uri.parse(Res.getUri(getArtistImagePath(year, it.name))),
                 width = it.width,
                 height = it.height,
             )
@@ -109,13 +112,17 @@ object AlleyImageUtils {
         .ifEmpty { getTempImages(tempImages) }
         .ifEmpty { getEmbedImages(embeds) }
 
-    fun getProfileImageWithPath(profileImage: DatabaseImage?) =
+    fun getProfileImageWithPath(year: DataYear, profileImage: DatabaseImage?) =
         profileImage?.let {
-            "files/embeds/${it.name}" to it
+            if (it.name.startsWith("custom-")) {
+                getArtistImagePath(year, it.name.removePrefix("custom-")) to it
+            } else {
+                "files/embeds/${it.name}" to it
+            }
         }
 
-    fun getProfileImage(profileImage: DatabaseImage?) =
-        getProfileImageWithPath(profileImage)
+    fun getProfileImage(year: DataYear, profileImage: DatabaseImage?) =
+        getProfileImageWithPath(year, profileImage)
             ?.let { (path, image) ->
                 try {
                     CatalogImage(

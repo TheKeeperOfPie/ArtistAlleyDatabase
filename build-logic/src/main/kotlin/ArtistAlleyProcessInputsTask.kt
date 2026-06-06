@@ -226,9 +226,13 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                             val (width, height, resized) = parseScaledImageWidthHeight(
                                 logger = logger,
                                 imageCacheDir = imageCacheDir,
-                                file = file
+                                file = file,
+                                resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
                             )
-                            val hash = ImageUtils.hash(file)
+                            val hash = ImageUtils.hash(
+                                file = file,
+                                resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
+                            )
                             CatalogFolder.Image(
                                 file = file,
                                 width = width,

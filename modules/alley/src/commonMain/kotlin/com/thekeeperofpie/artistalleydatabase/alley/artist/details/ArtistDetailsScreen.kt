@@ -202,7 +202,7 @@ object ArtistDetailsScreen {
                                         ?.takeIf { showingOutdatedCatalogs }
                                         ?: route.year
                                     val profileImage =
-                                        AlleyImageUtils.getProfileImage(artist.profileImage)
+                                        AlleyImageUtils.getProfileImage(artist.year, artist.profileImage)
                                     onOpenImages(
                                         year,
                                         artist.id,
@@ -282,7 +282,7 @@ object ArtistDetailsScreen {
                 val name = artist?.name ?: route.name
                 val profileImage = remember(artist) {
                     artist?.let {
-                        AlleyImageUtils.getProfileImage(artist.profileImage)
+                        AlleyImageUtils.getProfileImage(artist.year, artist.profileImage)
                     }
                 }
                 ArtistTitle(

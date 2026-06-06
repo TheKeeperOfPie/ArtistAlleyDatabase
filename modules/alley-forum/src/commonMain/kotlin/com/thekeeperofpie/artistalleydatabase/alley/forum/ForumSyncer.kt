@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
+import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
@@ -363,10 +364,12 @@ internal class ForumSyncer(private val environment: Environment) {
                     )
                 }
 
-                val thumbnailImage = entry.embeds
-                    ?.let(AlleyImageUtils::getProfileImageWithPath)
+                val thumbnailImage = entry.profileImage
+                    ?.let {
+                        AlleyImageUtils.getProfileImageWithPath(DataYear.ANIME_EXPO_2026, it)
+                    }
 
-                val thumbnailSwatch =  thumbnailImage?.first
+                val thumbnailSwatch = thumbnailImage?.first
                     ?.let { AlleyDataRes.readBytes(it) }
                     ?.decodeToImageBitmap()
                     ?.let(Palette::from)

@@ -1,4 +1,4 @@
-
+import androidx.compose.ui.unit.IntSize
 import com.sksamuel.scrimage.webp.CWebpHandler
 import com.sksamuel.scrimage.webp.WebpImageReader
 import org.gradle.api.logging.Logger
@@ -10,7 +10,8 @@ import javax.imageio.stream.FileCacheImageInputStream
 
 internal object ImageUtils {
     val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp", "webp")
-    const val RESIZE_TARGET = 1500
+    const val NORMAL_RESIZE_TARGET = 1500
+    const val THUMBNAIL_RESIZE_TARGET = 300
     const val WEBP_TARGET_QUALITY = 80
     const val WEBP_METHOD = 6
 
@@ -20,15 +21,46 @@ internal object ImageUtils {
         field.get(null) as Path
     }
 
+    fun parseImageWidthHeight(
+        imageCacheDir: File,
+        file: File,
+    ): IntSize = file.inputStream().use {
+        FileCacheImageInputStream(it, imageCacheDir).use {
+            val reader = ImageIO.getImageReaders(it).asSequence().firstOrNull()
+                ?: ImageIO.getImageReadersByMIMEType("image/${file.extension}").asSequence()
+                    .firstOrNull()
+            try {
+                val imageWidth: Int
+                val imageHeight: Int
+                if (reader == null) {
+                    val imageReader = WebpImageReader()
+                    val image = imageReader.read(file.readBytes())
+                    imageWidth = image.width
+                    imageHeight = image.height
+                } else {
+                    reader.setInput(it)
+                    imageWidth = reader.getWidth(reader.minIndex)
+                    imageHeight = reader.getHeight(reader.minIndex)
+                }
+
+                IntSize(imageWidth, imageHeight)
+            } finally {
+                reader?.dispose()
+            }
+        }
+    }
+
     fun parseScaledImageWidthHeight(
         logger: Logger,
         imageCacheDir: File,
         file: File,
+        resizeTarget: Int,
     ): Triple<Int, Int, Boolean> = try {
         file.inputStream().use {
             FileCacheImageInputStream(it, imageCacheDir).use {
                 val reader = ImageIO.getImageReaders(it).asSequence().firstOrNull()
-                    ?: ImageIO.getImageReadersByMIMEType("image/${file.extension}").asSequence().firstOrNull()
+                    ?: ImageIO.getImageReadersByMIMEType("image/${file.extension}").asSequence()
+                        .firstOrNull()
                 try {
                     val imageWidth: Int
                     val imageHeight: Int
@@ -46,15 +78,15 @@ internal object ImageUtils {
                     val width: Int
                     val height: Int
                     val resized: Boolean
-                    if (imageWidth > imageHeight && imageWidth > RESIZE_TARGET) {
-                        width = RESIZE_TARGET
+                    if (imageWidth > imageHeight && imageWidth > resizeTarget) {
+                        width = resizeTarget
                         height =
-                            (RESIZE_TARGET.toFloat() / imageWidth * imageHeight).toInt()
+                            (resizeTarget.toFloat() / imageWidth * imageHeight).toInt()
                         resized = true
-                    } else if (imageHeight >= imageWidth && imageHeight > RESIZE_TARGET) {
+                    } else if (imageHeight >= imageWidth && imageHeight > resizeTarget) {
                         width =
-                            (RESIZE_TARGET.toFloat() / imageHeight * imageWidth).toInt()
-                        height = RESIZE_TARGET
+                            (resizeTarget.toFloat() / imageHeight * imageWidth).toInt()
+                        height = resizeTarget
                         resized = true
                     } else {
                         width = imageWidth
@@ -72,9 +104,9 @@ internal object ImageUtils {
         throw t
     }
 
-    fun hash(file: File) = Utils.hash(
+    fun hash(file: File, resizeTarget: Int) = Utils.hash(
         file = file,
-        RESIZE_TARGET,
+        resizeTarget,
         WEBP_METHOD,
         WEBP_TARGET_QUALITY
     ).toString()
