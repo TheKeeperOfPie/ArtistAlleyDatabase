@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Prints" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6 {
+        stroke: #000;
+      }
+
+      .cls-1, .cls-3, .cls-4, .cls-5, .cls-6 {
+        fill: none;
+      }
+
+      .cls-1, .cls-6 {
+        stroke-width: .5px;
+      }
+
+      .cls-2, .cls-5 {
+        stroke-width: .25px;
+      }
+
+      .cls-3 {
+        stroke-width: .4px;
+      }
+
+      .cls-4 {
+        stroke-width: .3px;
+      }
+
+      .cls-6 {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <rect class="cls-6" x="10.26" y="4.34" width="28.29" height="39.08"/>
+  <g>
+    <g>
+      <polyline class="cls-6" points="10.26 33.25 2.64 9.42 10.26 6.98"/>
+      <polyline class="cls-6" points="24.63 43.42 14.54 46.65 13.51 43.42"/>
+      <polyline class="cls-6" points="38.68 29.25 41.49 38.03 38.55 38.97"/>
+      <polyline class="cls-6" points="19.11 4.15 29.58 .8 30.72 4.34"/>
+    </g>
+    <polyline class="cls-6" points="39.27 38.74 38.21 45.28 26.75 43.42"/>
+    <polyline class="cls-6" points="38.79 5.78 44.45 6.7 40.09 33.64"/>
+    <polyline class="cls-6" points="16.17 4.34 16.53 2.17 22.35 3.12"/>
+  </g>
+  <g>
+    <path class="cls-3" d="M22.35,18.63s-2.17-1.24-4.95.71-4.98,4.89-5.69,8.29l2.74-2.47s-1.44,3.83.88,5.47l3.18-5.6,1.85,3.62.93-3.79,5.47,4.81s5.9-8.51-4.39-11.03Z"/>
+    <path class="cls-4" d="M16.5,28.56s-.25,1.94.33,2.69,2.69,2.39,2.69,2.39c0,0,4.37-1.29,5.07-1.82s2.16-2.16,2.16-2.16l-5.47-4.81-.93,3.79-1.85-3.62-2,3.53Z"/>
+    <path class="cls-5" d="M26.75,29.66c1.54-5.6-.83-8.47-.83-8.47l-1-.22"/>
+    <path class="cls-5" d="M16.44,27.37s1.13-1.63,2.53,0"/>
+    <path class="cls-5" d="M21.59,27.37s1.13-1.63,2.53,0"/>
+    <circle class="cls-5" cx="18.3" cy="27.75" r=".78"/>
+    <circle class="cls-5" cx="23.13" cy="27.75" r=".78"/>
+    <path class="cls-5" d="M21.33,30.61s-1.1,1.64-2.53.04"/>
+    <polygon class="cls-2" points="28.43 25.6 29.57 26 28.43 29.66 26.75 30.81 26.09 30.61 27.26 29.04 28.43 25.6"/>
+    <polyline class="cls-2" points="16.61 30.81 16.61 32.09 16.87 32.49"/>
+    <rect class="cls-2" x="16.89" y="31.88" width=".53" height="1.73" rx=".26" ry=".26" transform="translate(-19.54 28.23) rotate(-55.34)"/>
+    <path class="cls-1" d="M12.79,26.65s1.65,10.42,6.68,10.6,7.84.65,9.53-.01,4.65-4.09,4.87-4.75,6.24-12.64-2.49-16.54c0,0-3.12-2.03-7.38.88,0,0-5.76-3.57-9.34,1.19s-2.22,7.3-2.22,7.3"/>
+    <path class="cls-2" d="M20.36,13.07s2.36,2.18,3.07,3.2-.82-4.47-3.07-3.2Z"/>
+    <path class="cls-1" d="M23.9,16.24s-.51-6.34,3.6-7.44,4.54-.93,4.54-.93c0,0-.26,3.15-1.15,4.18s-4.08,3.47-5.59,4.01-1.31.76-1.31.76l-.1-.59Z"/>
+  </g>
+</svg>

@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Aprons
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bags
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bandages
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bookmarks
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Buttons
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Calendars
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Candles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Charms
@@ -28,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.MysteryBoxes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Pants
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhoneAccessories
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Plushies
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Prints
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Puzzles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Ribbons
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Scarves
@@ -36,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Shoes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Skateboards
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Skirts
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Socks
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Standees
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Stickers
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Tableware
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.WallScrolls
@@ -51,6 +54,7 @@ object MerchUtils {
         "Bags" -> MerchIcons.Bags
         "Bandages" -> MerchIcons.Bandages
         "Bookmarks" -> MerchIcons.Bookmarks
+        "Buttons" -> MerchIcons.Buttons
         "Calendars" -> MerchIcons.Calendars
         "Candles" -> MerchIcons.Candles
         "Charms" -> MerchIcons.Charms
@@ -71,6 +75,7 @@ object MerchUtils {
         "Pants" -> MerchIcons.Pants
         "Phone accessories" -> MerchIcons.PhoneAccessories
         "Plushies" -> MerchIcons.Plushies
+        "Prints" -> MerchIcons.Prints
         "Puzzles" -> MerchIcons.Puzzles
         "Ribbons" -> MerchIcons.Ribbons
         "Scarves" -> MerchIcons.Scarves
@@ -79,6 +84,7 @@ object MerchUtils {
         "Skateboards" -> MerchIcons.Skateboards
         "Skirts" -> MerchIcons.Skirts
         "Socks" -> MerchIcons.Socks
+        "Standees" -> MerchIcons.Standees
         "Stickers" -> MerchIcons.Stickers
         "Tableware" -> MerchIcons.Tableware
         "Wall scrolls" -> MerchIcons.WallScrolls
