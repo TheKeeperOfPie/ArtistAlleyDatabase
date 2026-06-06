@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -26,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -43,6 +45,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_mer
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_edit_delete_text
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_edit_delete_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_canonical
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_categories
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_uuid
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -52,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -156,6 +160,24 @@ object MerchEditScreen {
                         SingleTextSection(
                             state = state.id,
                             headerText = { Text(stringResource(Res.string.alley_edit_merch_header_canonical)) },
+                        )
+                        MultiTextSection(
+                            state = state.categoriesState,
+                            headerText = { Text(stringResource(Res.string.alley_edit_merch_header_categories)) },
+                            items = state.categories,
+                            onItemCommitted = {
+                                state.categories.add(it)
+                                state.categoriesState.value.clearText()
+                            },
+                            removeLastItem = state.categories::removeLastOrNull,
+                            item = { _, category ->
+                                Text(
+                                    text = category,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            },
                         )
 
                         val uuidErrorMessage by rememberUuidValidator(state.uuid)
@@ -276,6 +298,8 @@ object MerchEditScreen {
     class State(
         val id: EntryForm2.SingleTextState,
         val uuid: EntryForm2.SingleTextState,
+        val categoriesState: EntryForm2.SingleTextState,
+        val categories: SnapshotStateList<String>,
         val notes: EntryForm2.SingleTextState,
         val savingState: MutableStateFlow<JobProgress<BackendRequest.MerchSave.Response>>,
         val deleteProgress: StateFlow<JobProgress<BackendRequest.MerchDelete.Response>>,

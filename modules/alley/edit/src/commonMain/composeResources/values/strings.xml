@@ -159,6 +159,7 @@
     <string name="alley_edit_series_edit_delete_failed_outdated">Failed to delete, series was outdated</string>
 
     <string name="alley_edit_merch_header_canonical">Merch</string>
+    <string name="alley_edit_merch_header_categories">Categories</string>
     <string name="alley_edit_merch_header_notes">Notes</string>
     <string name="alley_edit_merch_header_uuid">UUID</string>
 

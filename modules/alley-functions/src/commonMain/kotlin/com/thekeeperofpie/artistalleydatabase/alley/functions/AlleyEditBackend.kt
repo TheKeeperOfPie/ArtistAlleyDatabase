@@ -1277,7 +1277,7 @@ object AlleyEditBackend {
         name = name,
         uuid = uuid.toString(),
         notes = notes,
-        categories = null,
+        categories = categories?.ifEmpty { null }?.joinToString(),
         yearFlags = 0L,
     )
 

@@ -566,6 +566,7 @@ class ArtistSortFilterController(
             val other = "Other" to AlleyTagEntry.Category(
                 id = "Other",
                 children = merchEntries.filter { it.categories.isNullOrEmpty() }
+                    .sortedBy { it.name }
                     .associate { it.name to AlleyTagEntry.Tag(it.name) }
             )
             val categories = merchToCategories.flatMap { it.second }.distinct().sorted()

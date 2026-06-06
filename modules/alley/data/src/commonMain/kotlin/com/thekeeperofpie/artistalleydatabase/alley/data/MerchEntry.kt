@@ -6,5 +6,6 @@ import kotlin.uuid.Uuid
 fun MerchEntry.toMerchInfo() = MerchInfo(
     name = name,
     uuid = Uuid.parse(uuid),
+    categories = categories?.split(",")?.map(String::trim)?.toSet(),
     notes = notes,
 )

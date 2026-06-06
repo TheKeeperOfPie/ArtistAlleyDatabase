@@ -32,6 +32,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_action_add
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_action_refresh_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_canonical
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_categories
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_uuid
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -128,6 +129,10 @@ object MerchListScreen {
                         }
                     when (column) {
                         Column.MERCH -> FieldText(value = row?.name, modifier = modifier)
+                        Column.CATEGORIES -> FieldText(
+                            value = row?.categories?.sorted()?.joinToString(),
+                            modifier = modifier
+                        )
                         Column.NOTES -> FieldText(value = row?.notes, modifier = modifier)
                         Column.UUID -> FieldText(value = row?.uuid, modifier = modifier)
                     }
@@ -158,6 +163,7 @@ object MerchListScreen {
         override val size: Dp = 200.dp,
     ) : TwoWayGrid.Column {
         MERCH(text = Res.string.alley_edit_merch_header_canonical),
+        CATEGORIES(text = Res.string.alley_edit_merch_header_categories, size = 450.dp),
         NOTES(text = Res.string.alley_edit_merch_header_notes, size = 450.dp),
         UUID(text = Res.string.alley_edit_merch_header_uuid, size = 400.dp),
     }

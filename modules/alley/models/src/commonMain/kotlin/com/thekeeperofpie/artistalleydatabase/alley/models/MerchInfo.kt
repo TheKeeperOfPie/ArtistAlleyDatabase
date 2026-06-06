@@ -7,6 +7,7 @@ import kotlin.uuid.Uuid
 data class MerchInfo(
     val name: String,
     val uuid: Uuid,
+    val categories: Set<String>?,
     val notes: String?,
     val faked: Boolean = false,
 ) {
@@ -14,6 +15,7 @@ data class MerchInfo(
         fun fake(id: String) = MerchInfo(
             name = id,
             uuid = Utils.uuidFromRandomBytes(id),
+            categories = null,
             notes = null,
             faked = true,
         )
