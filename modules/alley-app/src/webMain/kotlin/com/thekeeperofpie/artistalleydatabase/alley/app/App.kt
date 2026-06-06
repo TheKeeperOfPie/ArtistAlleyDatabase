@@ -14,11 +14,16 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import artistalleydatabase.modules.alley_app.generated.resources.Res
@@ -100,8 +105,16 @@ fun App(graph: ArtistAlleyWebGraph) {
             .build()
     }
 
-    VariableFontEffect(graph.seriesEntryCache)
-    Content(graph)
+    var fontFamilyResolver by rememberSaveable { mutableStateOf<FontFamily.Resolver?>(null) }
+    VariableFontEffect(
+        seriesEntryCache = graph.seriesEntryCache,
+        onLoaded = { fontFamilyResolver = it },
+    )
+    CompositionLocalProvider(
+        LocalFontFamilyResolver provides (fontFamilyResolver ?: LocalFontFamilyResolver.current)
+    ) {
+        Content(graph)
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
