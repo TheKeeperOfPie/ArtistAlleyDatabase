@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortF
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AboutLibrariesProvider
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleyAboutLibrariesProvider
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewModel
@@ -52,6 +53,7 @@ interface ArtistAlleyGraph {
     val mapViewModelFactory: MapViewModel.Factory
     val merchChangelogViewModelFactory: () -> MerchChangelogViewModel
     val seriesChangelogViewModelFactory: () -> SeriesChangelogViewModel
+    val seriesEntryCache: SeriesEntryCache
     val stampRallyChangelogViewModelFactory: StampRallyChangelogViewModel.Factory
     val stampRallyDetailsViewModelFactory: StampRallyDetailsViewModel.Factory
     val stampRallyMapViewModelFactory: StampRallyMapViewModel.Factory

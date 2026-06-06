@@ -100,7 +100,7 @@ fun App(graph: ArtistAlleyWebGraph) {
             .build()
     }
 
-    VariableFontEffect()
+    VariableFontEffect(graph.seriesEntryCache)
     Content(graph)
 }
 

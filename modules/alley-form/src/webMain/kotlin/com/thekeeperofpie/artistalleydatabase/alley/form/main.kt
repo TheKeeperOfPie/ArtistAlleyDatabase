@@ -91,7 +91,7 @@ fun main() {
                 .build()
         }
 
-        VariableFontEffect()
+        VariableFontEffect(graph.seriesEntryCache)
         Content(graph)
     }
 }

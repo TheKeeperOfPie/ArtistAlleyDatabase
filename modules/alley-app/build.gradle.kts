@@ -1,4 +1,3 @@
-
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -368,15 +367,20 @@ tasks.register("webRelease") {
         folder.listFiles()!!
             .filter { it.extension == "map" }
             .forEach { it.delete() }
+
+        val excludedFileNames = setOf(
+            ".gitignore",
+            "_headers",
+            "_routes.json",
+            "package.json",
+            "serviceWorker.js",
+            "wrangler.toml",
+        )
         val rootFiles = folder.listFiles()!!
             .filter { it.isFile }
-            .filter { it.name != "serviceWorker.js" }
-            .filter { it.name != "_headers" }
+            .filter { it.name !in excludedFileNames }
             .filter { it.extension.isNotBlank() }
             .filter { it.extension != "txt" }
-
-        val icons = folder.resolve("icons")
-            .listFiles()
 
         val resourceFiles = folder.resolve("composeResources")
             .walkTopDown()
@@ -388,9 +392,8 @@ tasks.register("webRelease") {
             }
             .filter { it.isFile }
             .filter {
-                it.extension == "cvr" ||
-                        it.extension == "ttf" ||
-                        it.name.contains("database")
+                // .ttf is excluded since CJK fonts are considered non-critical
+                it.extension == "cvr" || it.name.contains("database")
             }
 
         val alleyAppFiles = folder.resolve("alleyAppFiles.txt").readLines()
@@ -401,7 +404,7 @@ tasks.register("webRelease") {
             .mapTo(mutableSetOf()) { folder.resolve(File(it)) }
         val editOrFormOnlyFiles = (alleyEditFiles + alleyFormFiles) - alleyAppFiles
 
-        val filesToCache = rootFiles + icons + resourceFiles - editOrFormOnlyFiles
+        val filesToCache = rootFiles + resourceFiles - editOrFormOnlyFiles
 
         fun hash(file: File): Long {
             val crc32 = CRC32()
