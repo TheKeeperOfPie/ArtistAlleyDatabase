@@ -579,6 +579,7 @@ class ArtistSortFilterController(
             tags = categoryToTags.map { (category, tags) ->
                 val tagsForCategory = merchToCategories.filter { it.second.contains(category) }
                     .map { it.first }
+                    .sortedBy { it.name }
                 val allId = "all$category" // TODO: Find a better model
                 category to AlleyTagEntry.Category(
                     id = category,
