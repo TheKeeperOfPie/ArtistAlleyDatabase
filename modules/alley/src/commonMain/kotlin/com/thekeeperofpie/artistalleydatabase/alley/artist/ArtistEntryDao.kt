@@ -750,12 +750,14 @@ class ArtistEntryDao(
                     if (ArtistTag.HAS_CATALOG in filterParams.artistTagsIn) {
                         this += "$tableName.images != '[]'"
                         if (!filterParams.showOutdatedCatalogs) {
-                            this += "$tableName.fallbackImageYear != NULL"
+                            this += "$tableName.fallbackImageYear IS NULL"
                         }
                     } else if (ArtistTag.HAS_CATALOG in filterParams.artistTagsNotIn) {
-                        this += "$tableName.images == '[]'"
-                        if (!filterParams.showOutdatedCatalogs) {
-                            this += "$tableName.fallbackImageYear == NULL"
+                        if (filterParams.showOutdatedCatalogs) {
+                            this += "$tableName.images = '[]'"
+                            this += "$tableName.fallbackImageYear IS NULL"
+                        } else {
+                            this += "($tableName.images = '[]' OR $tableName.fallbackImageYear IS NOT NULL)"
                         }
                     }
                 }
