@@ -56,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesDisplayInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
@@ -377,13 +378,13 @@ fun SmallSeriesCard(
 
 fun LazyGridScope.series(
     key: String,
-    series: List<SeriesWithUserData>,
-    image: (SeriesWithUserData) -> String?,
+    series: List<SeriesDisplayInfo>,
+    image: (SeriesDisplayInfo) -> String?,
     columnCount: Int,
     randomizedIndexes: List<Int>,
     expanded: () -> Boolean,
     onExpanded: () -> Unit,
-    onClick: (SeriesWithUserData) -> Unit,
+    onClick: (SeriesDisplayInfo) -> Unit,
 ) {
     val canExpand = series.size > (2 * columnCount)
     items(
@@ -392,15 +393,14 @@ fun LazyGridScope.series(
         } else {
             (columnCount * 2).coerceAtMost(series.size)
         },
-        key = { "$key-series-${series[it].series.id}" },
+        key = { "$key-series-${series[it].id}" },
     ) {
         val expanded = expanded() || !canExpand
         val series = series[if (expanded) it else randomizedIndexes[it]]
         val faded = !expanded && it >= columnCount
-        val languageOptionMedia = LocalLanguageOptionMedia.current
         SmallSeriesCard(
-            seriesId = series.series.id,
-            seriesTitle = series.series.name(languageOptionMedia),
+            seriesId = series.id,
+            seriesTitle = series.title,
             image = image(series),
             faded = faded,
             onClick = { onClick(series) },

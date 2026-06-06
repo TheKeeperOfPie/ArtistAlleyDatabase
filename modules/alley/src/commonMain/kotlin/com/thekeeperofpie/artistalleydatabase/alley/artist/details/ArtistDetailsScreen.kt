@@ -95,6 +95,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.rememberSeriesDisplayInfo
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
@@ -103,6 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.ClickableIconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FiberNew
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
@@ -250,22 +252,27 @@ object ArtistDetailsScreen {
 
         val randomSeed = LocalStableRandomSeed.current
 
+        val languageOptionMedia = LocalLanguageOptionMedia.current
         var seriesConfirmedExpanded by rememberSaveable { mutableStateOf(false) }
-        val seriesConfirmed = seriesConfirmed()
-        val seriesConfirmedRandomizedIndexes = remember(seriesConfirmed) {
-            seriesConfirmed.orEmpty().indices.shuffled(Random(randomSeed))
+        val seriesConfirmed = rememberSeriesDisplayInfo(seriesConfirmed().orEmpty())
+        val seriesConfirmedRandomizedIndexes = remember(languageOptionMedia, seriesConfirmed) {
+            seriesConfirmed.indices.shuffled(Random(randomSeed))
         }
 
         var seriesInferredExpanded by rememberSaveable { mutableStateOf(false) }
-        val seriesInferred = seriesInferred()
+        val seriesInferred = rememberSeriesDisplayInfo(seriesInferred().orEmpty())
         val seriesInferredRandomizedIndexes = remember(seriesInferred) {
-            seriesInferred.orEmpty().indices.shuffled(Random(randomSeed))
+            seriesInferred.indices.shuffled(Random(randomSeed))
         }
 
-        val merchConfirmed = entry()?.artist?.merchConfirmed.orEmpty()
+        val merchConfirmedUnsorted = entry()?.artist?.merchConfirmed.orEmpty()
+        val merchConfirmed = remember(merchConfirmedUnsorted) { merchConfirmedUnsorted.sorted() }
         var showInferred by rememberSaveable(seriesConfirmed, merchConfirmed) {
-            mutableStateOf(seriesConfirmed.isNullOrEmpty() && merchConfirmed.isEmpty())
+            mutableStateOf(seriesConfirmed.isEmpty() && merchConfirmed.isEmpty())
         }
+
+        val merchInferredUnsorted = entry()?.artist?.merchInferred.orEmpty()
+        val merchInferred = remember(merchInferredUnsorted) { merchInferredUnsorted.sorted() }
 
         DetailsScreen(
             title = {
@@ -471,7 +478,7 @@ object ArtistDetailsScreen {
                     }
                 }
 
-                if (seriesConfirmed?.isNotEmpty() != false) {
+                if (seriesConfirmed.isNotEmpty()) {
                     item(
                         "artistSeriesConfirmedHeader",
                         contentType = "ConfirmedHeader",
@@ -486,13 +493,13 @@ object ArtistDetailsScreen {
                     }
                     series(
                         key = "artistSeriesConfirmed",
-                        series = seriesConfirmed.orEmpty(),
-                        image = { seriesImages()[it.series.id] },
+                        series = seriesConfirmed,
+                        image = { seriesImages()[it.id] },
                         columnCount = columnCount,
                         randomizedIndexes = seriesConfirmedRandomizedIndexes,
                         expanded = { seriesConfirmedExpanded },
                         onExpanded = { seriesConfirmedExpanded = true },
-                        onClick = { eventSink(Event.OpenSeries(it.series.id)) },
+                        onClick = { eventSink(Event.OpenSeries(it.id)) },
                     )
                 }
 
@@ -515,7 +522,7 @@ object ArtistDetailsScreen {
                 }
 
                 if (showInferred) {
-                    if (seriesInferred?.isNotEmpty() != false) {
+                    if (seriesInferred.isNotEmpty()) {
                         item(
                             "artistSeriesInferredHeader",
                             contentType = "InferredHeader",
@@ -528,17 +535,16 @@ object ArtistDetailsScreen {
                         }
                         series(
                             key = "artistSeriesInferred",
-                            series = seriesInferred.orEmpty(),
-                            image = { seriesImages()[it.series.id] },
+                            series = seriesInferred,
+                            image = { seriesImages()[it.id] },
                             columnCount = columnCount,
                             randomizedIndexes = seriesInferredRandomizedIndexes,
                             expanded = { seriesInferredExpanded },
                             onExpanded = { seriesInferredExpanded = true },
-                            onClick = { eventSink(Event.OpenSeries(it.series.id)) },
+                            onClick = { eventSink(Event.OpenSeries(it.id)) },
                         )
                     }
 
-                    val merchInferred = artist.merchInferred
                     if (merchInferred.isNotEmpty()) {
                         item(
                             "artistMerchInferredHeader",
@@ -831,7 +837,7 @@ private fun PhoneLayout() = PreviewDark {
         userEntry = artist.userEntry,
         stampRallies = emptyList(),
     )
-    val seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed)
+    val seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed.toSet())
         .map { previewSeriesWithUserData(it) }
     val seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesWithUserData(it) }
     ArtistDetailsScreen(
