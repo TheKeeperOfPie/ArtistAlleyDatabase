@@ -41,7 +41,7 @@ internal object ArtistFormHomeScreen {
                     .padding(it)
                     .padding(16.dp)
             ) {
-                OutlinedCard(modifier = Modifier.widthIn(max = 960.dp)) {
+                OutlinedCard(modifier = Modifier.widthIn(max = 600.dp)) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -84,23 +84,21 @@ internal object ArtistFormHomeScreen {
             text = buildAnnotatedString {
                 pushStyle(ParagraphStyle(textAlign = TextAlign.Center))
                 withStyle(MaterialTheme.typography.titleLarge.toSpanStyle()) {
-                    appendLine("Welcome to the Artist Alley Directory!")
+                    append("Welcome to the ")
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
+                            appendLine("Artist Alley Directory!")
+                        }
+                    }
                 }
                 pop()
 
                 appendLine()
                 appendLine(
-                    "You were linked here because you're an artist tabling at one of the " +
-                            "conventions we tag, Anime Expo or Anime NYC. The following page " +
-                            "will let you edit the data on your artist profile."
+                    "Your access link logs you into your profile to edit your data. You " +
+                            "may submit the form as often as you'd like, but updates can take " +
+                            "several days to show up on the site."
                 )
-                appendLine()
-                append("You can see the public site ")
-                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
-                        appendLine("here.")
-                    }
-                }
                 appendLine()
                 append(
                     "If you have questions/concerns, or want to submit your info in an " +
