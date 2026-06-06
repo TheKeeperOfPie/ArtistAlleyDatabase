@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -78,16 +77,10 @@ import org.jetbrains.compose.resources.stringResource
 fun TableCell(
     mapViewModel: MapViewModel,
     table: Table,
-    background: Color = if (table.image != null) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        table.section?.color ?: MaterialTheme.colorScheme.primaryContainer
-    }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
+    background: Color = table.backgroundColor,
+    textColor: Color = table.textColor,
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
-    textColor: Color = table.section?.textColor?.copy(alpha = 0.33f)
-        ?.compositeOver(MaterialTheme.colorScheme.onSurface)
-        ?: MaterialTheme.colorScheme.onPrimaryContainer,
     showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
@@ -228,11 +221,6 @@ fun HighlightedTableCell(
     mapViewModel: MapViewModel,
     table: Table,
     highlight: Boolean,
-    defaultBackground: Color = if (table.image != null) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        table.section?.color ?: MaterialTheme.colorScheme.primaryContainer
-    }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
     showImages: Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
@@ -245,12 +233,12 @@ fun HighlightedTableCell(
     val background = if (highlight) {
         MaterialTheme.colorScheme.primary
     } else {
-        defaultBackground
+        table.backgroundColor
     }
     val textColor = if (highlight) {
         MaterialTheme.colorScheme.onPrimary
     } else {
-        MaterialTheme.colorScheme.onSurface
+        table.textColor
     }
     TableCell(
         mapViewModel = mapViewModel,

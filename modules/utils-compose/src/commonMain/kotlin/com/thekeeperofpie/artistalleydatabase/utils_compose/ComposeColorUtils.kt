@@ -17,13 +17,13 @@ object ComposeColorUtils {
         val contrastWhite = white.wcagContrastRatio(backgroundColor)
         val contrastBlack = black.wcagContrastRatio(backgroundColor)
         if (contrastWhite >= contrastBlack) Color.White else Color.Black
-    } catch (ignored: Exception) {
+    } catch (_: Exception) {
         null
     }
 
     fun hexToColor(value: String) = try {
         com.github.ajalt.colormath.Color.parse(value).toComposeColor()
-    } catch (ignored: Exception) {
+    } catch (_: Exception) {
         null
     }
 }

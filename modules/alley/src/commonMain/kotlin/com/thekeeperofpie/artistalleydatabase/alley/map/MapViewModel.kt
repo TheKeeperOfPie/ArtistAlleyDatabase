@@ -179,6 +179,8 @@ class MapViewModel(
                 favorite = primaryArtist.favorite,
                 gridX = gridX,
                 gridY = gridY,
+                isFinalCatalog = primaryArtist.images.isNotEmpty() &&
+                        primaryArtist.fallbackImageYear == null,
                 hasNotes = hasNotes,
             )
         } else {
@@ -192,6 +194,9 @@ class MapViewModel(
                 favorite = artists.any { it.favorite },
                 gridX = gridX,
                 gridY = gridY,
+                isFinalCatalog = artists.all {
+                    primaryArtist.images.isNotEmpty() && primaryArtist.fallbackImageYear == null
+                },
                 hasNotes = hasNotes,
             )
         }
