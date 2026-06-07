@@ -11,6 +11,7 @@ fun SeriesInfo.toImageInfo() = SeriesImageInfo(
     tmdbId = tmdbId,
     tmdbType = tmdbType,
     steamId = steamId,
+    steamImagePath = steamImagePath,
     openLibraryId = openLibraryId,
 )
 

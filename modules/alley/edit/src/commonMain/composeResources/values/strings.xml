@@ -134,6 +134,7 @@
     <string name="alley_edit_series_header_open_library_id">Open Library ID</string>
     <string name="alley_edit_series_header_source_type">Source Type</string>
     <string name="alley_edit_series_header_steam_id">Steam ID</string>
+    <string name="alley_edit_series_header_steam_image_path">Steam image path</string>
     <string name="alley_edit_series_header_synonyms">Synonyms</string>
     <string name="alley_edit_series_header_title_english">English</string>
     <string name="alley_edit_series_header_title_native">Native</string>

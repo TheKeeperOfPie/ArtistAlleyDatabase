@@ -11,5 +11,6 @@ data class SeriesImageInfo(
     val tmdbId: String?,
     val tmdbType: TmdbType?,
     val steamId: String?,
+    val steamImagePath: String?,
     val openLibraryId: String?,
 )

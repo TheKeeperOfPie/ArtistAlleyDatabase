@@ -72,7 +72,7 @@ class SeriesImagesStore(
             .getImages(mediaImageIds.openLibraryIds.values, ImageType.OPEN_LIBRARY)
             .associateBy { it.imageId }
         val cachedSteamImages = imageEntryDao
-            .getImages(mediaImageIds.steamIds.values, ImageType.STEAM)
+            .getImages(mediaImageIds.steamIds.values.map { it.appId }, ImageType.STEAM)
             .associateBy { it.imageId }
         val cachedTmdbImages = imageEntryDao
             .getImages(mediaImageIds.tmdbIds.values.map { it.first }, ImageType.TMDB)
@@ -122,7 +122,7 @@ class SeriesImagesStore(
 
         val missingSteamIds = mediaImageIds.steamIds.values.filter {
             // Cache expiry doesn't matter since these are hardcoded
-            cacheResult.steamImages[it] == null
+            cacheResult.steamImages[it.appId] == null
         }
 
         val missingTmdbIds = mediaImageIds.tmdbIds.values.filter {
@@ -249,10 +249,11 @@ class SeriesImagesStore(
         return newOpenLibraryImages.mapKeys { it.key }
     }
 
-    private suspend fun loadSteamImages(now: Instant, ids: List<String>): Map<String, String> {
+    private suspend fun loadSteamImages(now: Instant, ids: List<SteamImageId>): Map<String, String> {
         if (ids.isEmpty()) return emptyMap()
-        val newSteamImages = ids.associateWith {
-            "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/$it/library_600x900.jpg"
+        val newSteamImages = ids.associate {
+            val path = it.imagePath?.removePrefix("/") ?: "library_600x900.jpg"
+            it.appId to "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${it.appId}/$path"
         }
         imageEntryDao.insertImageEntries(newSteamImages.map {
             ImageEntry(
@@ -276,7 +277,7 @@ class SeriesImagesStore(
             openLibraryIds = filter { it.openLibraryId != null }
                 .associate { it.id to it.openLibraryId!! },
             steamIds = filter { it.steamId != null }
-                .associate { it.id to it.steamId!! },
+                .associate { it.id to SteamImageId(it.steamId!!, it.steamImagePath) },
             tmdbIds = filter { it.tmdbId != null && it.tmdbType != null && it.tmdbType != TmdbType.NONE }
                 .associate { it.id to (it.tmdbId!! to it.tmdbType!!) },
             wikipediaIds = filter { it.wikipediaId != null }
@@ -300,8 +301,13 @@ class SeriesImagesStore(
     data class MediaImageIds(
         val aniListIds: Map<String, String>,
         val openLibraryIds: Map<String, String>,
-        val steamIds: Map<String, String>,
+        val steamIds: Map<String, SteamImageId>,
         val tmdbIds: Map<String, Pair<String, TmdbType>>,
         val wikipediaIds: Map<String, String>,
+    )
+
+    data class SteamImageId(
+        val appId: String,
+        val imagePath: String?,
     )
 }

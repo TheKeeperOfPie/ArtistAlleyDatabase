@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 class SeriesImageLoader(
     appScope: ApplicationScope,
     dispatchers: CustomDispatchers,
-    seriesImagesStore: SeriesImagesStore,
+    private val seriesImagesStore: SeriesImagesStore,
 ) {
     private val requests = mutableStateMapOf<String, Request>()
 
@@ -116,4 +116,18 @@ class SeriesImageLoader(
     }
 
     fun getCachedSeriesImage(seriesId: String) = (requests[seriesId] as? Request.Done)?.url
+
+    suspend fun invalidateImage(info: SeriesImageInfo) {
+        val images = seriesImagesStore.getAllImages(
+            listOf(info), SeriesImagesStore.CacheResult(
+                aniListImages = emptyMap(),
+                openLibraryImages = emptyMap(),
+                steamImages = emptyMap(),
+                tmdbImages = emptyMap(),
+                wikipediaImages = emptyMap(),
+                seriesIdsToImages = emptyMap(),
+            )
+        )
+        requests.putAll(images.map { it.key to Request.Done(it.value) })
+    }
 }

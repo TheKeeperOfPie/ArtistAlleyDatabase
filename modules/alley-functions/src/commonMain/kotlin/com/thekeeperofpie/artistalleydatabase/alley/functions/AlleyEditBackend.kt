@@ -1253,6 +1253,7 @@ object AlleyEditBackend {
         tmdbId = tmdbId,
         tmdbType = tmdbType,
         steamId = steamId,
+        steamImagePath = steamImagePath,
         openLibraryId = openLibraryId,
         source = source,
         titlePreferred = titlePreferred,

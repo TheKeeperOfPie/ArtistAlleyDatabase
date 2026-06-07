@@ -419,6 +419,7 @@ CREATE TABLE
         tmdbId TEXT DEFAULT NULL,
         tmdbType TEXT AS TmdbType DEFAULT NULL,
         steamId TEXT DEFAULT NULL,
+        steamImagePath TEXT DEFAULT NULL,
         openLibraryId TEXT DEFAULT NULL,
         source TEXT AS SeriesSource,
         titlePreferred TEXT NOT NULL COLLATE NOCASE,

@@ -51,6 +51,7 @@ fun GetSeriesByIdWithUserData.toSeriesWithUserData() = SeriesWithUserData(
         tmdbId = tmdbId,
         tmdbType = tmdbType,
         steamId = steamId,
+        steamImagePath = steamImagePath,
         openLibraryId = openLibraryId,
         source = source ?: SeriesSource.NONE,
         titlePreferred = titlePreferred,
@@ -77,6 +78,7 @@ fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
         tmdbId = tmdbId,
         tmdbType = tmdbType,
         steamId = steamId,
+        steamImagePath = steamImagePath,
         openLibraryId = openLibraryId,
         source = source ?: SeriesSource.NONE,
         titlePreferred = titlePreferred,
@@ -115,6 +117,7 @@ class SeriesEntryDao(
         "tmdbId",
         "tmdbType",
         "steamId",
+        "steamImagePath",
         "openLibraryId",
         "source",
         "titlePreferred",
@@ -144,6 +147,7 @@ class SeriesEntryDao(
                 tmdbId = it.tmdbId,
                 tmdbType = it.tmdbType,
                 steamId = it.steamId,
+                steamImagePath = it.steamImagePath,
                 openLibraryId = it.openLibraryId,
             )
         }

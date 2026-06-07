@@ -58,6 +58,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_open_library_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_source_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_steam_id
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_steam_image_path
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_synonyms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_english
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_native
@@ -147,6 +148,7 @@ object SeriesEditScreen {
                     state.tmdbType.focusRequester
                 }
                 SeriesColumn.STEAM_ID -> state.steamId.focusRequester
+                SeriesColumn.STEAM_IMAGE_PATH -> state.steamImagePath.focusRequester
                 SeriesColumn.OPEN_LIBRARY_ID -> state.openLibraryId.focusRequester
                 SeriesColumn.EXTERNAL_LINK -> state.link.focusRequester
                 SeriesColumn.UUID -> state.uuid.focusRequester
@@ -271,6 +273,7 @@ object SeriesEditScreen {
                     state.aniListType,
                     state.openLibraryId,
                     state.steamId,
+                    state.steamImagePath,
                     state.tmdbId,
                     state.tmdbType,
                     state.wikipediaId,
@@ -318,6 +321,11 @@ object SeriesEditScreen {
                 state = state.steamId,
                 headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_id)) },
                 inputTransformation = InputTransformation.digits(),
+            )
+
+            SingleTextSection(
+                state = state.steamImagePath,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_image_path)) },
             )
 
             SingleTextSection(
@@ -475,6 +483,7 @@ object SeriesEditScreen {
                     state.id,
                     state.uuid,
                     state.steamId,
+                    state.steamImagePath,
                     state.source,
                     state.titleEnglish,
                     state.titleRomaji,
@@ -493,6 +502,11 @@ object SeriesEditScreen {
                 state = state.steamId,
                 headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_id)) },
                 inputTransformation = InputTransformation.digits(),
+            )
+
+            SingleTextSection(
+                state = state.steamImagePath,
+                headerText = { Text(stringResource(Res.string.alley_edit_series_header_steam_image_path)) },
             )
 
             SharedFooter(state)
@@ -760,6 +774,7 @@ object SeriesEditScreen {
         val aniListType: EntryForm2.DropdownState,
         val openLibraryId: EntryForm2.SingleTextState,
         val steamId: EntryForm2.SingleTextState,
+        val steamImagePath: EntryForm2.SingleTextState,
         val tmdbId: EntryForm2.SingleTextState,
         val tmdbType: EntryForm2.DropdownState,
         val wikipediaId: EntryForm2.SingleTextState,

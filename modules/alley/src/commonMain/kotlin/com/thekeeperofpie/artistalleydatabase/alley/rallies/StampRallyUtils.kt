@@ -22,6 +22,7 @@ internal object StampRallyUtils  {
                         'tmdbId', s.tmdbId,
                         'tmdbType', s.tmdbType,
                         'steamId', s.steamId,
+                        'steamImagePath', s.steamImagePath,
                         'openLibraryId', s.openLibraryId
                     )
                 )

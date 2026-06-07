@@ -12,6 +12,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
+import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
@@ -30,6 +32,7 @@ import kotlin.uuid.Uuid
 class SeriesEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
+    private val seriesImageLoader: SeriesImageLoader,
     @Assisted seriesId: Uuid,
     @Assisted private val editInfo: AlleyEditDestination.SeriesEdit?,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -91,6 +94,15 @@ class SeriesEditViewModel(
             initialValue(
                 initialSeries?.steamId,
                 SeriesColumn.STEAM_ID
+            )
+        },
+        steamImagePath = savedStateHandle.saveable(
+            key = "steamImagePath",
+            saver = EntryForm2.SingleTextState.Saver,
+        ) {
+            initialValue(
+                initialSeries?.steamImagePath,
+                SeriesColumn.STEAM_IMAGE_PATH
             )
         },
         tmdbId = savedStateHandle.saveable(
@@ -225,6 +237,7 @@ class SeriesEditViewModel(
         val tmdbId = state.tmdbId.value.text.toString()
         val tmdbType = TmdbType.entries[state.tmdbType.selectedIndex]
         val steamId = state.steamId.value.text.toString()
+        val steamImagePath = state.steamImagePath.value.text.toString()
         val openLibraryId = state.openLibraryId.value.text.toString()
         val source = SeriesSource.entries[state.source.selectedIndex]
         val titlePreferred = state.titlePreferred.value.text.toString()
@@ -243,6 +256,7 @@ class SeriesEditViewModel(
             tmdbId = tmdbId.ifBlank { null },
             tmdbType = tmdbType.takeIf { it != TmdbType.NONE },
             steamId = steamId.ifBlank { null },
+            steamImagePath = steamImagePath.ifBlank { null },
             openLibraryId = openLibraryId.ifBlank { null },
             source = source,
             titlePreferred = titlePreferred,
@@ -316,6 +330,7 @@ class SeriesEditViewModel(
                     (updatedSeriesInfo.tmdbType
                         ?: TmdbType.NONE) != TmdbType.NONE -> "cannot have a TMDB type"
                     updatedSeriesInfo.steamId != null -> "cannot have a Steam ID"
+                    updatedSeriesInfo.steamImagePath != null -> "cannot have a Steam image path"
                     updatedSeriesInfo.openLibraryId == null -> "must have an Open Library ID"
                     else -> null
                 }
@@ -346,7 +361,9 @@ class SeriesEditViewModel(
             return@withContext BackendRequest.SeriesSave.Response.Failed("Series $typeErrorMessage")
         }
 
-        database.saveSeries(initial = initialSeries, updated = updatedSeriesInfo)
+        database.saveSeries(initial = initialSeries, updated = updatedSeriesInfo).also {
+            seriesImageLoader.invalidateImage(updatedSeriesInfo.toImageInfo())
+        }
     }
 
     private suspend fun delete() = withContext(dispatchers.io) {

@@ -191,6 +191,10 @@ internal object SeriesListScreen {
                             value = row?.steamId,
                             modifier = modifier
                         )
+                        SeriesColumn.STEAM_IMAGE_PATH -> FieldText(
+                            value = row?.steamImagePath,
+                            modifier = modifier
+                        )
                         SeriesColumn.OPEN_LIBRARY_ID -> FieldText(
                             value = row?.openLibraryId,
                             modifier = modifier

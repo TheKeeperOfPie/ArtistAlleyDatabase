@@ -64,7 +64,9 @@ class SeriesListViewModel(
             .stateIn(viewModelScope, SharingStarted.Eagerly, PagingData.empty())
 
     fun refresh() = refresh.refresh()
-    fun loadImage(series: SeriesInfo) = seriesImageLoader.getSeriesImage(series)
+
+    // Force read by ID so that edit save can invalidate
+    fun loadImage(series: SeriesInfo) = seriesImageLoader.getSeriesImage(series.id)
 
     @AssistedFactory
     interface Factory {

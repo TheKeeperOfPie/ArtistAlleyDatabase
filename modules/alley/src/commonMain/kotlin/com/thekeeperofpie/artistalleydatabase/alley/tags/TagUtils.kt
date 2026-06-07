@@ -39,6 +39,7 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             tmdbId = null,
             tmdbType = null,
             steamId = null,
+            steamImagePath = null,
             openLibraryId = null,
             source = SeriesSource.NONE,
             titlePreferred = id,
