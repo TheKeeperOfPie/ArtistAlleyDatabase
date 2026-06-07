@@ -145,6 +145,14 @@ sealed interface BackendRequest {
     }
 
     @Serializable
+    data class ArtistCatalogsQueue(val year: DataYear) : BackendRequest,
+        WithResponse<List<Pair<String, String>>>
+
+    @Serializable
+    data class QueueArtistCatalog(val dataYear: DataYear, val booth: String, val link: String?) :
+        BackendRequest, WithResponse<Unit>
+
+    @Serializable
     data object DatabaseCreate : BackendRequest, WithResponse<Unit>
 
     // TODO: Allow querying presence?

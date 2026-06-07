@@ -51,7 +51,6 @@ import org.jetbrains.compose.resources.stringResource
 
 internal object RemoteArtistDataQueueScreen {
 
-
     @Composable
     operator fun invoke(
         graph: ArtistAlleyEditGraph,

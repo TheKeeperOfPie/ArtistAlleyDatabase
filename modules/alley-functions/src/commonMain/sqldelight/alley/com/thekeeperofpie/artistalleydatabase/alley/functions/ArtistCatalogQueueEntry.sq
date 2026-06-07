@@ -1,0 +1,19 @@
+getCatalogEntry:
+SELECT * FROM artistCatalogQueueEntry
+WHERE dataYear = :dataYear AND booth = :booth;
+
+getCatalogEntries:
+SELECT * FROM artistCatalogQueueEntry
+WHERE dataYear = :dataYear;
+
+insertCatalogEntry:
+INSERT OR REPLACE INTO artistCatalogQueueEntry
+VALUES ?;
+
+deleteCatalogEntry:
+DELETE FROM artistCatalogQueueEntry
+WHERE dataYear = :dataYear AND booth = :booth;
+
+consumeCatalogEntry:
+DELETE FROM artistCatalogQueueEntry
+WHERE dataYear = :dataYear AND booth = :booth AND link = :link;

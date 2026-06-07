@@ -3,6 +3,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitCreate
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.BackendColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntry
@@ -30,6 +31,9 @@ internal object Databases {
 
     fun editDatabase(context: EventContext) = AlleySqlDatabase(
         driver = editSqlDriver(context),
+        artistCatalogQueueEntryAdapter = ArtistCatalogQueueEntry.Adapter(
+            dataYearAdapter = ColumnAdapters.dataYearAdapter,
+        ),
         artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
         artistEntryAnimeExpo2026HistoryAdapter = BackendColumnAdapters.artistEntryAnimeExpo2026HistoryAdapter,
         artistRemoteDataAnimeExpo2026Adapter = BackendColumnAdapters.artistRemoteDataAnimeExpo2026Adapter,

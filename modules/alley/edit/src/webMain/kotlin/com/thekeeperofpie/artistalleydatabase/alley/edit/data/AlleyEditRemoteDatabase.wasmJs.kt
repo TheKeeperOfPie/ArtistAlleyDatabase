@@ -575,6 +575,25 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun queueArtistCatalog(dataYear: DataYear, booth: String, link: String?): Unit =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.QueueArtistCatalog(dataYear, booth, link))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
+
+    actual suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Pair<String, String>> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.ArtistCatalogsQueue(dataYear))!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
     private fun formLink(accessKey: String): String = AlleyDataUtils.formLink(
         if (BuildKonfig.isWasmDebug) window.location.origin else AlleyUtils.formUrl,
         accessKey

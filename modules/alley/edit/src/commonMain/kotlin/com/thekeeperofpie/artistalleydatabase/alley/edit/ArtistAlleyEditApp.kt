@@ -53,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormQueueScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.catalog.ArtistCatalogsQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen
@@ -294,10 +295,20 @@ private fun entryProvider(
             },
         )
     }
+    sharedElementEntry<AlleyEditDestination.ArtistCatalogs> { route ->
+        ArtistCatalogsQueueScreen(
+            dataYear = route.dataYear,
+            graph = graph,
+            onSelectEntry = {
+                navStack.navigate(AlleyEditDestination.ArtistEdit(route.dataYear, it.artistId, it.link))
+            },
+        )
+    }
     sharedElementEntry<AlleyEditDestination.ArtistEdit> { route ->
         ArtistEditScreen(
             dataYear = route.dataYear,
             artistId = route.artistId,
+            catalogLink = route.catalogLink,
             graph = graph,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, displayName, images ->

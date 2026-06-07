@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistEntryAnimeExpo2026History
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeExpo2026History
@@ -91,6 +92,12 @@ object AlleyEditBackend {
                             remoteTimestamp = null,
                         )
                     )
+                    is BackendRequest.ArtistCatalogsQueue -> makeResponse(
+                        artistCatalogsQueue(
+                            context,
+                            this
+                        )
+                    )
                     is BackendRequest.DatabaseCreate -> makeResponse(databaseCreate(context))
                     is BackendRequest.GenerateFormKey ->
                         makeResponse(generateFormKey(context, this))
@@ -137,6 +144,8 @@ object AlleyEditBackend {
                         makeResponse(submitRemoteArtistData(context, this))
                     is BackendRequest.SaveRemoteArtistData ->
                         makeResponse(saveRemoteArtistData(context, this))
+                    is BackendRequest.QueueArtistCatalog ->
+                        makeResponse(queueArtistCatalog(context, this))
                     is BackendRequest.UploadImageUrls ->
                         makeResponse(generateUploadImageUrls(context, this))
                 }
@@ -446,6 +455,13 @@ object AlleyEditBackend {
                 ).toDatabaseEntry(Uuid.parse(updatedArtist.id))
                 database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
                 database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
+
+                consumeCatalogEntry(
+                    database = database,
+                    dataYear = request.dataYear,
+                    booth = updatedArtist.booth,
+                    catalogLinks = updatedArtist.catalogLinks
+                )
                 BackendRequest.ArtistSave.Response.Success
             }
         }
@@ -455,6 +471,53 @@ object AlleyEditBackend {
         DataYear.ANIME_NYC_2024,
         DataYear.ANIME_NYC_2025,
             -> BackendRequest.ArtistSave.Response.Failed("Editing legacy years not supported")
+    }
+
+    private suspend fun consumeCatalogEntry(
+        database: AlleySqlDatabase,
+        dataYear: DataYear,
+        booth: String?,
+        catalogLinks: List<String>,
+    ) {
+        if (catalogLinks.isEmpty()) return
+        if (booth != null) {
+            val existingCatalogEntry =
+                database.artistCatalogQueueEntryQueries.getCatalogEntry(dataYear, booth)
+                    .awaitAsOneOrNull() ?: return
+            val existingLink = existingCatalogEntry.link.removeSuffix("/")
+            if (existingLink in catalogLinks.map { it.removeSuffix("/") }) {
+                database.artistCatalogQueueEntryQueries.consumeCatalogEntry(dataYear, booth, existingLink)
+            }
+        }
+    }
+
+    private suspend fun artistCatalogsQueue(
+        context: EventContext,
+        request: BackendRequest.ArtistCatalogsQueue,
+    ): List<Pair<String, String>> = Databases.editDatabase(context)
+        .artistCatalogQueueEntryQueries
+        .getCatalogEntries(request.year)
+        .awaitAsList()
+        .map { it.booth to it.link }
+
+    private suspend fun queueArtistCatalog(
+        context: EventContext,
+        request: BackendRequest.QueueArtistCatalog,
+    ) {
+        val link = request.link
+        val queries = Databases.editDatabase(context)
+            .artistCatalogQueueEntryQueries
+        if (link == null) {
+            queries.deleteCatalogEntry(request.dataYear, request.booth)
+        } else {
+            queries.insertCatalogEntry(
+                ArtistCatalogQueueEntry(
+                    dataYear = request.dataYear,
+                    booth = request.booth,
+                    link = link,
+                )
+            )
+        }
     }
 
     private suspend fun generateFormKey(

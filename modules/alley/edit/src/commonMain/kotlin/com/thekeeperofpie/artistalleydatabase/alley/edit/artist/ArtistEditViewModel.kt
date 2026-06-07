@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -30,7 +31,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
@@ -52,6 +52,7 @@ class ArtistEditViewModel(
     val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
+    @Assisted private val catalogLink: String?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveTask: ExclusiveTask<Pair<ArtistFormState.CapturedState, Boolean>, BackendRequest.ArtistSave.Response> =
@@ -88,6 +89,8 @@ class ArtistEditViewModel(
             .flowOn(dispatchers.io)
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
     private val deleteJob = ExclusiveProgressJob(viewModelScope, ::delete)
+
+    private var consumedCatalogLink by savedStateHandle.saved { false }
 
     val state = ArtistEditScreen.State(
         artistProgress = artistJob.state,
@@ -135,6 +138,10 @@ class ArtistEditViewModel(
                     hasPendingFormSubmission = response.hasPendingFormSubmission,
                     hasFormLink = response.hasFormLink,
                 )
+                if (!consumedCatalogLink && catalogLink != null) {
+                    consumedCatalogLink = true
+                    state.artistFormState.links.catalogLinks.add(LinkModel.parse(catalogLink))
+                }
             }
         }
         hasLoaded = true
@@ -282,13 +289,4 @@ class ArtistEditViewModel(
                 }
             }
         }
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            dataYear: DataYear,
-            artistId: Uuid,
-            savedStateHandle: SavedStateHandle,
-        ): ArtistEditViewModel
-    }
 }

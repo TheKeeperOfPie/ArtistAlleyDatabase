@@ -28,7 +28,14 @@ sealed interface AlleyEditDestination : NavKey {
         AlleyEditDestination
 
     @Serializable
-    data class ArtistEdit(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
+    data class ArtistCatalogs(val dataYear: DataYear) : AlleyEditDestination
+
+    @Serializable
+    data class ArtistEdit(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val catalogLink: String? = null,
+    ) : AlleyEditDestination
 
     @Serializable
     data class ArtistFormHistory(
@@ -174,6 +181,12 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     ArtistFormMerge(dataYear, artistId)
                 }
+                route.startsWith("artist/catalogs") -> {
+                    val dataYear = DataYear.deserialize(
+                        route.removePrefix("artist/catalogs/").removeSuffix("/")
+                    )!!
+                    ArtistCatalogs(dataYear)
+                }
                 route.startsWith("artist/add") -> {
                     val (dataYear, artistId) = parseDataYearThenArtistId(
                         route.removePrefix("artist/add/")
@@ -249,6 +262,7 @@ sealed interface AlleyEditDestination : NavKey {
             is Admin -> "admin"
             is ArtistAdd -> "artist/add/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
+            is ArtistCatalogs -> "artist/catalogs/${Uri.encode(destination.dataYear.serializedName)}"
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ArtistFormMerge -> "artist/merge/${Uri.encode(destination.dataYear.serializedName)}/" +

@@ -6,6 +6,7 @@
     <string name="alley_edit_top_level_nav_rallies">Rallies</string>
     <string name="alley_edit_top_level_nav_artist_forms">Artist Forms</string>
     <string name="alley_edit_top_level_nav_rally_forms">Rally Forms</string>
+    <string name="alley_edit_top_level_nav_artist_catalogs">Artist catalogs</string>
     <string name="alley_edit_top_level_nav_remote_artist_data">Remote artist data</string>
     <string name="alley_edit_top_level_nav_tag_resolution">Resolution</string>
     <string name="alley_edit_top_level_nav_admin">Admin</string>
@@ -358,4 +359,10 @@
     <string name="alley_edit_remote_artist_data_link_ignore">Ignore</string>
     <string name="alley_edit_remote_artist_data_action_save">Apply remote data</string>
     <string name="alley_edit_remote_artist_data_action_save_and_edit">Apply and open artist edit</string>
+
+    <string name="alley_edit_artist_catalogs_queue_title">Artist catalogs queue</string>
+    <string name="alley_edit_artist_catalogs_queue_action_refresh">Refresh catalogs queue</string>
+    <string name="alley_edit_artist_catalogs_queue_action_cancel">Cancel</string>
+    <string name="alley_edit_artist_catalogs_queue_action_delete">Delete</string>
+    <string name="alley_edit_artist_catalogs_queue_action_confirm_delete_title">Delete %1$s %2$s?</string>
 </resources>

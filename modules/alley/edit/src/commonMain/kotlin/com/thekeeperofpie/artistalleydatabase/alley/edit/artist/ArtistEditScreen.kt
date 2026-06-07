@@ -144,6 +144,7 @@ object ArtistEditScreen {
     operator fun invoke(
         dataYear: DataYear,
         artistId: Uuid,
+        catalogLink: String?,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
@@ -154,6 +155,7 @@ object ArtistEditScreen {
             graph.artistEditViewModelFactory.create(
                 dataYear = dataYear,
                 artistId = artistId,
+                catalogLink = catalogLink,
                 savedStateHandle = createSavedStateHandle(),
             )
         },

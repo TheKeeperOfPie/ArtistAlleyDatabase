@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.navigation
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_admin
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artist_catalogs
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artist_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artists
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_merch
@@ -14,6 +15,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.List
+import com.thekeeperofpie.artistalleydatabase.icons.filled.AddLink
 import com.thekeeperofpie.artistalleydatabase.icons.filled.AdminPanelSettings
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Approval
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Brush
@@ -21,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.CloudSync
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ShoppingBag
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Tag
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Tv
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import org.jetbrains.compose.resources.StringResource
 
 internal enum class TopLevelStackKey(
@@ -57,6 +60,11 @@ internal enum class TopLevelStackKey(
         initialDestination = AlleyEditDestination.StampRallyFormQueue,
         icon = Icons.AutoMirrored.Default.List,
         title = Res.string.alley_edit_top_level_nav_rally_forms,
+    ),
+    ARTIST_CATALOGS(
+        initialDestination = AlleyEditDestination.ArtistCatalogs(DataYear.LATEST),
+        icon = Icons.Default.AddLink,
+        title = Res.string.alley_edit_top_level_nav_artist_catalogs,
     ),
     REMOTE_ARTIST_DATA(
         initialDestination = AlleyEditDestination.RemoteArtistDataQueue,

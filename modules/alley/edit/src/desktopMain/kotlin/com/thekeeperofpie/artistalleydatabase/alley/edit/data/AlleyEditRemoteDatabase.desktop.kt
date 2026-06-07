@@ -64,6 +64,8 @@ actual class AlleyEditRemoteDatabase(
     private var remoteArtistData = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
     private var remoteArtistDataHistory = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
 
+    private var artistCatalogsQueue = mutableMapOf<DataYear, MutableList<Pair<String, String>>>()
+
     private val simulatedLatency = 1.seconds
 
     actual suspend fun databaseCreate(): Unit = Unit
@@ -564,6 +566,18 @@ actual class AlleyEditRemoteDatabase(
 
         return BackendRequest.SaveRemoteArtistData.Response.Success
     }
+
+    actual suspend fun queueArtistCatalog(dataYear: DataYear, booth: String, link: String?) {
+        val list = artistCatalogsQueue.getOrPut(dataYear) { mutableListOf() }
+        if (link == null) {
+            list.removeIf { it.first == booth }
+        } else {
+            list.add(booth to link)
+        }
+    }
+
+    actual suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Pair<String, String>> =
+        artistCatalogsQueue[dataYear]?.toList().orEmpty()
 
     private suspend fun simulateLatency() = delay(simulatedLatency)
 

@@ -190,6 +190,11 @@ object DebugTestData {
             previous = next
         }
 
+        remoteDatabase.queueArtistCatalog(
+            dataYear = previous.year,
+            booth = previous.booth ?: "C38",
+            link = "https://example.com",
+        )
         return previous
     }
 
