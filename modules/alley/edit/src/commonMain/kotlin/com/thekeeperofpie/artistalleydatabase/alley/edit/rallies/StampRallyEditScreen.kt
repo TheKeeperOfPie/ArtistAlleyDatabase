@@ -238,6 +238,9 @@ object StampRallyEditScreen {
                                 tablePredictions = tablePredictions,
                                 seriesImage = seriesImage,
                                 onConfirmDelete = onConfirmDelete,
+                                onClickAddImages = {
+                                    onClickEditImages(imagesRequestKey, emptyList())
+                                },
                             )
                         }
                     },
@@ -362,6 +365,7 @@ object StampRallyEditScreen {
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         onConfirmDelete: () -> Unit,
+        onClickAddImages: () -> Unit,
     ) {
         Column {
             val initialStampRally = initialStampRally()
@@ -374,6 +378,14 @@ object StampRallyEditScreen {
                     InfiniteProgressIndicator()
                 }
             } else {
+                if (state.stampRallyFormState.images.isEmpty()) {
+                    EditImagesButton(
+                        images = state.stampRallyFormState.images,
+                        onClickEdit = onClickAddImages,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+
                 StampRallyForm(
                     initialStampRally = { initialStampRally },
                     state = stampRallyFormState,
