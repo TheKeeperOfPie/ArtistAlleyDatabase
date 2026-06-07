@@ -23,9 +23,9 @@ fun VariableFontEffect(
             // to avoid using network for low priority unnecessary font files
             seriesEntryCache.series.first { it.isNotEmpty() }
             val fonts = listOf(
-                "NotoSansJP.ttf--611190",
-                "NotoSansKR.ttf--1802257382",
-                "NotoSansSC.ttf--1638299189",
+                "NotoSansJP--611190.ttf",
+                "NotoSansKR--1802257382.ttf",
+                "NotoSansSC--1638299189.ttf",
             ).map {
                 Font(it, Res.readBytes("font/$it"))
             }
