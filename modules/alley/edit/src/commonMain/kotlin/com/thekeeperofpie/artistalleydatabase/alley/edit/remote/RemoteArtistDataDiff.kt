@@ -112,6 +112,7 @@ data class RemoteArtistDataDiff(
             return ListDiff(
                 added = added?.map { it.link },
                 deleted = deleted?.map { it.link },
+                after = next?.map { it.link },
             )
         }
     }

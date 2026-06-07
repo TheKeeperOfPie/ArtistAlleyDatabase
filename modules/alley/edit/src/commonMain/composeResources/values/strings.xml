@@ -100,6 +100,8 @@
     <string name="alley_edit_image_action_delete">Delete image</string>
     <string name="alley_edit_image_action_change">Change image</string>
     <string name="alley_edit_image_action_add">Add images</string>
+    <string name="alley_edit_image_action_move_up">Move up</string>
+    <string name="alley_edit_image_action_move_down">Move down</string>
     <string name="alley_edit_image_action_save_content_description">Save image edits</string>
     <string name="alley_edit_image_size_megabytes_warning">Size %1$d MB is larger than %2$d MB, will be compressed</string>
 

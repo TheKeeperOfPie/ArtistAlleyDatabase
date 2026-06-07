@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class ListDiff<T>(
     val added: List<T>?,
     val deleted: List<T>?,
+    val after: List<T>?,
 ) {
     companion object {
         fun <T> diffList(previous: List<T>?, next: List<T>?) = if (next == null) {
@@ -14,6 +15,7 @@ data class ListDiff<T>(
             ListDiff(
                 added = (next - previous?.toSet().orEmpty()).ifEmpty { null },
                 deleted = (previous.orEmpty() - next.toSet()).ifEmpty { null },
+                after = next,
             )
         }
 
@@ -23,6 +25,7 @@ data class ListDiff<T>(
             ListDiff(
                 added = (next - previous.orEmpty()).ifEmpty { null }?.toList(),
                 deleted = (previous.orEmpty() - next).ifEmpty { null }?.toList(),
+                after = next.toList(),
             )
         }
     }

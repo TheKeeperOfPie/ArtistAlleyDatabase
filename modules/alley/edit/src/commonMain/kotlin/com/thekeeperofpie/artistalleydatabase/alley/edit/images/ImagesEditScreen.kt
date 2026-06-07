@@ -57,6 +57,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_dra
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_add
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_change
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_delete
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_move_down
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_move_up
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_save_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_added
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_deleted
@@ -85,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.dragContainer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDragDropState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.swap
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
@@ -177,9 +180,13 @@ object ImagesEditScreen {
                 ) {
                     if (it != null) {
                         scope.launch {
-                            images += it.map {
-                                val imageKey = PlatformImageCache.add(it)
-                                EditImage.LocalImage(imageKey, it)
+                            Snapshot.withMutableSnapshot {
+                                images += it.map {
+                                    val imageKey = PlatformImageCache.add(it)
+                                    EditImage.LocalImage(imageKey, it)
+                                }.filter { localImage ->
+                                    images.none { it.name == localImage.name }
+                                }
                             }
                         }
                     }
@@ -288,11 +295,20 @@ object ImagesEditScreen {
                                     ) {
                                         if (it != null) {
                                             scope.launch {
-                                                images[index] =
-                                                    EditImage.LocalImage(
-                                                        key = PlatformImageCache.add(it),
-                                                        file = it,
-                                                    )
+                                                val newImage = EditImage.LocalImage(
+                                                    key = PlatformImageCache.add(it),
+                                                    file = it,
+                                                )
+                                                Snapshot.withMutableSnapshot {
+                                                    when {
+                                                        images[index].name == newImage.name -> Unit // Do nothing
+                                                        images.any { it.name == newImage.name } -> images.removeAt(
+                                                            index
+                                                        )
+                                                        else -> images[index] = newImage
+                                                    }
+                                                }
+
                                             }
                                         }
                                     }
@@ -313,12 +329,34 @@ object ImagesEditScreen {
                                         ) {
                                             DropdownMenuItem(
                                                 text = { Text(stringResource(Res.string.alley_edit_image_action_delete)) },
-                                                onClick = { images.remove(image) },
+                                                onClick = {
+                                                    images.remove(image)
+                                                    showMenu = false
+                                                },
                                             )
                                             DropdownMenuItem(
                                                 text = { Text(stringResource(Res.string.alley_edit_image_action_change)) },
-                                                onClick = swapLauncher::launch,
+                                                onClick = {
+                                                    swapLauncher.launch()
+                                                    showMenu = false
+                                                },
                                             )
+                                            if (index > 0) {
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(Res.string.alley_edit_image_action_move_up)) },
+                                                    onClick = {
+                                                        images.swap(index, index - 1)
+                                                    },
+                                                )
+                                            }
+                                            if (index < images.lastIndex) {
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(Res.string.alley_edit_image_action_move_down)) },
+                                                    onClick = {
+                                                        images.swap(index, index + 1)
+                                                    },
+                                                )
+                                            }
                                         }
                                     }
                                 }

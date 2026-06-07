@@ -128,7 +128,7 @@ class ArtistFormViewModel(
                 val base = base.toMutableSet()
                 base.removeAll(diff?.deleted.orEmpty().toSet())
                 base.addAll(diff?.added.orEmpty().toSet())
-                return base.toMutableList()
+                return base.sortedBy { diff?.after?.indexOf(it) }
             }
 
             fun <T> applyDiff(

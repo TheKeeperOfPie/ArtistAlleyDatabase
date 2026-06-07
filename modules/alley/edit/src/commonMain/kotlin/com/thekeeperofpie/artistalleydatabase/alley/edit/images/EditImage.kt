@@ -7,6 +7,7 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
 import io.github.vinceglb.filekit.extension
 import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.path
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -41,7 +42,7 @@ sealed interface EditImage : ImageWithDimensions {
                 val imageBitmap = file.toImageBitmap()
                 return LocalImage(
                     key = key,
-                    name = file.name.ifBlank { key.value.toString() },
+                    name = file.path.ifBlank { file.name }.ifBlank { key.value.toString() },
                     extension = file.extension,
                     width = imageBitmap.width,
                     height = imageBitmap.height,

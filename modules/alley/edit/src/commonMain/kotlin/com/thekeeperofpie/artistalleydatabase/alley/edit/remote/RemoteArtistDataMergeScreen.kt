@@ -713,7 +713,7 @@ internal object RemoteArtistDataMergeScreen {
                 val base = base.toMutableSet()
                 if (this[deleted]) base.removeAll(diff?.deleted.orEmpty().toSet())
                 if (this[added]) base.addAll(diff?.added.orEmpty().toSet())
-                return base.toMutableList()
+                return base.sortedBy { diff?.after?.indexOf(it) }
             }
 
             val artist = base.copy(

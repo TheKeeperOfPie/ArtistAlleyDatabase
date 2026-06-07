@@ -109,6 +109,8 @@ fun <T> SnapshotStateList<T>.swap(indexOne: Int, indexTwo: Int) {
     if (indexOne == indexTwo) {
         return
     }
+    if (indexOne !in indices) return
+    if (indexTwo !in indices) return
 
     Snapshot.withMutableSnapshot {
         val temp = this[indexOne]
