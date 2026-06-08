@@ -2,6 +2,7 @@
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -83,70 +84,29 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                         val legacySeriesIds = loadLegacySeriesIds()
                         val legacyMerchIds = loadLegacyMerchIds()
 
+                        val snapshotFiles = snapshotsDirectory.get().asFileTree.files
+                            .sortedBy {
+                                it.nameWithoutExtension
+                                    .replace("_", ":")
+                                    .replace(";", ":")
+                                    .let(Instant::parse)
+                            }
+
+                        val latestArtistIds = mutableSetOf<Uuid>()
+                        val latestRallyIds = mutableSetOf<Uuid>()
+                        val latestImages = mutableSetOf<DatabaseImage>()
+                        val latestSnapshot = snapshotFiles.lastOrNull()
+                            ?.let(::readSnapshot)
+                        if (latestSnapshot != null) {
+                            latestArtistIds += latestSnapshot.artists.map { Uuid.parse(it.id) }
+                            latestRallyIds += latestSnapshot.rallies.map { Uuid.parse(it.id) }
+                            latestImages += latestSnapshot.artists.flatMap { it.images }
+                            latestImages += latestSnapshot.rallies.flatMap { it.images }
+                        }
+
                         val diffs = trackStage("ArtistChangelogDiffs") {
-                            snapshotsDirectory.get().asFileTree.files
-                                .sortedBy {
-                                    it.nameWithoutExtension
-                                        .replace("_", ":")
-                                        .replace(";", ":")
-                                        .let(Instant::parse)
-                                }
-                                .map { file ->
-                                    async {
-                                        val snapshotFilteredFile =
-                                            temporaryDir.resolve("database-${file.name}.sql")
-                                        val databaseFile =
-                                            temporaryDir.resolve("database-${file.name}.sqlite")
-                                        listOf(
-                                            snapshotFilteredFile,
-                                            databaseFile
-                                        ).forEach(::verifyDelete)
-
-                                        // First, create and immediately close the databases to initialize the schemas
-                                        Utils.createEditDatabase(databaseFile).first.close()
-                                        filterSnapshot(file, snapshotFilteredFile)
-                                        if (!Utils.readSqlFile(
-                                                databaseFile,
-                                                snapshotFilteredFile
-                                            )
-                                        ) {
-                                            logger.error("Failed to read ${file.absolutePath}")
-                                            return@async null
-                                        }
-
-                                        val instant = file.nameWithoutExtension
-                                            .replace("_", ":")
-                                            .replace(";", ":")
-                                            .let(Instant::parse)
-                                        val date = instant
-                                            .toLocalDateTime(TimeZone.UTC)
-                                            .date
-                                        val database = Utils.createEditDatabase(databaseFile)
-                                        val mutationQueries = database.second.mutationQueries
-                                        val artists =
-                                            mutationQueries.getAllArtistEntryAnimeExpo2026()
-                                                .executeAsList()
-                                        val rallies =
-                                            mutationQueries.getAllStampRallyEntryAnimeExpo2026()
-                                                .executeAsList()
-                                        val seriesIds = mutationQueries.getSeries()
-                                            .executeAsList()
-                                            .map { it.id }
-                                            .toSet()
-                                        val merchIds = mutationQueries.getMerch()
-                                            .executeAsList()
-                                            .map { it.name }
-                                            .toSet()
-                                        SnapshotData(
-                                            timestamp = instant,
-                                            date = date,
-                                            artists = artists,
-                                            rallies = rallies,
-                                            seriesIds = seriesIds,
-                                            merchIds = merchIds,
-                                        )
-                                    }
-                                }
+                            snapshotFiles
+                                .map { async { readSnapshot(it) } }
                                 .awaitAll()
                                 .also {
                                     if (it.any { it == null }) {
@@ -162,11 +122,15 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                 ) { before, current ->
                                     val artistDiffs = diffArtists(
                                         lastEditTimes = artistLastEditTimes,
+                                        latestArtistIds = latestArtistIds,
+                                        latestImages = latestImages,
                                         before = before,
                                         current = current,
                                     )
                                     val rallyDiffs = diffRallies(
                                         lastEditTimes = rallyLastEditTimes,
+                                        latestRallyIds = latestRallyIds,
+                                        latestImages = latestImages,
                                         before = before,
                                         current = current,
                                     )
@@ -210,6 +174,61 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     }
                 }
         }
+    }
+
+    private fun readSnapshot(file: File): SnapshotData? {
+        val snapshotFilteredFile =
+            temporaryDir.resolve("database-${file.name}.sql")
+        val databaseFile =
+            temporaryDir.resolve("database-${file.name}.sqlite")
+        listOf(
+            snapshotFilteredFile,
+            databaseFile
+        ).forEach(::verifyDelete)
+
+        // First, create and immediately close the databases to initialize the schemas
+        Utils.createEditDatabase(databaseFile).first.close()
+        filterSnapshot(file, snapshotFilteredFile)
+        if (!Utils.readSqlFile(
+                databaseFile,
+                snapshotFilteredFile
+            )
+        ) {
+            logger.error("Failed to read ${file.absolutePath}")
+            return null
+        }
+
+        val instant = file.nameWithoutExtension
+            .replace("_", ":")
+            .replace(";", ":")
+            .let(Instant::parse)
+        val date = instant
+            .toLocalDateTime(TimeZone.UTC)
+            .date
+        val database = Utils.createEditDatabase(databaseFile)
+        val mutationQueries = database.second.mutationQueries
+        val artists =
+            mutationQueries.getAllArtistEntryAnimeExpo2026()
+                .executeAsList()
+        val rallies =
+            mutationQueries.getAllStampRallyEntryAnimeExpo2026()
+                .executeAsList()
+        val seriesIds = mutationQueries.getSeries()
+            .executeAsList()
+            .map { it.id }
+            .toSet()
+        val merchIds = mutationQueries.getMerch()
+            .executeAsList()
+            .map { it.name }
+            .toSet()
+        return SnapshotData(
+            timestamp = instant,
+            date = date,
+            artists = artists,
+            rallies = rallies,
+            seriesIds = seriesIds,
+            merchIds = merchIds,
+        )
     }
 
     private fun loadLegacySeriesIds(): Set<String> {
@@ -257,6 +276,8 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
 
     private fun diffArtists(
         lastEditTimes: MutableMap<Uuid, Instant>,
+        latestArtistIds: Set<Uuid>,
+        latestImages: Set<DatabaseImage>,
         before: Diffs,
         current: SnapshotData,
     ): List<ArtistDiff> {
@@ -268,6 +289,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             .map { afterArtist -> beforeArtists.find { it.id == afterArtist.id } to afterArtist }
             .mapNotNull { (beforeArtist, afterArtist) ->
                 val artistId = Uuid.parse(afterArtist.id)
+                if (artistId !in latestArtistIds) return@mapNotNull null
                 if (beforeArtist != afterArtist) {
                     lastEditTimes[artistId] = timestamp
                 }
@@ -287,6 +309,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     merchConfirmed -= beforeArtist.merchConfirmed.toSet()
                     images -= beforeArtist.images.toSet()
                 }
+                images.retainAll(latestImages)
                 if (beforeArtist != null && listOf(
                         seriesInferred,
                         seriesConfirmed,
@@ -315,6 +338,8 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
 
     private fun diffRallies(
         lastEditTimes: MutableMap<Uuid, Instant>,
+        latestRallyIds: Set<Uuid>,
+        latestImages: Set<DatabaseImage>,
         before: Diffs,
         current: SnapshotData,
     ): List<StampRallyDiff> {
@@ -326,10 +351,12 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             .map { afterRally -> beforeRallies.find { it.id == afterRally.id } to afterRally }
             .mapNotNull { (beforeRally, afterRally) ->
                 val rallyId = Uuid.parse(afterRally.id)
+                if (rallyId !in latestRallyIds) return@mapNotNull null
                 if (beforeRally != afterRally) {
                     lastEditTimes[rallyId] = timestamp
                 }
-                val images = afterRally.images - beforeRally?.images?.toSet().orEmpty()
+                val images = (afterRally.images - beforeRally?.images?.toSet().orEmpty()).toMutableList()
+                images.retainAll(latestImages)
                 if (beforeRally == null) {
                     StampRallyDiff(
                         stampRallyId = rallyId,
