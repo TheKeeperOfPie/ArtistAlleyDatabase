@@ -35,55 +35,32 @@ val MerchIcons.Buttons: ImageVector
                 reflectiveCurveTo(9.013f, 4.154f, 17.68f, 4.154f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
-                moveToRelative(3.62f, 19.2f)
-                lineToRelative(-1.41f, -2.85f)
-                reflectiveCurveToRelative(-0.29f, -5.63f, 5.65f, -7.27f)
-                lineToRelative(2.21f, 2.06f)
-                reflectiveCurveToRelative(-2.68f, 1.34f, -6.18f, 7.49f)
-                lineToRelative(-0.26f, 0.57f)
-                close()
-            }
-            path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
-                strokeLineWidth = 0.25f,
-                strokeLineCap = StrokeCap.Round,
-                strokeLineJoin = StrokeJoin.Round
-            ) {
-                moveTo(7.826f, 8.959f)
-                curveToRelative(-3.006f, 0.83f, -4.453f, 2.683f, -5.135f, 4.322f)
-                curveToRelative(-0.68f, 1.64f, -0.605f, 3.074f, -0.605f, 3.074f)
-                arcToRelative(0.1f, 0.1f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.012f, 0.051f)
+                moveTo(7.86f, 9.08f)
+                curveToRelative(-5.94f, 1.64f, -5.65f, 7.27f, -5.65f, 7.27f)
                 lineToRelative(1.41f, 2.85f)
-                arcToRelative(0.13f, 0.13f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.111f, 0.068f)
-                horizontalLineToRelative(0.012f)
-                arcToRelative(0.13f, 0.13f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.113f, -0.072f)
-                lineToRelative(0.254f, -0.56f)
-                lineToRelative(0.004f, -0.008f)
-                lineToRelative(0.002f, -0.002f)
-                curveToRelative(1.742f, -3.06f, 3.28f, -4.92f, 4.377f, -6.014f)
-                curveToRelative(1.098f, -1.095f, 1.744f, -1.416f, 1.744f, -1.416f)
-                arcToRelative(0.125f, 0.125f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.03f, -0.203f)
-                lineToRelative(-2.21f, -2.06f)
-                arcToRelative(0.13f, 0.13f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.119f, -0.03f)
-                moveToRelative(0.006f, 0.266f)
-                lineToRelative(2.049f, 1.91f)
-                curveToRelative(-0.093f, 0.05f, -0.642f, 0.324f, -1.676f, 1.355f)
-                curveToRelative(-1.116f, 1.113f, -2.669f, 2.995f, -4.424f, 6.078f)
-                lineToRelative(-0.006f, 0.01f)
-                lineToRelative(-0.154f, 0.34f)
-                lineToRelative(-1.285f, -2.598f)
-                curveToRelative(-0.002f, -0.035f, -0.062f, -1.376f, 0.588f, -2.941f)
-                curveToRelative(0.654f, -1.573f, 2.021f, -3.336f, 4.908f, -4.154f)
+                horizontalLineToRelative(0.01f)
+                lineToRelative(0.26f, -0.57f)
+                curveToRelative(3.5f, -6.15f, 6.18f, -7.49f, 6.18f, -7.49f)
+                close()
+                moveTo(8.31f, 10.48f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.249f, 0.176f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, -0.164f, 0.313f)
+                curveToRelative(-1.593f, 0.496f, -2.832f, 1.918f, -3.663f, 3.234f)
+                arcToRelative(14f, 14f, 0f, isMoreThanHalf = false, isPositiveArc = false, -1.246f, 2.5f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, -0.318f, 0.152f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, -0.154f, -0.318f)
+                reflectiveCurveToRelative(0.434f, -1.235f, 1.297f, -2.601f)
+                curveToRelative(0.862f, -1.367f, 2.157f, -2.89f, 3.935f, -3.444f)
+                arcToRelative(0.3f, 0.3f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.065f, -0.012f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -146,7 +123,7 @@ val MerchIcons.Buttons: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.343f, -0.149f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -177,7 +154,7 @@ val MerchIcons.Buttons: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -208,7 +185,7 @@ val MerchIcons.Buttons: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -229,7 +206,7 @@ val MerchIcons.Buttons: ImageVector
                 curveToRelative(0.553f, -1.274f, 1.028f, -2.699f, 1.238f, -3.875f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -248,60 +225,32 @@ val MerchIcons.Buttons: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.264f, -0.234f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
-                moveToRelative(30.74f, 18.63f)
-                lineToRelative(1.59f, -2.1f)
-                reflectiveCurveToRelative(0.55f, -5.62f, -5.28f, -7.54f)
+                moveToRelative(27.05f, 8.99f)
                 lineToRelative(-1.98f, 1.9f)
                 reflectiveCurveToRelative(2.49f, 1.43f, 5.68f, 7.72f)
                 horizontalLineToRelative(-0.01f)
-                close()
-            }
-            path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
-                strokeLineWidth = 0.25f,
-                strokeLineCap = StrokeCap.Round,
-                strokeLineJoin = StrokeJoin.Round
-            ) {
-                moveTo(27.09f, 8.871f)
-                arcToRelative(0.13f, 0.13f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.127f, 0.03f)
-                lineToRelative(-1.979f, 1.9f)
-                arcToRelative(0.125f, 0.125f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.024f, 0.197f)
-                reflectiveCurveToRelative(0.6f, 0.342f, 1.613f, 1.477f)
-                curveToRelative(1.008f, 1.128f, 2.414f, 3.043f, 3.994f, 6.15f)
-                verticalLineToRelative(0.006f)
-                lineToRelative(0.004f, 0.002f)
-                lineToRelative(0.02f, 0.033f)
-                lineToRelative(0.013f, -0.023f)
-                arcToRelative(0.13f, 0.13f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.127f, 0.043f)
-                arcToRelative(0.13f, 0.13f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.043f, -0.069f)
-                lineToRelative(0.028f, 0.008f)
-                lineToRelative(-0.063f, 0.063f)
-                arcToRelative(0.1f, 0.1f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.053f, 0.017f)
+                verticalLineToRelative(0.02f)
                 lineToRelative(1.59f, -2.1f)
-                arcToRelative(0.13f, 0.13f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.025f, -0.062f)
-                reflectiveCurveToRelative(0.14f, -1.433f, -0.46f, -3.105f)
-                curveToRelative(-0.602f, -1.673f, -1.955f, -3.595f, -4.905f, -4.567f)
-                moveToRelative(-0.014f, 0.268f)
-                curveToRelative(2.828f, 0.955f, 4.105f, 2.779f, 4.682f, 4.382f)
-                curveToRelative(0.572f, 1.592f, 0.451f, 2.923f, 0.447f, 2.967f)
-                lineToRelative(-1.44f, 1.9f)
-                curveToRelative(-1.557f, -3.035f, -2.95f, -4.951f, -3.958f, -6.08f)
-                curveToRelative(-0.957f, -1.07f, -1.471f, -1.368f, -1.555f, -1.42f)
-                close()
-                moveTo(30.766f, 18.709f)
-                lineTo(30.74f, 18.734f)
-                horizontalLineToRelative(0.01f)
-                close()
+                reflectiveCurveToRelative(0.55f, -5.62f, -5.28f, -7.54f)
+                moveToRelative(-0.562f, 1.35f)
+                arcToRelative(0.3f, 0.3f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.098f, 0.012f)
+                curveToRelative(1.693f, 0.54f, 2.925f, 2.01f, 3.746f, 3.328f)
+                curveToRelative(0.82f, 1.317f, 1.234f, 2.508f, 1.234f, 2.508f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, -0.154f, 0.318f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, -0.318f, -0.154f)
+                reflectiveCurveToRelative(-0.397f, -1.14f, -1.186f, -2.407f)
+                reflectiveCurveToRelative(-1.968f, -2.637f, -3.474f, -3.117f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, -0.163f, -0.314f)
+                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0.217f, -0.174f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -318,7 +267,7 @@ val MerchIcons.Buttons: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.268f, -0.23f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -343,37 +292,7 @@ val MerchIcons.Buttons: ImageVector
                 arcToRelative(0.4f, 0.4f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.23f, -0.03f)
             }
             path(
-                fill = SolidColor(Color.White),
-                strokeLineCap = StrokeCap.Round,
-                strokeLineJoin = StrokeJoin.Round
-            ) {
-                moveTo(8.246f, 10.492f)
-                curveToRelative(-1.778f, 0.554f, -3.073f, 2.077f, -3.935f, 3.444f)
-                reflectiveCurveToRelative(-1.297f, 2.601f, -1.297f, 2.601f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.154f, 0.318f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.318f, -0.152f)
-                reflectiveCurveToRelative(0.416f, -1.184f, 1.246f, -2.5f)
-                reflectiveCurveToRelative(2.07f, -2.738f, 3.663f, -3.234f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.164f, -0.313f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.313f, -0.164f)
-            }
-            path(
-                fill = SolidColor(Color.White),
-                strokeLineCap = StrokeCap.Round,
-                strokeLineJoin = StrokeJoin.Round
-            ) {
-                moveTo(26.586f, 10.352f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.315f, 0.162f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.163f, 0.314f)
-                curveToRelative(1.506f, 0.48f, 2.685f, 1.85f, 3.474f, 3.117f)
-                curveToRelative(0.79f, 1.268f, 1.186f, 2.407f, 1.186f, 2.407f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.318f, 0.154f)
-                arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.154f, -0.318f)
-                reflectiveCurveToRelative(-0.413f, -1.19f, -1.234f, -2.508f)
-                curveToRelative(-0.82f, -1.318f, -2.053f, -2.789f, -3.746f, -3.328f)
-            }
-            path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -392,7 +311,7 @@ val MerchIcons.Buttons: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -411,7 +330,7 @@ val MerchIcons.Buttons: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.242f, -0.393f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -434,7 +353,7 @@ val MerchIcons.Buttons: ImageVector
                 curveToRelative(-0.197f, -0.144f, -0.47f, -0.113f, -0.64f, -0.006f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -458,7 +377,7 @@ val MerchIcons.Buttons: ImageVector
             }
             path(
                 fill = SolidColor(Color(0xFF010202)),
-                stroke = SolidColor(Color(0xFF010101)),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -474,8 +393,8 @@ val MerchIcons.Buttons: ImageVector
                 curveToRelative(0f, -0.316f, 0.254f, -0.57f, 0.57f, -0.57f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -501,7 +420,7 @@ val MerchIcons.Buttons: ImageVector
             }
             path(
                 fill = SolidColor(Color(0xFF010202)),
-                stroke = SolidColor(Color(0xFF010101)),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -517,8 +436,8 @@ val MerchIcons.Buttons: ImageVector
                 curveToRelative(0f, -0.316f, 0.254f, -0.57f, 0.57f, -0.57f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round

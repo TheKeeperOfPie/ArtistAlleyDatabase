@@ -20,7 +20,7 @@
       }
 
       .cls-2 {
-        stroke: #231f20;
+        stroke: #000000;
         stroke-width: .2px;
       }
 

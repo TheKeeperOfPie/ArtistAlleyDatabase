@@ -23,8 +23,8 @@ val MerchIcons.Standees: ImageVector
             viewportHeight = 48f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -38,8 +38,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -65,7 +65,7 @@ val MerchIcons.Standees: ImageVector
                 curveToRelative(0.396f, -0.955f, 1.234f, -2.012f, 2.978f, -2.517f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -159,7 +159,7 @@ val MerchIcons.Standees: ImageVector
                 reflectiveCurveToRelative(3.014f, -0.771f, 3.014f, -0.771f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -190,7 +190,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -211,8 +211,8 @@ val MerchIcons.Standees: ImageVector
                 curveToRelative(0.316f, -0.727f, 0.555f, -1.517f, 0.707f, -2.226f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -226,8 +226,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
-                stroke = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.25f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -253,7 +253,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -332,7 +332,7 @@ val MerchIcons.Standees: ImageVector
                 reflectiveCurveToRelative(0.667f, -0.89f, 1.084f, -1.057f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -427,7 +427,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -458,7 +458,7 @@ val MerchIcons.Standees: ImageVector
                 curveToRelative(0.07f, -0.129f, 0.116f, -0.18f, 0.178f, -0.27f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -520,7 +520,7 @@ val MerchIcons.Standees: ImageVector
                 curveToRelative(-0.513f, -0.824f, -1.285f, -1.753f, -2.369f, -2.098f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -536,7 +536,7 @@ val MerchIcons.Standees: ImageVector
                 curveToRelative(0f, -0.396f, 0.315f, -0.71f, 0.71f, -0.71f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -552,7 +552,7 @@ val MerchIcons.Standees: ImageVector
                 curveToRelative(0f, -0.396f, 0.314f, -0.71f, 0.71f, -0.71f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -567,7 +567,7 @@ val MerchIcons.Standees: ImageVector
                 arcToRelative(0.15f, 0.15f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.15f, -0.15f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -582,7 +582,7 @@ val MerchIcons.Standees: ImageVector
                 arcToRelative(0.15f, 0.15f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.15f, -0.15f)
             }
             path(
-                fill = SolidColor(Color(0xFF010101)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -601,7 +601,7 @@ val MerchIcons.Standees: ImageVector
                 arcToRelative(0.25f, 0.25f, 0f, isMoreThanHalf = false, isPositiveArc = false, -0.263f, -0.234f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -618,7 +618,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -635,7 +635,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -685,7 +685,7 @@ val MerchIcons.Standees: ImageVector
                 curveToRelative(0.542f, -0.156f, 0.843f, -0.248f, 1.05f, -0.31f)
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -705,8 +705,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -719,8 +719,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -744,7 +744,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -764,8 +764,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -777,8 +777,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -799,7 +799,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -823,7 +823,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -843,8 +843,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -857,8 +857,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -883,7 +883,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -903,8 +903,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -916,8 +916,8 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
-                stroke = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
+                stroke = SolidColor(Color.Black),
                 strokeLineWidth = 0.4f,
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
@@ -938,7 +938,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -964,7 +964,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
@@ -987,7 +987,7 @@ val MerchIcons.Standees: ImageVector
                 close()
             }
             path(
-                fill = SolidColor(Color(0xFF231F20)),
+                fill = SolidColor(Color.Black),
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
