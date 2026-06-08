@@ -74,3 +74,17 @@ For publishing the site remove the debug property and just run
 `./gradlew :modules:alley-app:webRelease`, which will output to
 `/modules/alley-app/build/dist/web/productionExecutable`. This can be hosted directly on Cloudflare
 Pages.
+
+### Releasing
+
+- Flip `RELEASE_FLAG` in `syncBackend.main.kts` to `true` and run it
+- Copy `/modules/alley/data/scripts/build/prod/inputs` to `Artist-Alley-Inputs`, commit, and push
+- Inside `/modules/alley/data/inputs`, pull the latest commit
+- Copy `/modules/alley/data/scripts/build/prod/images` to Git ignored `/modules/alley/data/images`
+- Run `./gradlew :modules:alley:data:generateArtistAlleyDatabase` to verify data processing and
+  fetch any embeds
+- Copy new `embeds.json` and `embedImages` from `/modules/alley/data/build/generated/alley-metadata`
+  into `Artist-Alley-Inputs`, commit, and push
+- Re-pull inside `/modules/alley/data/inputs`
+- Run the desktop build with `./gradlew :modules:alley-app:run`
+- Verify artist changelog, rally changelog, and some sampling of new/edited entries
