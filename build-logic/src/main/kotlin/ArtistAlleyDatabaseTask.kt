@@ -489,9 +489,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val inference = ArtistInferenceProvider(database, artist.id)
                     val socialLinks = artist.socialLinks.ifEmpty { inference.socialLinks }
                     val storeLinks = artist.storeLinks.ifEmpty { inference.storeLinks }
-                    val seriesInferred =
-                        artist.seriesInferred.ifEmpty { inference.seriesInferred }
-                    val merchInferred = artist.merchInferred.ifEmpty { inference.merchInferred }
+                    val seriesInferred = artist.seriesInferred
+                        .ifEmpty { inference.seriesInferred } - artist.seriesConfirmed.toSet()
+                    val merchInferred = artist.merchInferred
+                        .ifEmpty { inference.merchInferred } - artist.merchConfirmed.toSet()
 
                     val (linkFlags, linkFlags2) = Link.parseFlags(
                         socialLinks = socialLinks,

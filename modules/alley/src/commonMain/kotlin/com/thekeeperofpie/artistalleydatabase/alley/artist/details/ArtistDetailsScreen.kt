@@ -560,7 +560,7 @@ object ArtistDetailsScreen {
                             MerchChips(merchInferred, onClick = { eventSink(Event.OpenMerch(it)) })
                         }
                     }
-                } else {
+                } else if (seriesInferred.isNotEmpty() || merchInferred.isNotEmpty()) {
                     item("artistShowInferredButton", GridUtils.maxSpanFunction) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
