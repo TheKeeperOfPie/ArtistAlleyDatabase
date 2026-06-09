@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.visible
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -94,19 +95,33 @@ fun ChangelogImages(
             items(items = images, key = { it.coilImageModel.toString() }) {
                 val sharedContentState =
                     rememberSharedContentState("image", it.coilImageModel)
+                val width = it.width
+                val height = it.height
+                val ratio = if (width != null && height != null) {
+                    width.toFloat() / height
+                } else {
+                    null
+                }
                 AsyncImage(
                     model = ImageRequest.Builder(LocalPlatformContext.current)
                         .data(it.coilImageModel)
                         .placeholderMemoryCacheKey(it.coilImageModel.toString())
                         .build(),
-                    contentScale = ContentScale.Fit,
+                    contentScale = if (ratio == null) ContentScale.Fit else ContentScale.Crop,
                     fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                     contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                     modifier = Modifier
                         .height(ChangelogUtils.ImageHeight)
-                        .widthIn(min = 48.dp)
+                        .run {
+                            if (ratio != null) {
+                                width(ChangelogUtils.ImageHeight * ratio)
+                            } else {
+                                widthIn(min = 48.dp)
+                            }
+                        }
                         .sharedElement(state = sharedContentState)
                         .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                         .clickable { onClickImage(it) }
                 )
             }
