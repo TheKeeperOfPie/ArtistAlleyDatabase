@@ -124,7 +124,6 @@ fun ArtistAlleyEditApp(
                 }
 
                 val onClickBack = { force: Boolean ->
-                    println("onClickBack = $force")
                     if (force) {
                         navStack.onBack()
                     } else {

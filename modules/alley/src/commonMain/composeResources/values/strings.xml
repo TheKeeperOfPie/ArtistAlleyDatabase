@@ -428,4 +428,6 @@
 
     <string name="alley_images_open_artist">Open artist</string>
     <string name="alley_images_open_rally">Open rally</string>
+
+    <string name="alley_open_image">Open image</string>
 </resources>

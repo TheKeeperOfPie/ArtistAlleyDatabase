@@ -16,6 +16,7 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -35,9 +37,12 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -57,10 +62,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
@@ -70,6 +79,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_image_fullscreen_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_next_page
+import artistalleydatabase.modules.alley.generated.resources.alley_open_image
 import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
@@ -514,10 +524,12 @@ fun ImageGrid(
                     val zoomableState = rememberZoomableState(ZoomSpec(maxZoomFactor = 3f))
                     val size = cachedDimensions[image]
                     val zoomed = zoomableState.zoomFraction != 0f
+                    var showMenu by remember { mutableStateOf(false) }
+                    val imageModel = image.coilImageModel
                     AsyncImage(
                         model = ImageRequest.Builder(LocalPlatformContext.current)
-                            .data(image.coilImageModel)
-                            .placeholderMemoryCacheKey(image.coilImageModel.toString())
+                            .data(imageModel)
+                            .placeholderMemoryCacheKey(imageModel.toString())
                             .apply {
                                 if (zoomed) {
                                     size(SizeResolver.ORIGINAL)
@@ -539,7 +551,20 @@ fun ImageGrid(
                                 state = zoomableState,
                                 onClick = { onClickImage(index) },
                             )
-                            .sharedElement("image", image.coilImageModel)
+                            .pointerInput(Unit) {
+                                awaitPointerEventScope {
+                                    while (true) {
+                                        val event = awaitPointerEvent()
+                                        if (event.type == PointerEventType.Press &&
+                                            event.buttons.isSecondaryPressed
+                                        ) {
+                                            event.changes.forEach { it.consume() }
+                                            showMenu = true
+                                        }
+                                    }
+                                }
+                            }
+                            .sharedElement("image", imageModel)
                             .fillMaxWidth()
                             .conditionallyNonNull(size) {
                                 aspectRatio(it.width.toFloat() / it.height)
@@ -564,6 +589,42 @@ fun ImageGrid(
                             .align(Alignment.BottomCenter)
                             .graphicsLayer { this.alpha = alpha }
                     )
+
+                    if (imageModel is com.eygraber.uri.Uri) {
+                        AnimatedVisibility(
+                            visible = showMenu,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.matchParentSize()
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f))
+                                    .clickable { showMenu = false }
+                            ) {
+                                ElevatedCard(
+                                    modifier = Modifier
+                                        .width(IntrinsicSize.Min)
+                                        .padding(24.dp)
+                                ) {
+                                    val uriHandler = LocalUriHandler.current
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(Res.string.alley_open_image)) },
+                                        onClick = {
+                                            try {
+                                                uriHandler.openUri(imageModel.toString())
+                                            } catch (t: Throwable) {
+                                                t.printStackTrace()
+                                            }
+                                            showMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
