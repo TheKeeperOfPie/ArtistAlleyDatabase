@@ -102,24 +102,6 @@ object ImagesEditScreen {
 
     @Composable
     operator fun invoke(
-        route: AlleyEditDestination.ImagesEdit,
-        graph: ArtistAlleyEditGraph,
-        onClickBack: (force: Boolean) -> Unit,
-        viewModel: ImagesEditViewModel = viewModel {
-            graph.imagesEditViewModelFactory.create(route.images, createSavedStateHandle())
-        },
-    ) {
-        ImagesEditScreen(
-            requestKey = REQUEST_KEY,
-            displayName = route.displayName,
-            initialImages = route.images,
-            onClickBack = { onClickBack(false) },
-            viewModel = viewModel,
-        )
-    }
-
-    @Composable
-    operator fun invoke(
         requestKey: NavigationRequestKey<List<EditImage>>,
         displayName: String?,
         initialImages: List<EditImage>,

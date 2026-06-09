@@ -7,14 +7,17 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -25,6 +28,7 @@ import kotlinx.coroutines.withContext
 class StampRallyAddViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
+    private val imageUploader: ImageUploader,
     val tagAutocomplete: TagAutocomplete,
     val artistTableAutocomplete: ArtistTableAutocomplete,
     private val seriesImageLoader: SeriesImageLoader,
@@ -73,10 +77,32 @@ class StampRallyAddViewModel(
                 return@withContext BackendRequest.StampRallySave.Response.Success
             }
 
+            val stampRallyId = triple.second.id
+            val imagesResult = imageUploader.uploadImages(
+                dataYear = dataYear,
+                artistId = null,
+                profileImage = null,
+                artistImages = emptyList(),
+                stampRallyImages = mapOf(stampRallyId to triple.first),
+            )
+
+            val (stampRallyCatalogImages, uploadedImages) = when (imagesResult) {
+                ImageUploader.UploadResult.Empty -> emptyList<DatabaseImage>() to emptyMap()
+                is ImageUploader.UploadResult.Error ->
+                    return@withContext BackendRequest.StampRallySave.Response.Failed(imagesResult.message)
+                is ImageUploader.UploadResult.Success ->
+                    imagesResult.stampRallyDatabaseImages[stampRallyId].orEmpty() to imagesResult.uploadedImages
+            }
+
+            val newStampRallyImages = state.stampRallyFormState.images.toList()
+                .map { uploadedImages[it] ?: it }
+            state.stampRallyFormState.images.replaceAll(newStampRallyImages)
+
+            val updatedStampRally = databaseEntry.copy(images = stampRallyCatalogImages)
             database.saveStampRally(
                 dataYear = dataYear,
                 initial = null,
-                updated = databaseEntry,
+                updated = updatedStampRally,
             ).also {
                 if (it is BackendRequest.StampRallySave.Response.Success) {
                     if (!isManual) {

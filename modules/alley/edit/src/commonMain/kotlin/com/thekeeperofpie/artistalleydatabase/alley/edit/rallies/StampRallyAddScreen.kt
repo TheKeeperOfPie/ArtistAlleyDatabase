@@ -23,6 +23,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_action_save_tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
@@ -37,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -50,6 +52,7 @@ object StampRallyAddScreen {
         stampRallyId: String,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
         viewModel: StampRallyAddViewModel = viewModel {
             graph.stampRallyAddViewModelFactory.create(
                 dataYear = dataYear,
@@ -70,6 +73,7 @@ object StampRallyAddScreen {
             tablePredictions = viewModel::tablePredictions,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
+            onClickEditImages = onClickEditImages,
             onClickSave = viewModel::onClickSave,
             onClickDone = viewModel::onClickDone,
         )
@@ -86,6 +90,7 @@ object StampRallyAddScreen {
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
     ) {
@@ -113,7 +118,6 @@ object StampRallyAddScreen {
                     }
                 }
         }
-
 
 
         val errorState = rememberErrorState(state.stampRallyFormState)
@@ -166,6 +170,14 @@ object StampRallyAddScreen {
                             merchPredictions = merchPredictions,
                             tablePredictions = tablePredictions,
                             seriesImage = seriesImage,
+                            showImages = true,
+                            onClickEditImages = { requestKey, images ->
+                                onClickEditImages(
+                                    requestKey,
+                                    state.stampRallyFormState.fandom.value.text.toString(),
+                                    images,
+                                )
+                            }
                         )
                     },
                     secondary = {},

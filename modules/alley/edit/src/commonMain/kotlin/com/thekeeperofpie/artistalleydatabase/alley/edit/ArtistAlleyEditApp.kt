@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -122,6 +124,7 @@ fun ArtistAlleyEditApp(
                 }
 
                 val onClickBack = { force: Boolean ->
+                    println("onClickBack = $force")
                     if (force) {
                         navStack.onBack()
                     } else {
@@ -392,8 +395,19 @@ private fun entryProvider(
             onClickBack = onClickBack,
         )
     }
-    sharedElementEntry<AlleyEditDestination.ImagesEdit> {
-        ImagesEditScreen(route = it, graph = graph, onClickBack = onClickBack)
+    sharedElementEntry<AlleyEditDestination.ImagesEdit> { route ->
+        ImagesEditScreen(
+            requestKey = route.requestKey,
+            displayName = route.displayName,
+            initialImages = route.images,
+            onClickBack = onClickBack,
+            viewModel = viewModel {
+                graph.imagesEditViewModelFactory.create(
+                    images = route.images,
+                    savedStateHandle = createSavedStateHandle(),
+                )
+            },
+        )
     }
     sharedElementEntry<AlleyEditDestination.Series> {
         SeriesListScreen(
@@ -491,6 +505,11 @@ private fun entryProvider(
             stampRallyId = route.stampRallyId,
             graph = graph,
             onClickBack = onClickBack,
+            onClickEditImages = { requestKey, displayName, images ->
+                navStack.navigate(
+                    AlleyEditDestination.ImagesEdit(requestKey, images, displayName)
+                )
+            },
         )
     }
     sharedElementEntry<AlleyEditDestination.StampRallyEdit> { route ->
