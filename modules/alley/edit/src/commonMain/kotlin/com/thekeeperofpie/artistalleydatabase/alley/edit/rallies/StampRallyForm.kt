@@ -651,14 +651,20 @@ abstract class StampRallyFormScope(
         merch: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-    ) = MerchSection(
-        state = state,
-        merch = merch,
-        merchById = merchById,
-        merchPredictions = merchPredictions,
-        headerText = Res.string.alley_edit_stamp_rally_edit_prize_merch,
-        labelText = Res.string.alley_edit_stamp_rally_edit_prize_merch_label,
-    )
+    ) {
+        val merchById = merchById()
+        val initialMerch = remember(merchById, initialStampRally?.prizeMerch) {
+            initialStampRally?.prizeMerch?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
+        }
+        MerchSection(
+            state = state,
+            initialMerch = initialMerch,
+            merch = merch,
+            merchPredictions = merchPredictions,
+            headerText = Res.string.alley_edit_stamp_rally_edit_prize_merch,
+            labelText = Res.string.alley_edit_stamp_rally_edit_prize_merch_label,
+        )
+    }
 
     @Composable
     fun MerchSection(
@@ -673,6 +679,25 @@ abstract class StampRallyFormScope(
         val initialMerch = remember(merchById, initialStampRally?.merch) {
             initialStampRally?.merch?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
         }
+        MerchSection(
+            state = state,
+            initialMerch = initialMerch,
+            merch = merch,
+            merchPredictions = merchPredictions,
+            headerText = headerText,
+            labelText = labelText,
+        )
+    }
+
+    @Composable
+    private fun MerchSection(
+        state: EntryForm2.SingleTextState,
+        initialMerch: List<MerchInfo>,
+        merch: SnapshotStateList<MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        headerText: StringResource,
+        labelText: StringResource,
+    ) {
         val listRevertDialogState = rememberListRevertDialogState(initialMerch)
         BasicMultiTextSection(
             state = state,
