@@ -263,6 +263,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             source.useLines {
                 it.filter { line -> filteredTableNames.any { it in line } }
                     .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
+                    .filterNot { it.contains("22222222-2222-2222-2222-222222222222") }
                     .forEach(writer::appendLine)
             }
         }

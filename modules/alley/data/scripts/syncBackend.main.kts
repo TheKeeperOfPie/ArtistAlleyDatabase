@@ -88,6 +88,7 @@ if (PULL_REMOTE) {
         .use { writer ->
             editExportFile.useLines {
                 it.filter { it.contains("\"stampRallyEntryAnimeExpo2026\"") }
+                    .filterNot { it.contains("22222222-2222-2222-2222-222222222222") }
                     .forEach(writer::appendLine)
             }
         }

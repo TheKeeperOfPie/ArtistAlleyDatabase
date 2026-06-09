@@ -21,6 +21,7 @@ object AlleyCryptography {
     const val SIGNATURE_HEADER_KEY = "X-CustomSignature"
 
     val FAKE_ARTIST_ID = Uuid.parse("11111111-1111-1111-1111-111111111111")
+    val FAKE_RALLY_ID = Uuid.parse("22222222-2222-2222-2222-222222222222")
 
     suspend fun generate(): AlleyCryptographyKeys {
         val ecdsa = CryptographyProvider.Default.get(ECDSA)
