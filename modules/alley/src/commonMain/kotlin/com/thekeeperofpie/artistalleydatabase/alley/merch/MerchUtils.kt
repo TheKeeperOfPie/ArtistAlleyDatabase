@@ -53,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Stickers
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Tableware
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Umbrellas
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.WallScrolls
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Wallets
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.WashiTape
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.WindChimes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.WritingInstruments
@@ -112,6 +113,7 @@ object MerchUtils {
         "Tableware" -> MerchIcons.Tableware
         "Umbrellas" -> MerchIcons.Umbrellas
         "Wall scrolls" -> MerchIcons.WallScrolls
+        "Wallets" -> MerchIcons.Wallets
         "Washi tape" -> MerchIcons.WashiTape
         "Wind chimes" -> MerchIcons.WindChimes
         "Writing instruments" -> MerchIcons.WritingInstruments
