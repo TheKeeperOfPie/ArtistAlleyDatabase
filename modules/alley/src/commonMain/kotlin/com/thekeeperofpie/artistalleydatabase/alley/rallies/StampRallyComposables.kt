@@ -122,7 +122,7 @@ fun StampRallyTitle(
 fun StampRallySeriesImage(
     stampRallyId: String,
     seriesId: String?,
-    hostTable: String?,
+    startTable: String?,
     image: () -> String?,
 ) {
     val sizeResolver = rememberConstraintsSizeResolver()
@@ -150,7 +150,7 @@ fun StampRallySeriesImage(
         } else {
             val textStyle = MaterialTheme.typography.titleLarge
             Text(
-                text = hostTable.orEmpty(),
+                text = startTable.orEmpty(),
                 style = textStyle.copy(fontFamily = FontFamily.Monospace),
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = 12.sp,
@@ -182,7 +182,7 @@ fun StampRallyListRow(
         StampRallySeriesImage(
             stampRallyId = stampRally.id,
             seriesId = series?.id,
-            hostTable = stampRally.hostTable,
+            startTable = stampRally.startTableOrDefault,
             image = { series?.let(seriesImage) }
         )
 

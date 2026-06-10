@@ -9,7 +9,6 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -61,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
@@ -71,7 +71,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLef
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowRight
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -300,44 +299,60 @@ fun ChangelogStampRallyRow(
     onClickMerch: (String) -> Unit,
     onClickImage: (CatalogImage) -> Unit,
 ) {
-    val seriesId = stampRally.rally.series.firstOrNull()
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .conditionallyNonNull(seriesId, Modifier.heightIn(min = 80.dp))
-            .height(IntrinsicSize.Min)
             .clickable(onClick = onClick)
     ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+        ) {
+            val lineHeightStyle = LineHeightStyle(
+                alignment = LineHeightStyle.Alignment.Center,
+                trim = LineHeightStyle.Trim.Both,
+            )
+            val booth = stampRally.rally.startTableOrDefault
+            Text(
+                // Always render 3 characters
+                text = booth?.ifEmpty { null } ?: "   ",
+                style = MaterialTheme.typography.titleMedium
+                    .copy(
+                        fontFamily = FontFamily.Monospace,
+                        lineHeightStyle = lineHeightStyle,
+                    ),
+            )
+
+            Text(
+                text = stampRally.rally.fandom,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium
+                    .copy(lineHeightStyle = lineHeightStyle),
+            )
+        }
+
+        val images = stampRally.images
+        if (images.isNotEmpty()) {
+            ChangelogImages(
+                sharedElementId = stampRally.stampRallyId,
+                images = images,
+                onClickImage = onClickImage,
+            )
+        } else {
+            Spacer(Modifier.height(8.dp))
+        }
+
         Row {
+            val seriesId = stampRally.rally.series.firstOrNull()
             StampRallySeriesImage(
                 stampRallyId = stampRally.rally.id,
                 seriesId = seriesId,
-                hostTable = stampRally.rally.tables.firstOrNull(),
+                startTable = stampRally.rally.startTableOrDefault,
                 image = { seriesId?.let(seriesImage) }
             )
 
-            Column {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                ) {
-                    Text(
-                        text = stampRally.rally.fandom,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-
-                val images = stampRally.images
-                if (images.isNotEmpty()) {
-                    ChangelogImages(
-                        sharedElementId = stampRally.stampRallyId,
-                        images = images,
-                        onClickImage = onClickImage,
-                    )
-                }
-
+            Column(modifier = Modifier.weight(1f)) {
                 val series = stampRally.rally.series
                 val merch = stampRally.rally.merch
 
