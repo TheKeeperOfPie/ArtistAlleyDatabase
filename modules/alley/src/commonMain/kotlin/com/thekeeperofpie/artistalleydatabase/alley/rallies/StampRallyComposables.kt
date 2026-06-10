@@ -46,7 +46,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_p
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_cost
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import coil3.compose.rememberConstraintsSizeResolver
 import coil3.request.ImageRequest
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
@@ -125,20 +124,17 @@ fun StampRallySeriesImage(
     startTable: String?,
     image: () -> String?,
 ) {
-    val sizeResolver = rememberConstraintsSizeResolver()
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxHeight()
             .width(72.dp)
             .heightIn(min = 80.dp)
-            .then(sizeResolver)
     ) {
         val image = image()
         if (image != null) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalPlatformContext.current)
                     .data(image)
-                    .size(sizeResolver)
                     .build(),
                 null,
                 contentScale = ContentScale.Crop,
