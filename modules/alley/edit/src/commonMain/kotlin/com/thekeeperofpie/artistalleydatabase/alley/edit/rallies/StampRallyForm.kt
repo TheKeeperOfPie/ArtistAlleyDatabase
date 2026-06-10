@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
 import androidx.compose.foundation.layout.FlexBox
+import androidx.compose.foundation.layout.FlexBoxConfig
+import androidx.compose.foundation.layout.FlexWrap
 import androidx.compose.foundation.layout.LayoutScopeMarker
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -483,7 +485,10 @@ abstract class StampRallyFormScope(
                     label()
                 }
             }
-            FlexBox(Modifier.padding(start = 32.dp, top = 8.dp, bottom = 8.dp)) {
+            FlexBox(
+                config = FlexBoxConfig { wrap(FlexWrap.Wrap) },
+                modifier = Modifier.padding(start = 32.dp, top = 8.dp, bottom = 8.dp)
+            ) {
                 val any by remember {
                     derivedStateOf {
                         tables.map { it.booth }.toSet() == selectedTables.toSet()

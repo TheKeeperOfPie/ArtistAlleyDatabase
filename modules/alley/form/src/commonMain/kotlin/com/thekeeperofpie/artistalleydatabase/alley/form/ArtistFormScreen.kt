@@ -695,6 +695,7 @@ object ArtistFormScreen {
                                     StampRallyDatabaseEntry.hasChanged(before, after)
                                 }
                             }
+
                             CompositionLocalProvider(
                                 LocalContentColor provides when {
                                     formState.editorState.deleted -> AlleyTheme.colorScheme.negative
@@ -703,7 +704,8 @@ object ArtistFormScreen {
                                 }
                             ) {
                                 val booth =
-                                    formState.tables.toList().firstOrNull()?.booth?.ifBlank { null }
+                                    formState.tables.toList()
+                                        .firstOrNull()?.booth?.ifBlank { null }
                                         ?: formState.stateTables.value.text.toString()
                                 StampRallySummaryRow(
                                     stampRallyId = formState.editorState.id.value.text.toString(),

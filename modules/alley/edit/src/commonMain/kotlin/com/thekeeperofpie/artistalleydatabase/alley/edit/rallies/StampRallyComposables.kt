@@ -1,16 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
+import androidx.compose.foundation.layout.FlexAlignItems
+import androidx.compose.foundation.layout.FlexBox
+import androidx.compose.foundation.layout.FlexBoxConfig
+import androidx.compose.foundation.layout.FlexWrap
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -42,9 +43,13 @@ fun StampRallySummaryRow(
     seriesById: () -> Map<String, SeriesInfo>,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    @OptIn(ExperimentalFlexBoxApi::class)
+    FlexBox(
+        config = FlexBoxConfig {
+            wrap(FlexWrap.Wrap)
+            columnGap(12.dp)
+            alignItems(FlexAlignItems.Center)
+        },
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
     ) {
         Text(
@@ -63,24 +68,17 @@ fun StampRallySummaryRow(
         )
 
         if (series.isNotEmpty()) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .wrapContentWidth(align = Alignment.Start, unbounded = true)
-                    .padding(vertical = 8.dp)
-            ) {
-                val seriesById = seriesById()
-                val series = remember(series) {
-                    series.map { seriesById[it] ?: SeriesInfo.fake(it) }
-                }
-                series.forEach {
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(it.name(LocalLanguageOptionMedia.current))
-                        },
-                    )
-                }
+            val seriesById = seriesById()
+            val series = remember(series) {
+                series.map { seriesById[it] ?: SeriesInfo.fake(it) }
+            }
+            series.forEach {
+                AssistChip(
+                    onClick = {},
+                    label = {
+                        Text(it.name(LocalLanguageOptionMedia.current))
+                    },
+                )
             }
         }
     }
