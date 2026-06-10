@@ -48,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AboutLibrariesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
@@ -245,7 +246,7 @@ object ArtistAlleyAppScreen {
                         id = changelogEntry.stampRallyId.toString(),
                         type = AlleyDestination.Images.Type.StampRally(
                             id = changelogEntry.stampRallyId.toString(),
-                            hostTable = null,
+                            hostTable = changelogEntry.rally.startTableOrDefault.orEmpty(),
                             fandom = changelogEntry.rally.fandom,
                         ),
                         images = images,
