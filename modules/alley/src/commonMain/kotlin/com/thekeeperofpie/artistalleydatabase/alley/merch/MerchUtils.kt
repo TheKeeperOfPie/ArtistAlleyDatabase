@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bookmarks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Buttons
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Calendars
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Candles
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Carabiners
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.CardDecks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Charms
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.ClearFiles
@@ -37,6 +38,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.MysteryBoxes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Pants
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Patches
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhoneAccessories
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhotocardHolders
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Photocards
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Plushies
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Prints
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Puzzles
@@ -73,6 +76,7 @@ object MerchUtils {
         "Buttons" -> MerchIcons.Buttons
         "Calendars" -> MerchIcons.Calendars
         "Candles" -> MerchIcons.Candles
+        "Carabiners" -> MerchIcons.Carabiners
         "Card decks" -> MerchIcons.CardDecks
         "Charms" -> MerchIcons.Charms
         "Clear files" -> MerchIcons.ClearFiles
@@ -97,6 +101,8 @@ object MerchUtils {
         "Pants" -> MerchIcons.Pants
         "Patches" -> MerchIcons.Patches
         "Phone accessories" -> MerchIcons.PhoneAccessories
+        "Photocard holders" -> MerchIcons.PhotocardHolders
+        "Photocards" -> MerchIcons.Photocards
         "Plushies" -> MerchIcons.Plushies
         "Prints" -> MerchIcons.Prints
         "Puzzles" -> MerchIcons.Puzzles
