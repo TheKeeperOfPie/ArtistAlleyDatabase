@@ -26,6 +26,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -89,6 +90,7 @@ object AlleyRootScreen {
                         end = it.calculateEndPadding(LocalLayoutDirection.current),
                     )
             ) {
+                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
                 when (destination) {
                     AlleyRootDestination.ARTISTS ->
                         ArtistSearchScreen(
@@ -114,6 +116,16 @@ object AlleyRootScreen {
                     AlleyRootDestination.BROWSE ->
                         BrowseScreen(
                             graph = graph,
+                            seriesScrollStateSaver  = ScrollStateSaver.fromMap(
+                                AlleyRootDestination.BROWSE.name + "_series",
+                                scrollPositions,
+                            ),
+                            merchScrollStateSaver  = ScrollStateSaver.fromMap(
+                                AlleyRootDestination.BROWSE.name + "_merch",
+                                scrollPositions,
+                            ),
+                            selectedTabIndex = { selectedTabIndex },
+                            onSelectedTabIndexChanged = { selectedTabIndex = it },
                             onSeriesClick = onOpenSeries,
                             onMerchClick = onOpenMerch,
                             onOpenExport = onOpenExport,

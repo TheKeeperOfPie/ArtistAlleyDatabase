@@ -32,10 +32,8 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -95,6 +93,10 @@ object BrowseScreen {
     @Composable
     operator fun invoke(
         graph: ArtistAlleyGraph,
+        seriesScrollStateSaver: ScrollStateSaver,
+        merchScrollStateSaver: ScrollStateSaver,
+        selectedTabIndex: () -> Int,
+        onSelectedTabIndexChanged: (Int) -> Unit,
         onSeriesClick: (DataYear, String) -> Unit,
         onMerchClick: (DataYear, String) -> Unit,
         onOpenExport: (DataYear) -> Unit,
@@ -117,7 +119,7 @@ object BrowseScreen {
                     }
                 }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+                val selectedTabIndex = selectedTabIndex()
                 SortFilterBottomScaffold(
                     state = when (selectedTabIndex) {
                         0 -> tagsViewModel.seriesSortFilterController.state
@@ -137,7 +139,7 @@ object BrowseScreen {
                                     Tab.entries.forEachIndexed { index, tab ->
                                         Tab(
                                             selected = selectedTabIndex == index,
-                                            onClick = { selectedTabIndex = index },
+                                            onClick = { onSelectedTabIndexChanged(index) },
                                             text = { Text(stringResource(tab.textRes)) },
                                         )
                                     }
@@ -156,7 +158,6 @@ object BrowseScreen {
                             )
                         }
                 ) {
-                    val scrollPositions = ScrollStateSaver.scrollPositions()
                     val series = tagsViewModel.series.collectAsLazyPagingItems()
                     val merch = tagsViewModel.merch.collectAsLazyPagingItems()
                     AnimatedContent(
@@ -164,8 +165,6 @@ object BrowseScreen {
                         transitionSpec = { fadeIn().togetherWith(fadeOut()) },
                         label = "Tag screen",
                     ) {
-                        val scrollStateSaver =
-                            ScrollStateSaver.fromMap(it.name, scrollPositions)
                         when (it) {
                             Tab.SERIES -> {
                                 var seriesQuery by tagsViewModel.seriesQuery
@@ -207,7 +206,7 @@ object BrowseScreen {
                                         onOpenSeriesChangelog(dataYearHeaderState.year)
                                     },
                                     onOpenSettings = onOpenSettings,
-                                    scrollStateSaver = scrollStateSaver,
+                                    scrollStateSaver = seriesScrollStateSaver,
                                     additionalHeader = {
                                         item(key = "seriesFilterOptions") {
                                             Column {
@@ -257,7 +256,7 @@ object BrowseScreen {
                                     onOpenMerchChangelog(dataYearHeaderState.year)
                                 },
                                 onOpenSettings = onOpenSettings,
-                                scrollStateSaver = scrollStateSaver,
+                                scrollStateSaver = merchScrollStateSaver,
                             )
                         }
                     }
