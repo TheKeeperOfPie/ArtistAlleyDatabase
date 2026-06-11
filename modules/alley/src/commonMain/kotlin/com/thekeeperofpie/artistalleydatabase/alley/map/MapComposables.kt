@@ -62,7 +62,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
-import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -121,10 +120,6 @@ fun TableCell(
             )
         }
 
-        var unfavoriteDialogEntry by remember {
-            mutableStateOf<ArtistEntryGridModel?>(null)
-        }
-
         if (showPopup) {
             BackHandler { showPopup = false }
             var tableEntries by remember { mutableStateOf<List<ArtistEntryGridModel>?>(null) }
@@ -147,12 +142,8 @@ fun TableCell(
                     table = table,
                     entries = tableEntries,
                     onFavoriteToggle = { entry, favorite ->
-                        if (favorite) {
-                            entry.favorite = favorite
-                            mapViewModel.onFavoriteToggle(entry, favorite)
-                        } else {
-                            unfavoriteDialogEntry = entry
-                        }
+                        entry.favorite = favorite
+                        mapViewModel.onFavoriteToggle(entry, favorite)
                     },
                     onIgnoredToggle = { entry, ignored ->
                         entry.ignored = ignored
@@ -163,15 +154,6 @@ fun TableCell(
                 )
             }
         }
-
-        UnfavoriteDialog(
-            entry = { unfavoriteDialogEntry },
-            onClearEntry = { unfavoriteDialogEntry = null },
-            onRemoveFavorite = {
-                unfavoriteDialogEntry?.favorite = false
-                mapViewModel.onFavoriteToggle(it, false)
-            },
-        )
 
         val autoSize = TextAutoSize.StepBased(
             minFontSize = 8.sp,
