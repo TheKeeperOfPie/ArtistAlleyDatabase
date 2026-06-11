@@ -188,6 +188,7 @@ class ArtistFormViewModel(
                 mergeBehavior = FormMergeBehavior.REPLACE,
             )
             state.artistFormState.images.replaceAll(artist.images.map(ImageUtils::toEditImage))
+            state.artistFormState.profileImage = artist.profileImage?.let(ImageUtils::toEditImage)
 
             val existingStampRallyStates = state.stampRallyStates.toList()
             val emptyStampRallyDatabaseEntry by lazy {
@@ -366,6 +367,10 @@ class ArtistFormViewModel(
             }
             is ImageUploader.UploadResult.Success -> imagesResult
         }
+
+        val newProfileImage = state.artistFormState.profileImage
+            .let { uploadedImages[it] ?: it }
+        state.artistFormState.profileImage = newProfileImage
 
         val newArtistImages = state.artistFormState.images.toList()
             .map { uploadedImages[it] ?: it }

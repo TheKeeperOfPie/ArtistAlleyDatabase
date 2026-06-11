@@ -358,6 +358,7 @@ internal object StampRallyFormMergeScreen {
                     tablePredictions = { emptyFlow() },
                     seriesImage = seriesImage,
                     showImages = true,
+                    forceLocked = true,
                     modifier = modifier.fillMaxWidth(),
                 )
             }

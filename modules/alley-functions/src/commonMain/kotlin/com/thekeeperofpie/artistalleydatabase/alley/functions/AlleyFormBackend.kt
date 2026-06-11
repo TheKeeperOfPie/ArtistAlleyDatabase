@@ -337,6 +337,9 @@ internal object AlleyFormBackend {
                     timestamp = timestamp,
                 )
             }
+            .filter { rallyEntry ->
+                request.beforeStampRallies.any { it.id == rallyEntry.stampRallyId }
+            }
 
         if (artistFormEntry != null) {
             database.artistFormEntryQueries.insertFormEntry(artistFormEntry)

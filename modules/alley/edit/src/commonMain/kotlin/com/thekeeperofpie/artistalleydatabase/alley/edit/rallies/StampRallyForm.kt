@@ -494,11 +494,12 @@ abstract class StampRallyFormScope(
                         tables.map { it.booth }.toSet() == selectedTables.toSet()
                     }
                 }
+                val enabled = !scope.forceLocked && state.lockState.editable
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clickable {
+                        .clickable(enabled = enabled) {
                             if (any) {
                                 selectedTables.clear()
                             } else {
@@ -508,7 +509,7 @@ abstract class StampRallyFormScope(
                         .padding(end = 16.dp)
                 ) {
                     Checkbox(
-                        enabled = !scope.forceLocked && state.lockState.editable,
+                        enabled = enabled,
                         checked = any,
                         onCheckedChange = {
                             if (it) {
