@@ -10,7 +10,8 @@
 ### Syncing commands
 - With the local dev server running, make a request using https://hoppscotch.io to localhost:8787
 for `/commands`
-- This will have to be manually repeated for the production bot credentials
+- This will have to be manually repeated for the production bot credentials, make sure the .dev.vars
+file is deleted and that `DEBUG` is set to `true`
 
 ### Publishing
 
