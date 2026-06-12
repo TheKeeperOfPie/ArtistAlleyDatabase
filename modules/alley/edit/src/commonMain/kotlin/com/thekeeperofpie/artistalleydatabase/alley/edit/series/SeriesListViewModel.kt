@@ -55,7 +55,8 @@ class SeriesListViewModel(
                 }
                 val (thirdSection, thirdRemaining) = secondRemaining.partition {
                     it.titleEnglish.contains(query, ignoreCase = true) ||
-                            it.titleRomaji.contains(query, ignoreCase = true)
+                            it.titleRomaji.contains(query, ignoreCase = true) ||
+                            it.synonyms.any { it.contains(query, ignoreCase = true) }
                 }
                 firstSection + secondSection + thirdSection
             }

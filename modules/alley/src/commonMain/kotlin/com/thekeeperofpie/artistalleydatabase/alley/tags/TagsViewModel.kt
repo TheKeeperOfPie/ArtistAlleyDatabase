@@ -97,7 +97,6 @@ class TagsViewModel(
                     }.flow
                 }
             }
-            .enforceUniqueIds { it.series.id }
             .cachedIn(viewModelScope)
 
     var merchQuery by mutableStateOf("")
