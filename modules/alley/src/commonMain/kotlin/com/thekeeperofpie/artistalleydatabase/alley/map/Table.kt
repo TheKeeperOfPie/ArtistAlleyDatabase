@@ -19,21 +19,19 @@ sealed interface Table {
     val isFinalCatalog: Boolean
     val hasNotes: Boolean
 
-    val showCatalogHighlight
-        get() = image != null && isFinalCatalog
-
-    val backgroundColor: Color
-        @Composable get() = if (showCatalogHighlight) {
+    @Composable
+    fun backgroundColor(showCatalogHighlight: Boolean = true) =
+        if (showCatalogHighlight && image != null && isFinalCatalog) {
             MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.15f)
                 .compositeOver(MaterialTheme.colorScheme.surfaceVariant)
-
         } else {
             section?.color ?: MaterialTheme.colorScheme.surfaceContainer
         }
 
-    val textColor: Color
-        @Composable get() = if (showCatalogHighlight) {
-            ComposeColorUtils.bestTextColor(backgroundColor)
+    @Composable
+    fun textColor(showCatalogHighlight: Boolean = true) =
+        if (showCatalogHighlight && image != null && isFinalCatalog) {
+            ComposeColorUtils.bestTextColor(backgroundColor(showCatalogHighlight))
                 ?: MaterialTheme.colorScheme.onSurfaceVariant
         } else {
             section?.textColor ?: MaterialTheme.colorScheme.onSurface

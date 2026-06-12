@@ -76,8 +76,8 @@ import org.jetbrains.compose.resources.stringResource
 fun TableCell(
     mapViewModel: MapViewModel,
     table: Table,
-    background: Color = table.backgroundColor,
-    textColor: Color = table.textColor,
+    background: Color = table.backgroundColor(),
+    textColor: Color = table.textColor(),
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
     showImages: Boolean = true,
@@ -204,6 +204,7 @@ fun HighlightedTableCell(
     table: Table,
     highlight: Boolean,
     showImages: Boolean,
+    showCatalogHighlight: Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
     val borderWidth = if (highlight) 2.dp else 1.dp
@@ -215,12 +216,12 @@ fun HighlightedTableCell(
     val background = if (highlight) {
         MaterialTheme.colorScheme.primary
     } else {
-        table.backgroundColor
+        table.backgroundColor(showCatalogHighlight)
     }
     val textColor = if (highlight) {
         MaterialTheme.colorScheme.onPrimary
     } else {
-        table.textColor
+        table.textColor(showCatalogHighlight)
     }
     TableCell(
         mapViewModel = mapViewModel,
