@@ -256,6 +256,12 @@ class UserEntryDao(
                 .mapLatest { it.awaitAsList().mapNotNull { it.name }.toSet() }
         }
 
+    fun getRallyFavorites() = flowFromSuspend { dao() }
+        .flatMapLatest {
+            it.getRallyFavorites().asFlow()
+                .mapLatest { it.awaitAsList().toSet() }
+        }
+
     data class TagFavorites(
         val seriesIds: Set<String>,
         val merchIds: Set<String>,

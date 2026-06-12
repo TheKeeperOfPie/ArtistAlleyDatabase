@@ -10,5 +10,5 @@ internal data class StampRallyDiff(
     val date: LocalDate,
     val name: String,
     val images: List<DatabaseImage>?,
-    // Unlike ArtistDiff, isBrandNew isn't a field since if images are null, it can only be new
+    val isBrandNew: Boolean,
 )

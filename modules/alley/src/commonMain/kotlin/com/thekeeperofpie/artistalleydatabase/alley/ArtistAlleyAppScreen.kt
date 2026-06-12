@@ -37,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelo
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteArtistsChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteMerchChangelogScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteRalliesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteSeriesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoritesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
@@ -284,8 +285,7 @@ object ArtistAlleyAppScreen {
                         navStack.navigate(AlleyDestination.FavoriteArtistsChangelog(it))
                     },
                     onOpenFavoriteStampRalliesChangelog = {
-                        // TODO
-                        navStack.navigate(AlleyDestination.FavoritesChangelog(it))
+                        navStack.navigate(AlleyDestination.FavoriteRalliesChangelog(it))
                     },
                     onOpenFavoriteSeriesChangelog = {
                         navStack.navigate(AlleyDestination.FavoriteSeriesChangelog(it))
@@ -470,6 +470,21 @@ object ArtistAlleyAppScreen {
                     onClickArtistImage = { changelogEntry, image ->
                         onClickChangelogArtistImage(year, changelogEntry, image)
                     },
+                    onClickStampRally = { onClickChangelogStampRally(year, it) },
+                    onClickStampRallyImage = { changelog, image ->
+                        onClickChangelogStampRallyImage(year, changelog, image)
+                    },
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.FavoriteRalliesChangelog> { route ->
+                val year = route.dataYear
+                FavoriteRalliesChangelogScreen(
+                    graph = graph,
+                    dataYear = year,
+                    onClickBack = navStack::onBack,
+                    onClickSeries = { onOpenSeries(year, it) },
+                    onClickMerch = { onOpenMerch(year, it) },
                     onClickStampRally = { onClickChangelogStampRally(year, it) },
                     onClickStampRallyImage = { changelog, image ->
                         onClickChangelogStampRallyImage(year, changelog, image)

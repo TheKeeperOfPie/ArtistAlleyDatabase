@@ -421,6 +421,7 @@
     <string name="alley_favorite_artists_changelog_title">Favorite artists changelog</string>
     <string name="alley_favorite_series_changelog_title">Favorite series changelog</string>
     <string name="alley_favorite_merch_changelog_title">Favorite merch changelog</string>
+    <string name="alley_favorite_rallies_changelog_title">Favorite rallies changelog</string>
 
     <string name="alley_libraries_title">Libraries</string>
 

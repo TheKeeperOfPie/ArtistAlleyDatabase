@@ -91,3 +91,7 @@ SELECT merchEntry.name FROM merchUserEntry
 LEFT OUTER JOIN merchEntry
 ON merchEntry.uuid = merchUserEntry.merchId
 WHERE merchUserEntry.favorite = 1;
+
+getRallyFavorites:
+SELECT stampRallyId FROM stampRallyUserEntry
+WHERE favorite = 1;

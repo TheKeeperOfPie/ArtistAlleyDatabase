@@ -13,6 +13,7 @@ data class StampRallyChangelogEntry(
     val date: LocalDate,
     val images: List<CatalogImage>,
     val rally: StampRallyEntryAnimeExpo2026,
+    val isBrandNew: Boolean,
 )
 
 fun StampRallyEntryAnimeExpo2026Changelog.toChangelogEntry(
@@ -25,5 +26,6 @@ fun StampRallyEntryAnimeExpo2026Changelog.toChangelogEntry(
         date = LocalDate.parse(date),
         images = AlleyImageUtils.getRallyImages(dataYear, images.orEmpty()),
         rally = rally,
+        isBrandNew = isBrandNew,
     )
 }

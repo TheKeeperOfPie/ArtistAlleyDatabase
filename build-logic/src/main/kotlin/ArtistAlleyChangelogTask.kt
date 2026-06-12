@@ -348,6 +348,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         val date = current.date
         val rallies = current.rallies
         val beforeRallies = before.latestRallies
+        val beforeRallyIds = beforeRallies.map { it.id }
         return rallies
             .map { afterRally -> beforeRallies.find { it.id == afterRally.id } to afterRally }
             .mapNotNull { (beforeRally, afterRally) ->
@@ -358,12 +359,14 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                 }
                 val images = (afterRally.images - beforeRally?.images?.toSet().orEmpty()).toMutableList()
                 images.retainAll(latestImages)
+                val isBrandNew = rallyId.toString() !in beforeRallyIds
                 if (beforeRally == null) {
                     StampRallyDiff(
                         stampRallyId = rallyId,
                         date = date,
                         name = afterRally.fandom,
                         images = afterRally.images,
+                        isBrandNew = isBrandNew,
                     )
                 } else if (images.isNotEmpty()) {
                     StampRallyDiff(
@@ -371,6 +374,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                         date = date,
                         name = afterRally.fandom,
                         images = images,
+                        isBrandNew = isBrandNew,
                     )
                 } else {
                     null

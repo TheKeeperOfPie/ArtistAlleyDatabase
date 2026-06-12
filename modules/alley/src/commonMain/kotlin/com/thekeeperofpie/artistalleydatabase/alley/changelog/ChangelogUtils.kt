@@ -17,13 +17,14 @@ fun ArtistEntryAnimeExpo2026Changelog.catalogImages(year: DataYear): List<Catalo
 }
 
 fun List<ArtistChangelogEntry>.sortArtistsForChangelog() =
-    sortedBy { it.booth }.sortedBy { it.images.isEmpty() }
+    sortedWith(compareBy({ it.images.isEmpty() }, { it.booth }))
 
 @JvmName("sortArtistsForChangelogChangelogEntry")
 fun List<ChangelogEntry.Artist>.sortArtistsForChangelog() =
-    sortedBy { it.artist.booth }.sortedBy { it.artist.images.isNullOrEmpty() }
+    sortedWith(compareBy({ it.artist.images.isNullOrEmpty() }, { it.artist.booth }))
 
-fun List<StampRallyChangelogEntry>.sortRalliesForChangelog() = sortedBy { it.rally.fandom }
+fun List<StampRallyChangelogEntry>.sortRalliesForChangelog() =
+    sortedWith(compareBy({ it.images.isEmpty() }, { it.rally.fandom }))
 
 internal object ChangelogUtils {
     val ImageHeight = 200.dp

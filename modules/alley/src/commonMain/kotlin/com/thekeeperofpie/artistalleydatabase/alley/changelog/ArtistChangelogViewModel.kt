@@ -43,9 +43,8 @@ class ArtistChangelogViewModel(
                     val (added, updated) = it.second.partition { it.isBrandNew }
                     ArtistChangelogScreen.DayChange(
                         date = it.first,
-                        added = added.sortedBy { it.booth }.sortedBy { it.images.isEmpty() },
-                        updated = updated.sortedBy { it.booth }
-                            .sortedBy { it.images.isEmpty() },
+                        added = added.sortArtistsForChangelog(),
+                        updated = updated.sortArtistsForChangelog(),
                     )
                 }
         }

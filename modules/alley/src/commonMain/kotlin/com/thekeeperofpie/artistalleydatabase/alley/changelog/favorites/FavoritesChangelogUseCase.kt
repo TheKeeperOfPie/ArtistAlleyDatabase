@@ -50,7 +50,7 @@ class FavoritesChangelogUseCase<Input>(
                     artists.filterArtists(input)
                         .partition { it.artist.isBrandNew }
                 val (addedRallies, updatedRallies) = rallies.filterRallies(input)
-                    .partition { it.images.isEmpty() }
+                    .partition { it.isBrandNew }
                 if (addedArtists.isEmpty() &&
                     updatedArtists.isEmpty() &&
                     addedRallies.isEmpty() &&

@@ -96,7 +96,7 @@ class TagChangelogViewModel(
                 val (addedArtists, updatedArtists) = artists.filterArtists(showOnlyConfirmedTags)
                     .partition { it.artist.isBrandNew }
                 val (addedRallies, updatedRallies) = rallies.filterRallies()
-                    .partition { it.images.isEmpty() }
+                    .partition { it.isBrandNew }
                 if (addedArtists.isEmpty() &&
                     updatedArtists.isEmpty() &&
                     addedRallies.isEmpty() &&

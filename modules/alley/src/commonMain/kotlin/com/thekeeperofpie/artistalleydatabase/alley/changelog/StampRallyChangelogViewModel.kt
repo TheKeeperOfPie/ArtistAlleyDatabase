@@ -35,7 +35,7 @@ class StampRallyChangelogViewModel(
                     .toList()
                     .sortedByDescending { it.first }
                     .map {
-                        val (added, updated) = it.second.partition { it.images.isEmpty() }
+                        val (added, updated) = it.second.partition { it.isBrandNew }
                         StampRallyChangelogScreen.DayChange(
                             date = it.first,
                             added = added.sortRalliesForChangelog(),

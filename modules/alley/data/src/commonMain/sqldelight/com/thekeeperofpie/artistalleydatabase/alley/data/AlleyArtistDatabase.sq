@@ -384,6 +384,7 @@ CREATE TABLE
         stampRallyId TEXT AS Uuid NOT NULL,
         date TEXT NOT NULL,
         images TEXT AS List<DatabaseImage>,
+        isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (stampRallyId, date)
     );
 

@@ -959,6 +959,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         stampRallyId = it.stampRallyId,
                         date = it.date.toString(),
                         images = it.images,
+                        isBrandNew = it.isBrandNew,
                     )
                 )
             }
