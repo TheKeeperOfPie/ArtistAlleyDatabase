@@ -13,6 +13,7 @@ external interface Env {
     val DISCORD_GUILD_ID: String
     val DISCORD_ARTIST_ROLE_ID: String
     val DISCORD_ARTIST_CHANNEL_ID: String
+    val DISCORD_PUBLIC_CHANNEL_ID: String
 
     val DISCORD_EDITORS: String
 
@@ -21,5 +22,6 @@ external interface Env {
     val ARTIST_ALLEY_DB: D1Database
     val ARTIST_ALLEY_FORM_DB: D1Database
     val ARTIST_ALLEY_URL: String
+    val FORM_URL: String
     val BROWSER_REDIRECT_URL: String
 }

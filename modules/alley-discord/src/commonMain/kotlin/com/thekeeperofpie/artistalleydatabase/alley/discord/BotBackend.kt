@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.discord
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.discord.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
@@ -110,8 +109,9 @@ internal object BotBackend {
                 )
 
                 val database = Databases.backendDatabase(env)
-                val artist = database.discordArtistEntryAnimeExpo2026Queries.getArtistByBooth(booth.toString())
-                    .awaitAsOneOrNull()
+                val artist =
+                    database.discordArtistEntryAnimeExpo2026Queries.getArtistByBooth(booth.toString())
+                        .awaitAsOneOrNull()
                 if (artist == null) {
                     return api.patchFailure(
                         interactionToken = interaction.token,
@@ -119,8 +119,17 @@ internal object BotBackend {
                     )
                 }
 
-                val existingEntry = database.artistCatalogQueueEntryQueries.getCatalogEntry(dataYear, booth.toString())
-                    .awaitAsOneOrNull()
+                if (link in artist.catalogLinks) {
+                    return api.patchFailure(
+                        interactionToken = interaction.token,
+                        message = "Ignoring, artist already has $link recorded",
+                    )
+                }
+
+                val existingEntry = database.artistCatalogQueueEntryQueries.getCatalogEntry(
+                    dataYear,
+                    booth.toString()
+                ).awaitAsOneOrNull()
 
                 database.artistCatalogQueueEntryQueries
                     .insertCatalogEntry(
@@ -137,8 +146,26 @@ internal object BotBackend {
                 } else {
                     "Replaced $table's catalog: ${existingEntry.link} -> $link"
                 }
+
+                val didNotPostDefaultReason = when {
+                    existingEntry != null -> "Not publishing to channel, already had catalog: ${existingEntry.link}"
+                    artist.catalogLinks.isNotEmpty() -> "Not publishing to channel, already had catalog: ${artist.catalogLinks}"
+                    else -> null
+                }
+                val post = options.firstOrNull { it.name == "post" }
+                    ?.value
+                    ?.lowercase()
+                    ?.toBooleanStrictOrNull()
+                    ?: (didNotPostDefaultReason == null)
+                if (post) {
+                    api.sendMessage(
+                        channelId = env.DISCORD_PUBLIC_CHANNEL_ID,
+                        message = "New catalog for $table: $link",
+                    )
+                }
+
                 DiscordInteractionPatchResponse(
-                    content = content,
+                    content = content + didNotPostDefaultReason?.let { "\n$it"},
                     flags = MessageFlags(MessageFlag.EPHEMERAL),
                 )
             }
@@ -359,7 +386,7 @@ internal object BotBackend {
                     publicKey = keys.publicKey,
                 )
             )
-        return AlleyDataUtils.formLink(BuildKonfig.formUrl, keys.privateKey)
+        return AlleyDataUtils.formLink(env.FORM_URL, keys.privateKey)
     }
 
     private suspend fun DiscordApi.patchFailure(

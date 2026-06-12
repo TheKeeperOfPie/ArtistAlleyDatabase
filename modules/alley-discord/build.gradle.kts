@@ -116,25 +116,10 @@ val syncOutput by tasks.registering(Sync::class) {
     }
 }
 
-val properties = Properties().apply {
-    val secretsFile = projectDir.resolve("secrets.properties")
-    if (secretsFile.exists()) {
-        load(secretsFile.reader())
-    }
-}
-
 buildkonfig {
     packageName = "com.thekeeperofpie.artistalleydatabase.alley.discord.secrets"
 
     defaultConfigs {
-        properties.forEach {
-            buildConfigField(
-                type = FieldSpec.Type.STRING,
-                name = it.key.toString(),
-                value = it.value.toString(),
-                const = true,
-            )
-        }
         buildConfigField(
             type = FieldSpec.Type.BOOLEAN,
             name = "isWasmDebug",
@@ -164,10 +149,12 @@ tasks.register("webRelease") {
             .replace("discordGuildId", properties.getProperty("discordGuildId"))
             .replace("discordArtistRoleId", properties.getProperty("discordArtistRoleId"))
             .replace("discordArtistChannelId", properties.getProperty("discordArtistChannelId"))
+            .replace("discordPublicChannelId", properties.getProperty("discordPublicChannelId"))
             .replace("artistAlleyBotKvId", properties.getProperty("artistAlleyBotKvId"))
             .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
             .replace("artistAlleyFormDatabaseId", properties.getProperty("artistAlleyFormDatabaseId"))
             .replace("artistAlleyUrl", properties.getProperty("artistAlleyUrl"))
+            .replace("formUrl", properties.getProperty("formUrl"))
             .replace("browserRedirectUrl", properties.getProperty("browserRedirectUrl"))
         wranglerJson.writeText(wranglerJsonEdited)
     }

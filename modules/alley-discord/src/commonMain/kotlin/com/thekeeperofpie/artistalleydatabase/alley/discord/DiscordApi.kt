@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.discord.MessageFlags
 import com.thekeeperofpie.artistalleydatabase.discord.OptionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.w3c.dom.url.URLSearchParams
 import org.w3c.fetch.FOLLOW
@@ -68,6 +69,11 @@ internal class DiscordApi(
                             type = OptionType.STRING,
                             description = "Catalog link",
                             required = true,
+                        ),
+                        CommandRegisterRequest.Option(
+                            name = "post",
+                            type = OptionType.BOOLEAN,
+                            description = "Post to public channel",
                         ),
                     ),
                 ),
@@ -264,8 +270,32 @@ internal class DiscordApi(
         }
     }
 
+    suspend fun sendMessage(channelId: String, message: String) {
+        val result = fetch(
+            Request(
+                "$BASE_URL/channels/$channelId/messages",
+                RequestInit(
+                    method = "POST",
+                    headers = headers(),
+                    body = json.encodeToString(Message(message)),
+                    cache = undefined,
+                    integrity = undefined,
+                    redirect = RequestRedirect.FOLLOW,
+                )
+            )
+        ).await()
+        if (!result.ok) {
+            println("Failed to send message to $channelId: ${result.text().await()}")
+        }
+    }
+
     private fun headers() = Headers().apply {
         this.set("Authorization", "Bot ${env.DISCORD_BOT_TOKEN}")
         this.set("Content-Type", "application/json")
     }
+
+    @Serializable
+    private data class Message(
+        val content: String,
+    )
 }

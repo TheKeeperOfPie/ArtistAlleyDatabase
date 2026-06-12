@@ -18,3 +18,23 @@ for `/commands`
 - Copy `build/dist/web/production` to the `ArtistAlleyDiscordBot` repo
 - `git add -A` and make a new commit with the message pointing to this repo's commit SHA
 - Wait for Cloudflare to upload the Worker and then test it in the prod Discord server
+
+### Authorizing
+- Open the Discord developer portal for the corresponding bot
+- Select the following scopes
+  - `connections`
+  - `bot`
+  - `messages.read`
+  - `applications.commands`
+- Enable the following permissions in the forum/public channels
+  - `Manage Roles` 
+  - `Send Messages` 
+  - `Create Public Threads`
+  - `Send Messages in Threads`
+  - `Manage Messages`
+  - `Pin Messages`
+  - `Manage Threads`
+  - `Embed Links`
+  - `Attach Files`
+  - `Read Message History`
+  - `Add Reactions`
