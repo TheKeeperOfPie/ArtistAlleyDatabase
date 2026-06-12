@@ -122,6 +122,7 @@ object ArtistMapScreen {
                         is Table.Shared -> it.artistIds.contains(viewModel.id)
                     },
                     showImages = transformState.showImages,
+                    showText = transformState.showText,
                     showCatalogHighlight = false,
                     onArtistClick = onArtistClick,
                 )

@@ -81,6 +81,7 @@ fun TableCell(
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
     showImages: Boolean = true,
+    showText: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
     var showPopup by remember { mutableStateOf(false) }
@@ -155,35 +156,37 @@ fun TableCell(
             }
         }
 
-        val autoSize = TextAutoSize.StepBased(
-            minFontSize = 8.sp,
-            maxFontSize = MaterialTheme.typography.titleLarge.fontSize,
-            stepSize = 1.sp,
-        )
-        if (showingImage) {
-            val style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
-            Text(
-                autoSize = autoSize,
-                text = table.booth,
-                color = Color.Black,
-                style = style.copy(drawStyle = Stroke(width = with(LocalDensity.current) { 2.sp.toPx() })),
-                modifier = Modifier.padding(horizontal = 4.dp)
+        if (showText) {
+            val autoSize = TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = MaterialTheme.typography.titleLarge.fontSize,
+                stepSize = 2.sp,
             )
-            Text(
-                autoSize = autoSize,
-                text = table.booth,
-                color = Color.White,
-                style = style,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-        } else {
-            Text(
-                autoSize = autoSize,
-                text = table.booth,
-                color = textColor,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
+            if (showingImage) {
+                val style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                Text(
+                    autoSize = autoSize,
+                    text = table.booth,
+                    color = Color.Black,
+                    style = style.copy(drawStyle = Stroke(width = with(LocalDensity.current) { 2.sp.toPx() })),
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+                Text(
+                    autoSize = autoSize,
+                    text = table.booth,
+                    color = Color.White,
+                    style = style,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            } else {
+                Text(
+                    autoSize = autoSize,
+                    text = table.booth,
+                    color = textColor,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
         }
 
         if (table.hasNotes) {
@@ -204,6 +207,7 @@ fun HighlightedTableCell(
     table: Table,
     highlight: Boolean,
     showImages: Boolean,
+    showText: Boolean,
     showCatalogHighlight: Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
@@ -231,6 +235,7 @@ fun HighlightedTableCell(
         borderColor = borderColor,
         textColor = textColor,
         showImages = showImages,
+        showText = showText,
         onArtistClick = onArtistClick,
     )
 }
