@@ -88,9 +88,7 @@ internal object StampRallyChangelogScreen {
                         modifier = Modifier.widthIn(max = 960.dp)
                     ) {
                         changes().forEach {
-                            item(key = listOf("header", it.date), contentType = "header") {
-                                ChangelogDayHeader(it.date)
-                            }
+                            changelogDayHeader(listState, it.date)
                             stampRallyChangelogDay(
                                 date = it.date,
                                 added = it.added,

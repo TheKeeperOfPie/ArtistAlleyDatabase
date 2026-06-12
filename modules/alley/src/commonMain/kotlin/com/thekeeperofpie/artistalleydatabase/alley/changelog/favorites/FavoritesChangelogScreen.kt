@@ -27,9 +27,9 @@ import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEntry
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogDayHeader
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.artistChangelogDay
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.changelogDayHeader
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.stampRallyChangelogDay
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
@@ -126,9 +126,7 @@ object FavoritesChangelogScreen {
                             }
                         }
                         changes().forEach {
-                            item(key = listOf("header", it.date), contentType = "header") {
-                                ChangelogDayHeader(it.date)
-                            }
+                            changelogDayHeader(listState, it.date)
                             artistChangelogDay(
                                 date = it.date,
                                 added = it.addedArtists,

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -34,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -254,10 +256,6 @@ fun ChangelogArtistRow(
         val hasSeries = artist.seriesHighlighted.isNotEmpty() || artist.seriesRemaining.isNotEmpty()
         val hasMerch = artist.merchHighlighted.isNotEmpty() || artist.merchRemaining.isNotEmpty()
 
-        if (hasSeries || hasMerch) {
-            Spacer(Modifier.height(16.dp))
-        }
-
         val seriesTitles = seriesTitles()
         if (hasSeries) {
             SeriesRow(
@@ -407,17 +405,34 @@ fun ChangelogStampRallyRow(
     }
 }
 
-@Composable
-fun ChangelogDayHeader(date: LocalDate) {
-    Text(
-        text = date.format(LocalDate.Formats.ISO),
-        style = MaterialTheme.typography.headlineMedium,
-        modifier = Modifier.padding(
-            start = 16.dp,
-            end = 16.dp,
-            top = 16.dp,
-        )
-    )
+fun LazyListScope.changelogDayHeader(
+    listState: LazyListState,
+    date: LocalDate,
+    key: String = "changelogDayHeader",
+) {
+    val headerKey = listOf(key, date)
+    stickyHeader(key = headerKey, "ChangelogDayHeader") { headerIndex ->
+        val pinned by remember {
+            derivedStateOf {
+                val offset = listState.layoutInfo.visibleItemsInfo
+                    .find { it.key == headerKey }
+                    ?.offset ?: return@derivedStateOf false
+                offset <= 0
+            }
+        }
+        Column {
+            Text(
+                text = date.format(LocalDate.Formats.ISO),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            if (pinned) {
+                HorizontalDivider()
+            }
+        }
+    }
 }
 
 fun LazyListScope.artistChangelogDay(

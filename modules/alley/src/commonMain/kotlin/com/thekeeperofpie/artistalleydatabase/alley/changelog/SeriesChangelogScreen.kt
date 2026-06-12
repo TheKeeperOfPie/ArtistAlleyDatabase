@@ -82,10 +82,7 @@ object SeriesChangelogScreen {
                         modifier = Modifier.widthIn(max = 960.dp)
                     ) {
                         changes().forEach {
-                            item(key = listOf("header", it.date), contentType = "header") {
-                                ChangelogDayHeader(it.date)
-                            }
-
+                            changelogDayHeader(listState, it.date)
                             item(key = listOf("seriesIds", it.date), contentType = "seriesIds") {
                                 Column {
                                     FlowRow(

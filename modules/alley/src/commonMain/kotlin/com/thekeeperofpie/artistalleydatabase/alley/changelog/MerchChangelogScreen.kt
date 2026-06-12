@@ -74,9 +74,7 @@ object MerchChangelogScreen {
                         modifier = Modifier.widthIn(max = 960.dp)
                     ) {
                         changes().forEach {
-                            item(key = listOf("header", it.date), contentType = "header") {
-                                ChangelogDayHeader(it.date)
-                            }
+                            changelogDayHeader(listState, it.date)
 
                             item(key = listOf("merchIds", it.date), contentType = "merchIds") {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(16.dp)) {

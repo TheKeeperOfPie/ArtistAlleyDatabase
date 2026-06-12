@@ -109,9 +109,7 @@ internal object ArtistChangelogScreen {
                         }
 
                         changes().forEach {
-                            item(key = listOf("header", it.date), contentType = "header") {
-                                ChangelogDayHeader(it.date)
-                            }
+                            changelogDayHeader(listState, it.date)
                             artistChangelogDay(
                                 date = it.date,
                                 added = it.added,
