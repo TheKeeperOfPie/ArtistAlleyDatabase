@@ -6,8 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListSortBy
+import com.github.terrakok.fuzzykot.MicroFuzz
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
@@ -45,9 +44,11 @@ class StampRallyListViewModel(
             }
 
             entries.filter {
-                it.id.toString().contains(query, ignoreCase = true) ||
-                        it.hostTable?.contains(query, ignoreCase = true) == true ||
-                        it.fandom?.contains(query, ignoreCase = true) == true
+                (MicroFuzz.ratio(query, it.id) > 10) ||
+                    (MicroFuzz.ratio(query, it.hostTable) > 10) ||
+                    (MicroFuzz.ratio(query, it.fandom) > 10) ||
+                    it.tables.any { MicroFuzz.ratio(query, it) > 10 } ||
+                    it.series.any { MicroFuzz.ratio(query, it) > 10 }
             }
         }
         .flatMapLatest { artists ->
