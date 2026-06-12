@@ -571,6 +571,10 @@ private fun entryProvider(
             stampRallyId = route.stampRallyId,
             graph = graph,
             onClickBack = onClickBack,
+            onClickBackAndEdit = { rallyId ->
+                onClickBack(true)
+                navStack.navigate(AlleyEditDestination.StampRallyEdit(route.dataYear, rallyId.toString()))
+            },
         )
     }
     sharedElementEntry<AlleyEditDestination.StampRallyFormHistory> { route ->
@@ -581,6 +585,10 @@ private fun entryProvider(
             formTimestamp = route.formTimestamp,
             graph = graph,
             onClickBack = onClickBack,
+            onClickBackAndEdit = { rallyId ->
+                onClickBack(true)
+                navStack.navigate(AlleyEditDestination.StampRallyEdit(route.dataYear, rallyId.toString()))
+            },
         )
     }
 

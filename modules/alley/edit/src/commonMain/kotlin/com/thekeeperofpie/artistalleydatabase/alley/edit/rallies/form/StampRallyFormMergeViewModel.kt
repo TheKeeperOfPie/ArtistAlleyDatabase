@@ -42,8 +42,7 @@ class StampRallyFormMergeViewModel(
 
     val tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear)
 
-    private val saveTask: ExclusiveTask<SaveData, BackendRequest.StampRallyCommitForm.Response> =
-        ExclusiveTask(viewModelScope, ::save)
+    private val saveTask = ExclusiveTask(viewModelScope, ::save)
     private val deleteTask: ExclusiveTask<DeleteData, BackendRequest.StampRallyDeleteFromForm.Response> =
         ExclusiveTask(viewModelScope, ::delete)
     val saveTaskState get() = saveTask.state
@@ -51,7 +50,11 @@ class StampRallyFormMergeViewModel(
 
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
-    fun onClickSave(images: List<EditImage>, updated: StampRallyDatabaseEntry) {
+    fun onClickSave(
+        images: List<EditImage>,
+        updated: StampRallyDatabaseEntry,
+        openEditAfter: Boolean,
+    ) {
         val entry = entry.value ?: return
         saveTask.triggerManual {
             SaveData(
@@ -59,6 +62,7 @@ class StampRallyFormMergeViewModel(
                 initial = entry.stampRally,
                 updated = updated,
                 formEntryTimestamp = entry.formDiff.timestamp,
+                openEditAfter = openEditAfter,
             )
         }
     }
@@ -84,7 +88,7 @@ class StampRallyFormMergeViewModel(
                     images = data.images.map(EditImage::toCatalogImage)
                 ),
                 formEntryTimestamp = data.formEntryTimestamp,
-            )
+            ) to data.updated.id.takeIf { data.openEditAfter }?.let(Uuid::parse)
         }
 
     private suspend fun delete(data: DeleteData) =
@@ -102,6 +106,7 @@ class StampRallyFormMergeViewModel(
         val initial: StampRallyDatabaseEntry?,
         val updated: StampRallyDatabaseEntry,
         val formEntryTimestamp: Instant,
+        val openEditAfter: Boolean,
     )
 
     private data class DeleteData(

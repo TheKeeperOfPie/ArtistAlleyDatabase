@@ -10,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -30,7 +29,7 @@ class StampRallyFormHistoryViewModel(
     private val dispatchers: CustomDispatchers,
     private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: TagAutocomplete,
-    artistTableAutocomplete : ArtistTableAutocomplete,
+    artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
     @Assisted stampRallyId: String,
@@ -48,13 +47,16 @@ class StampRallyFormHistoryViewModel(
 
     val tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear)
 
-    private val saveTask: ExclusiveTask<SaveData, BackendRequest.StampRallyCommitForm.Response> =
-        ExclusiveTask(viewModelScope, ::save)
+    private val saveTask = ExclusiveTask(viewModelScope, ::save)
     val saveTaskState get() = saveTask.state
 
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
-    fun onClickSave(images: List<EditImage>, updated: StampRallyDatabaseEntry) {
+    fun onClickSave(
+        images: List<EditImage>,
+        updated: StampRallyDatabaseEntry,
+        openEditAfter: Boolean,
+    ) {
         val entry = entry.value ?: return
         saveTask.triggerManual {
             SaveData(
@@ -62,6 +64,7 @@ class StampRallyFormHistoryViewModel(
                 initial = entry.stampRally,
                 updated = updated,
                 formEntryTimestamp = entry.formDiff.timestamp,
+                openEditAfter = openEditAfter,
             )
         }
     }
@@ -76,7 +79,7 @@ class StampRallyFormHistoryViewModel(
                 // deleted to save storage space
                 updated = data.updated.copy(images = data.initial.images),
                 formEntryTimestamp = data.formEntryTimestamp,
-            )
+            ) to data.updated.id.takeIf { data.openEditAfter }?.let(Uuid::parse)
         }
 
     private data class SaveData(
@@ -84,6 +87,7 @@ class StampRallyFormHistoryViewModel(
         val initial: StampRallyDatabaseEntry,
         val updated: StampRallyDatabaseEntry,
         val formEntryTimestamp: Instant,
+        val openEditAfter: Boolean,
     )
 
     @AssistedFactory

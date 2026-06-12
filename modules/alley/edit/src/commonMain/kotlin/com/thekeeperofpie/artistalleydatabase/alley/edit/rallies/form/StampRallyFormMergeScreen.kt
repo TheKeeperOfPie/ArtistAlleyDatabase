@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save_and_edit
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_end_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_fandom
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_images
@@ -81,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Save
+import com.thekeeperofpie.artistalleydatabase.icons.filled.SaveAs
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -110,6 +112,7 @@ internal object StampRallyFormMergeScreen {
         stampRallyId: String,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
+        onClickBackAndEdit: (stampRallyId: Uuid) -> Unit,
         viewModel: StampRallyFormMergeViewModel = viewModel {
             graph.stampRallyFormMergeViewModelFactory.create(
                 dataYear,
@@ -140,7 +143,20 @@ internal object StampRallyFormMergeScreen {
             tablesByBooth = { tablesByBooth },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickSave = viewModel::onClickSave,
+            onClickSave = { images, updated ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = updated,
+                    openEditAfter = false,
+                )
+            },
+            onClickSaveAndEdit = { images, updated ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = updated,
+                    openEditAfter = true,
+                )
+            },
             onConfirmDelete = viewModel::onConfirmDelete,
         )
 
@@ -151,7 +167,8 @@ internal object StampRallyFormMergeScreen {
         LaunchedEffect(navigationResults, saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .filterNotNull()
-                .collectLatest { (_, result) ->
+                .collectLatest { (_, pair) ->
+                    val (result, rallyId) = pair
                     when (result) {
                         is BackendRequest.StampRallyCommitForm.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
@@ -164,7 +181,11 @@ internal object StampRallyFormMergeScreen {
                         is BackendRequest.StampRallyCommitForm.Response.Success -> {
                             saveTaskState.clearResult()
                             navigationResults[REQUEST_KEY] = Unit
-                            onClickBack(true)
+                            if (rallyId == null) {
+                                onClickBack(true)
+                            } else {
+                                onClickBackAndEdit(rallyId)
+                            }
                         }
                     }
                 }
@@ -205,6 +226,7 @@ internal object StampRallyFormMergeScreen {
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
+        onClickSaveAndEdit: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
         onConfirmDelete: (() -> Unit)?,
     ) {
         val entry = entry()
@@ -255,6 +277,15 @@ internal object StampRallyFormMergeScreen {
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
                     actions = {
                         if (formDiff?.deleted == false) {
+                            TooltipIconButton(
+                                icon = Icons.Default.SaveAs,
+                                tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save_and_edit),
+                                onClick = {
+                                    stampRallyFormState?.captureDatabaseEntry(dataYear)?.let {
+                                        onClickSaveAndEdit(it.first, it.second)
+                                    }
+                                },
+                            )
                             TooltipIconButton(
                                 icon = Icons.Default.Save,
                                 tooltipText = stringResource(Res.string.alley_edit_stamp_rally_form_merge_action_save),

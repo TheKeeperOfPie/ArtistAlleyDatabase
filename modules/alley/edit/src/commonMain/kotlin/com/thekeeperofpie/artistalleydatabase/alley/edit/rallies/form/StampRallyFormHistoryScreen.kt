@@ -32,6 +32,7 @@ internal object StampRallyFormHistoryScreen {
         formTimestamp: Instant,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
+        onClickBackAndEdit: (stampRallyId: Uuid) -> Unit,
         viewModel: StampRallyFormHistoryViewModel = viewModel {
             graph.stampRallyFormHistoryViewModelFactory.create(
                 dataYear = dataYear,
@@ -59,7 +60,20 @@ internal object StampRallyFormHistoryScreen {
             tablesByBooth = { tablesByBooth },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickSave = viewModel::onClickSave,
+            onClickSave = { images, updated ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = updated,
+                    openEditAfter = false,
+                )
+            },
+            onClickSaveAndEdit = { images, updated ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = updated,
+                    openEditAfter = true,
+                )
+            },
             onConfirmDelete = null,
         )
 
@@ -69,7 +83,8 @@ internal object StampRallyFormHistoryScreen {
         LaunchedEffect(navigationResults, saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .filterNotNull()
-                .collectLatest { (_, result) ->
+                .collectLatest { (_, pair) ->
+                    val (result, rallyId) = pair
                     when (result) {
                         is BackendRequest.StampRallyCommitForm.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
@@ -81,7 +96,11 @@ internal object StampRallyFormHistoryScreen {
                         }
                         is BackendRequest.StampRallyCommitForm.Response.Success -> {
                             saveTaskState.clearResult()
-                            onClickBack(true)
+                            if (rallyId == null) {
+                                onClickBack(true)
+                            } else {
+                                onClickBackAndEdit(rallyId)
+                            }
                         }
                     }
                 }
