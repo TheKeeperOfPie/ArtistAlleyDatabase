@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -75,9 +76,10 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_art
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_store_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_summary_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_error_megabytes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_header
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_links_placeholder
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_subtitle_megabytes
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_warning_adult_section
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_action
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_thanks_subtitle
@@ -133,6 +135,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -152,6 +155,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.DoneAll
 import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
 import com.thekeeperofpie.artistalleydatabase.icons.filled.RestoreFromTrash
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Warning
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -424,6 +428,7 @@ object ArtistFormScreen {
                                 InstructionsHeader()
 
                                 CatalogSection(
+                                    dataYear = dataYear,
                                     state = state.artistFormState,
                                     errorState = errorState,
                                     initialArtist = initialArtist,
@@ -1093,6 +1098,7 @@ object ArtistFormScreen {
 
     @Composable
     private fun CatalogSection(
+        dataYear: DataYear,
         state: State.FormState,
         errorState: ErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
@@ -1111,6 +1117,34 @@ object ArtistFormScreen {
                         text = stringResource(Res.string.alley_form_catalog_header),
                         style = MaterialTheme.typography.headlineMedium,
                     )
+                    val showAdultSectionWarning by remember(dataYear, state) {
+                        derivedStateOf {
+                            if (dataYear != DataYear.ANIME_EXPO_2026) return@derivedStateOf false
+                            Booth.fromStringOrNull(state.info.booth.value.text.toString())
+                                ?.letter in setOf('U', 'V')
+                        }
+                    }
+                    if (showAdultSectionWarning) {
+                        OutlinedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+
+                                Text(
+                                    text = stringResource(Res.string.alley_form_catalog_warning_adult_section),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
+                        }
+                    }
+
                     val showError by remember {
                         derivedStateOf {
                             val images = state.images.toList()
@@ -1123,12 +1157,12 @@ object ArtistFormScreen {
                     if (showError) {
                         Text(
                             text = stringResource(
-                                Res.string.alley_form_catalog_subtitle_megabytes,
+                                Res.string.alley_form_catalog_error_megabytes,
                                 ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT,
                                 ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes
                             ),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = AlleyTheme.colorScheme.negative,
+                            color = MaterialTheme.colorScheme.error,
                         )
                     }
                 }

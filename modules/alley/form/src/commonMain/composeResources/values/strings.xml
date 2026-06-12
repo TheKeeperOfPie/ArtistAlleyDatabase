@@ -43,7 +43,11 @@
     <string name="alley_form_artist_form_notes_placeholder">Any clarifications, misc. requests, or comments</string>
 
     <string name="alley_form_catalog_header">Catalog</string>
-    <string name="alley_form_catalog_subtitle_megabytes">Max of %1$d images at %2$d MB each</string>
+    <string name="alley_form_catalog_warning_adult_section">Your section is for 18+ artists, please note:
+• Images or links with adult content will be rejected unless they're age-gated on a major site
+• Censoring is not sufficient, prune your catalog to only SFW
+• Public notes can mention other merch, but adult descriptions are not allowed</string>
+    <string name="alley_form_catalog_error_megabytes">Max of %1$d images at %2$d MB each</string>
     <string name="alley_form_catalog_links_placeholder">Social media post, link to image folder/PDF, or web page for your catalog</string>
 
     <string name="alley_form_stamp_rallies_header">Stamp rallies</string>
