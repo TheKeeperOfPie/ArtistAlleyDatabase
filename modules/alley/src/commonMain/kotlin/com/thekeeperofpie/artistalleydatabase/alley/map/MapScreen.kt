@@ -39,6 +39,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.changedToUp
@@ -262,7 +263,7 @@ object MapScreen {
                             val initialDown = awaitFirstDown(requireUnconsumed = false)
                             coroutineScope.launch { transformState.translation.stop() }
                             do {
-                                val event = awaitPointerEvent()
+                                val event = awaitPointerEvent(pass = PointerEventPass.Initial)
                                 event.changes.fastForEach {
                                     if (it.id == initialDown.id) {
                                         velocityTracker.addPointerInputChange(it)
@@ -344,9 +345,11 @@ object MapScreen {
                                         }
                                     }
 
-                                    event.changes.fastForEach {
-                                        if (it.positionChanged()) {
-                                            it.consume()
+                                    if (event.changes.size > 1 || pastTouchSlop) {
+                                        event.changes.fastForEach {
+                                            if (it.positionChanged()) {
+                                                it.consume()
+                                            }
                                         }
                                     }
                                 }
@@ -374,7 +377,7 @@ object MapScreen {
                     maxHeight = itemHeightPixels.toInt(),
                 )
                 val measured = visibleTables.map { (index, table) ->
-                    table to measure(index, itemConstraints)
+                    table to compose(index).map { it.measure(itemConstraints) }
                 }
 
                 layout(constraints.maxWidth, constraints.maxHeight) {
@@ -421,7 +424,7 @@ object MapScreen {
             boundaries: LayoutBounds,
         ) = gridData.tables.asSequence()
             .withIndex()
-            .filter { (index, table) ->
+            .filter { (_, table) ->
                 val offsetX = table.gridX * itemWidthPixels
                 val offsetY = -table.gridY * itemHeightPixels
                 boundaries.rangeX.contains(offsetX) && boundaries.rangeY.contains(offsetY)
