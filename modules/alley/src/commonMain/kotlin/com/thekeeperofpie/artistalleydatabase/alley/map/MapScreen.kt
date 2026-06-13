@@ -39,6 +39,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -63,8 +64,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.TransformState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 object MapScreen {
@@ -122,10 +126,11 @@ object MapScreen {
         val scope = rememberCoroutineScope()
         ZoomSlider(
             scale = { transformState.userScale },
+            scaleRange = 0f..1f,
             onScaleChange = {
                 scope.launch { transformState.updateScaleFromUser(it) }
             },
-            scaleRange = 0f..1f,
+            onScaleChangeFinished = transformState::onGestureEnd,
             onClickZoomOut = {
                 scope.launch { transformState.updateScale(transformState.scale * 0.9f) }
             },
@@ -171,6 +176,9 @@ object MapScreen {
             val itemWidthPixels = baseItemWidth * newScale
             val itemHeightPixels = baseItemHeight * newScale
 
+            val stableItemWidthPixels = baseItemWidth * transformState.layoutScale
+            val stableItemHeightPixels = baseItemHeight * transformState.layoutScale
+
             transformState.layoutContext = GridLayoutInput(
                 gridX = gridData.maxX,
                 gridY = gridData.maxY,
@@ -184,7 +192,7 @@ object MapScreen {
                 transformState.translation.snapTo(transformState.translation.targetValue)
             }
 
-            val itemProvider = remember(gridData) {
+            val itemProvider = remember(gridData, content) {
                 ItemProvider(
                     gridData = gridData,
                     content = content,
@@ -201,6 +209,7 @@ object MapScreen {
                         transformState.size = size
                         if (transformState.initialized) return@onSizeChanged
                         transformState.initialized = true
+                        transformState.layoutScale = transformState.scale
                         coroutineScope.launch {
                             transformState.translation.snapTo(Offset(0f, -size.height.toFloat()))
                             if (initialGridPosition != null) {
@@ -247,6 +256,7 @@ object MapScreen {
                                         newRawScale = transformState.scale * zoom,
                                         centroid = position,
                                     )
+                                    transformState.onGestureEnd()
                                 }
                             }
                         }
@@ -311,6 +321,7 @@ object MapScreen {
                                             .fastFilter { it.id == initialDown.id }
                                             .fastAny(PointerInputChange::changedToUp)
                                     ) {
+                                        transformState.onGestureEnd()
                                         coroutineScope.launch {
                                             val rawVelocity =
                                                 velocityTracker.calculateVelocity(maxFlingVelocity)
@@ -358,29 +369,35 @@ object MapScreen {
                     }
                     .clipToBounds()
             ) { constraints ->
+                val translation = transformState.translation.value
+                val quantizedTranslation = Offset(
+                    x = (translation.x / 32f).roundToInt() * 32f,
+                    y = (translation.y / 32f).roundToInt() * 32f
+                )
+                val quantizedScale = (transformState.scale * 10f).roundToInt() / 10f
                 val boundaries = getBounds(
-                    offset = transformState.translation.value,
-                    itemWidthPixels = itemWidthPixels,
-                    itemHeightPixels = itemHeightPixels,
+                    offset = quantizedTranslation,
+                    scale = quantizedScale,
                     constraints = constraints,
+                    paddingX = contentPaddingPixels,
+                    paddingY = contentPaddingPixels + bottomContentPaddingPixels,
+                    baseItemWidth = baseItemWidth,
+                    baseItemHeight = baseItemHeight,
                 )
-                val visibleTables = itemProvider.getVisibleTables(
-                    itemWidthPixels = itemWidthPixels,
-                    itemHeightPixels = itemHeightPixels,
-                    boundaries = boundaries,
-                )
+                val visibleTables = itemProvider.getVisibleTables(boundaries = boundaries)
 
                 val itemConstraints = Constraints(
-                    minWidth = itemWidthPixels.toInt(),
-                    minHeight = itemHeightPixels.toInt(),
-                    maxWidth = itemWidthPixels.toInt(),
-                    maxHeight = itemHeightPixels.toInt(),
+                    minWidth = stableItemWidthPixels.toInt(),
+                    minHeight = stableItemHeightPixels.toInt(),
+                    maxWidth = stableItemWidthPixels.toInt(),
+                    maxHeight = stableItemHeightPixels.toInt(),
                 )
                 val measured = visibleTables.map { (index, table) ->
                     table to compose(index).map { it.measure(itemConstraints) }
                 }
 
                 layout(constraints.maxWidth, constraints.maxHeight) {
+                    val visualScale = transformState.scale / transformState.layoutScale
                     measured.forEach { (table, placeables) ->
                         val offsetX = table.gridX * itemWidthPixels
                         val offsetY = -table.gridY * itemHeightPixels
@@ -389,7 +406,14 @@ object MapScreen {
                         val yPosition = offsetY - translation.y - contentPaddingPixels -
                                 bottomContentPaddingPixels
                         placeables.forEach {
-                            it.placeRelative(xPosition.toInt(), yPosition.toInt())
+                            it.placeRelativeWithLayer(
+                                x = xPosition.toInt(),
+                                y = yPosition.toInt(),
+                            ) {
+                                scaleX = visualScale
+                                scaleY = visualScale
+                                transformOrigin = TransformOrigin(0f, 0f)
+                            }
                         }
                     }
                 }
@@ -412,44 +436,66 @@ object MapScreen {
     ) : LazyLayoutItemProvider {
         override val itemCount = gridData.tables.size
 
+        private val tablesByRow = gridData.tables.asSequence()
+            .withIndex()
+            .groupBy { it.value.gridY }
+
         @Composable
         override fun Item(index: Int, key: Any) {
             val table = gridData.tables[index]
             content(table)
         }
 
-        fun getVisibleTables(
-            itemWidthPixels: Float,
-            itemHeightPixels: Float,
-            boundaries: LayoutBounds,
-        ) = gridData.tables.asSequence()
-            .withIndex()
-            .filter { (_, table) ->
-                val offsetX = table.gridX * itemWidthPixels
-                val offsetY = -table.gridY * itemHeightPixels
-                boundaries.rangeX.contains(offsetX) && boundaries.rangeY.contains(offsetY)
-            }
-            .toList()
+        override fun getKey(index: Int) = gridData.tables[index].booth
+
+        override fun getContentType(index: Int) = "table"
+
+        override fun getIndex(key: Any) = gridData.tables.indexOfFirst { it.booth == key }
+
+        fun getVisibleTables(boundaries: LayoutBounds) =
+            boundaries.gridRangeY
+                .flatMap {
+                    tablesByRow[it]
+                        ?.filter { it.value.gridX in boundaries.gridRangeX }
+                        .orEmpty()
+                }
     }
 
-    data class LayoutBounds(
-        val rangeX: ClosedFloatingPointRange<Float>,
-        val rangeY: ClosedFloatingPointRange<Float>,
-    )
+    data class LayoutBounds(val gridRangeX: IntRange, val gridRangeY: IntRange)
 
     private fun getBounds(
         offset: Offset,
-        itemHeightPixels: Float,
-        itemWidthPixels: Float,
+        scale: Float,
         constraints: Constraints,
+        paddingX: Float,
+        paddingY: Float,
+        baseItemWidth: Float,
+        baseItemHeight: Float,
     ): LayoutBounds {
-        val maxWidth = constraints.maxWidth.toFloat()
-        val maxHeight = constraints.maxHeight.toFloat()
-        val extraWidth = itemWidthPixels * 2f
-        val extraHeight = itemHeightPixels * 2f
+        val width = constraints.maxWidth.toFloat()
+        val height = constraints.maxHeight.toFloat()
+
+        val extraWidth = width * 0.5f
+        val extraHeight = height * 0.5f
+
+        val itemWidth = baseItemWidth * scale
+        val itemHeight = baseItemHeight * scale
+
+        val startX = floor((offset.x - paddingX - extraWidth) / itemWidth).toInt()
+        val endX = ceil((offset.x - paddingX + width + extraWidth) / itemWidth).toInt()
+
+        val startY = floor(-(offset.y + paddingY + height + extraHeight) / itemHeight).toInt()
+        val endY = ceil(-(offset.y + paddingY - extraHeight) / itemHeight).toInt()
+
+        // Snap to multiple of 4 to avoid large recomposition differences
+        val snappedStartX = (startX / 4) * 4
+        val snappedEndX = ceil(endX / 4f).toInt() * 4
+        val snappedStartY = (startY / 4) * 4
+        val snappedEndY = ceil(endY / 4f).toInt() * 4
+
         return LayoutBounds(
-            offset.x - extraWidth..offset.x + maxWidth + extraWidth,
-            offset.y - extraHeight..offset.y + maxHeight + extraHeight,
+            gridRangeX = snappedStartX..snappedEndX,
+            gridRangeY = snappedStartY..snappedEndY,
         )
     }
 
@@ -474,11 +520,13 @@ object MapScreen {
 
         var scale by mutableFloatStateOf(initialScale)
 
+        var layoutScale by mutableFloatStateOf(initialScale)
+
         var initialized = initialTranslationY != 0f
 
-        val showImages get() = scale > 3f
+        val showImages get() = layoutScale > 3f
 
-        val showText get() = scale > SHOW_TEXT_MIN_SCALE
+        val showText get() = layoutScale > SHOW_TEXT_MIN_SCALE
 
         val userScale
             get() = ln(scale / scaleRange.start) / ln(scaleRange.endInclusive / scaleRange.start)
@@ -517,6 +565,14 @@ object MapScreen {
             scale = newScale
             updateBounds()
             translation.snapTo(Offset(newTranslationX, newTranslationY))
+
+            if (abs(scale - layoutScale) >= 1f) {
+                layoutScale = scale
+            }
+        }
+
+        fun onGestureEnd() {
+            layoutScale = scale
         }
 
         fun updateBounds() {

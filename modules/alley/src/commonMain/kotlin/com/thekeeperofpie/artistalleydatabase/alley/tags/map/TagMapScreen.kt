@@ -81,8 +81,8 @@ object TagMapScreen {
                     mapViewModel = mapViewModel,
                     table = it,
                     highlight = highlightedBooths.contains(it.booth),
-                    showImages = transformState.showImages,
-                    showText = transformState.showText,
+                    showImages = { transformState.showImages },
+                    showText = { transformState.showText },
                     showCatalogHighlight = false,
                     onArtistClick = onArtistClick,
                 )

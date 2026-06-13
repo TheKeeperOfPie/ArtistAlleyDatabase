@@ -259,6 +259,7 @@ fun ZoomSlider(
     onClickZoomOut: () -> Unit,
     onClickZoomIn: () -> Unit,
     modifier: Modifier = Modifier,
+    onScaleChangeFinished: () -> Unit = {},
 ) {
     Row(modifier = modifier) {
         IconButton(onClick = onClickZoomOut) {
@@ -271,6 +272,7 @@ fun ZoomSlider(
             value = scale(),
             onValueChange = onScaleChange,
             valueRange = scaleRange,
+            onValueChangeFinished = onScaleChangeFinished,
             modifier = Modifier
                 .weight(1f)
                 .clickable(interactionSource = null, indication = null) { /* Consume events */ }

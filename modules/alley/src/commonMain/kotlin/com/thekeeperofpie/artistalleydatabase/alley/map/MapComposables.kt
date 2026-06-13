@@ -4,7 +4,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.map
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -43,8 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -83,8 +82,8 @@ fun TableCell(
     textColor: Color = table.textColor(),
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
-    showImages: Boolean = true,
-    showText: Boolean = true,
+    showImages: () -> Boolean = { true },
+    showText: () -> Boolean = { true },
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
@@ -94,16 +93,17 @@ fun TableCell(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 4.dp)
-            .background(background)
-            .border(
-                width = borderWidth,
-                color = borderColor,
-                shape = RectangleShape,
-            )
+            .drawBehind {
+                drawRect(color = background)
+                drawRect(
+                    color = borderColor,
+                    style = Stroke(width = borderWidth.toPx()),
+                )
+            }
             .clickable { showPopup = true }
     ) {
         val imageUri = table.image?.uri
-        val showingImage = showImages && imageUri != null
+        val showingImage = showImages() && imageUri != null
         if (showingImage) {
             val density = LocalDensity.current
             AsyncImage(
@@ -162,7 +162,7 @@ fun TableCell(
 
         content()
 
-        if (showText) {
+        if (showText()) {
             val autoSize = TextAutoSize.StepBased(
                 minFontSize = 8.sp,
                 maxFontSize = MaterialTheme.typography.titleLarge.fontSize,
@@ -175,14 +175,14 @@ fun TableCell(
                     text = table.booth,
                     color = Color.Black,
                     style = style.copy(drawStyle = Stroke(width = with(LocalDensity.current) { 2.sp.toPx() })),
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    modifier = Modifier.padding(2.dp)
                 )
                 Text(
                     autoSize = autoSize,
                     text = table.booth,
                     color = Color.White,
                     style = style,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    modifier = Modifier.padding(2.dp)
                 )
             } else {
                 Text(
@@ -190,7 +190,7 @@ fun TableCell(
                     text = table.booth,
                     color = textColor,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    modifier = Modifier.padding(2.dp)
                 )
             }
         }
@@ -212,8 +212,8 @@ fun HighlightedTableCell(
     mapViewModel: MapViewModel,
     table: Table,
     highlight: Boolean,
-    showImages: Boolean,
-    showText: Boolean,
+    showImages: () -> Boolean,
+    showText: () -> Boolean,
     showCatalogHighlight: Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
     content: @Composable BoxScope.() -> Unit = {},
