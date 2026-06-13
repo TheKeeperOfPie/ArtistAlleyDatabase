@@ -302,7 +302,10 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     afterArtist.merchInferred.toMutableSet()
                 val merchConfirmed =
                     afterArtist.merchConfirmed.toMutableSet()
-                val images = afterArtist.images.toMutableList()
+                val images = afterArtist.images
+                    .takeIf { seriesConfirmed.isNotEmpty() || merchConfirmed.isNotEmpty() }
+                    .orEmpty()
+                    .toMutableList()
                 if (beforeArtist != null) {
                     seriesInferred -= beforeArtist.seriesInferred.toSet()
                     seriesConfirmed -= beforeArtist.seriesConfirmed.toSet()
