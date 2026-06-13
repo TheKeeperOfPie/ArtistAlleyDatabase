@@ -20,7 +20,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Clocks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Coasters
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Construction
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.DakimakuraCovers
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.DigitalFiles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Fans
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Figures
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Games
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Handicrafts
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Hats
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.HeadAccessories
@@ -42,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Patches
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhoneAccessories
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhotocardHolders
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Photocards
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Pins
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Plushies
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Prints
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Puzzles
@@ -86,7 +90,10 @@ object MerchUtils {
         "Clocks" -> MerchIcons.Clocks
         "Coasters" -> MerchIcons.Coasters
         "Dakimakura covers" -> MerchIcons.DakimakuraCovers
+        "Digital files" -> MerchIcons.DigitalFiles
         "Fans" -> MerchIcons.Fans
+        "Figures" -> MerchIcons.Figures
+        "Games" -> MerchIcons.Games
         "Handicrafts" -> MerchIcons.Handicrafts
         "Hats" -> MerchIcons.Hats
         "Head accessories" -> MerchIcons.HeadAccessories
@@ -108,6 +115,7 @@ object MerchUtils {
         "Phone accessories" -> MerchIcons.PhoneAccessories
         "Photocard holders" -> MerchIcons.PhotocardHolders
         "Photocards" -> MerchIcons.Photocards
+        "Pins" -> MerchIcons.Pins
         "Plushies" -> MerchIcons.Plushies
         "Prints" -> MerchIcons.Prints
         "Puzzles" -> MerchIcons.Puzzles
