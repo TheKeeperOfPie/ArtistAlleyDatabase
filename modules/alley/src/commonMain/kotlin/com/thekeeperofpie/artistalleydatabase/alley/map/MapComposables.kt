@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,10 +25,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -83,6 +86,7 @@ fun TableCell(
     showImages: Boolean = true,
     showText: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
+    content: @Composable BoxScope.() -> Unit = {},
 ) {
     var showPopup by remember { mutableStateOf(false) }
     Box(
@@ -156,6 +160,8 @@ fun TableCell(
             }
         }
 
+        content()
+
         if (showText) {
             val autoSize = TextAutoSize.StepBased(
                 minFontSize = 8.sp,
@@ -210,6 +216,7 @@ fun HighlightedTableCell(
     showText: Boolean,
     showCatalogHighlight: Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
+    content: @Composable BoxScope.() -> Unit = {},
 ) {
     val borderWidth = if (highlight) 2.dp else 1.dp
     val borderColor = if (highlight) {
@@ -237,6 +244,11 @@ fun HighlightedTableCell(
         showImages = showImages,
         showText = showText,
         onArtistClick = onArtistClick,
+        content = {
+            CompositionLocalProvider(LocalContentColor provides textColor) {
+                content()
+            }
+        },
     )
 }
 

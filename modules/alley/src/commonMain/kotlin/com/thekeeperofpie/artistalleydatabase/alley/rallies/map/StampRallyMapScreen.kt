@@ -1,20 +1,30 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.map
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_end_table_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_start_table_explanation
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StampRallyMapScreen {
@@ -47,6 +57,8 @@ object StampRallyMapScreen {
             val gridData = mapViewModel.gridData.result ?: return@Scaffold
             val targetTable = gridData.tables.find { it.booth == stampRally.hostTable }
             val transformState = MapScreen.rememberTransformState(initialScale = 0.5f)
+            val startTables = stampRally.startTables
+            val endTables = stampRally.endTables
             MapScreen(
                 viewModel = mapViewModel,
                 transformState = transformState,
@@ -61,7 +73,23 @@ object StampRallyMapScreen {
                     showText = transformState.showText,
                     showCatalogHighlight = false,
                     onArtistClick = onArtistClick,
-                )
+                ) {
+                    if (it.booth in endTables) {
+                        Icon(
+                            imageVector = Icons.Default.HandPackage,
+                            contentDescription = stringResource(Res.string.alley_stamp_rally_details_end_table_explanation),
+                            modifier = Modifier.align(Alignment.BottomEnd)
+                        )
+                    }
+
+                    if (it.booth in startTables) {
+                        Icon(
+                            imageVector = Icons.Default.Start,
+                            contentDescription = stringResource(Res.string.alley_stamp_rally_details_start_table_explanation),
+                            modifier = Modifier.align(Alignment.BottomStart)
+                        )
+                    }
+                }
             }
         }
     }
