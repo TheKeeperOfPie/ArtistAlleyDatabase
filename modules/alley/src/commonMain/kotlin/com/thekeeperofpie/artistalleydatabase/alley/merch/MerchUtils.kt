@@ -17,7 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.CardDecks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Charms
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.ClearFiles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Clocks
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Coasters
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Construction
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.DakimakuraCovers
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Fans
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Handicrafts
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Hats
@@ -51,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Skateboards
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Skirts
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Soap
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Socks
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Stamps
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Standees
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Stickers
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Tableware
@@ -81,6 +84,8 @@ object MerchUtils {
         "Charms" -> MerchIcons.Charms
         "Clear files" -> MerchIcons.ClearFiles
         "Clocks" -> MerchIcons.Clocks
+        "Coasters" -> MerchIcons.Coasters
+        "Dakimakura covers" -> MerchIcons.DakimakuraCovers
         "Fans" -> MerchIcons.Fans
         "Handicrafts" -> MerchIcons.Handicrafts
         "Hats" -> MerchIcons.Hats
@@ -114,6 +119,7 @@ object MerchUtils {
         "Skirts" -> MerchIcons.Skirts
         "Soap" -> MerchIcons.Soap
         "Socks" -> MerchIcons.Socks
+        "Stamps" -> MerchIcons.Stamps
         "Standees" -> MerchIcons.Standees
         "Stickers" -> MerchIcons.Stickers
         "Tableware" -> MerchIcons.Tableware
