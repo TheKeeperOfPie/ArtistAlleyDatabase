@@ -38,7 +38,7 @@ data class MerchTagData(val merchEntries: List<MerchEntry>) {
                             it.name to AlleyTagEntry.Tag(it.name)
                         },
             )
-        } + other
+        } + listOfNotNull(other.takeIf { it.second.children.isNotEmpty() })
     }
 
     fun selected(merchIdIn: Set<String>, merchId: String): Boolean {

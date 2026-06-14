@@ -100,7 +100,7 @@ class FavoritesViewModel(
         lockedSeriesEntry = ReadOnlyStateFlow(null),
         dispatchers = dispatchers,
         dataYear = year,
-        merchCache = merchCache,
+        merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImageLoader = seriesImageLoader,
         settings = settings,

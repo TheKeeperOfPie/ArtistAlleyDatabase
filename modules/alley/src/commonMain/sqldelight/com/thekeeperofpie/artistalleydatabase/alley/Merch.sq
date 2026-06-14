@@ -109,3 +109,17 @@ AND (artistMerchConnection.yearFlags & 512) != 0;
 
 getMerchChangelog:
 SELECT * FROM merchEntryChangelog;
+
+getFandomMerchEntries:
+SELECT * FROM merchEntry
+WHERE merchEntry.name IN (
+    SELECT DISTINCT(merchId) FROM stampRallyMerchConnection
+    WHERE dataYear = :dataYear
+);
+
+getPrizeMerchEntries:
+SELECT * FROM merchEntry
+WHERE merchEntry.name IN (
+    SELECT DISTINCT(merchId) FROM stampRallyPrizeMerchConnection
+    WHERE dataYear = :dataYear
+);

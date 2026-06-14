@@ -125,14 +125,23 @@ class MerchEntryDao(
         )
     }
 
-    suspend fun getMerchEntries(year: DataYear) = when (year) {
-        DataYear.ANIME_EXPO_2023 -> emptyList()
-        DataYear.ANIME_EXPO_2024 -> merchDao().getMerchEntries2024().awaitAsList()
-        DataYear.ANIME_EXPO_2025 -> merchDao().getMerchEntries2025().awaitAsList()
-        DataYear.ANIME_EXPO_2026 -> merchDao().getMerchEntriesAnimeExpo2026().awaitAsList()
-        DataYear.ANIME_NYC_2024 -> merchDao().getMerchEntriesAnimeNyc2024().awaitAsList()
-        DataYear.ANIME_NYC_2025 -> merchDao().getMerchEntriesAnimeNyc2025().awaitAsList()
-    }.filterNot { it.name.contains("Commissions") }
+    suspend fun getMerchEntries(year: DataYear): List<MerchEntry> {
+        val merchDao = merchDao()
+        return when (year) {
+            DataYear.ANIME_EXPO_2023 -> emptyList()
+            DataYear.ANIME_EXPO_2024 -> merchDao.getMerchEntries2024().awaitAsList()
+            DataYear.ANIME_EXPO_2025 -> merchDao.getMerchEntries2025().awaitAsList()
+            DataYear.ANIME_EXPO_2026 -> merchDao.getMerchEntriesAnimeExpo2026().awaitAsList()
+            DataYear.ANIME_NYC_2024 -> merchDao.getMerchEntriesAnimeNyc2024().awaitAsList()
+            DataYear.ANIME_NYC_2025 -> merchDao.getMerchEntriesAnimeNyc2025().awaitAsList()
+        }.filterNot { it.name.contains("Commissions") }
+    }
+
+    suspend fun getFandomMerchEntries(year: DataYear) =
+        merchDao().getFandomMerchEntries(year).awaitAsList()
+
+    suspend fun getPrizeMerchEntries(year: DataYear) =
+        merchDao().getPrizeMerchEntries(year).awaitAsList()
 
     fun searchMerch(
         year: DataYear,

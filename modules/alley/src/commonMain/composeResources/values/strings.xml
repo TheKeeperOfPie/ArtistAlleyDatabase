@@ -91,6 +91,7 @@
     <string name="alley_stamp_rally_details_other_tables">Other tables</string>
     <string name="alley_stamp_rally_details_series">Series</string>
     <string name="alley_stamp_rally_details_merch">Fandom merch</string>
+    <string name="alley_stamp_rally_details_merch_info_content_description">Fandom merch info</string>
     <string name="alley_stamp_rally_details_prize_merch">Prize merch</string>
     <string name="alley_stamp_rally_favorite_icon_content_description">Mark stamp rally as favorite</string>
     <string name="alley_stamp_rally_details_start_table_explanation">Pick up a rally card\nor start here!</string>
@@ -136,6 +137,8 @@
     <string name="alley_stamp_rally_cost_paid">Paid</string>
     <string name="alley_stamp_rally_cost_equation_any">Any × %1$d tables</string>
     <string name="alley_stamp_rally_cost_equation_paid">$%1$d × %2$d tables = $%3$d+</string>
+
+    <string name="alley_stamp_rally_filter_fandom_merch_warning">Merch of the rally's series sold by participating artists; not guaranteed to be accurate</string>
 
     <string name="alley_previous_page">Previous page</string>
     <string name="alley_next_page">Next page</string>

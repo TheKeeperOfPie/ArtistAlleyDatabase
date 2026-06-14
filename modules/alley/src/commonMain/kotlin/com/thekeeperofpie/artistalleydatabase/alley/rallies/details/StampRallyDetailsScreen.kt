@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,8 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
@@ -22,12 +26,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -48,12 +55,14 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_fandom
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_merch_info_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_series
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_start_table_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_fandom_merch_warning
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
@@ -79,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
+import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -444,12 +454,49 @@ object StampRallyDetailsScreen {
                     contentType = "Header",
                     span = GridUtils.maxSpanFunction,
                 ) {
-                    Text(
-                        text = stringResource(Res.string.alley_stamp_rally_details_merch),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.surfaceTint,
-                        modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
-                    )
+                    var showPopup by remember { mutableStateOf(false) }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .clickable(interactionSource = null, indication = null) {
+                                showPopup = !showPopup
+                            }
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.alley_stamp_rally_details_merch),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.surfaceTint,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+
+                        Box {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = stringResource(
+                                    Res.string.alley_stamp_rally_details_merch_info_content_description
+                                ),
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .heightIn(max = 20.dp)
+                                    .padding(vertical = 4.dp)
+                            )
+
+                            if (showPopup) {
+                                Popup(onDismissRequest = { showPopup = false }) {
+                                    Text(
+                                        text = stringResource(Res.string.alley_stamp_rally_filter_fandom_merch_warning),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                                            .widthIn(max = 200.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
                 item("stampRallyMerch", GridUtils.maxSpanFunction) {
                     MerchChips(merch, onClick = { eventSink(Event.OpenMerch(it)) })
@@ -478,19 +525,20 @@ object StampRallyDetailsScreen {
             }
 
             item("stampRallyButtons", GridUtils.maxSpanFunction) {
-                FilledTonalButton(
-                    onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    FilledTonalButton(
+                        onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
                     ) {
-                        Icon(
-                            Icons.Default.Map,
-                            contentDescription = stringResource(Res.string.alley_open_in_map),
-                        )
-                        Text(stringResource(Res.string.alley_open_in_map))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                Icons.Default.Map,
+                                contentDescription = stringResource(Res.string.alley_open_in_map),
+                            )
+                            Text(stringResource(Res.string.alley_open_in_map))
+                        }
                     }
                 }
             }

@@ -1,9 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -15,6 +20,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_i
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_fandom_merch_warning
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_merch_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_limit
@@ -24,7 +30,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_show_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -45,15 +51,17 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.stringResource
 
 class StampRallySortFilterController(
     scope: CoroutineScope,
     lockedSeriesEntry: StateFlow<SeriesInfo?>,
     dispatchers: CustomDispatchers,
     dataYear: StateFlow<DataYear>,
-    merchCache: MerchCache,
+    merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     seriesImageLoader: SeriesImageLoader,
     val settings: ArtistAlleySettings,
@@ -110,7 +118,9 @@ class StampRallySortFilterController(
         savedStateHandle = savedStateHandle,
     )
 
-    private val merch = dataYear.flatMapLatest(merchCache::merchTags)
+    private val merch = dataYear.mapLatest(merchEntryDao::getFandomMerchEntries)
+        .mapLatest(::MerchTagData)
+        .flowOn(dispatchers.io)
     private val merchIdIn =
         savedStateHandle.getMutableStateFlow<List<String>, Set<String>>(
             scope = scope,
@@ -148,10 +158,25 @@ class StampRallySortFilterController(
                 showDivider = showDivider,
                 titleRes = Res.string.alley_stamp_rally_filter_merch,
                 titleDropdownContentDescriptionRes = Res.string.alley_stamp_rally_filter_merch_content_description,
+                header = {
+                    Text(
+                        text = stringResource(Res.string.alley_stamp_rally_filter_fandom_merch_warning),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(
+                            start = 32.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 8.dp,
+                        )
+                    )
+                }
             )
         }
     }
 
+    private val prizeMerch = dataYear.mapLatest(merchEntryDao::getPrizeMerchEntries)
+        .mapLatest(::MerchTagData)
+        .flowOn(dispatchers.io)
     private val prizeMerchIdIn =
         savedStateHandle.getMutableStateFlow<List<String>, Set<String>>(
             scope = scope,
@@ -160,7 +185,8 @@ class StampRallySortFilterController(
             serialize = { it.toList() },
             deserialize = { it.toSet() },
         )
-    private val prizeMerchSearchQuery = savedStateHandle.getMutableStateFlow("prizeMerchSearchQuery", "")
+    private val prizeMerchSearchQuery =
+        savedStateHandle.getMutableStateFlow("prizeMerchSearchQuery", "")
     private val prizeMerchSection = object : SortFilterSectionState.Custom("prizeMerch") {
         override fun clear() {
             prizeMerchIdIn.value = emptySet()
@@ -173,7 +199,7 @@ class StampRallySortFilterController(
 
         @Composable
         override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
-            val tagData by merch.collectAsStateWithLifecycle(MerchTagData(emptyList()))
+            val tagData by prizeMerch.collectAsStateWithLifecycle(MerchTagData(emptyList()))
             var idIn by prizeMerchIdIn.collectAsMutableStateWithLifecycle()
             var searchQuery by prizeMerchSearchQuery.collectAsMutableStateWithLifecycle()
 

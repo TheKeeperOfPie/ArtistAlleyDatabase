@@ -8,7 +8,7 @@ import androidx.paging.cachedIn
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
@@ -47,7 +47,7 @@ import kotlin.random.Random
 class StampRallySearchViewModel(
     dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
-    merchCache: MerchCache,
+    merchEntryDao: MerchEntryDao,
     private val seriesImageLoader: SeriesImageLoader,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userEntryDao: UserEntryDao,
@@ -88,7 +88,7 @@ class StampRallySearchViewModel(
         lockedSeriesEntry = lockedSeriesEntry,
         dispatchers = dispatchers,
         dataYear = dataYear,
-        merchCache = merchCache,
+        merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImageLoader = seriesImageLoader,
         settings = settings,
