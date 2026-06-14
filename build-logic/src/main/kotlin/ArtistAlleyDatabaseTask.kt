@@ -579,9 +579,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         it.copy(
                             images = it.images?.mapNotNull { changelogImage ->
                                 if (isTempImages) {
-                                    artistImages.tempImages.find { it.original == changelogImage }
+                                    artistImages.tempImages.find { it.original.name == changelogImage.name }
                                 } else {
-                                    artistImages.catalogImages.find { it.original == changelogImage }
+                                    artistImages.catalogImages.find { it.original.name == changelogImage.name }
                                 }?.final
                             }?.ifEmpty { null },
                             isTempImages = isTempImages,
@@ -942,10 +942,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         date = it.date.toString(),
                         booth = it.booth,
                         name = it.name,
-                        seriesInferred = it.seriesInferred?.orEmpty(),
-                        seriesConfirmed = it.seriesConfirmed?.orEmpty(),
-                        merchInferred = it.merchInferred?.orEmpty(),
-                        merchConfirmed = it.merchConfirmed?.orEmpty(),
+                        seriesInferred = it.seriesInferred,
+                        seriesConfirmed = it.seriesConfirmed,
+                        merchInferred = it.merchInferred,
+                        merchConfirmed = it.merchConfirmed,
                         isBrandNew = it.isBrandNew,
                         images = it.images,
                         isTempImages = false, // Will be set during database processing

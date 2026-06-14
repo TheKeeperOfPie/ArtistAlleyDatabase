@@ -2,7 +2,6 @@
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -94,14 +93,16 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
 
                         val latestArtists = mutableSetOf<ArtistEntryAnimeExpo2026>()
                         val latestRallyIds = mutableSetOf<Uuid>()
-                        val latestImages = mutableSetOf<DatabaseImage>()
+                        val latestImageNames = mutableSetOf<String>()
                         val latestSnapshot = snapshotFiles.lastOrNull()
                             ?.let(::readSnapshot)
                         if (latestSnapshot != null) {
                             latestArtists += latestSnapshot.artists
                             latestRallyIds += latestSnapshot.rallies.map { Uuid.parse(it.id) }
-                            latestImages += latestSnapshot.artists.flatMap { it.images }
-                            latestImages += latestSnapshot.rallies.flatMap { it.images }
+
+                            // Check only names so that width/height presence doesn't matter
+                            latestImageNames += latestSnapshot.artists.flatMap { it.images.map { it.name } }
+                            latestImageNames += latestSnapshot.rallies.flatMap { it.images.map { it.name } }
                         }
 
                         val diffs = trackStage("ArtistChangelogDiffs") {
@@ -123,14 +124,14 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                     val artistDiffs = diffArtists(
                                         lastEditTimes = artistLastEditTimes,
                                         latestArtists = latestArtists,
-                                        latestImages = latestImages,
+                                        latestImageNames = latestImageNames,
                                         before = before,
                                         current = current,
                                     )
                                     val rallyDiffs = diffRallies(
                                         lastEditTimes = rallyLastEditTimes,
                                         latestRallyIds = latestRallyIds,
-                                        latestImages = latestImages,
+                                        latestImageNames = latestImageNames,
                                         before = before,
                                         current = current,
                                     )
@@ -255,7 +256,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             throw IllegalStateException("Failed to read ${merchLegacySql.absolutePath}")
         }
         val merchDatabase = Utils.createEditDatabase(merchDatabaseFile).second
-        return merchDatabase.mutationQueries.getMerch().executeAsList().map { it.name } .toSet()
+        return merchDatabase.mutationQueries.getMerch().executeAsList().map { it.name }.toSet()
     }
 
     private fun filterSnapshot(source: File, target: File) {
@@ -278,7 +279,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     private fun diffArtists(
         lastEditTimes: MutableMap<Uuid, Instant>,
         latestArtists: Set<ArtistEntryAnimeExpo2026>,
-        latestImages: Set<DatabaseImage>,
+        latestImageNames: Set<String>,
         before: Diffs,
         current: SnapshotData,
     ): List<ArtistDiff> {
@@ -304,7 +305,10 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                 val merchConfirmed =
                     afterArtist.merchConfirmed.toMutableSet()
                 val images = afterArtist.images
-                    .takeIf { seriesConfirmed.isNotEmpty() || merchConfirmed.isNotEmpty() }
+                    .takeIf {
+                        afterArtist.seriesConfirmed.isNotEmpty()
+                                || afterArtist.merchConfirmed.isNotEmpty()
+                    }
                     .orEmpty()
                     .toMutableList()
                 if (beforeArtist != null) {
@@ -312,13 +316,15 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     seriesConfirmed -= beforeArtist.seriesConfirmed.toSet()
                     merchInferred -= beforeArtist.merchInferred.toSet()
                     merchConfirmed -= beforeArtist.merchConfirmed.toSet()
-                    images -= beforeArtist.images.toSet()
+
+                    val beforeImageNames = beforeArtist.images.map { it.name }.toSet()
+                    images.removeIf { it.name in beforeImageNames }
                 }
                 seriesInferred.retainAll(latestArtist.seriesInferred.toSet())
                 seriesConfirmed.retainAll(latestArtist.seriesConfirmed.toSet())
                 merchInferred.retainAll(latestArtist.merchInferred.toSet())
                 merchConfirmed.retainAll(latestArtist.merchConfirmed.toSet())
-                images.retainAll(latestImages)
+                images.retainAll { it.name in latestImageNames }
                 if (beforeArtist != null && listOf(
                         seriesInferred,
                         seriesConfirmed,
@@ -348,7 +354,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     private fun diffRallies(
         lastEditTimes: MutableMap<Uuid, Instant>,
         latestRallyIds: Set<Uuid>,
-        latestImages: Set<DatabaseImage>,
+        latestImageNames: Set<String>,
         before: Diffs,
         current: SnapshotData,
     ): List<StampRallyDiff> {
@@ -365,8 +371,10 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                 if (beforeRally != afterRally) {
                     lastEditTimes[rallyId] = timestamp
                 }
-                val images = (afterRally.images - beforeRally?.images?.toSet().orEmpty()).toMutableList()
-                images.retainAll(latestImages)
+                val images = afterRally.images.toMutableList()
+                val beforeRallyImageNames = beforeRally?.images?.map { it.name }?.toSet().orEmpty()
+                images.removeAll { it.name in beforeRallyImageNames }
+                images.retainAll { it.name in latestImageNames }
                 val isBrandNew = rallyId.toString() !in beforeRallyIds
                 if (beforeRally == null) {
                     StampRallyDiff(
