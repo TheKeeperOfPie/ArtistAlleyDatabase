@@ -92,13 +92,13 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                     .let(Instant::parse)
                             }
 
-                        val latestArtistIds = mutableSetOf<Uuid>()
+                        val latestArtists = mutableSetOf<ArtistEntryAnimeExpo2026>()
                         val latestRallyIds = mutableSetOf<Uuid>()
                         val latestImages = mutableSetOf<DatabaseImage>()
                         val latestSnapshot = snapshotFiles.lastOrNull()
                             ?.let(::readSnapshot)
                         if (latestSnapshot != null) {
-                            latestArtistIds += latestSnapshot.artists.map { Uuid.parse(it.id) }
+                            latestArtists += latestSnapshot.artists
                             latestRallyIds += latestSnapshot.rallies.map { Uuid.parse(it.id) }
                             latestImages += latestSnapshot.artists.flatMap { it.images }
                             latestImages += latestSnapshot.rallies.flatMap { it.images }
@@ -122,7 +122,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                                 ) { before, current ->
                                     val artistDiffs = diffArtists(
                                         lastEditTimes = artistLastEditTimes,
-                                        latestArtistIds = latestArtistIds,
+                                        latestArtists = latestArtists,
                                         latestImages = latestImages,
                                         before = before,
                                         current = current,
@@ -277,7 +277,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
 
     private fun diffArtists(
         lastEditTimes: MutableMap<Uuid, Instant>,
-        latestArtistIds: Set<Uuid>,
+        latestArtists: Set<ArtistEntryAnimeExpo2026>,
         latestImages: Set<DatabaseImage>,
         before: Diffs,
         current: SnapshotData,
@@ -289,8 +289,9 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         return artists
             .map { afterArtist -> beforeArtists.find { it.id == afterArtist.id } to afterArtist }
             .mapNotNull { (beforeArtist, afterArtist) ->
+                val latestArtist = latestArtists.find { it.id == afterArtist.id }
+                    ?: return@mapNotNull null
                 val artistId = Uuid.parse(afterArtist.id)
-                if (artistId !in latestArtistIds) return@mapNotNull null
                 if (beforeArtist != afterArtist) {
                     lastEditTimes[artistId] = timestamp
                 }
@@ -313,6 +314,10 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     merchConfirmed -= beforeArtist.merchConfirmed.toSet()
                     images -= beforeArtist.images.toSet()
                 }
+                seriesInferred.retainAll(latestArtist.seriesInferred.toSet())
+                seriesConfirmed.retainAll(latestArtist.seriesConfirmed.toSet())
+                merchInferred.retainAll(latestArtist.merchInferred.toSet())
+                merchConfirmed.retainAll(latestArtist.merchConfirmed.toSet())
                 images.retainAll(latestImages)
                 if (beforeArtist != null && listOf(
                         seriesInferred,

@@ -256,6 +256,10 @@ fun ChangelogArtistRow(
         val hasSeries = artist.seriesHighlighted.isNotEmpty() || artist.seriesRemaining.isNotEmpty()
         val hasMerch = artist.merchHighlighted.isNotEmpty() || artist.merchRemaining.isNotEmpty()
 
+        if (images.isEmpty() && (hasSeries || hasMerch)) {
+            Spacer(Modifier.height(12.dp))
+        }
+
         val seriesTitles = seriesTitles()
         if (hasSeries) {
             SeriesRow(
