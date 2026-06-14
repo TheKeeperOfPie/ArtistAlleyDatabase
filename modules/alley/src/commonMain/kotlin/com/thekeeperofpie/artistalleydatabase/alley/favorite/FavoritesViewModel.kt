@@ -18,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
@@ -29,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -315,7 +315,7 @@ class FavoritesViewModel(
         }
     }
 
-    fun getSeriesImage(series: SeriesInfo) = seriesImageLoader.getSeriesImage(series)
+    fun seriesImage(series: SeriesImageInfo) = seriesImageLoader.getSeriesImage(series)
 
     fun onEvent(
         event: FavoritesScreen.Event,

@@ -76,7 +76,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
@@ -84,7 +83,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
@@ -173,7 +174,7 @@ object FavoritesScreen {
             ralliesScrollStateSaver = ralliesScrollStateSaver,
             seriesScrollStateSaver = seriesScrollStateSaver,
             merchScrollStateSaver = merchScrollStateSaver,
-            getSeriesImage = viewModel::getSeriesImage,
+            seriesImage = viewModel::seriesImage,
             eventSink = {
                 viewModel.onEvent(
                     event = it,
@@ -208,7 +209,7 @@ object FavoritesScreen {
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,
         merchScrollStateSaver: ScrollStateSaver,
-        getSeriesImage: (SeriesInfo) -> String?,
+        seriesImage: (SeriesImageInfo) -> String?,
         eventSink: (Event) -> Unit,
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
@@ -331,12 +332,13 @@ object FavoritesScreen {
                                     eventSink = eventSink,
                                 )
                             },
+                            seriesImage = seriesImage,
                             noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
                         )
                         EntryTab.SERIES -> SeriesContent(
                             listState = seriesScrollStateSaver.lazyListState(),
                             series = seriesEntries,
-                            getSeriesImage = getSeriesImage,
+                            getSeriesImage = seriesImage,
                             header = {
                                 Header(
                                     tab = { tab },
@@ -462,6 +464,7 @@ object FavoritesScreen {
         searchState: SearchScreen.State<StampRallySearchScreen.StampRallyColumn>,
         horizontalScrollState: ScrollState,
         entries: LazyPagingItems<StampRallyEntryGridModel>,
+        seriesImage: (SeriesImageInfo) -> String?,
         eventSink: (Event) -> Unit,
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
@@ -492,6 +495,7 @@ object FavoritesScreen {
                             onUnfavorite(entry)
                         }
                     },
+                    seriesImage = seriesImage,
                     modifier = modifier,
                 )
             },
@@ -504,7 +508,7 @@ object FavoritesScreen {
     private fun SeriesContent(
         listState: LazyListState,
         series: LazyPagingItems<SeriesWithUserData>,
-        getSeriesImage: (SeriesInfo) -> String?,
+        getSeriesImage: (SeriesImageInfo) -> String?,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
@@ -560,7 +564,7 @@ object FavoritesScreen {
                             SeriesRow(
                                 data = data,
                                 image = {
-                                    data?.let { getSeriesImage(it.series) }
+                                    data?.let { getSeriesImage(it.series.toImageInfo()) }
                                 },
                                 textStyle = LocalTextStyle.current,
                                 onFavoriteToggle = {

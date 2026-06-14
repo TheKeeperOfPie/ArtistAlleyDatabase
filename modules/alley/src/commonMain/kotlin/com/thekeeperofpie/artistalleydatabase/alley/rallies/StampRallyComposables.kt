@@ -164,8 +164,8 @@ fun StampRallySeriesImage(
 fun StampRallyListRow(
     entry: StampRallyEntryGridModel,
     onFavoriteToggle: (Boolean) -> Unit,
+    seriesImage: (SeriesImageInfo) -> String?,
     modifier: Modifier = Modifier,
-    seriesImage: (SeriesImageInfo) -> String? = { null },
 ) {
     val stampRally = entry.stampRally
     Row(
