@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.DigitalFiles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Fans
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Figures
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Games
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.GuitarPicks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Handicrafts
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Hats
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.HeadAccessories
@@ -59,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Soap
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Socks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Stamps
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Standees
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Stationery
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Stickers
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Tableware
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Umbrellas
@@ -94,6 +96,7 @@ object MerchUtils {
         "Fans" -> MerchIcons.Fans
         "Figures" -> MerchIcons.Figures
         "Games" -> MerchIcons.Games
+        "Guitar picks" -> MerchIcons.GuitarPicks
         "Handicrafts" -> MerchIcons.Handicrafts
         "Hats" -> MerchIcons.Hats
         "Head accessories" -> MerchIcons.HeadAccessories
@@ -129,6 +132,7 @@ object MerchUtils {
         "Socks" -> MerchIcons.Socks
         "Stamps" -> MerchIcons.Stamps
         "Standees" -> MerchIcons.Standees
+        "Stationery" -> MerchIcons.Stationery
         "Stickers" -> MerchIcons.Stickers
         "Tableware" -> MerchIcons.Tableware
         "Umbrellas" -> MerchIcons.Umbrellas
