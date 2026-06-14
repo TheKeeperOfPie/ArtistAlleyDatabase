@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -50,7 +50,7 @@ import kotlin.random.Random
 class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
-    private val merchEntryDao: MerchEntryDao,
+    private val merchCache: MerchCache,
     val seriesEntryCache: SeriesEntryCache,
     private val seriesEntryDao: SeriesEntryDao,
     private val seriesImageLoader: SeriesImageLoader,
@@ -112,7 +112,7 @@ class ArtistSearchViewModel(
         lockedSeriesEntry = lockedSeriesEntry,
         dispatchers = dispatchers,
         settings = settings,
-        merchEntryDao = merchEntryDao,
+        merchCache = merchCache,
         seriesEntryDao = seriesEntryDao,
         seriesImageLoader = seriesImageLoader,
         allowSettingsBasedToggles = lockedMerch == null && lockedSeries == null,

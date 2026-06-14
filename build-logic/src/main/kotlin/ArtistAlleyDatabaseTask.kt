@@ -10,6 +10,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyMerchConnection
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyPrizeMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
@@ -1446,6 +1448,24 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 }
                 .forEach(database.mutationQueries::insertStampRallySeriesConnection)
+            it.merch
+                .map {
+                    StampRallyMerchConnection(
+                        stampRallyId = stampRallyId,
+                        merchId = it,
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                    )
+                }
+                .forEach(database.mutationQueries::insertStampRallyMerchConnection)
+            it.prizeMerch
+                ?.map {
+                    StampRallyPrizeMerchConnection(
+                        stampRallyId = stampRallyId,
+                        merchId = it,
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                    )
+                }
+                ?.forEach(database.mutationQueries::insertStampRallyPrizeMerchConnection)
         }
     }
 

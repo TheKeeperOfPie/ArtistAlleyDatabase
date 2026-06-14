@@ -555,8 +555,27 @@ class StampRallyEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.id IN (SELECT stampRallyId from stampRallySeriesConnection " +
+                this += "$tableName.id IN (SELECT stampRallyId FROM stampRallySeriesConnection " +
                         "WHERE stampRallySeriesConnection.seriesId IN ($seriesList))"
+            }
+
+            if (year.dates.year >= 2026) {
+                if (filterParams.merchIdIn.isNotEmpty()) {
+                    val merchList = filterParams.merchIdIn.joinToString(separator = ",") {
+                        DatabaseUtils.sqlEscapeString(it)
+                    }
+
+                    this += "$tableName.id IN (SELECT stampRallyId FROM stampRallyMerchConnection " +
+                            "WHERE stampRallyMerchConnection.merchId IN ($merchList))"
+                }
+                if (filterParams.prizeMerchIdIn.isNotEmpty()) {
+                    val prizeMerchList = filterParams.prizeMerchIdIn.joinToString(separator = ",") {
+                        DatabaseUtils.sqlEscapeString(it)
+                    }
+
+                    this += "$tableName.id IN (SELECT stampRallyId FROM stampRallyPrizeMerchConnection " +
+                            "WHERE stampRallyPrizeMerchConnection.merchId IN ($prizeMerchList))"
+                }
             }
         }
 

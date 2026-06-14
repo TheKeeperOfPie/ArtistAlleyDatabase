@@ -24,6 +24,14 @@ insertStampRallySeriesConnection:
 INSERT OR REPLACE INTO stampRallySeriesConnection
 VALUES ?;
 
+insertStampRallyMerchConnection:
+INSERT OR REPLACE INTO stampRallyMerchConnection
+VALUES ?;
+
+insertStampRallyPrizeMerchConnection:
+INSERT OR REPLACE INTO stampRallyPrizeMerchConnection
+VALUES ?;
+
 insertArtistEntryAnimeExpo2026Changelog:
 INSERT OR REPLACE INTO artistEntryAnimeExpo2026Changelog
 VALUES ?;

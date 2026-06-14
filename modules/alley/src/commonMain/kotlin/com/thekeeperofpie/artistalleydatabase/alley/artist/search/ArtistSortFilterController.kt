@@ -53,19 +53,16 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_r
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_label
-import artistalleydatabase.modules.alley.generated.resources.alley_merch_chip_state_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
-import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.AlleyTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -94,11 +91,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 
@@ -113,7 +107,7 @@ class ArtistSortFilterController(
     lockedSeriesEntry: StateFlow<SeriesInfo?>,
     lockedMerchId: String?,
     dispatchers: CustomDispatchers,
-    merchEntryDao: MerchEntryDao,
+    merchCache: MerchCache,
     seriesEntryDao: SeriesEntryDao,
     seriesImageLoader: SeriesImageLoader,
     val settings: ArtistAlleySettings,
@@ -157,12 +151,7 @@ class ArtistSortFilterController(
         }
     )
 
-    // TODO: Consider storing this in a singleton instead?
-    private val merch = dataYear
-        .mapLatest { merchEntryDao.getMerchEntries(it) }
-        .mapLatest(::MerchTagData)
-        .flowOn(dispatchers.io)
-        .stateIn(scope, SharingStarted.Lazily, MerchTagData(emptyList()))
+    private val merch = dataYear.flatMapLatest(merchCache::merchTags)
     private val merchIdsLockedIn = setOfNotNull(lockedMerchId)
     private val merchIdIn =
         savedStateHandle.getMutableStateFlow<List<String>, Set<String>>(
@@ -185,14 +174,20 @@ class ArtistSortFilterController(
 
         @Composable
         override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
-            val merchData by merch.collectAsStateWithLifecycle()
+            val merchTagData by merch.collectAsStateWithLifecycle(MerchTagData(emptyList()))
             var merchIdIn by merchIdIn.collectAsMutableStateWithLifecycle()
             var merchSearchQuery by merchSearchQuery.collectAsMutableStateWithLifecycle()
-            TagSection(
-                expanded = { state.expandedState[id] == true },
+
+            MerchTagSection(
+                merchTagData = { merchTagData },
+                merchIdIn = { merchIdIn },
+                onMerchIdInChange = { merchIdIn = it },
+                merchIdsLockedIn = merchIdsLockedIn,
+                searchQuery = { merchSearchQuery },
+                onSearchQueryChange = { merchSearchQuery = it },
+                expanded = {state.expandedState[id] == true},
                 onExpandedChange = { state.expandedState[id] = it },
-                titleRes = Res.string.alley_merch_filter_label,
-                titleDropdownContentDescriptionRes = Res.string.alley_merch_filter_content_description,
+                showDivider = showDivider,
                 header = {
                     if (state.expandedState[id] == true) {
                         // TODO: This padding isn't completely correct
@@ -201,40 +196,6 @@ class ArtistSortFilterController(
                         }
                     }
                 },
-                tags = merchData.tags,
-                tagIdIn = merchIdIn,
-                tagIdNotIn = emptySet(),
-                disabledOptions = merchIdsLockedIn,
-                query = merchSearchQuery,
-                onQueryChange = { merchSearchQuery = it },
-                showDivider = showDivider,
-                showRootTagsWhenNotExpanded = false,
-                categoryToName = { it.id },
-                tagChip = { merch, selected, enabled, modifier ->
-                    val merchId = merch.id
-                    val selected = merchData.selected(merchIdIn, merchId)
-                    FilterChip(
-                        selected = selected,
-                        onClick = {
-                            merchIdIn =
-                                merchData.toggle(merchIdsLockedIn, merchIdIn, merchId, selected)
-                        },
-                        enabled = enabled,
-                        label = {
-                            AutoHeightText(if (merchId.startsWith("all")) "All" else merchId)
-                        },
-                        leadingIcon = {
-                            IncludeExcludeIcon(
-                                enabled = when {
-                                    merchIdIn.contains(merchId) -> true
-                                    else -> null
-                                },
-                                contentDescriptionRes = Res.string.alley_merch_chip_state_content_description,
-                            )
-                        },
-                        modifier = modifier
-                    )
-                }
             )
         }
     }
@@ -553,76 +514,4 @@ class ArtistSortFilterController(
         val hideIgnored: Boolean,
     )
 
-    data class MerchTagData(val merchEntries: List<MerchEntry>) {
-        val tags: List<Pair<String, AlleyTagEntry.Category>>
-        val categoryToTagsMap: Map<String, List<String>>
-
-        init {
-            // Categories are decided by data entry
-            val merchToCategories = merchEntries.map {
-                it to it.categories?.split(",")?.map(String::trim).orEmpty()
-            }
-
-            val other = "Other" to AlleyTagEntry.Category(
-                id = "Other",
-                children = merchEntries.filter { it.categories.isNullOrEmpty() }
-                    .sortedBy { it.name }
-                    .associate { it.name to AlleyTagEntry.Tag(it.name) }
-            )
-            val categories = merchToCategories.flatMap { it.second }.distinct().sorted()
-                .filter { it.isNotEmpty() }
-            val categoryToTags = categories.map { category ->
-                category to merchToCategories.filter { it.second.contains(category) }
-                    .map { it.first.name }
-            }
-            categoryToTagsMap = categoryToTags.associate { it }
-            tags = categoryToTags.map { (category, tags) ->
-                val tagsForCategory = merchToCategories.filter { it.second.contains(category) }
-                    .map { it.first }
-                    .sortedBy { it.name }
-                val allId = "all$category" // TODO: Find a better model
-                category to AlleyTagEntry.Category(
-                    id = category,
-                    children = mapOf(allId to AlleyTagEntry.Tag(allId)) +
-                            tagsForCategory.associate {
-                                it.name to AlleyTagEntry.Tag(it.name)
-                            },
-                )
-            } + other
-        }
-
-        fun selected(merchIdIn: Set<String>, merchId: String): Boolean {
-            if (merchId.startsWith("all")) {
-                return merchIdIn.containsAll(categoryToTagsMap[merchId.removePrefix("all")].orEmpty())
-            }
-
-            return merchId in merchIdIn
-        }
-
-        fun toggle(
-            merchIdsLockedIn: Set<String>,
-            merchIdIn: Set<String>,
-            merchId: String,
-            wasSelected: Boolean,
-        ): Set<String> {
-            if (merchId.startsWith("all")) {
-                val tags = categoryToTagsMap[merchId.removePrefix("all")].orEmpty()
-                return if (wasSelected) {
-                    merchIdIn - tags
-                } else {
-                    merchIdIn + tags
-                }
-            }
-
-            if (merchId !in merchIdsLockedIn) {
-                return if (merchIdIn.contains(merchId)) {
-                    merchIdIn - merchId
-                } else {
-                    merchIdIn + merchId
-                }
-            }
-
-            return merchIdIn
-        }
-    }
 }

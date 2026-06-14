@@ -90,7 +90,6 @@ class SeriesAutocompleteSection(
             initialValue = { emptyList<SeriesFilterEntry>() },
         )
 
-
     private val results = snapshotFlow { query }
         .debounce(500.milliseconds)
         .mapLatest(seriesEntryDao::searchSeriesForAutocomplete)

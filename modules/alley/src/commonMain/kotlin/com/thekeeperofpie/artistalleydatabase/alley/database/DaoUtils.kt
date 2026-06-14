@@ -38,6 +38,8 @@ object DaoUtils {
         seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
         seriesEntryChangelogAdapter = ColumnAdapters.seriesEntryChangelogAdapter,
         stampRallySeriesConnectionAdapter = ColumnAdapters.stampRallySeriesConnectionAdapter,
+        stampRallyMerchConnectionAdapter = ColumnAdapters.stampRallyMerchConnectionAdapter,
+        stampRallyPrizeMerchConnectionAdapter = ColumnAdapters.stampRallyPrizeMerchConnectionAdapter,
         stampRallyEntryAnimeExpo2026ChangelogAdapter = ColumnAdapters.stampRallyEntryAnimeExpo2026ChangelogAdapter,
         merchEntryChangelogAdapter = ColumnAdapters.merchEntryChangelogAdapter,
     )

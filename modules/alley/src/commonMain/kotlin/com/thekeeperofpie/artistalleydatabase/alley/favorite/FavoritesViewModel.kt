@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -67,6 +68,7 @@ import kotlin.random.Random
 class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
+    merchCache: MerchCache,
     merchEntryDao: MerchEntryDao,
     val seriesEntryCache: SeriesEntryCache,
     seriesEntryDao: SeriesEntryDao,
@@ -87,7 +89,7 @@ class FavoritesViewModel(
         lockedSeriesEntry = ReadOnlyStateFlow(null),
         dispatchers = dispatchers,
         settings = settings,
-        merchEntryDao = merchEntryDao,
+        merchCache = merchCache,
         seriesEntryDao = seriesEntryDao,
         seriesImageLoader = seriesImageLoader,
         allowHideFavorited = false,
@@ -97,6 +99,8 @@ class FavoritesViewModel(
         scope = viewModelScope,
         lockedSeriesEntry = ReadOnlyStateFlow(null),
         dispatchers = dispatchers,
+        dataYear = year,
+        merchCache = merchCache,
         seriesEntryDao = seriesEntryDao,
         seriesImageLoader = seriesImageLoader,
         settings = settings,
@@ -195,6 +199,8 @@ class FavoritesViewModel(
                         sortOption = StampRallySearchSortOption.MAIN_TABLE,
                         sortAscending = true,
                         seriesIn = emptySet(),
+                        merchIdIn = emptySet(),
+                        prizeMerchIdIn = emptySet(),
                         totalCost = RangeData(100),
                         prizeLimit = RangeData(50),
                         showUnconfirmed = false,

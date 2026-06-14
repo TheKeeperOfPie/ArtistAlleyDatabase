@@ -220,6 +220,14 @@ object ColumnAdapters {
         dataYearAdapter = dataYearAdapter,
     )
 
+    val stampRallyMerchConnectionAdapter = StampRallyMerchConnection.Adapter(
+        dataYearAdapter = dataYearAdapter,
+    )
+
+    val stampRallyPrizeMerchConnectionAdapter = StampRallyPrizeMerchConnection.Adapter(
+        dataYearAdapter = dataYearAdapter,
+    )
+
     val stampRallyEntryAnimeExpo2026ChangelogAdapter = StampRallyEntryAnimeExpo2026Changelog.Adapter(
         stampRallyIdAdapter = uuidAdapter,
         imagesAdapter = listDatabaseImageAdapter,

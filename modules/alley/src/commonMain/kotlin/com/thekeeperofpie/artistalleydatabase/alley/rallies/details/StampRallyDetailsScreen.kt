@@ -51,6 +51,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_series
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_start_table_explanation
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
@@ -278,7 +279,26 @@ object StampRallyDetailsScreen {
                 }
             }
 
-            item("stampRallyCostAndPrizes", GridUtils.maxSpanFunction) {
+            val prizeMerch = entry.stampRally.prizeMerch
+            if (prizeMerch.isNotEmpty()) {
+                item(
+                    "stampRallyPrizeMerchHeader",
+                    contentType = "Header",
+                    span = GridUtils.maxSpanFunction,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.alley_stamp_rally_details_prize_merch),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.surfaceTint,
+                        modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
+                    )
+                }
+                item("stampRallyPrizeMerch", GridUtils.maxSpanFunction) {
+                    MerchChips(prizeMerch, onClick = { eventSink(Event.OpenMerch(it)) })
+                }
+            }
+
+            item("stampRallyCost", GridUtils.maxSpanFunction) {
                 val stampRally = entry.stampRally
                 ThemeAwareElevatedCard {
                     val body = run {

@@ -410,6 +410,28 @@ CREATE INDEX IF NOT EXISTS index_stampRallySeriesConnection_stampRallyId ON stam
 CREATE INDEX IF NOT EXISTS index_stampRallySeriesConnection_seriesId ON stampRallySeriesConnection (seriesId);
 
 CREATE TABLE
+    IF NOT EXISTS stampRallyMerchConnection (
+        stampRallyId TEXT NOT NULL,
+        merchId TEXT NOT NULL,
+        dataYear TEXT AS DataYear NOT NULL,
+        PRIMARY KEY (stampRallyId, merchId)
+    );
+
+CREATE INDEX IF NOT EXISTS index_stampRallyMerchConnection_stampRallyId ON stampRallyMerchConnection (stampRallyId);
+CREATE INDEX IF NOT EXISTS index_stampRallyMerchConnection_merchId ON stampRallyMerchConnection (merchId);
+
+CREATE TABLE
+    IF NOT EXISTS stampRallyPrizeMerchConnection (
+        stampRallyId TEXT NOT NULL,
+        merchId TEXT NOT NULL,
+        dataYear TEXT AS DataYear NOT NULL,
+        PRIMARY KEY (stampRallyId, merchId)
+    );
+
+CREATE INDEX IF NOT EXISTS index_stampRallyPrizeMerchConnection_stampRallyId ON stampRallyPrizeMerchConnection (stampRallyId);
+CREATE INDEX IF NOT EXISTS index_stampRallyPrizeMerchConnection_merchId ON stampRallyPrizeMerchConnection (merchId);
+
+CREATE TABLE
     IF NOT EXISTS seriesEntry (
         id TEXT NOT NULL COLLATE NOCASE,
         uuid TEXT NOT NULL,
