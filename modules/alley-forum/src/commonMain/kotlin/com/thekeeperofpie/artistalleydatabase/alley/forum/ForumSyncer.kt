@@ -376,6 +376,17 @@ internal class ForumSyncer(private val environment: Environment) {
                     ?.generate()
                     ?.run { vibrantSwatch ?: dominantSwatch }
 
+                val summary = buildString {
+                    if (images.size > 4) {
+                        append("(${images.size - 4} catalog images hidden)")
+                    }
+                    if (!entry.summary.isNullOrBlank()) {
+                        if (isNotEmpty()) {
+                            append("\n\n")
+                        }
+                        append(entry.summary)
+                    }
+                }
                 val titleEmbed = Embed(
                     thumbnail = thumbnailImage?.let {
                         Embed.Image(
@@ -384,7 +395,7 @@ internal class ForumSyncer(private val environment: Environment) {
                         )
                     },
                     title = "\uD83C\uDFA8 ${entry.name}",
-                    description = entry.summary?.takeIf { it.isNotBlank() }
+                    description = summary.takeIf { it.isNotBlank() },
                 )
 
                 suspend fun LinkModel.asMarkdownLink(): String {
@@ -470,7 +481,7 @@ internal class ForumSyncer(private val environment: Environment) {
 
                 var seriesOneCharCount = 0
                 var seriesTwoCharCount = 0
-                series.forEach {
+                series.sorted().forEach {
                     if ((seriesOneCharCount + it.length + 2) < 1000) {
                         seriesOneCharCount += it.length + 2
                         seriesOne += it
@@ -535,7 +546,7 @@ internal class ForumSyncer(private val environment: Environment) {
                         fields = listOf(
                             Embed.Field(
                                 name = "\uD83D\uDCE6 $it",
-                                value = merch.joinToString(prefix = "```", postfix = "```")
+                                value = merch.sorted().joinToString(prefix = "```", postfix = "```")
                             )
                         ),
                     )
