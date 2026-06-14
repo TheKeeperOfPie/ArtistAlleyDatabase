@@ -24,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -202,6 +203,19 @@ object MapScreen {
             val coroutineScope = rememberCoroutineScope()
             val maxFlingVelocity = (LocalViewConfiguration.current.maximumFlingVelocity / 2f)
                 .let { Velocity(it, it) }
+
+            val quantizedTranslation by remember {
+                derivedStateOf {
+                    val translation= transformState.translation.value
+                    Offset(
+                        x = (translation.x / 32f).roundToInt() * 32f,
+                        y = (translation.y / 32f).roundToInt() * 32f
+                    )
+                }
+            }
+            val quantizedScale by remember {
+                derivedStateOf { (transformState.scale * 10f).roundToInt() / 10f }
+            }
             LazyLayout(
                 itemProvider = { itemProvider },
                 modifier = modifier
@@ -369,12 +383,6 @@ object MapScreen {
                     }
                     .clipToBounds()
             ) { constraints ->
-                val translation = transformState.translation.value
-                val quantizedTranslation = Offset(
-                    x = (translation.x / 32f).roundToInt() * 32f,
-                    y = (translation.y / 32f).roundToInt() * 32f
-                )
-                val quantizedScale = (transformState.scale * 10f).roundToInt() / 10f
                 val boundaries = getBounds(
                     offset = quantizedTranslation,
                     scale = quantizedScale,
