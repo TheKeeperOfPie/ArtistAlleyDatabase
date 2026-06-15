@@ -98,3 +98,10 @@ CREATE TABLE IF NOT EXISTS artistCatalogQueueEntry (
     link TEXT NOT NULL,
     PRIMARY KEY (dataYear, booth)
 );
+
+CREATE TABLE IF NOT EXISTS stampRallyQueueEntry (
+    dataYear TEXT AS DataYear NOT NULL,
+    booths TEXT AS Set<String> NOT NULL,
+    link TEXT NOT NULL,
+    PRIMARY KEY (dataYear, link)
+);

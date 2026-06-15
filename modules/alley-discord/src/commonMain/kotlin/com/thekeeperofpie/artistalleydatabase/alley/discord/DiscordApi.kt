@@ -78,6 +78,30 @@ internal class DiscordApi(
                     ),
                 ),
                 CommandRegisterRequest.Option(
+                    name = "rally",
+                    type = OptionType.SUB_COMMAND,
+                    description = "Record a rally",
+                    options = listOf(
+                        conventionOption,
+                        CommandRegisterRequest.Option(
+                            name = "link",
+                            type = OptionType.STRING,
+                            description = "Rally link",
+                            required = true,
+                        ),
+                        CommandRegisterRequest.Option(
+                            name = "booths",
+                            type = OptionType.STRING,
+                            description = "Table numbers, separated by commas",
+                        ),
+                        CommandRegisterRequest.Option(
+                            name = "post",
+                            type = OptionType.BOOLEAN,
+                            description = "Post to public channel",
+                        ),
+                    ),
+                ),
+                CommandRegisterRequest.Option(
                     name = "verify",
                     type = OptionType.SUB_COMMAND,
                     description = "Verify as an artist tabling",

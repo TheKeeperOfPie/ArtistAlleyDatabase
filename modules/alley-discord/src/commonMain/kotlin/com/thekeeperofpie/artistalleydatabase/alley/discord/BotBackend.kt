@@ -1,7 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
@@ -103,10 +106,10 @@ internal object BotBackend {
                     is OptionResult.Success -> boothResult.value
                 }
 
-                val link = options.first { it.name == "link" }.value ?: return api.patchFailure(
-                    interactionToken = interaction.token,
-                    message = "Link is required",
-                )
+                val link = when (val linkResult = parseLink(options)) {
+                    is OptionResult.Failure -> return api.fail(interaction, linkResult)
+                    is OptionResult.Success -> linkResult.value
+                }
 
                 val database = Databases.backendDatabase(env)
                 val artist =
@@ -160,12 +163,92 @@ internal object BotBackend {
                 if (post) {
                     api.sendMessage(
                         channelId = env.DISCORD_PUBLIC_CHANNEL_ID,
-                        message = "New catalog for $table: $link",
+                        message = "New catalog for $table: ${displayLink(link)}",
                     )
                 }
 
                 DiscordInteractionPatchResponse(
-                    content = content + didNotPostDefaultReason?.let { "\n$it"},
+                    content = content + didNotPostDefaultReason?.let { "\n$it" },
+                    flags = MessageFlags(MessageFlag.EPHEMERAL),
+                )
+            }
+            "rally" -> {
+                val userId = interaction.member?.user?.id
+                val allowedEditorUserIds = env.DISCORD_EDITORS.split(",")
+                if (userId !in allowedEditorUserIds) {
+                    return api.patchFailure(
+                        interactionToken = interaction.token,
+                        message = "You are not allowed to record rallies, please ping <@${allowedEditorUserIds.firstOrNull()}> with the link instead"
+                    )
+                }
+
+                val options = when (val optionsResult = validateHasOptions(command)) {
+                    is OptionResult.Failure -> return api.fail(interaction, optionsResult)
+                    is OptionResult.Success -> optionsResult.value
+                }
+
+                val dataYear = when (val dataYearResult = parseDataYear(options)) {
+                    is OptionResult.Failure -> return api.fail(interaction, dataYearResult)
+                    is OptionResult.Success -> dataYearResult.value
+                }
+
+                val boothsValue = options.find { it.name == "booths" }?.value
+                val booths = boothsValue?.split(",")?.map { it.trim() }
+                    ?.mapNotNull(Booth::fromStringOrNull)
+                    .orEmpty()
+
+                val link = when (val linkResult = parseLink(options)) {
+                    is OptionResult.Failure -> return api.fail(interaction, linkResult)
+                    is OptionResult.Success -> linkResult.value
+                }
+
+                val database = Databases.backendDatabase(env)
+                val queries = database.stampRallyQueueEntryQueries
+                val existingLinks = queries.getRallyLinks().awaitAsList().flatten()
+                val existingEntry = queries.getRallyEntry(dataYear, link)
+                    .awaitAsOneOrNull()
+
+                val newLink = link !in existingLinks && existingEntry == null
+                if (newLink) {
+                    queries.insertRallyEntry(
+                        StampRallyQueueEntry(
+                            dataYear = dataYear,
+                            booths = booths.map { it.toString() }.toSet(),
+                            link = link,
+                        )
+                    )
+                }
+
+                val boothsText = booths.joinToString(", ")
+                val post = options.firstOrNull { it.name == "post" }
+                    ?.value
+                    ?.lowercase()
+                    ?.toBooleanStrictOrNull()
+                    ?: newLink
+                if (post) {
+                    val message = buildString {
+                        append("New rally")
+                        if (booths.isNotEmpty()) {
+                            append(" for ")
+                            append(boothsText)
+                        }
+                        append(": ")
+                        append(displayLink(link))
+                    }
+                    api.sendMessage(
+                        channelId = env.DISCORD_PUBLIC_CHANNEL_ID,
+                        message = message,
+                    )
+                }
+
+                val result = if (newLink) {
+                    "Recorded rally for $boothsText: $link"
+                } else {
+                    "Already recorded $link"
+                }
+
+                DiscordInteractionPatchResponse(
+                    content = result,
                     flags = MessageFlags(MessageFlag.EPHEMERAL),
                 )
             }
@@ -226,8 +309,8 @@ internal object BotBackend {
     private fun parseDataYear(
         options: List<InteractionRequestData.SlashCommand.Option>,
     ): OptionResult<DataYear> {
-        val dataYear =
-            DataYear.deserialize(options.first { it.name == "convention" }.value!!)
+        val dataYear = options.find { it.name == "convention" }?.value?.let(DataYear::deserialize)
+
         if (dataYear == null) {
             return OptionResult.Failure("Invalid convention")
         }
@@ -237,11 +320,31 @@ internal object BotBackend {
     private fun parseBooth(
         options: List<InteractionRequestData.SlashCommand.Option>,
     ): OptionResult<Booth> {
-        val booth = Booth.fromStringOrNull(options.first { it.name == "booth" }.value.orEmpty())
+        val booth = Booth.fromStringOrNull(options.find { it.name == "booth" }?.value.orEmpty())
         return if (booth == null) {
             OptionResult.Failure("Invalid booth")
         } else {
             OptionResult.Success(booth)
+        }
+    }
+
+    private fun parseLink(
+        options: List<InteractionRequestData.SlashCommand.Option>,
+    ): OptionResult<String> {
+        val link = options.find { it.name == "link" }?.value?.let(Uri::parseOrNull)
+        return if (link == null) {
+            OptionResult.Failure("Link is required")
+        } else {
+            OptionResult.Success(
+                link.buildUpon()
+                    .scheme("https")
+                    .authority(link.authority?.removePrefix("www."))
+                    .path(link.path?.removeSuffix("/"))
+                    .clearQuery()
+                    .fragment(null)
+                    .build()
+                    .toString()
+            )
         }
     }
 
@@ -250,7 +353,7 @@ internal object BotBackend {
     ): OptionResult<List<InteractionRequestData.SlashCommand.Option>> {
         val options = command.options
         return if (options.isNullOrEmpty()) {
-            OptionResult.Failure("Invalid options, make sure the booth is formatted correctly")
+            OptionResult.Failure("Invalid options, make sure format is correct")
         } else {
             OptionResult.Success(options)
         }
@@ -436,6 +539,19 @@ internal object BotBackend {
         interactionToken = interaction.token,
         message = failure.message,
     )
+
+    private fun displayLink(link: String): String {
+        val uri = Uri.parseOrNull(link) ?: return link
+        return uri.buildUpon()
+            .authority(when (uri.authority) {
+                "x.com" -> "fixupx.com"
+                "instagram.com" -> "kkinstagram.com"
+                "tiktok.com" -> "tnktok.com"
+                else -> uri.authority
+            })
+            .build()
+            .toString()
+    }
 
     sealed interface OptionResult<T> {
         data class Success<T>(val value: T) : OptionResult<T>

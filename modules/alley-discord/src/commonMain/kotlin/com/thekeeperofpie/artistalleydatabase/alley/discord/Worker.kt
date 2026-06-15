@@ -83,7 +83,37 @@ class Worker {
                                     |        booth TEXT NOT NULL,
                                     |        link TEXT NOT NULL,
                                     |        PRIMARY KEY (dataYear, booth)
-                                    |    ); 
+                                    |    );
+                                    |CREATE TABLE
+                                    |    IF NOT EXISTS stampRallyQueueEntry (
+                                    |        dataYear TEXT NOT NULL,
+                                    |        booths TEXT NOT NULL,
+                                    |        link TEXT NOT NULL,
+                                    |        PRIMARY KEY (dataYear, link)
+                                    |    );
+                                    |    
+                                    |CREATE TABLE
+                                    |    IF NOT EXISTS stampRallyEntryAnimeExpo2026 (
+                                    |        id TEXT NOT NULL,
+                                    |        fandom TEXT NOT NULL COLLATE NOCASE,
+                                    |        tables TEXT NOT NULL,
+                                    |        startTables TEXT DEFAULT NULL,
+                                    |        endTables TEXT DEFAULT NULL,
+                                    |        links TEXT NOT NULL,
+                                    |        tableMin INTEGER,
+                                    |        totalCost INTEGER,
+                                    |        prize TEXT,
+                                    |        prizeLimit INTEGER,
+                                    |        prizeMerch TEXT DEFAULT NULL,
+                                    |        series TEXT NOT NULL,
+                                    |        merch TEXT NOT NULL,
+                                    |        notes TEXT,
+                                    |        images TEXT NOT NULL,
+                                    |        editorNotes TEXT,
+                                    |        lastEditor TEXT,
+                                    |        lastEditTime TEXT,
+                                    |        PRIMARY KEY (id)
+                                    |    );
                                 """.trimMargin(),
                                 parameters = 0,
                             ).await()

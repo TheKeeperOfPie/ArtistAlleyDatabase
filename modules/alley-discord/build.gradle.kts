@@ -30,6 +30,7 @@ kotlin {
             implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.uri.kmp)
             implementation(libs.whyoleg.cryptography.core)
             implementation(libs.whyoleg.cryptography.provider.optimal)
             implementation(projects.modules.alley.backend.data)
