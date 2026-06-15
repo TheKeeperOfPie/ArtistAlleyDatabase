@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
 import androidx.compose.foundation.layout.FlexAlignItems
+import androidx.compose.foundation.layout.FlexAlignSelf
 import androidx.compose.foundation.layout.FlexBox
 import androidx.compose.foundation.layout.FlexBoxConfig
 import androidx.compose.foundation.layout.FlexWrap
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AssistChip
@@ -38,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
@@ -54,6 +57,7 @@ fun StampRallySummaryRow(
     stampRallyId = stampRally.id,
     fandom = stampRally.fandom,
     hostTable = stampRally.hostTable,
+    tables = stampRally.tables,
     series = stampRally.series,
     seriesById = seriesById,
     modifier = modifier,
@@ -64,6 +68,7 @@ fun StampRallySummaryRow(
     stampRallyId: String,
     fandom: String?,
     hostTable: String?,
+    tables: List<String>,
     series: List<String>,
     seriesById: () -> Map<String, SeriesInfo>,
     modifier: Modifier = Modifier,
@@ -99,10 +104,25 @@ fun StampRallySummaryRow(
             }
             series.forEach {
                 AssistChip(
-                    onClick = {},
                     label = {
                         Text(it.name(LocalLanguageOptionMedia.current))
                     },
+                    onClick = {},
+                )
+            }
+        }
+
+        Spacer(Modifier.flex { grow(1f) })
+
+        val sortedTables = remember(tables) { tables.sorted() }
+        if (sortedTables.isNotEmpty()) {
+            sortedTables.forEachIndexed { index, table ->
+                AssistChip(
+                    label = { Text(table) },
+                    onClick = {},
+                    modifier = Modifier
+                        .flex { alignSelf(FlexAlignSelf.End) }
+                        .conditionally(index == 0, Modifier.padding(start = 16.dp))
                 )
             }
         }

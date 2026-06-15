@@ -716,6 +716,7 @@ object ArtistFormScreen {
                                     stampRallyId = formState.editorState.id.value.text.toString(),
                                     fandom = formState.fandom.value.text.toString(),
                                     hostTable = booth,
+                                    tables = formState.tables.map { it.booth },
                                     series = formState.series.map { it.id }
                                         .plus(
                                             formState.stateSeries.value.text.toString()
