@@ -1,4 +1,3 @@
-
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -84,12 +83,11 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                         val legacyMerchIds = loadLegacyMerchIds()
 
                         val snapshotFiles = snapshotsDirectory.get().asFileTree.files
-                            .sortedBy {
-                                it.nameWithoutExtension
-                                    .replace("_", ":")
-                                    .replace(";", ":")
-                                    .let(Instant::parse)
-                            }
+                            .map(::readSnapshotFile)
+                            .groupBy { it.date }
+                            .toList()
+                            .map { it.second.maxBy { it.timestamp } }
+                            .sortedBy { it.timestamp }
 
                         val latestArtists = mutableSetOf<ArtistEntryAnimeExpo2026>()
                         val latestRallyIds = mutableSetOf<Uuid>()
@@ -177,35 +175,34 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         }
     }
 
-    private fun readSnapshot(file: File): SnapshotData? {
-        val snapshotFilteredFile =
-            temporaryDir.resolve("database-${file.name}.sql")
-        val databaseFile =
-            temporaryDir.resolve("database-${file.name}.sqlite")
-        listOf(
-            snapshotFilteredFile,
-            databaseFile
-        ).forEach(::verifyDelete)
-
-        // First, create and immediately close the databases to initialize the schemas
-        Utils.createEditDatabase(databaseFile).first.close()
-        filterSnapshot(file, snapshotFilteredFile)
-        if (!Utils.readSqlFile(
-                databaseFile,
-                snapshotFilteredFile
-            )
-        ) {
-            logger.error("Failed to read ${file.absolutePath}")
-            return null
-        }
-
-        val instant = file.nameWithoutExtension
+    private fun readSnapshotFile(file: File): SnapshotFile {
+        val timestamp = file.nameWithoutExtension
             .replace("_", ":")
             .replace(";", ":")
             .let(Instant::parse)
-        val date = instant
+        val date = timestamp
             .toLocalDateTime(TimeZone.UTC)
             .date
+        return SnapshotFile(
+            timestamp = timestamp,
+            date = date,
+            file = file,
+        )
+    }
+
+    private fun readSnapshot(snapshotFile: SnapshotFile): SnapshotData? {
+        val databaseFile = temporaryDir.resolve("database-${snapshotFile.file.name}.sqlite")
+        val snapshotFilteredFile = temporaryDir.resolve("database-${snapshotFile.file.name}.sql")
+        listOf(snapshotFilteredFile, databaseFile).forEach(::verifyDelete)
+
+        // First, create and immediately close the databases to initialize the schemas
+        Utils.createEditDatabase(databaseFile).first.close()
+        filterSnapshot(snapshotFile.file, snapshotFilteredFile)
+        if (!Utils.readSqlFile(databaseFile, snapshotFilteredFile)) {
+            logger.error("Failed to read ${snapshotFile.file.absolutePath}")
+            return null
+        }
+
         val database = Utils.createEditDatabase(databaseFile)
         val mutationQueries = database.second.mutationQueries
         val artists =
@@ -223,8 +220,8 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             .map { it.name }
             .toSet()
         return SnapshotData(
-            timestamp = instant,
-            date = date,
+            timestamp = snapshotFile.timestamp,
+            date = snapshotFile.date,
             artists = artists,
             rallies = rallies,
             seriesIds = seriesIds,
@@ -265,6 +262,10 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                 it.filter { line -> filteredTableNames.any { it in line } }
                     .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
                     .filterNot { it.contains("22222222-2222-2222-2222-222222222222") }
+                    .map {
+                        it.replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS")
+                            .replace("INSERT INTO", "INSERT OR REPLACE INTO")
+                    }
                     .forEach(writer::appendLine)
             }
         }
@@ -409,6 +410,12 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         if (diff.isEmpty()) return null
         return MerchDiff(date = current.date, diff)
     }
+
+    private data class SnapshotFile(
+        val timestamp: Instant,
+        val date: LocalDate,
+        val file: File,
+    )
 
     private data class SnapshotData(
         val timestamp: Instant,
