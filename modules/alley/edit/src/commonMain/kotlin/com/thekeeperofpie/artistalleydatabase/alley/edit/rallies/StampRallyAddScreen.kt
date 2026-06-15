@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -72,6 +73,7 @@ object StampRallyAddScreen {
             merchPredictions = viewModel::merchPredictions,
             tablePredictions = viewModel::tablePredictions,
             seriesImage = viewModel::seriesImage,
+            inferRallies = viewModel::inferRallies,
             onClickBack = onClickBack,
             onClickEditImages = onClickEditImages,
             onClickSave = viewModel::onClickSave,
@@ -89,6 +91,7 @@ object StampRallyAddScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
+        inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
@@ -160,6 +163,12 @@ object StampRallyAddScreen {
                 ScrollableSideBySide(
                     showSecondary = { false }, // TODO: Does this need a secondary?
                     primary = {
+                        StampRalliesInferred(
+                            state = state.stampRallyFormState,
+                            inferRallies = inferRallies,
+                            seriesById = seriesById,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                        )
                         StampRallyForm(
                             state = state.stampRallyFormState,
                             errorState = errorState,

@@ -31,6 +31,7 @@ class StampRallyAddViewModel(
     private val imageUploader: ImageUploader,
     val tagAutocomplete: TagAutocomplete,
     val artistTableAutocomplete: ArtistTableAutocomplete,
+    private val rallyInference: StampRallyInference,
     private val seriesImageLoader: SeriesImageLoader,
     @Assisted private val dataYear: DataYear,
     @Assisted stampRallyId: String,
@@ -55,6 +56,15 @@ class StampRallyAddViewModel(
     fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
 
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
+
+    fun inferRallies(tables: List<String>, seriesIds: List<String>) =
+        rallyInference.inferRallies(
+            dataYear = dataYear,
+            input = StampRallyInference.Input(
+                tables = tables.toSet(),
+                seriesIds = seriesIds.toSet(),
+            )
+        )
 
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }

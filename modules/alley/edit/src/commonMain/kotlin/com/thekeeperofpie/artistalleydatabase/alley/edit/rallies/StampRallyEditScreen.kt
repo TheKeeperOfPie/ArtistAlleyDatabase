@@ -102,6 +102,7 @@ object StampRallyEditScreen {
             merchPredictions = viewModel::merchPredictions,
             tablePredictions = viewModel::tablePredictions,
             seriesImage = viewModel::seriesImage,
+            inferRallies = viewModel::inferRallies,
             hasPendingChanges = viewModel::hasPendingChanges,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, images ->
@@ -129,6 +130,7 @@ object StampRallyEditScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
+        inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         hasPendingChanges: () -> Boolean,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
@@ -237,6 +239,7 @@ object StampRallyEditScreen {
                                 merchPredictions = merchPredictions,
                                 tablePredictions = tablePredictions,
                                 seriesImage = seriesImage,
+                                inferRallies = inferRallies,
                                 onConfirmDelete = onConfirmDelete,
                                 onClickAddImages = {
                                     onClickEditImages(imagesRequestKey, emptyList())
@@ -364,6 +367,7 @@ object StampRallyEditScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         seriesImage: (SeriesInfo) -> String?,
+        inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         onConfirmDelete: () -> Unit,
         onClickAddImages: () -> Unit,
     ) {
@@ -385,6 +389,14 @@ object StampRallyEditScreen {
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
+
+                StampRalliesInferred(
+                    state = state.stampRallyFormState,
+                    inferRallies = inferRallies,
+                    seriesById = seriesById,
+                    callerId = state.stampRallyFormState.editorState.id.value.text.toString(),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                )
 
                 StampRallyForm(
                     initialStampRally = { initialStampRally },
