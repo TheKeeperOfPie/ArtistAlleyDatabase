@@ -71,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListS
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormQueueScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.links.StampRallyLinksQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataHistoryMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataQueueScreen
@@ -302,7 +303,13 @@ private fun entryProvider(
             dataYear = route.dataYear,
             graph = graph,
             onSelectEntry = {
-                navStack.navigate(AlleyEditDestination.ArtistEdit(route.dataYear, it.artistId, it.link))
+                navStack.navigate(
+                    AlleyEditDestination.ArtistEdit(
+                        route.dataYear,
+                        it.artistId,
+                        it.link
+                    )
+                )
             },
         )
     }
@@ -502,6 +509,8 @@ private fun entryProvider(
         StampRallyAddScreen(
             dataYear = route.dataYear,
             stampRallyId = route.stampRallyId,
+            booths = route.booths,
+            link = route.link,
             graph = graph,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, displayName, images ->
@@ -540,6 +549,21 @@ private fun entryProvider(
             onClickBack = onClickBack,
         )
     }
+    sharedElementEntry<AlleyEditDestination.StampRalliesQueue> { route ->
+        StampRallyLinksQueueScreen(
+            dataYear = route.dataYear,
+            graph = graph,
+            onSelectEntry = {
+                navStack.navigate(
+                    AlleyEditDestination.StampRallyAdd(
+                        dataYear = route.dataYear,
+                        booths = it.booths.toSet(),
+                        link = it.link,
+                    )
+                )
+            },
+        )
+    }
     sharedElementEntry<AlleyEditDestination.StampRallyFormQueue> {
         StampRallyFormQueueScreen(
             graph = graph,
@@ -573,7 +597,12 @@ private fun entryProvider(
             onClickBack = onClickBack,
             onClickBackAndEdit = { rallyId ->
                 onClickBack(true)
-                navStack.navigate(AlleyEditDestination.StampRallyEdit(route.dataYear, rallyId.toString()))
+                navStack.navigate(
+                    AlleyEditDestination.StampRallyEdit(
+                        route.dataYear,
+                        rallyId.toString()
+                    )
+                )
             },
         )
     }
@@ -587,7 +616,12 @@ private fun entryProvider(
             onClickBack = onClickBack,
             onClickBackAndEdit = { rallyId ->
                 onClickBack(true)
-                navStack.navigate(AlleyEditDestination.StampRallyEdit(route.dataYear, rallyId.toString()))
+                navStack.navigate(
+                    AlleyEditDestination.StampRallyEdit(
+                        route.dataYear,
+                        rallyId.toString()
+                    )
+                )
             },
         )
     }

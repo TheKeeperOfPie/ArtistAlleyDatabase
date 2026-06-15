@@ -46,4 +46,9 @@ object BackendColumnAdapters {
         lastEditTimeAdapter = ColumnAdapters.instantAdapter,
         formTimestampAdapter = ColumnAdapters.instantAdapter,
     )
+
+    val stampRallyQueueEntryAdapter = StampRallyQueueEntry.Adapter(
+        dataYearAdapter = ColumnAdapters.dataYearAdapter,
+        boothsAdapter = ColumnAdapters.setStringAdapter,
+    )
 }

@@ -41,6 +41,7 @@ internal object Databases {
         seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
         stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
         stampRallyEntryAnimeExpo2026HistoryAdapter = BackendColumnAdapters.stampRallyEntryAnimeExpo2026HistoryAdapter,
+        stampRallyQueueEntryAdapter = BackendColumnAdapters.stampRallyQueueEntryAdapter,
     )
 
     fun formDatabase(context: EventContext) = AlleyFormDatabase(

@@ -37,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -120,6 +121,12 @@ object AlleyEditBackend {
                         makeResponse(deleteStampRallyFromForm(context, this))
                     is BackendRequest.StampRallyHistory ->
                         makeResponse(loadStampRallyHistory(context, this))
+                    is BackendRequest.DeleteStampRallyQueueEntry ->
+                        makeResponse(deleteStampRallyQueueEntry(context, this))
+                    is BackendRequest.QueueStampRally ->
+                        makeResponse(queueStampRally(context, this))
+                    is BackendRequest.StampRalliesQueue ->
+                        makeResponse(loadStampRalliesQueue(context, this))
                     is BackendRequest.StampRallyFormHistory ->
                         makeResponse(loadStampRallyFormHistory(context))
                     is BackendRequest.StampRallyFormQueue ->
@@ -486,7 +493,11 @@ object AlleyEditBackend {
                     .awaitAsOneOrNull() ?: return
             val existingLink = existingCatalogEntry.link.removeSuffix("/")
             if (existingLink in catalogLinks.map { it.removeSuffix("/") }) {
-                database.artistCatalogQueueEntryQueries.consumeCatalogEntry(dataYear, booth, existingLink)
+                database.artistCatalogQueueEntryQueries.consumeCatalogEntry(
+                    dataYear,
+                    booth,
+                    existingLink
+                )
             }
         }
     }
@@ -780,6 +791,47 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> emptyList() // TODO: Return legacy years?
+        }
+
+    private suspend fun deleteStampRallyQueueEntry(
+        context: EventContext,
+        request: BackendRequest.DeleteStampRallyQueueEntry,
+    ) {
+        Databases.editDatabase(context)
+            .stampRallyQueueEntryQueries
+            .deleteStampRallyQueueEntry(request.dataYear, request.link)
+    }
+
+    private suspend fun queueStampRally(
+        context: EventContext,
+        request: BackendRequest.QueueStampRally,
+    ) {
+        Databases.editDatabase(context)
+            .stampRallyQueueEntryQueries
+            .insertStampRallyQueueEntry(
+                com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyQueueEntry(
+                    dataYear = request.dataYear,
+                    link = request.link,
+                    booths = request.booths,
+                )
+            )
+    }
+
+    private suspend fun loadStampRalliesQueue(
+        context: EventContext,
+        request: BackendRequest.StampRalliesQueue,
+    ): List<StampRallyQueueEntry> =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).stampRallyQueueEntryQueries
+                .getStampRallyQueueEntries(request.dataYear)
+                .awaitAsList()
+                .map { StampRallyQueueEntry(it.link, it.booths) }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> emptyList()
         }
 
     private suspend fun loadStampRallyFormQueue(context: EventContext): List<StampRallyFormQueueEntry> =

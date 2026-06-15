@@ -254,6 +254,12 @@ object DebugTestData {
             previous = next
         }
 
+        database.queueStampRally(
+            dataYear = previous.year,
+            booths = setOf("C38", "C39"),
+            link = "https://example.com",
+        )
+
         return previous
     }
 }

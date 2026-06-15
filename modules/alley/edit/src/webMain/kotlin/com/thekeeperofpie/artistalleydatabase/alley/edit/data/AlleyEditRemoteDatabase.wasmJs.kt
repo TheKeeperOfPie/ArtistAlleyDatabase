@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
@@ -588,6 +589,34 @@ actual class AlleyEditRemoteDatabase(
         withContext(dispatchers.io) {
             try {
                 sendRequest(BackendRequest.ArtistCatalogsQueue(dataYear))!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
+    actual suspend fun queueStampRally(dataYear: DataYear, link: String, booths: Set<String>): Unit =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.QueueStampRally(dataYear, link, booths))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
+
+    actual suspend fun deleteStampRallyQueueEntry(dataYear: DataYear, link: String): Unit =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.DeleteStampRallyQueueEntry(dataYear, link))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
+
+    actual suspend fun loadStampRalliesQueue(dataYear: DataYear): List<StampRallyQueueEntry> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.StampRalliesQueue(dataYear))!!
             } catch (t: Throwable) {
                 t.printStackTrace()
                 emptyList()

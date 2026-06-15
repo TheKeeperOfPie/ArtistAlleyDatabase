@@ -291,4 +291,10 @@ class AlleyEditDatabase(
 
     suspend fun loadArtistCatalogsQueue(dataYear: DataYear) =
         remoteDatabase.loadArtistCatalogsQueue(dataYear)
+
+    suspend fun deleteStampRallyQueueEntry(dataYear: DataYear, link: String) =
+        remoteDatabase.deleteStampRallyQueueEntry(dataYear, link)
+
+    suspend fun loadStampRalliesQueue(dataYear: DataYear) =
+        remoteDatabase.loadStampRalliesQueue(dataYear)
 }

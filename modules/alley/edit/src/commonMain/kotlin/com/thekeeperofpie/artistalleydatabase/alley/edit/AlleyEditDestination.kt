@@ -95,8 +95,9 @@ sealed interface AlleyEditDestination : NavKey {
     data class StampRallyAdd(
         val dataYear: DataYear,
         val stampRallyId: String = Uuid.random().toString(),
-    ) :
-        AlleyEditDestination
+        val booths: Set<String> = emptySet(),
+        val link: String? = null,
+    ) : AlleyEditDestination
 
     @Serializable
     data class StampRallyEdit(val dataYear: DataYear, val stampRallyId: String) :
@@ -107,6 +108,9 @@ sealed interface AlleyEditDestination : NavKey {
         val dataYear: DataYear,
         val stampRallyId: String,
     ) : AlleyEditDestination
+
+    @Serializable
+    data class StampRalliesQueue(val dataYear: DataYear) : AlleyEditDestination
 
     @Serializable
     data object StampRallyFormQueue : AlleyEditDestination
@@ -184,7 +188,7 @@ sealed interface AlleyEditDestination : NavKey {
                 route.startsWith("artist/catalogs") -> {
                     val dataYear = DataYear.deserialize(
                         route.removePrefix("artist/catalogs/").removeSuffix("/")
-                    )!!
+                    ) ?: return null
                     ArtistCatalogs(dataYear)
                 }
                 route.startsWith("artist/add") -> {
@@ -223,6 +227,14 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     StampRallyFormHistory(dataYear, artistId, stampRallyId, formTimestamp)
                 }
+                route.startsWith("rally/links") -> {
+                    val dataYear = DataYear.deserialize(
+                        route.removePrefix("artist/catalogs/").removeSuffix("/")
+                    ) ?: return null
+                    StampRalliesQueue(dataYear)
+                }
+                // TODO: DataYear support
+                route.startsWith("rally/queue") -> StampRallyFormQueue
                 route.startsWith("rally") -> {
                     val (dataYear, stampRallyId) = parseDataYearThenStampRallyId(
                         route.removePrefix("artist/")
@@ -287,6 +299,7 @@ sealed interface AlleyEditDestination : NavKey {
                     Uri.encode(destination.stampRallyId)
             is StampRallyHistory -> "rally/history/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.stampRallyId)
+            is StampRalliesQueue -> "rally/links/${Uri.encode(destination.dataYear.serializedName)}"
             is StampRallyFormQueue -> "rally/queue"
             is StampRallyFormMerge -> "rally/merge/${Uri.encode(destination.dataYear.serializedName)}" +
                     "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"

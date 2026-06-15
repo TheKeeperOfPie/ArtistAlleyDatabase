@@ -51,6 +51,8 @@ object StampRallyAddScreen {
     operator fun invoke(
         dataYear: DataYear,
         stampRallyId: String,
+        booths: Set<String>,
+        link: String?,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
@@ -58,6 +60,8 @@ object StampRallyAddScreen {
             graph.stampRallyAddViewModelFactory.create(
                 dataYear = dataYear,
                 stampRallyId = stampRallyId,
+                booths = booths,
+                link = link,
                 savedStateHandle = createSavedStateHandle(),
             )
         },

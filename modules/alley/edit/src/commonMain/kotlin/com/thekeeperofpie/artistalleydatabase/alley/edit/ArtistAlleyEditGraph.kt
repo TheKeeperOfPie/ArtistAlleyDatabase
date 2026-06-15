@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListV
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormHistoryViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormMergeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormQueueViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.links.StampRallyLinksQueueViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataHistoryMergeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataMergeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataQueueViewModel
@@ -71,6 +72,7 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
     val stampRallyAddViewModelFactory: StampRallyAddViewModel.Factory
     val stampRallyEditViewModelFactory: StampRallyEditViewModel.Factory
     val stampRallyHistoryViewModelFactory: StampRallyHistoryViewModel.Factory
+    val stampRallyLinksQueueViewModelFactory: StampRallyLinksQueueViewModel.Factory
     val stampRallyFormQueueViewModelFactory: StampRallyFormQueueViewModel.Factory
     val stampRallyFormMergeViewModelFactory: StampRallyFormMergeViewModel.Factory
     val stampRallyFormHistoryViewModelFactory: StampRallyFormHistoryViewModel.Factory

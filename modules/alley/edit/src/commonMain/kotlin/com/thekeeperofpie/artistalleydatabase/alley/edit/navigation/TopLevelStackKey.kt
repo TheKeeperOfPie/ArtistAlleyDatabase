@@ -8,6 +8,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artists
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rallies
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rallies_queue
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rally_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_remote_artist_data
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_series
@@ -65,6 +66,11 @@ internal enum class TopLevelStackKey(
         initialDestination = AlleyEditDestination.ArtistCatalogs(DataYear.LATEST),
         icon = Icons.Default.AddLink,
         title = Res.string.alley_edit_top_level_nav_artist_catalogs,
+    ),
+    STAMP_RALLY_LINKS(
+        initialDestination = AlleyEditDestination.StampRalliesQueue(DataYear.LATEST),
+        icon = Icons.Default.AddLink,
+        title = Res.string.alley_edit_top_level_nav_rallies_queue,
     ),
     REMOTE_ARTIST_DATA(
         initialDestination = AlleyEditDestination.RemoteArtistDataQueue,

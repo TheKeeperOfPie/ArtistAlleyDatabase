@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
@@ -319,6 +320,18 @@ sealed interface BackendRequest {
     @Serializable
     data class StampRallyHistory(val dataYear: DataYear, val stampRallyId: String) : BackendRequest,
         WithResponse<List<StampRallyHistoryEntry>>
+
+    @Serializable
+    data class DeleteStampRallyQueueEntry(val dataYear: DataYear, val link: String) :
+        BackendRequest, WithResponse<Unit>
+
+    @Serializable
+    data class QueueStampRally(val dataYear: DataYear, val link: String, val booths: Set<String>) :
+        BackendRequest, WithResponse<Unit>
+
+    @Serializable
+    data class StampRalliesQueue(val dataYear: DataYear) : BackendRequest,
+        WithResponse<List<StampRallyQueueEntry>>
 
     @Serializable
     data object StampRallyFormHistory : BackendRequest,

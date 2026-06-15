@@ -4,11 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -19,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -35,6 +36,8 @@ class StampRallyAddViewModel(
     private val seriesImageLoader: SeriesImageLoader,
     @Assisted private val dataYear: DataYear,
     @Assisted stampRallyId: String,
+    @Assisted booths: Set<String>,
+    @Assisted link: String?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveTask: ExclusiveTask<Triple<List<EditImage>, StampRallyDatabaseEntry, Boolean>, BackendRequest.StampRallySave.Response> =
@@ -43,7 +46,14 @@ class StampRallyAddViewModel(
     private val stampRallyFormState = savedStateHandle.saveable(
         key = "stampRallyFormState",
         saver = StampRallyFormState.Saver,
-        init = { StampRallyFormState(stampRallyId) },
+        init = {
+            StampRallyFormState(stampRallyId).apply {
+                tables.addAll(booths.map { ArtistTable(booth = it, name = null) })
+                if (link != null) {
+                    links += LinkModel.parse(link)
+                }
+            }
+        },
     )
 
     val state = StampRallyAddScreen.State(
@@ -126,13 +136,4 @@ class StampRallyAddViewModel(
                 }
             }
         }
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            dataYear: DataYear,
-            stampRallyId: String,
-            savedStateHandle: SavedStateHandle,
-        ): StampRallyAddViewModel
-    }
 }

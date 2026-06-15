@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -168,4 +169,8 @@ expect class AlleyEditRemoteDatabase {
 
     suspend fun queueArtistCatalog(dataYear: DataYear, booth: String, link: String?)
     suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Pair<String, String>>
+
+    suspend fun queueStampRally(dataYear: DataYear, link: String, booths: Set<String>)
+    suspend fun deleteStampRallyQueueEntry(dataYear: DataYear, link: String)
+    suspend fun loadStampRalliesQueue(dataYear: DataYear): List<StampRallyQueueEntry>
 }

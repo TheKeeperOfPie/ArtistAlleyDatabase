@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.toStampRallySummary
@@ -65,6 +66,7 @@ actual class AlleyEditRemoteDatabase(
     private var remoteArtistDataHistory = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
 
     private var artistCatalogsQueue = mutableMapOf<DataYear, MutableList<Pair<String, String>>>()
+    private var stampRallyLinksQueue = mutableMapOf<DataYear, MutableList<StampRallyQueueEntry>>()
 
     private val simulatedLatency = 1.seconds
 
@@ -578,6 +580,19 @@ actual class AlleyEditRemoteDatabase(
 
     actual suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Pair<String, String>> =
         artistCatalogsQueue[dataYear]?.toList().orEmpty()
+
+    actual suspend fun queueStampRally(dataYear: DataYear, link: String, booths: Set<String>) {
+        val list = stampRallyLinksQueue.getOrPut(dataYear) { mutableListOf() }
+        list.add(StampRallyQueueEntry(link = link, booths = booths))
+    }
+
+    actual suspend fun deleteStampRallyQueueEntry(dataYear: DataYear, link: String) {
+        val list = stampRallyLinksQueue.getOrPut(dataYear) { mutableListOf() }
+        list.removeIf { it.link == link }
+    }
+
+    actual suspend fun loadStampRalliesQueue(dataYear: DataYear): List<StampRallyQueueEntry> =
+        stampRallyLinksQueue[dataYear]?.toList().orEmpty()
 
     private suspend fun simulateLatency() = delay(simulatedLatency)
 

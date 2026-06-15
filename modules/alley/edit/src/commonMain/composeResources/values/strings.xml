@@ -7,6 +7,7 @@
     <string name="alley_edit_top_level_nav_artist_forms">Artist Forms</string>
     <string name="alley_edit_top_level_nav_rally_forms">Rally Forms</string>
     <string name="alley_edit_top_level_nav_artist_catalogs">Artist catalogs</string>
+    <string name="alley_edit_top_level_nav_rallies_queue">Rally links</string>
     <string name="alley_edit_top_level_nav_remote_artist_data">Remote artist data</string>
     <string name="alley_edit_top_level_nav_tag_resolution">Resolution</string>
     <string name="alley_edit_top_level_nav_admin">Admin</string>
@@ -371,4 +372,10 @@
     <string name="alley_edit_artist_catalogs_queue_action_cancel">Cancel</string>
     <string name="alley_edit_artist_catalogs_queue_action_delete">Delete</string>
     <string name="alley_edit_artist_catalogs_queue_action_confirm_delete_title">Delete %1$s %2$s?</string>
+
+    <string name="alley_edit_stamp_rallies_queue_title">Stamp rally links queue</string>
+    <string name="alley_edit_stamp_rallies_queue_action_refresh">Refresh rallies queue</string>
+    <string name="alley_edit_stamp_rallies_queue_action_cancel">Cancel</string>
+    <string name="alley_edit_stamp_rallies_queue_action_delete">Delete</string>
+    <string name="alley_edit_stamp_rallies_queue_action_confirm_delete_title">Delete %1$s %2$s?</string>
 </resources>

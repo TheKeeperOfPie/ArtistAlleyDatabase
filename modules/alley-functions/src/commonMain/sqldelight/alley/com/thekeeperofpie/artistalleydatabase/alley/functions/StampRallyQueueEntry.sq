@@ -1,0 +1,15 @@
+getStampRallyQueueEntry:
+SELECT * FROM stampRallyQueueEntry
+WHERE dataYear = :dataYear AND link = :link;
+
+getStampRallyQueueEntries:
+SELECT * FROM stampRallyQueueEntry
+WHERE dataYear = :dataYear;
+
+insertStampRallyQueueEntry:
+INSERT OR REPLACE INTO stampRallyQueueEntry
+VALUES ?;
+
+deleteStampRallyQueueEntry:
+DELETE FROM stampRallyQueueEntry
+WHERE dataYear = :dataYear AND link = :link;
