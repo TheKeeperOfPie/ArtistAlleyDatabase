@@ -696,6 +696,12 @@ object AlleyEditBackend {
                 database.stampRallyEntryAnimeExpo2026Queries.insertHistory(historyEntry)
                 database.stampRallyEntryAnimeExpo2026Queries.insertStampRally(updatedStampRally.toStampRallyEntryAnimeExpo2026())
                 KeyValueCacher(context).invalidateStampRallies()
+
+                updatedStampRally.links.forEach {
+                    database.stampRallyQueueEntryQueries
+                        .deleteStampRallyQueueEntry(request.dataYear, it)
+                }
+
                 BackendRequest.StampRallySave.Response.Success
             }
         }
