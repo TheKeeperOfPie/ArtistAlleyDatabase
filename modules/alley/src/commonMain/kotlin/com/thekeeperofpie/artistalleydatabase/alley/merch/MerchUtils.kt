@@ -43,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.MusicBoxes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.MysteryBoxes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Pants
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Patches
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Perfume
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhoneAccessories
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhotocardHolders
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Photocards
@@ -115,6 +116,7 @@ object MerchUtils {
         "Mystery boxes" -> MerchIcons.MysteryBoxes
         "Pants" -> MerchIcons.Pants
         "Patches" -> MerchIcons.Patches
+        "Perfume" -> MerchIcons.Perfume
         "Phone accessories" -> MerchIcons.PhoneAccessories
         "Photocard holders" -> MerchIcons.PhotocardHolders
         "Photocards" -> MerchIcons.Photocards
