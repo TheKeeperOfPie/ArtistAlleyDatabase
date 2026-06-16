@@ -525,7 +525,10 @@ object StampRallyDetailsScreen {
             }
 
             item("stampRallyButtons", GridUtils.maxSpanFunction) {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     FilledTonalButton(
                         onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
                     ) {
