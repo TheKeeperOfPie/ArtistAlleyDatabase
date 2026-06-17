@@ -5,8 +5,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.AcrylicBlocks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.AirFresheners
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.ApparelOther
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Aprons
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.ArtBooks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bags
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bandages
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Belts
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Blankets
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Bookmarks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Buttons
@@ -15,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Candles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Carabiners
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.CardDecks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Charms
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.CleaningCloths
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.ClearFiles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Clocks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Coasters
@@ -23,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.DakimakuraCovers
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.DigitalFiles
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Fans
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Figures
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.FlatTextileDerivatives
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Games
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.GuitarPicks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Handicrafts
@@ -39,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Magnets
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Makeup
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Masks
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Mirrors
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.MousePads
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.MusicBoxes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.MysteryBoxes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Pants
@@ -47,6 +52,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Perfume
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhoneAccessories
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.PhotocardHolders
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Photocards
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Physicals
+import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Pillows
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Pins
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Plushies
 import com.thekeeperofpie.artistalleydatabase.alley.merch.icons.Prints
@@ -79,8 +86,10 @@ object MerchUtils {
         "Air fresheners" -> MerchIcons.AirFresheners
         "Apparel - Other" -> MerchIcons.ApparelOther
         "Aprons" -> MerchIcons.Aprons
+        "Art books" -> MerchIcons.ArtBooks
         "Bags" -> MerchIcons.Bags
         "Bandages" -> MerchIcons.Bandages
+        "Belts" -> MerchIcons.Belts
         "Blankets" -> MerchIcons.Blankets
         "Bookmarks" -> MerchIcons.Bookmarks
         "Buttons" -> MerchIcons.Buttons
@@ -89,6 +98,7 @@ object MerchUtils {
         "Carabiners" -> MerchIcons.Carabiners
         "Card decks" -> MerchIcons.CardDecks
         "Charms" -> MerchIcons.Charms
+        "Cleaning cloths" -> MerchIcons.CleaningCloths
         "Clear files" -> MerchIcons.ClearFiles
         "Clocks" -> MerchIcons.Clocks
         "Coasters" -> MerchIcons.Coasters
@@ -96,6 +106,7 @@ object MerchUtils {
         "Digital files" -> MerchIcons.DigitalFiles
         "Fans" -> MerchIcons.Fans
         "Figures" -> MerchIcons.Figures
+        "Flat textile derivatives" -> MerchIcons.FlatTextileDerivatives
         "Games" -> MerchIcons.Games
         "Guitar picks" -> MerchIcons.GuitarPicks
         "Handicrafts" -> MerchIcons.Handicrafts
@@ -112,6 +123,7 @@ object MerchUtils {
         "Makeup" -> MerchIcons.Makeup
         "Masks" -> MerchIcons.Masks
         "Mirrors" -> MerchIcons.Mirrors
+        "Mouse pads" -> MerchIcons.MousePads
         "Music boxes" -> MerchIcons.MusicBoxes
         "Mystery boxes" -> MerchIcons.MysteryBoxes
         "Pants" -> MerchIcons.Pants
@@ -120,6 +132,8 @@ object MerchUtils {
         "Phone accessories" -> MerchIcons.PhoneAccessories
         "Photocard holders" -> MerchIcons.PhotocardHolders
         "Photocards" -> MerchIcons.Photocards
+        "Physicals" -> MerchIcons.Physicals
+        "Pillows" -> MerchIcons.Pillows
         "Pins" -> MerchIcons.Pins
         "Plushies" -> MerchIcons.Plushies
         "Prints" -> MerchIcons.Prints
