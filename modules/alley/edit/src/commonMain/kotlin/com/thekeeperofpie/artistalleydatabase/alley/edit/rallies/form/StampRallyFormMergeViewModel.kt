@@ -7,6 +7,7 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -31,6 +32,7 @@ class StampRallyFormMergeViewModel(
     private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: TagAutocomplete,
     artistTableAutocomplete: ArtistTableAutocomplete,
+    private val rallyInference: StampRallyInference,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
     @Assisted stampRallyId: String,
@@ -49,6 +51,15 @@ class StampRallyFormMergeViewModel(
     val deleteTaskState get() = deleteTask.state
 
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
+
+    fun inferRallies(tables: List<String>, seriesIds: List<String>) =
+        rallyInference.inferRallies(
+            dataYear = dataYear,
+            input = StampRallyInference.Input(
+                tables = tables.toSet(),
+                seriesIds = seriesIds.toSet(),
+            )
+        )
 
     fun onClickSave(
         images: List<EditImage>,

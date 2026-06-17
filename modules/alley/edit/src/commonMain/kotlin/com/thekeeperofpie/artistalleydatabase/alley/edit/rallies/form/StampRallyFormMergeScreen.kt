@@ -66,8 +66,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRalliesInferred
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.rememberErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
@@ -92,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -142,6 +145,7 @@ internal object StampRallyFormMergeScreen {
             merchById = { merchById },
             tablesByBooth = { tablesByBooth },
             seriesImage = viewModel::seriesImage,
+            inferRallies = viewModel::inferRallies,
             onClickBack = onClickBack,
             onClickSave = { images, updated ->
                 viewModel.onClickSave(
@@ -224,6 +228,7 @@ internal object StampRallyFormMergeScreen {
         merchById: () -> Map<String, MerchInfo>,
         tablesByBooth: () -> Map<String, ArtistTable>,
         seriesImage: (SeriesInfo) -> String?,
+        inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
         onClickSaveAndEdit: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
@@ -333,6 +338,7 @@ internal object StampRallyFormMergeScreen {
                                 formTimestamp = formDiff?.timestamp,
                                 seriesById = seriesById,
                                 seriesImage = seriesImage,
+                                inferRallies = inferRallies,
                                 merchById = merchById,
                             )
                         },
@@ -352,6 +358,7 @@ internal object StampRallyFormMergeScreen {
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
+        inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         modifier: Modifier = Modifier,
     ) {
         if (stampRallyFormState != null) {
@@ -378,6 +385,15 @@ internal object StampRallyFormMergeScreen {
                         )
                     }
                 }
+
+                StampRalliesInferred(
+                    state = stampRallyFormState,
+                    inferRallies = inferRallies,
+                    seriesById = seriesById,
+                    callerId = stampRallyFormState.editorState.id.value.text.toString(),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                )
+
                 StampRallyForm(
                     initialStampRally = initialStampRally,
                     state = stampRallyFormState,

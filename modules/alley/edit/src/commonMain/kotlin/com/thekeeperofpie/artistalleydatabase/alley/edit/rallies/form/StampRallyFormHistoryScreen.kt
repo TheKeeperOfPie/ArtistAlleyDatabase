@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.getString
 import kotlin.time.Instant
@@ -59,6 +60,7 @@ internal object StampRallyFormHistoryScreen {
             merchById = { merchById },
             tablesByBooth = { tablesByBooth },
             seriesImage = viewModel::seriesImage,
+            inferRallies = { _, _ -> emptyFlow() },
             onClickBack = onClickBack,
             onClickSave = { images, updated ->
                 viewModel.onClickSave(
