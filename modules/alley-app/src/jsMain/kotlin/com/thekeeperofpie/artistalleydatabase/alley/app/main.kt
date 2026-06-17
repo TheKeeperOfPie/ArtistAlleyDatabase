@@ -16,7 +16,6 @@ fun main() {
         ComposeViewport(document.body!!) {
             val scope = rememberCoroutineScope()
             val graph = createGraphFactory<ArtistAlleyWebGraph.Factory>().create(scope)
-            KeyboardEventEffect()
             App(graph = graph)
         }
     }
