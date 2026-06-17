@@ -120,14 +120,18 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun rememberImagePagerState(images: List<ImageWithDimensions>, initialImageIndex: Int): PagerState {
+fun rememberImagePagerState(images: List<ImageWithDimensions>, initialImageIndex: Int?): PagerState {
     val pageCount = when {
         images.isEmpty() -> 0
         images.size == 1 -> 1
         else -> images.size + 1
     }
     val maxIndex = (pageCount - 1).coerceAtLeast(0)
-    val initialPage = initialImageIndex.coerceAtMost(maxIndex)
+    val initialPage = when {
+        initialImageIndex != null -> initialImageIndex
+        images.size <= 1 -> 0
+        else -> 1
+    }.coerceAtMost(maxIndex)
     val pagerState = rememberPagerState(
         initialPage = initialPage,
         pageCount = { pageCount },

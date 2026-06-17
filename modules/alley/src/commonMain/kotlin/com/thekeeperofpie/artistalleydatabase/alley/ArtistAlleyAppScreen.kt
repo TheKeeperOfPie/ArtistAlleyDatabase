@@ -159,7 +159,7 @@ object ArtistAlleyAppScreen {
             navStack.navigate(
                 AlleyDestination.StampRallyDetails(
                     entry = entry,
-                    initialImageIndex = initialImageIndex
+                    initialImageIndex = initialImageIndex,
                 )
             )
         }

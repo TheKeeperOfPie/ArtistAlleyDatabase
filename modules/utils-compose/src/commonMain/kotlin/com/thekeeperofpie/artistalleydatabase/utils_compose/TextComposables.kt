@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
@@ -745,17 +746,16 @@ fun <T> expandableListInfoText(
     item = { value, expanded, isLast ->
         val bottomPadding = if (isLast) 12.dp else 8.dp
         val text = value?.let { valueToText(it) }
-        Text(
-            text = text.orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .fillMaxWidth()
                 .optionalClickable(
                     onClick = onClick
                         ?.takeIf { expanded }
                         ?.takeIf { value != null }
                         ?.let { { value?.let { onClick(it) } } }
                 )
+                .minimumInteractiveComponentSize()
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
@@ -763,11 +763,18 @@ fun <T> expandableListInfoText(
                     top = if (values?.size == 1) 0.dp else 8.dp,
                     bottom = bottomPadding,
                 )
-                .placeholder(
-                    visible = text == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
+        ) {
+            Text(
+                text = text.orEmpty(),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .placeholder(
+                        visible = text == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+        }
     }
 )
 

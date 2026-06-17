@@ -63,7 +63,7 @@ class StampRallyDetailsViewModel(
 ) : ViewModel() {
     val year = route.year
     val id = route.id
-    val initialImageIndex = route.initialImageIndex ?: 0
+    val initialImageIndex = route.initialImageIndex
 
     internal val images = flow {
         if (route.images.isNullOrEmpty()) {
