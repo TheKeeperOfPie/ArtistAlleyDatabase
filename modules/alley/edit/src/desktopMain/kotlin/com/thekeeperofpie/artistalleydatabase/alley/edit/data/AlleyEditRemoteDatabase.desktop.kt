@@ -626,8 +626,12 @@ actual class AlleyEditRemoteDatabase(
         val timestamp: Instant = Clock.System.now(),
     ) {
         fun toArtistEntryDiff() = ArtistEntryDiff(
-            images = ListDiff.diffList(before.images, after.images),
-            profileImage = after.profileImage.takeIf { it != before.profileImage },
+            images = ListDiff.diffList(
+                previous = before.images,
+                next = after.images,
+                diffBy = { it.name },
+            ),
+            profileImage = after.profileImage.takeIf { it?.name != before.profileImage?.name },
             booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
             name = after.name.takeIf { it != before.name },
             summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
@@ -685,7 +689,11 @@ actual class AlleyEditRemoteDatabase(
                 )
             } else {
                 StampRallyEntryDiff(
-                    images = ListDiff.diffList(before?.images, after.images),
+                    images = ListDiff.diffList(
+                        previous = before?.images,
+                        next = after.images,
+                        diffBy = { it.name },
+                    ),
                     id = stampRallyId,
                     fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
                     tables = ListDiff.diffList(before?.tables, after.tables),

@@ -80,16 +80,32 @@ interface ArtistDatabaseEntry {
         fun hasChanged(before: Impl?, after: Impl?) =
             before?.copy(
                 embeds = emptyMap(),
+                _images = before._images.map {
+                    it.copy(
+                        width = null,
+                        height = null,
+                        color = null,
+                    )
+                },
+                profileImage = before.profileImage?.copy(width = null, height = null, color = null),
                 verifiedArtist = false,
                 newArtist = false,
                 lastEditTime = null,
-                lastEditor = null
+                lastEditor = null,
             ) != after?.copy(
                 embeds = emptyMap(),
+                _images = after._images.map {
+                    it.copy(
+                        width = null,
+                        height = null,
+                        color = null,
+                    )
+                },
+                profileImage = after.profileImage?.copy(width = null, height = null, color = null),
                 verifiedArtist = false,
                 newArtist = false,
                 lastEditTime = null,
-                lastEditor = null
+                lastEditor = null,
             )
 
         fun legacy(

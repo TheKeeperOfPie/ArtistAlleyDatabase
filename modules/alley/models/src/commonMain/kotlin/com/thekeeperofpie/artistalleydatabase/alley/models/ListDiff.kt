@@ -19,6 +19,21 @@ data class ListDiff<T>(
             )
         }
 
+        fun <T> diffList(previous: List<T>?, next: List<T>?, diffBy: (T) -> Any?) =
+            if (next == null) {
+                null
+            } else {
+                val previousKeys = previous?.map(diffBy)?.toSet().orEmpty()
+                val nextKeys = next.map(diffBy).toSet()
+                val added =
+                    next.toMutableList().apply { removeAll { diffBy(it) in previousKeys } }
+                        .ifEmpty { null }
+                val deleted =
+                    previous?.toMutableList()?.apply { removeAll { diffBy(it) in nextKeys } }
+                        ?.ifEmpty { null }
+                ListDiff(added = added, deleted = deleted, after = next)
+            }
+
         fun <T> diffSet(previous: Set<T>?, next: Set<T>?) = if (next == null) {
             null
         } else {

@@ -76,11 +76,12 @@ internal object BackendUtils {
             ?: return null
         return ArtistEntryDiff(
             images = ListDiff.diffList(
-                formEntry.beforeImages,
-                formEntry.afterImages
+                previous = formEntry.beforeImages,
+                next = formEntry.afterImages,
+                diffBy = { it.name },
             ),
             profileImage = formEntry.afterProfileImage
-                .takeIf { it != formEntry.beforeProfileImage },
+                .takeIf { it?.name != formEntry.beforeProfileImage?.name },
             booth = formEntry.afterBooth.orEmpty()
                 .takeIf { it != formEntry.beforeBooth.orEmpty() },
             name = formEntry.afterName.orEmpty()
@@ -143,11 +144,12 @@ internal object BackendUtils {
             ?: return null
         return ArtistEntryDiff(
             images = ListDiff.diffList(
-                formEntry.beforeImages,
-                formEntry.afterImages,
+                previous = formEntry.beforeImages,
+                next = formEntry.afterImages,
+                diffBy = { it.name },
             ),
             profileImage = formEntry.afterProfileImage
-                .takeIf { it != formEntry.beforeProfileImage },
+                .takeIf { it?.name != formEntry.beforeProfileImage?.name },
             booth = formEntry.afterBooth.orEmpty()
                 .takeIf { it != formEntry.beforeBooth.orEmpty() },
             name = formEntry.afterName.orEmpty()
@@ -227,8 +229,9 @@ internal object BackendUtils {
         .map { formEntry ->
             StampRallyEntryDiff(
                 images = ListDiff.diffList(
-                    formEntry.beforeImages,
-                    formEntry.afterImages,
+                    previous = formEntry.beforeImages,
+                    next = formEntry.afterImages,
+                    diffBy = { it.name },
                 ),
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
@@ -249,7 +252,10 @@ internal object BackendUtils {
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
-                prizeMerch = ListDiff.diffList(formEntry.beforePrizeMerch, formEntry.afterPrizeMerch),
+                prizeMerch = ListDiff.diffList(
+                    formEntry.beforePrizeMerch,
+                    formEntry.afterPrizeMerch
+                ),
                 series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
@@ -273,8 +279,9 @@ internal object BackendUtils {
         ?.let { formEntry ->
             StampRallyEntryDiff(
                 images = ListDiff.diffList(
-                    formEntry.beforeImages,
-                    formEntry.afterImages
+                    previous = formEntry.beforeImages,
+                    next = formEntry.afterImages,
+                    diffBy = { it.name },
                 ),
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
@@ -295,7 +302,10 @@ internal object BackendUtils {
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
-                prizeMerch = ListDiff.diffList(formEntry.beforePrizeMerch, formEntry.afterPrizeMerch),
+                prizeMerch = ListDiff.diffList(
+                    formEntry.beforePrizeMerch,
+                    formEntry.afterPrizeMerch
+                ),
                 series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
@@ -320,8 +330,9 @@ internal object BackendUtils {
         ?.let { formEntry ->
             StampRallyEntryDiff(
                 images = ListDiff.diffList(
-                    formEntry.beforeImages,
-                    formEntry.afterImages
+                    previous = formEntry.beforeImages,
+                    next = formEntry.afterImages,
+                    diffBy = { it.name },
                 ),
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
@@ -342,7 +353,10 @@ internal object BackendUtils {
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
-                prizeMerch = ListDiff.diffList(formEntry.beforePrizeMerch, formEntry.afterPrizeMerch),
+                prizeMerch = ListDiff.diffList(
+                    formEntry.beforePrizeMerch,
+                    formEntry.afterPrizeMerch
+                ),
                 series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
