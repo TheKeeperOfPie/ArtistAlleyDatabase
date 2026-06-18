@@ -4,7 +4,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.KeyboardEventEffect
 import dev.zacsweers.metro.createGraphFactory
 import kotlinx.browser.document
 import org.jetbrains.skiko.wasm.onWasmReady
