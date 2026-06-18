@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,10 +26,15 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_action_save_tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.EditImagesButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.LazyColumnSideBySide
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
+import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -40,6 +47,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -164,37 +174,107 @@ object StampRallyAddScreen {
                 saving = saveTaskState.showBlockingLoadingIndicator,
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
-                ScrollableSideBySide(
-                    showSecondary = { false }, // TODO: Does this need a secondary?
+                val imagePagerState = rememberImagePagerState(state.stampRallyFormState.images, 0)
+                val imagesRequestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                NavigationResultEffect(imagesRequestKey) {
+                    state.stampRallyFormState.images.replaceAll(it)
+                }
+                LazyColumnSideBySide(
+                    showSecondary = { state.stampRallyFormState.images.isNotEmpty() },
                     primary = {
-                        StampRalliesInferred(
-                            state = state.stampRallyFormState,
-                            inferRallies = inferRallies,
-                            seriesById = seriesById,
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
-                        )
-                        StampRallyForm(
-                            state = state.stampRallyFormState,
-                            errorState = errorState,
-                            initialStampRally = { null },
-                            seriesById = seriesById,
-                            seriesPredictions = seriesPredictions,
-                            merchById = merchById,
-                            merchPredictions = merchPredictions,
-                            tablePredictions = tablePredictions,
-                            seriesImage = seriesImage,
-                            showImages = true,
-                            onClickEditImages = { requestKey, images ->
-                                onClickEditImages(
-                                    requestKey,
-                                    state.stampRallyFormState.fandom.value.text.toString(),
-                                    images,
+                        item("form") {
+                            Column {
+                                StampRalliesInferred(
+                                    state = state.stampRallyFormState,
+                                    inferRallies = inferRallies,
+                                    seriesById = seriesById,
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 12.dp
+                                    )
+                                )
+                                if (state.stampRallyFormState.images.isEmpty()) {
+                                    EditImagesButton(
+                                        images = state.stampRallyFormState.images,
+                                        onClickEdit = {
+                                            onClickEditImages(
+                                                imagesRequestKey,
+                                                state.stampRallyFormState.fandom.value.text.toString(),
+                                                emptyList(),
+                                            )
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                }
+                                StampRallyForm(
+                                    state = state.stampRallyFormState,
+                                    errorState = errorState,
+                                    initialStampRally = { null },
+                                    seriesById = seriesById,
+                                    seriesPredictions = seriesPredictions,
+                                    merchById = merchById,
+                                    merchPredictions = merchPredictions,
+                                    tablePredictions = tablePredictions,
+                                    seriesImage = seriesImage,
+                                    onClickEditImages = { requestKey, images ->
+                                        onClickEditImages(
+                                            requestKey,
+                                            state.stampRallyFormState.fandom.value.text.toString(),
+                                            images,
+                                        )
+                                    }
                                 )
                             }
-                        )
+                        }
                     },
-                    secondary = {},
-                    secondaryExpanded = {},
+                    secondary = {
+                        item("imagePager") {
+                            Column {
+                                ImagePager(
+                                    images = state.stampRallyFormState.images,
+                                    pagerState = imagePagerState,
+                                    sharedElementId = state.stampRallyFormState.editorState.id.value.text.toString(),
+                                    onClickPage = {
+                                        // TODO: Open images screen
+                                    },
+                                    onClickFullscreen = null,
+                                )
+
+                                EditImagesButton(
+                                    images = state.stampRallyFormState.images,
+                                    onClickEdit = {
+                                        onClickEditImages(
+                                            imagesRequestKey,
+                                            state.stampRallyFormState.fandom.value.text.toString(),
+                                            state.stampRallyFormState.images.toList()
+                                        )
+                                    },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
+                        }
+                    },
+                    secondaryExpanded = {
+                        Column {
+                            EditImagesButton(
+                                images = state.stampRallyFormState.images,
+                                onClickEdit = {
+                                    onClickEditImages(
+                                        imagesRequestKey,
+                                        state.stampRallyFormState.fandom.value.text.toString(),
+                                        state.stampRallyFormState.images.toList()
+                                    )
+                                },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                            ImageGrid(
+                                images = state.stampRallyFormState.images,
+                                onClickImage = {},
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    },
                 )
             }
         }
