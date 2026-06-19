@@ -172,6 +172,10 @@
     <string name="alley_artist_new_content_description">New artist icon</string>
     <string name="alley_artist_new_explanation">Artist is new for %1$s since data was recorded (%2$d)</string>
 
+    <string name="alley_artist_adult">18+ section</string>
+    <string name="alley_artist_adult_content_description">18+ artist icon</string>
+    <string name="alley_artist_adult_explanation">Artist is in an adult section</string>
+
     <string name="alley_stamp_rally_column_booth">Booth</string>
     <string name="alley_stamp_rally_column_fandom">Fandom</string>
 

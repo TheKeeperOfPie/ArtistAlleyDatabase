@@ -10,7 +10,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
     override val values = sequence {
         val databaseEntry =
             ArtistDatabaseEntry.Impl(
-                year = DataYear.ANIME_EXPO_2025,
+                year = DataYear.ANIME_EXPO_2026,
                 id = "artistId",
                 status = ArtistStatus.FINAL,
                 booth = "C39",
@@ -62,7 +62,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
             artist.copy(
                 artist = artist.artist.copy(
                     databaseEntry = databaseEntry.copy(
-                        booth = "C41",
+                        booth = "U41",
                         name = "Kagamine Rin",
                     )
                 )

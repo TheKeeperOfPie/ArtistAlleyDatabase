@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.pager.PagerState
@@ -39,6 +41,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_booth_and_table_name
 import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
@@ -74,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
+import com.thekeeperofpie.artistalleydatabase.alley.models.isAdult
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
@@ -91,6 +96,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
+import com.thekeeperofpie.artistalleydatabase.icons.twotone._18UpRating
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
@@ -579,10 +585,21 @@ object StampRallyDetailsScreen {
             Text(
                 text = text.orEmpty(),
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 4.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
+                modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 8.dp)
             )
+
+            if (artist?.isAdult == true) {
+                ClickableIconWithTooltip(
+                    imageVector = Icons.TwoTone._18UpRating,
+                    tooltipText = stringResource(Res.string.alley_artist_adult_explanation),
+                    contentDescription = stringResource(Res.string.alley_artist_adult_content_description),
+                    tint = MaterialTheme.colorScheme.error,
+                )
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            Spacer(Modifier.weight(1f))
 
             StartEndTableIndicator(isStartTable = isStartTable, isEndTable = isEndTable)
         }

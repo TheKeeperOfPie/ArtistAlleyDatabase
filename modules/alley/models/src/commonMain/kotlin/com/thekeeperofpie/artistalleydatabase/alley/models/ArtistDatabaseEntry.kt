@@ -159,6 +159,16 @@ interface ArtistDatabaseEntry {
     }
 }
 
+val ArtistDatabaseEntry.isAdult: Boolean
+    get() = when (year) {
+        DataYear.ANIME_EXPO_2026 -> booth?.let(Booth::fromStringOrNull)?.letter in setOf('U', 'V')
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025 -> false
+    }
+
 fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(
     id = Uuid.parse(id),
     booth = booth,

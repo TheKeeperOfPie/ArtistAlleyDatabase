@@ -69,6 +69,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Constraints
@@ -120,7 +121,10 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun rememberImagePagerState(images: List<ImageWithDimensions>, initialImageIndex: Int?): PagerState {
+fun rememberImagePagerState(
+    images: List<ImageWithDimensions>,
+    initialImageIndex: Int?,
+): PagerState {
     val pageCount = when {
         images.isEmpty() -> 0
         images.size == 1 -> 1
@@ -291,7 +295,7 @@ fun ImagePager(
                                         placeable.place(0, 0)
                                     }
                                 }
-                                .conditionally(clipCorners && LocalSharedTransitionScope.current.isTransitionActive) {
+                                .conditionally(clipCorners && !LocalInspectionMode.current && LocalSharedTransitionScope.current.isTransitionActive) {
                                     clip(
                                         RoundedCornerShape(
                                             topStart = 12.dp,

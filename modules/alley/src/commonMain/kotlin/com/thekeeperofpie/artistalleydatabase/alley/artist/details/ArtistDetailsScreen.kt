@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
@@ -46,6 +47,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_artist_name
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_catalog
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_commissions
@@ -93,6 +96,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.isAdult
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.rememberSeriesDisplayInfo
@@ -111,6 +115,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Verified
+import com.thekeeperofpie.artistalleydatabase.icons.twotone._18UpRating
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
@@ -202,7 +207,10 @@ object ArtistDetailsScreen {
                                         ?.takeIf { showingOutdatedCatalogs }
                                         ?: route.year
                                     val profileImage =
-                                        AlleyImageUtils.getProfileImage(artist.year, artist.profileImage)
+                                        AlleyImageUtils.getProfileImage(
+                                            artist.year,
+                                            artist.profileImage
+                                        )
                                     onOpenImages(
                                         year,
                                         artist.id,
@@ -315,36 +323,52 @@ object ArtistDetailsScreen {
                     ThemeAwareElevatedCard {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.height(IntrinsicSize.Min)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min)
                         ) {
                             SelectableInfoText(
                                 stringResource(Res.string.alley_artist_details_artist_name),
                                 artist.name,
                                 showDividerAbove = false,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.width(IntrinsicSize.Max)
                             )
 
-                            if (artist.newArtist) {
-                                ClickableIconWithTooltip(
-                                    imageVector = Icons.Default.FiberNew,
-                                    tooltipText = stringResource(
-                                        Res.string.alley_artist_new_explanation,
-                                        stringResource(artist.year.convention.fullName),
-                                        artist.year.convention.firstRecordedYear,
-                                    ),
-                                    contentDescription = stringResource(Res.string.alley_artist_new_content_description),
-                                    iconModifier = Modifier.fillMaxHeight()
-                                )
-                            }
+                            FlowRow(
+                                horizontalArrangement = Arrangement.End,
+                                verticalArrangement = Arrangement.Center,
+                                itemVerticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                if (artist.isAdult) {
+                                    ClickableIconWithTooltip(
+                                        imageVector = Icons.TwoTone._18UpRating,
+                                        tooltipText = stringResource(Res.string.alley_artist_adult_explanation),
+                                        contentDescription = stringResource(Res.string.alley_artist_adult_content_description),
+                                        tint = MaterialTheme.colorScheme.error,
+                                    )
+                                }
 
-                            if (artist.verifiedArtist) {
-                                ClickableIconWithTooltip(
-                                    imageVector = Icons.Default.Verified,
-                                    tooltipText = stringResource(Res.string.alley_artist_verified_explanation),
-                                    contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
-                                    tint = MaterialTheme.colorScheme.tertiary,
-                                    iconModifier = Modifier.fillMaxHeight()
-                                )
+                                if (artist.newArtist) {
+                                    ClickableIconWithTooltip(
+                                        imageVector = Icons.Default.FiberNew,
+                                        tooltipText = stringResource(
+                                            Res.string.alley_artist_new_explanation,
+                                            stringResource(artist.year.convention.fullName),
+                                            artist.year.convention.firstRecordedYear,
+                                        ),
+                                        contentDescription = stringResource(Res.string.alley_artist_new_content_description),
+                                    )
+                                }
+
+                                if (artist.verifiedArtist) {
+                                    ClickableIconWithTooltip(
+                                        imageVector = Icons.Default.Verified,
+                                        tooltipText = stringResource(Res.string.alley_artist_verified_explanation),
+                                        contentDescription = stringResource(Res.string.alley_artist_verified_content_description),
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                    )
+                                }
                             }
                         }
                     }

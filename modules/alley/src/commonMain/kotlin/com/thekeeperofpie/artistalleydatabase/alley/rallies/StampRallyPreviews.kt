@@ -14,7 +14,7 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 id = "stampRallyId",
                 fandom = "Vocaloid",
                 hostTable = "C39",
-                tables = listOf("C39, C40, C41"),
+                tables = listOf("C39, C40, U41"),
                 startTables = setOf("C39"),
                 endTables = setOf("C41"),
                 links = listOf("https://example.org/stampRally"),
