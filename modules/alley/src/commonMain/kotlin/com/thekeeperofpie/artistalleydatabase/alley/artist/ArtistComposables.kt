@@ -82,7 +82,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ArtistTitle(
     year: DataYear,
-    id: String,
+    id: String?,
     booth: String?,
     profileImage: CatalogImage?,
     name: String?,

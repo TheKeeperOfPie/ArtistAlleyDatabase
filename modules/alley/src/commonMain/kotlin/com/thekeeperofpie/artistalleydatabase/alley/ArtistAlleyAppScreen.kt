@@ -326,16 +326,16 @@ object ArtistAlleyAppScreen {
                             )
                         )
                     },
-                    onOpenMap = {
+                    onOpenMap = { artistId ->
                         navStack.navigate(
-                            AlleyDestination.ArtistMap(route.id)
+                            AlleyDestination.ArtistMap(artistId)
                         )
                     },
                     onOpenImages = { year, artistId, booth, name, showingFallback, images, imageIndex, profileImage ->
                         navStack.navigate(
                             AlleyDestination.Images(
                                 year = year,
-                                id = route.id,
+                                id = artistId,
                                 type = AlleyDestination.Images.Type.Artist(
                                     // TODO: Does this have to be passed in separately?
                                     id = artistId,

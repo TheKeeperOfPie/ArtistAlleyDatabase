@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -65,11 +66,10 @@ class ArtistDetailsViewModel(
     private val seriesEntryDao: SeriesEntryDao,
     private val settings: ArtistAlleySettings,
     private val userEntryDao: UserEntryDao,
-    @Assisted route: AlleyDestination.ArtistDetails,
+    @Assisted private val route: AlleyDestination.ArtistDetails,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val year = route.year
-    val id = route.id
     val initialImageIndex = route.imageIndex ?: 0
 
     val requestedShowFallback = savedStateHandle.getMutableStateFlow("requestedShowFallback", false)
@@ -77,8 +77,18 @@ class ArtistDetailsViewModel(
         combineStates(requestedShowFallback, settings.showOutdatedCatalogs, Boolean::or)
 
     val entry = flowFromSuspend {
-        val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
-            ?: return@flowFromSuspend null
+        val entryWithStampRallies = if (route.id == null) {
+            if (route.booth == null) {
+                null
+            } else {
+                artistEntryDao.getEntriesByBooth(year, route.booth).firstOrNull()?.id?.let {
+                    artistEntryDao.getEntryWithStampRallies(year, it)
+                }
+            }
+        } else {
+            artistEntryDao.getEntryWithStampRallies(year, route.id)
+        }
+        entryWithStampRallies ?: return@flowFromSuspend null
         val artistWithUserData = entryWithStampRallies.artist
         val artist = artistWithUserData.artist
 
@@ -150,7 +160,10 @@ class ArtistDetailsViewModel(
     }
 
     val otherArtists = entry.mapNotNull { it?.artist?.booth?.ifBlank { null } }
-        .mapLatest { artistEntryDao.getEntriesByBooth(year, it).filter { it.id != id } }
+        .mapLatest {
+            val id = id()
+            artistEntryDao.getEntriesByBooth(year, it).filter { it.id != id }
+        }
         .flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -191,10 +204,11 @@ class ArtistDetailsViewModel(
     init {
         viewModelScope.launch(dispatchers.io) {
             otherYears = (DataYear.entries - year)
-                .filter { artistEntryDao.getEntry(it, id) != null }
+                .filter { artistEntryDao.getEntry(it, id()) != null }
         }
 
         viewModelScope.launch(dispatchers.io) {
+            val id = id()
             userNotesDao.getArtistNotes(id, year)?.notes
                 ?.let(userNotes::setTextAndPlaceCursorAtEnd)
             snapshotFlow { userNotes.text }
@@ -211,6 +225,8 @@ class ArtistDetailsViewModel(
             }
         }
     }
+
+    private suspend fun id() = route.id ?: entry.filterNotNull().first().artist.id
 
     fun onFavoriteToggle(favorite: Boolean) {
         val entry = entry.value ?: return

@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
@@ -21,7 +22,7 @@ sealed interface AlleyDestination : NavKey {
     @Serializable
     data class ArtistDetails(
         val year: DataYear,
-        val id: String,
+        val id: String?,
         val booth: String?,
         val name: String?,
         val images: List<DatabaseImage>? = null,
@@ -165,7 +166,7 @@ sealed interface AlleyDestination : NavKey {
 
     fun toEncodedRoute() = when (this) {
         AboutLibraries -> "libraries"
-        is ArtistDetails -> "artist/${year.serializedName}/$id"
+        is ArtistDetails -> "artist/${year.serializedName}/${id ?: booth}"
         is ArtistMap -> "artist/map/$id"
         is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
         ArtistChangelog -> "changelog"
@@ -215,12 +216,16 @@ sealed interface AlleyDestination : NavKey {
                 when (parts.first()) {
                     "artist" -> when (parts.size) {
                         3 if parts[1] == "map" -> ArtistMap(id = parts[2])
-                        3 -> ArtistDetails(
-                            year = parts[1].toDataYearOrLatest(),
-                            id = parts[2],
-                            booth = null,
-                            name = null
-                        )
+                        3 -> {
+                            val part2 = parts[2]
+                            val booth = Booth.fromStringOrNull(part2)
+                            ArtistDetails(
+                                year = parts[1].toDataYearOrLatest(),
+                                id = part2.takeIf { booth == null },
+                                booth = booth?.toString(),
+                                name = null
+                            )
+                        }
                         else -> null
                     }
                     "artists" -> if (parts.size == 3) {

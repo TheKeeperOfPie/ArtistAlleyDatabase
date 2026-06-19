@@ -142,7 +142,7 @@ object ArtistDetailsScreen {
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry) -> Unit,
         onOpenOtherYear: (DataYear) -> Unit,
-        onOpenMap: () -> Unit,
+        onOpenMap: (artistId: String) -> Unit,
         onOpenImages: (DataYear, artistId: String, booth: String, name: String, showingFallback: Boolean, images: List<CatalogImage>, imageIndex: Int, profileImage: CatalogImage?) -> Unit,
         onNavigateUp: () -> Unit,
         viewModel: ArtistDetailsViewModel = viewModel {
@@ -225,7 +225,8 @@ object ArtistDetailsScreen {
                                     )
                                 }
                             }
-                            DetailsScreen.Event.OpenMap -> onOpenMap()
+                            DetailsScreen.Event.OpenMap ->
+                                viewModel.entry.value?.artist?.id?.run(onOpenMap)
                             DetailsScreen.Event.ShowFallback ->
                                 viewModel.onShowFallback()
                             DetailsScreen.Event.AlwaysShowFallback ->
@@ -301,7 +302,7 @@ object ArtistDetailsScreen {
                     name = name,
                 )
             },
-            sharedElementId = route.id,
+            sharedElementId = route.id.orEmpty(),
             favorite = { entry()?.favorite },
             catalog = catalog,
             imagePagerState = imagePagerState,
