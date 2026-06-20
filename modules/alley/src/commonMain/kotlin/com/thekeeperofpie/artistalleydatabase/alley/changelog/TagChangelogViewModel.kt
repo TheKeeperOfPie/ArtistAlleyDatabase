@@ -77,7 +77,7 @@ class TagChangelogViewModel(
             .map(ChangelogEntry::Artist)
         val allRallies = stampRallyEntryDao.getAllEntriesForChangelog(dataYear)
         val stampRallies = stampRallyEntryDao.getChangelog(dataYear)
-            .mapNotNull { it.toChangelogEntry(dataYear, allRallies) }
+            .mapNotNull { it.toChangelogEntry(dataYear, allRallies, randomSeed) }
             .map(ChangelogEntry::StampRally)
         artists + stampRallies
     }

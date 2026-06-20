@@ -44,6 +44,7 @@ class FavoriteSeriesChangelogViewModel(
 
     val useCase = useCaseFactory.create(
         dataYear = dataYear,
+        randomSeed = randomSeed,
         input = combine(showOnlyConfirmedTags, userEntryDao.getSeriesFavorites(), ::Input),
         filterArtist = { input ->
             (artist.seriesConfirmed?.any { it in input.favoriteSeriesIds } == true) ||

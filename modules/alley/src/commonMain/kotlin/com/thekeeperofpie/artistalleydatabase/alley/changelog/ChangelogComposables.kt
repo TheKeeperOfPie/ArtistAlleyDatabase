@@ -27,8 +27,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,17 +61,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
-import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
-import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLeft
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowRight
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
@@ -202,6 +197,46 @@ fun ChangelogImages(
 }
 
 @Composable
+private fun SeriesAndMerchRows(
+    seriesHighlighted: List<String>,
+    seriesRemaining: List<String>,
+    seriesTitles: () -> Map<String, GetSeriesTitles>,
+    merchHighlighted: List<String>,
+    merchRemaining: List<String>,
+    onClickSeries: (String) -> Unit,
+    onClickMerch: (String) -> Unit,
+    onMoreClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val hasSeries = seriesHighlighted.isNotEmpty() || seriesRemaining.isNotEmpty()
+    val hasMerch = merchHighlighted.isNotEmpty() || merchRemaining.isNotEmpty()
+
+    if (!hasSeries && !hasMerch) return
+    Column(modifier = modifier) {
+        if (hasSeries) {
+            SeriesRow(
+                seriesHighlighted = seriesHighlighted.mapNotNull { seriesTitles()[it] },
+                seriesRemaining = seriesRemaining.mapNotNull { seriesTitles()[it] },
+                hasMoreSeries = (seriesHighlighted.size + seriesRemaining.size) > TagUtils.TAGS_TO_SHOW,
+                onSeriesClick = onClickSeries,
+                onMoreClick = onMoreClick,
+            )
+        }
+
+        if (hasMerch) {
+            MerchRow(
+                merchHighlighted = merchHighlighted,
+                merchRemaining = merchRemaining,
+                hasMoreMerch = (merchHighlighted.size + merchRemaining.size) > TagUtils.TAGS_TO_SHOW,
+                onMerchClick = onClickMerch,
+                onMoreClick = onMoreClick,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun ChangelogArtistRow(
     artist: ArtistChangelogEntry,
     isLast: Boolean,
@@ -260,35 +295,23 @@ fun ChangelogArtistRow(
             Spacer(Modifier.height(12.dp))
         }
 
-        val seriesTitles = seriesTitles()
-        if (hasSeries) {
-            SeriesRow(
-                seriesHighlighted = artist.seriesHighlighted.mapNotNull { seriesTitles[it] },
-                seriesRemaining = artist.seriesRemaining.mapNotNull { seriesTitles[it] },
-                hasMoreSeries = (artist.seriesHighlighted.size + artist.seriesRemaining.size) > TagUtils.TAGS_TO_SHOW,
-                onSeriesClick = onClickSeries,
-                onMoreClick = onClick,
-                modifier = Modifier.padding(start = 32.dp)
-            )
-        }
-
-        if (hasMerch) {
-            MerchRow(
-                merchHighlighted = artist.merchHighlighted,
-                merchRemaining = artist.merchRemaining,
-                hasMoreMerch = (artist.merchHighlighted.size + artist.merchRemaining.size) > TagUtils.TAGS_TO_SHOW,
-                onMerchClick = onClickMerch,
-                onMoreClick = onClick,
-                modifier = Modifier.padding(start = 48.dp)
-            )
-        }
+        SeriesAndMerchRows(
+            seriesHighlighted = artist.seriesHighlighted,
+            seriesRemaining = artist.seriesRemaining,
+            seriesTitles = seriesTitles,
+            merchHighlighted = artist.merchHighlighted,
+            merchRemaining = artist.merchRemaining,
+            onClickSeries = onClickSeries,
+            onClickMerch = onClickMerch,
+            onMoreClick = onClick,
+            modifier = Modifier.padding(start = 32.dp)
+        )
 
         if (!isLast) {
             HorizontalDivider(modifier = Modifier.padding(start = 12.dp))
         }
     }
 }
-
 
 @Composable
 fun ChangelogStampRallyRow(
@@ -354,53 +377,18 @@ fun ChangelogStampRallyRow(
                 image = { seriesId?.let(seriesImage) }
             )
 
-            Column(modifier = Modifier.weight(1f)) {
-                val series = stampRally.rally.series
-                val merch = stampRally.rally.merch
-
-                if (series.isNotEmpty() || merch.isNotEmpty()) {
-                    Spacer(Modifier.height(16.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .padding(start = 16.dp, bottom = 8.dp)
-                            .fillMaxWidth()
-                            .fadingEdgeEnd(
-                                startOpaque = 0.dp,
-                                startTransparent = 0.dp,
-                                endOpaque = 32.dp,
-                                endTransparent = 16.dp,
-                            )
-                    ) {
-                        val colors = AssistChipDefaults.assistChipColors(
-                            labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                        )
-                        val border = AssistChipDefaults.assistChipBorder(false)
-                        val seriesTitles = seriesTitles()
-                        val languageOption = LocalLanguageOptionMedia.current
-                        series.forEach {
-                            AssistChip(
-                                colors = colors,
-                                border = border,
-                                onClick = { onClickSeries(it) },
-                                label = {
-                                    Text(text = seriesTitles[it]?.name(languageOption) ?: it)
-                                },
-                                modifier = Modifier.height(24.dp)
-                            )
-                        }
-                        merch.forEach {
-                            AssistChip(
-                                colors = colors,
-                                border = border,
-                                onClick = { onClickMerch(it) },
-                                label = { Text(text = it) },
-                                modifier = Modifier.height(24.dp)
-                            )
-                        }
-                    }
-                }
-            }
+            SeriesAndMerchRows(
+                seriesHighlighted = stampRally.seriesHighlighted,
+                seriesRemaining = stampRally.seriesRemaining,
+                seriesTitles = seriesTitles,
+                merchHighlighted = stampRally.merchHighlighted,
+                merchRemaining = stampRally.merchRemaining,
+                onClickSeries = onClickSeries,
+                onClickMerch = onClickMerch,
+                onMoreClick = onClick,
+                modifier = Modifier.weight(1f)
+                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+            )
         }
 
         if (!isLast) {

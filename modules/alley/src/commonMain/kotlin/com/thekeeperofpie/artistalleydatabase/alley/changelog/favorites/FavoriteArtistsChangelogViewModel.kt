@@ -38,6 +38,7 @@ class FavoriteArtistsChangelogViewModel(
 
     val useCase = useCaseFactory.create(
         dataYear = dataYear,
+        randomSeed = randomSeed,
         input = combine(
             userEntryDao.getArtistFavorites(dataYear)
                 .mapLatest {

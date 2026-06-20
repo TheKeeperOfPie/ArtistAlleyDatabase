@@ -45,6 +45,7 @@ class FavoritesChangelogViewModel(
 
     val useCase = useCaseFactory.create(
         dataYear = dataYear,
+        randomSeed = randomSeed,
         input = combine(
             showOnlyConfirmedTags,
             userEntryDao.getTagFavorites()

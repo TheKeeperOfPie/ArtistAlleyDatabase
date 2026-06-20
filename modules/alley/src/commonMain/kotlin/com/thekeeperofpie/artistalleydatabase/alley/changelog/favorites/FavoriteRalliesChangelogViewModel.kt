@@ -36,6 +36,7 @@ class FavoriteRalliesChangelogViewModel(
 
     val useCase = useCaseFactory.create(
         dataYear = dataYear,
+        randomSeed = randomSeed,
         input = combine(
             userEntryDao.getRallyFavorites(),
             userEntryDao.getTagFavorites(),

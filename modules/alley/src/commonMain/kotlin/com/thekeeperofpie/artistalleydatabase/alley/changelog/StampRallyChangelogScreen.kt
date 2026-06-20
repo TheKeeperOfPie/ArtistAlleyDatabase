@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
@@ -42,7 +43,8 @@ internal object StampRallyChangelogScreen {
         onClickMerch: (String) -> Unit,
         onClickImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
         viewModel: StampRallyChangelogViewModel = viewModel {
-            graph.stampRallyChangelogViewModelFactory.create(dataYear)
+            graph.stampRallyChangelogViewModelFactory
+                .create(dataYear, createSavedStateHandle())
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()

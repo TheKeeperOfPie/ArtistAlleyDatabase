@@ -19,6 +19,7 @@ import kotlinx.datetime.LocalDate
 class FavoritesChangelogUseCase<Input>(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
+    randomSeed: Int,
     @Assisted dataYear: DataYear,
     @Assisted input: Flow<Input>,
     @Assisted private val filterArtist: ChangelogEntry.Artist.(Input) -> Boolean,
@@ -29,7 +30,7 @@ class FavoritesChangelogUseCase<Input>(
             .map(ChangelogEntry::Artist)
         val allRallies = stampRallyEntryDao.getAllEntriesForChangelog(dataYear)
         val stampRallies = stampRallyEntryDao.getChangelog(dataYear)
-            .mapNotNull { it.toChangelogEntry(dataYear, allRallies) }
+            .mapNotNull { it.toChangelogEntry(dataYear, allRallies, randomSeed) }
             .map(ChangelogEntry::StampRally)
         artists + stampRallies
     }
@@ -104,6 +105,7 @@ class FavoritesChangelogUseCase<Input>(
     ) {
         fun <Input> create(
             @Assisted dataYear: DataYear,
+            @Assisted randomSeed: Int,
             @Assisted input: Flow<Input>,
             @Assisted filterArtist: ChangelogEntry.Artist.(Input) -> Boolean,
             @Assisted filterRally: StampRallyChangelogEntry.(Input) -> Boolean,
@@ -111,6 +113,7 @@ class FavoritesChangelogUseCase<Input>(
             artistEntryDao = artistEntryDao,
             stampRallyEntryDao = stampRallyEntryDao,
             dataYear = dataYear,
+            randomSeed = randomSeed,
             input = input,
             filterArtist = filterArtist,
             filterRally = filterRally,
