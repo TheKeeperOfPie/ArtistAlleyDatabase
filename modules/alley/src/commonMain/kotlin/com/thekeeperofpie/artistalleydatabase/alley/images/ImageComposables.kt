@@ -623,8 +623,7 @@ fun ImageGrid(
                                         onClick = {
                                             try {
                                                 uriHandler.openUri(imageModel.toString())
-                                            } catch (t: Throwable) {
-                                                t.printStackTrace()
+                                            } catch (_: Throwable) {
                                             }
                                             showMenu = false
                                         }

@@ -35,8 +35,7 @@ object AlleyImageUtils {
                 width = it.width,
                 height = it.height,
             )
-        } catch (t: Throwable) {
-            t.printStackTrace()
+        } catch (_: Throwable) {
             null
         }
     }
@@ -49,8 +48,7 @@ object AlleyImageUtils {
                 width = it.width,
                 height = it.height,
             )
-        } catch (t: Throwable) {
-            t.printStackTrace()
+        } catch (_: Throwable) {
             null
         }
     }
@@ -63,8 +61,7 @@ object AlleyImageUtils {
                     it.value.width,
                     it.value.height,
                 )
-            } catch (t: Throwable) {
-                t.printStackTrace()
+            } catch (_: Throwable) {
                 null
             }
         }
@@ -131,8 +128,7 @@ object AlleyImageUtils {
                         height = image.height,
                         color = image.color,
                     )
-                } catch (t: Throwable) {
-                    t.printStackTrace()
+                } catch (_: Throwable) {
                     null
                 }
             }
@@ -156,8 +152,7 @@ object AlleyImageUtils {
                 width = it.width,
                 height = it.height,
             )
-        } catch (t: Throwable) {
-            t.printStackTrace()
+        } catch (_: Throwable) {
             null
         }
     }
