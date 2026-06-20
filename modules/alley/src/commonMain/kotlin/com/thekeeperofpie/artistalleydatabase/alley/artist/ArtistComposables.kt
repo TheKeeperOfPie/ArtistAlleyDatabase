@@ -492,8 +492,8 @@ internal fun MerchRow(
 }
 
 @Composable
-fun SeriesPrediction(query: String, series: SeriesInfo) {
-    Column {
+fun SeriesPrediction(query: String, series: SeriesInfo, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         val languageOptionMedia = LocalLanguageOptionMedia.current
         val title = buildAnnotatedString {
             val name = series.name(languageOptionMedia)

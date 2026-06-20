@@ -90,7 +90,7 @@ object MapScreen {
         content: @Composable (Table) -> Unit,
     ) {
         val gridData = viewModel.gridData.result
-        Surface(color = MaterialTheme.colorScheme.background) {
+        Surface(color = MaterialTheme.colorScheme.background, modifier = modifier) {
             Box {
                 Map(
                     gridData = gridData,
@@ -101,7 +101,7 @@ object MapScreen {
                     } else {
                         bottomContentPadding
                     },
-                    modifier = modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     content = content,
                 )
 
@@ -153,7 +153,7 @@ object MapScreen {
     ) {
         if (gridData != null) {
             val density = LocalDensity.current
-            val contentPaddingPixels = density.run { 32.dp.toPx() }
+            val contentPaddingPixels = density.run { 72.dp.toPx() }
             val bottomContentPaddingPixels = density.run { bottomContentPadding.toPx() }
 
             val baseItemWidth = density.run { ITEM_WIDTH.toPx() }

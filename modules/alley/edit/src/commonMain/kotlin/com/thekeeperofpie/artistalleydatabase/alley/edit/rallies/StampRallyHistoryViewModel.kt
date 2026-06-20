@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
@@ -24,7 +24,7 @@ import kotlin.time.Clock
 class StampRallyHistoryViewModel(
     private val database: AlleyEditDatabase,
     private val seriesImageLoader: SeriesImageLoader,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val stampRallyId: String,

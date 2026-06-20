@@ -9,7 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -30,7 +30,7 @@ class StampRallyAddViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val imageUploader: ImageUploader,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     val artistTableAutocomplete: ArtistTableAutocomplete,
     private val rallyInference: StampRallyInference,
     private val seriesImageLoader: SeriesImageLoader,

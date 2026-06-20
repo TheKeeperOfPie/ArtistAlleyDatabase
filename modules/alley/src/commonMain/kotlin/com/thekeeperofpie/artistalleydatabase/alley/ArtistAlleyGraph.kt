@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
@@ -49,7 +49,7 @@ interface ArtistAlleyGraph {
     val favoriteMerchChangelogViewModelFactory: FavoriteMerchChangelogViewModel.Factory
     val favoriteRalliesChangelogViewModelFactory: FavoriteRalliesChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory
-    val favoritesSortFilterViewModelFactory: FavoritesSortFilterViewModel.Factory
+    val favoritesMapViewModelFactory: FavoritesMapViewModel.Factory
     val imagesViewModel: Provider<ImagesViewModel>
     val importViewModelFactory: ImportViewModel.Factory
     val mapViewModelFactory: MapViewModel.Factory

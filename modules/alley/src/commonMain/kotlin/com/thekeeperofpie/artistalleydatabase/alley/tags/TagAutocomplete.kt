@@ -1,16 +1,14 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.tags
+package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import androidx.compose.ui.util.fastCoerceAtLeast
 import com.github.terrakok.fuzzykot.MicroFuzz
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.github.karloti.cpq.ConcurrentPriorityQueue
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,18 +24,6 @@ open class TagAutocomplete(
     loadSeries: suspend () -> Map<String, SeriesInfo>,
     loadMerch: suspend () -> Map<String, MerchInfo>,
 ) {
-    @Inject
-    constructor(
-        applicationScope: ApplicationScope,
-        dispatchers: CustomDispatchers,
-        database: AlleyEditDatabase,
-    ) : this(
-        applicationScope = applicationScope,
-        dispatchers = dispatchers,
-        loadSeries = database::loadSeries,
-        loadMerch = database::loadMerch,
-    )
-
     val seriesById = flowFromSuspend { loadSeries() }
         .stateIn(applicationScope, SharingStarted.Eagerly, emptyMap())
 

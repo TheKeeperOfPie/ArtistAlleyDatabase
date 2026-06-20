@@ -175,6 +175,35 @@ class SeriesEntryDao(
             }
     }
 
+    private fun DataYear.popularityColumn(showOnlyConfirmedTags: Boolean) = when (this) {
+        DataYear.ANIME_EXPO_2023 -> ""
+        DataYear.ANIME_EXPO_2024 -> if (showOnlyConfirmedTags) {
+            "confirmed2024"
+        } else {
+            "inferred2024"
+        }
+        DataYear.ANIME_EXPO_2025 -> if (showOnlyConfirmedTags) {
+            "confirmed2025"
+        } else {
+            "inferred2025"
+        }
+        DataYear.ANIME_EXPO_2026 -> if (showOnlyConfirmedTags) {
+            "confirmedAnimeExpo2026"
+        } else {
+            "inferredAnimeExpo2026"
+        }
+        DataYear.ANIME_NYC_2024 -> if (showOnlyConfirmedTags) {
+            "confirmedAnimeNyc2024"
+        } else {
+            "inferredAnimeNyc2024"
+        }
+        DataYear.ANIME_NYC_2025 -> if (showOnlyConfirmedTags) {
+            "confirmedAnimeNyc2025"
+        } else {
+            "inferredAnimeNyc2025"
+        }
+    }
+
     fun searchSeries(
         languageOption: AniListLanguageOption,
         year: DataYear,
@@ -205,34 +234,7 @@ class SeriesEntryDao(
             aniListTypeKey = if (query.isEmpty()) "aniListType" else "aniListTypeAsKey",
         )
 
-        val popularityColumn = when (year) {
-            DataYear.ANIME_EXPO_2023 -> ""
-            DataYear.ANIME_EXPO_2024 -> if (seriesFilterParams.showOnlyConfirmedTags) {
-                "confirmed2024"
-            } else {
-                "inferred2024"
-            }
-            DataYear.ANIME_EXPO_2025 -> if (seriesFilterParams.showOnlyConfirmedTags) {
-                "confirmed2025"
-            } else {
-                "inferred2025"
-            }
-            DataYear.ANIME_EXPO_2026 -> if (seriesFilterParams.showOnlyConfirmedTags) {
-                "confirmedAnimeExpo2026"
-            } else {
-                "inferredAnimeExpo2026"
-            }
-            DataYear.ANIME_NYC_2024 -> if (seriesFilterParams.showOnlyConfirmedTags) {
-                "confirmedAnimeNyc2024"
-            } else {
-                "inferredAnimeNyc2024"
-            }
-            DataYear.ANIME_NYC_2025 -> if (seriesFilterParams.showOnlyConfirmedTags) {
-                "confirmedAnimeNyc2025"
-            } else {
-                "inferredAnimeNyc2025"
-            }
-        }
+        val popularityColumn = year.popularityColumn(seriesFilterParams.showOnlyConfirmedTags)
         var whereStatement = ""
         if (favoritesStatement.isNotEmpty() ||
             filteredSourcesStatement.isNotEmpty() ||
@@ -341,7 +343,11 @@ class SeriesEntryDao(
         )
     }
 
-    suspend fun searchSeriesForAutocomplete(query: String): List<SeriesInfo> {
+    suspend fun searchSeriesForAutocomplete(
+        query: String,
+        dataYear: DataYear? = null,
+        showOnlyConfirmedTags: Boolean = false,
+    ): List<SeriesInfo> {
         if (query.isBlank()) return emptyList()
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
@@ -358,6 +364,10 @@ class SeriesEntryDao(
             "(${DaoUtils.makeLikeAndQuery("seriesEntry_fts.$it", queries)})"
         }
 
+        val whereStatement = dataYear?.popularityColumn(showOnlyConfirmedTags)
+            ?.let { "WHERE $it > 0" }
+            .orEmpty()
+
         val statement = DaoUtils.buildSearchStatement(
             tableName = "seriesEntry",
             ftsTableName = "seriesEntry_fts",
@@ -365,6 +375,7 @@ class SeriesEntryDao(
             likeOrderBy = "ORDER BY rank",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
+            andStatement = whereStatement,
             select = selectFields,
         ) + " LIMIT 10"
 

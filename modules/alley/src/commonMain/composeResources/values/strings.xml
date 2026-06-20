@@ -443,4 +443,8 @@
     <string name="alley_images_open_rally">Open rally</string>
 
     <string name="alley_open_image">Open image</string>
+
+    <string name="alley_map_search">Search tags</string>
+    <string name="alley_map_search_close">Close search</string>
+    <string name="alley_map_search_tags_clear">Clear tags</string>
 </resources>

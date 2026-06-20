@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -38,7 +38,7 @@ class StampRallyEditViewModel(
     private val dispatchers: CustomDispatchers,
     private val imageUploader: ImageUploader,
     private val seriesImageLoader: SeriesImageLoader,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     val artistTableAutocomplete: ArtistTableAutocomplete,
     private val rallyInference: StampRallyInference,
     @Assisted private val dataYear: DataYear,

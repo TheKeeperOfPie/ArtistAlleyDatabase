@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -24,7 +24,7 @@ import kotlin.uuid.Uuid
 class ArtistHistoryViewModel(
     private val database: AlleyEditDatabase,
     private val seriesImageLoader: SeriesImageLoader,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
 ) : ViewModel() {

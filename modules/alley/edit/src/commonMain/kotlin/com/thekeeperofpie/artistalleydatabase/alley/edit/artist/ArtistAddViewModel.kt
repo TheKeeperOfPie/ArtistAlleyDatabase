@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.Artist
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompter
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -29,7 +29,7 @@ class ArtistAddViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val seriesImageLoader: SeriesImageLoader,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,

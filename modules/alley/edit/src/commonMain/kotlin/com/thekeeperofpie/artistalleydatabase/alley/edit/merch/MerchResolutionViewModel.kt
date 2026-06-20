@@ -6,13 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -24,7 +23,7 @@ class MerchResolutionViewModel(
     private val artistCache: ArtistCache,
     private val editDatabase: AlleyEditDatabase,
     dispatchers: CustomDispatchers,
-    private val tagAutocomplete: TagAutocomplete,
+    private val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val merchId: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {

@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.github.terrakok.fuzzykot.MicroFuzz
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @AssistedInject
 class StampRallyListViewModel(
     private val stampRallyCache: StampRallyCache,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 

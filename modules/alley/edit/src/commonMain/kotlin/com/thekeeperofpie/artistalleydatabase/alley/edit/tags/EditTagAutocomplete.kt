@@ -1,9 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.tags
 
-import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
-import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -13,14 +10,13 @@ import dev.zacsweers.metro.SingleIn
 
 @SingleIn(AppScope::class)
 @Inject
-class FormTagAutocomplete(
+open class EditTagAutocomplete(
     applicationScope: ApplicationScope,
     dispatchers: CustomDispatchers,
-    seriesEntryDao: SeriesEntryDao,
-    merchEntryDao: MerchEntryDao,
+    database: AlleyEditDatabase,
 ) : TagAutocomplete(
     applicationScope = applicationScope,
     dispatchers = dispatchers,
-    loadSeries = { seriesEntryDao.getSeries().map { it.toSeriesInfo() }.associateBy { it.id } },
-    loadMerch = { merchEntryDao.getMerch().map { it.toMerchInfo() }.associateBy { it.name } },
+    loadSeries = database::loadSeries,
+    loadMerch = database::loadMerch,
 )

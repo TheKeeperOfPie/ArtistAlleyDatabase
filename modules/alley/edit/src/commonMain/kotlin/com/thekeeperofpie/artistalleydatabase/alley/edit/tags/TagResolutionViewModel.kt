@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 class TagResolutionViewModel(
     private val artistCache: ArtistCache,
     dispatchers: CustomDispatchers,
-    tagAutocomplete: TagAutocomplete,
+    tagAutocomplete: EditTagAutocomplete,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 

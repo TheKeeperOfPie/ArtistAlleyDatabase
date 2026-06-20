@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -27,7 +27,7 @@ class ArtistFormHistoryViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val seriesImageLoader: SeriesImageLoader,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted artistId: Uuid,
     @Assisted formTimestamp: Instant,

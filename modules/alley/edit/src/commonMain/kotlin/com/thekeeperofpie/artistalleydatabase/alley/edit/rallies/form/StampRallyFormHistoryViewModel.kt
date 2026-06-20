@@ -7,7 +7,7 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -28,7 +28,7 @@ class StampRallyFormHistoryViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val seriesImageLoader: SeriesImageLoader,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: EditTagAutocomplete,
     artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,

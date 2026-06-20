@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 class SeriesResolutionViewModel(
     private val artistCache: ArtistCache,
     private val editDatabase: AlleyEditDatabase,
-    private val tagAutocomplete: TagAutocomplete,
+    private val tagAutocomplete: EditTagAutocomplete,
     private val seriesImageLoader: SeriesImageLoader,
     @Assisted private val seriesId: String,
     @Assisted savedStateHandle: SavedStateHandle,

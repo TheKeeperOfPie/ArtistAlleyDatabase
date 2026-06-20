@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils.makeQuery
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
@@ -1146,6 +1147,78 @@ class ArtistEntryDao(
                 DataYear.ANIME_NYC_2025 -> SqlCursor::toArtistWithUserDataAnimeNyc2025
             },
         )
+    }
+
+    suspend fun searchBooths(
+        year: DataYear,
+        seriesIds: Set<String>,
+        merchIds: Set<String>,
+        showOnlyConfirmedTags: Boolean = false,
+    ): Set<String> {
+        val tableName = year.artistTableName
+        val andClauses = mutableListOf<String>().apply {
+            if (seriesIds.isNotEmpty()) {
+                val yearFilter = when (year) {
+                    DataYear.ANIME_EXPO_2023 -> ""
+                    else -> {
+                        val flag = TagYearFlag.getFlag(
+                            year,
+                            confirmed = showOnlyConfirmedTags
+                        )
+                        "(artistSeriesConnection.yearFlags & $flag) != 0 AND "
+                    }
+                }
+
+                val seriesList = seriesIds.joinToString(separator = ",") {
+                    DatabaseUtils.sqlEscapeString(it)
+                }
+
+                this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
+                        yearFilter +
+                        "artistSeriesConnection.seriesId IN ($seriesList))"
+            }
+
+            if (merchIds.isNotEmpty()) {
+                val yearFilter = when (year) {
+                    DataYear.ANIME_EXPO_2023 -> ""
+                    else -> {
+                        val flag = TagYearFlag.getFlag(
+                            year,
+                            confirmed = showOnlyConfirmedTags
+                        )
+                        "(artistMerchConnection.yearFlags & $flag) != 0 AND "
+                    }
+                }
+
+                val merchList = merchIds.joinToString(separator = ",") {
+                    DatabaseUtils.sqlEscapeString(it)
+                }
+
+                this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
+                        yearFilter +
+                        "artistMerchConnection.merchId IN ($merchList))"
+            }
+        }
+
+        val andStatement = andClauses.takeIf { it.isNotEmpty() }
+            ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+
+        val selectFields = listOf("booth").joinToString { "$tableName.$it" }
+
+        val statement = """
+            SELECT $selectFields
+            FROM $tableName
+            $andStatement
+        """.trimIndent()
+        return makeQuery(
+            driver = driver(),
+            statement = statement,
+            tableNames = listOf(tableName),
+            parameters = emptyList(),
+            mapper = { it.getString(0).orEmpty() },
+        ).awaitAsList()
+            .mapNotNull { it.ifBlank { null } }
+            .toSet()
     }
 
     suspend fun getImagesById(year: DataYear, artistId: String) = when (year) {
