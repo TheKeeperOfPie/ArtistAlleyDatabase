@@ -625,7 +625,7 @@ internal object StampRallyFormMergeScreen {
                     StampRallyField.MERCH_ADDED,
                     StampRallyField.MERCH_REMOVED,
                 ),
-                notes = diff.notes ?: base.notes,
+                notes = applyDiff(base.notes, diff.notes, StampRallyField.NOTES),
             )
             return StampRallyFormState().applyDatabaseEntry(
                 stampRally = stampRally,
