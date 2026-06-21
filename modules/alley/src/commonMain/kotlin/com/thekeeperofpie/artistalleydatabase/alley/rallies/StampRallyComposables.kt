@@ -316,6 +316,15 @@ fun StampRallyListRow(
                                     modifier = Modifier.size(48.dp)
                                 )
                             }
+
+                            // Other tables, may include other halls like KH-1000
+                            (tables - artistBoothsToProfileImages.map { it.first }.toSet()).forEach {
+                                ArtistProfileImage(
+                                    booth = it,
+                                    image = null,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
                         } else {
                             tables.forEach {
                                 ArtistProfileImage(

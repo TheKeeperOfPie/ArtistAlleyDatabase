@@ -38,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -328,8 +329,9 @@ fun ArtistProfileImage(
         if (booth != null) {
             val textStyle = MaterialTheme.typography.labelLarge
             Text(
-                text = booth,
+                text = booth.replace("-", "\n"),
                 style = textStyle,
+                textAlign = TextAlign.End,
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = 12.sp,
                     maxFontSize = textStyle.fontSize,
