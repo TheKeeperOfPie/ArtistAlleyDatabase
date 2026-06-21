@@ -196,7 +196,7 @@ class FavoritesViewModel(
                 query = query,
                 searchQuery = StampRallySearchQuery(
                     filterParams = StampRallySortFilterController.FilterParams(
-                        sortOption = StampRallySearchSortOption.MAIN_TABLE,
+                        sortOption = StampRallySearchSortOption.RANDOM,
                         sortAscending = true,
                         seriesIn = emptySet(),
                         merchIdIn = emptySet(),

@@ -581,8 +581,6 @@ class StampRallyEntryDao(
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
-            StampRallySearchSortOption.MAIN_TABLE ->
-                "ORDER BY $tableName.hostTable COLLATE NOCASE $ascending"
             StampRallySearchSortOption.FANDOM ->
                 "ORDER BY $tableName.fandom COLLATE NOCASE $ascending"
             StampRallySearchSortOption.RANDOM ->

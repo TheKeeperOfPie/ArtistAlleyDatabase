@@ -109,7 +109,7 @@ class StampRallySearchViewModel(
                 query = query,
                 searchQuery = StampRallySearchQuery(
                     filterParams = StampRallySortFilterController.FilterParams(
-                        sortOption = StampRallySearchSortOption.MAIN_TABLE,
+                        sortOption = StampRallySearchSortOption.RANDOM,
                         sortAscending = true,
                         seriesIn = setOfNotNull(lockedSeries),
                         merchIdIn = emptySet(),
