@@ -36,8 +36,29 @@ data class StampRallyDatabaseEntry(
 
         // Need to ignore metadata for equality
         fun hasChanged(before: StampRallyDatabaseEntry?, after: StampRallyDatabaseEntry) =
-            before?.copy(confirmed = false, lastEditTime = null, lastEditor = null) !=
-                    after.copy(confirmed = false, lastEditTime = null, lastEditor = null)
+            before?.copy(
+                images = before.images.map {
+                    it.copy(
+                        width = null,
+                        height = null,
+                        color = null,
+                    )
+                },
+                confirmed = false,
+                lastEditTime = null,
+                lastEditor = null,
+            ) != after.copy(
+                images = after.images.map {
+                    it.copy(
+                        width = null,
+                        height = null,
+                        color = null,
+                    )
+                },
+                confirmed = false,
+                lastEditTime = null,
+                lastEditor = null,
+            )
 
         fun empty(year: DataYear, id: String) = StampRallyDatabaseEntry(
             year = year,
