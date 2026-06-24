@@ -100,6 +100,9 @@ fun ArtistVerificationDialog(artist: ArtistEntry, onDismiss: () -> Unit) {
                                 withLink(LinkAnnotation.Url(BuildKonfig.serverUrl)) {
                                     append("AX Discord server")
                                 }
+                                append(
+                                    "."
+                                )
                             },
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
