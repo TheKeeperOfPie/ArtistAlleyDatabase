@@ -488,6 +488,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             .executeAsList()
             .map { artist ->
                 async {
+                    // TODO: Validate this somewhere else
+                    if (artist.seriesInferred.distinct().size != artist.seriesInferred.size ||
+                        artist.seriesConfirmed.distinct().size != artist.seriesConfirmed.size ||
+                        artist.merchInferred.distinct().size != artist.merchInferred.size ||
+                        artist.merchConfirmed.distinct().size != artist.merchConfirmed.size) {
+                        logger.error("Duplicate failure for artist ${artist.booth} - ${artist.name}")
+                    }
                     val inference = ArtistInferenceProvider(database, artist.id)
                     val socialLinks = artist.socialLinks.ifEmpty { inference.socialLinks }
                     val storeLinks = artist.storeLinks.ifEmpty { inference.storeLinks }
@@ -495,6 +502,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         .ifEmpty { inference.seriesInferred } - artist.seriesConfirmed.toSet()
                     val merchInferred = artist.merchInferred
                         .ifEmpty { inference.merchInferred } - artist.merchConfirmed.toSet()
+
 
                     val (linkFlags, linkFlags2) = Link.parseFlags(
                         socialLinks = socialLinks,
