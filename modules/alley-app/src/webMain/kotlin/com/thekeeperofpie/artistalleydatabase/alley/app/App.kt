@@ -99,7 +99,7 @@ fun App(graph: ArtistAlleyWebGraph) {
             }
             .memoryCache {
                 MemoryCache.Builder()
-                    .maxSizeBytes(1000 * 1024 * 1024)
+                    .maxSizeBytes(200 * 1024 * 1024)
                     .build()
             }
             .build()
