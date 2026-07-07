@@ -111,7 +111,7 @@ internal object ImageUtils {
         WEBP_TARGET_QUALITY
     ).toString()
 
-    fun compressAndRename(
+    fun compressAndRenameHashed(
         logger: Logger,
         input: File,
         resized: Boolean,
@@ -119,6 +119,7 @@ internal object ImageUtils {
         height: Int,
         target: File,
     ) {
+        if (target.exists()) return
         logger.lifecycle("Compressing $input")
         target.parentFile.mkdirs()
         val params = mutableListOf(

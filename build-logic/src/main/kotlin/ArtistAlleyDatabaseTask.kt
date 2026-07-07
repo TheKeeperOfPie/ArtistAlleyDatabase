@@ -563,7 +563,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 async {
                     val output =
                         outputImagesAnimeExpo2026.get().asFile.resolve(it.path)
-                    ImageUtils.compressAndRename(
+                    ImageUtils.compressAndRenameHashed(
                         logger = logger,
                         input = it.imageFile,
                         resized = it.resized,
@@ -639,7 +639,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 async {
                     val output =
                         outputImagesAnimeExpo2026.get().asFile.resolve(it.path)
-                    ImageUtils.compressAndRename(
+                    ImageUtils.compressAndRenameHashed(
                         logger = logger,
                         input = it.imageFile,
                         resized = it.resized,

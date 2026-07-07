@@ -279,7 +279,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             .flatten()
             .map { (image, output) ->
                 async {
-                    ImageUtils.compressAndRename(
+                    ImageUtils.compressAndRenameHashed(
                         logger = logger,
                         input = image.file,
                         resized = image.resized,

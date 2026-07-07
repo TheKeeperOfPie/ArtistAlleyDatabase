@@ -201,7 +201,7 @@ internal class EmbedCache(
                                 file = imageFile,
                                 resizeTarget = ImageUtils.NORMAL_RESIZE_TARGET,
                             )
-                            ImageUtils.compressAndRename(
+                            ImageUtils.compressAndRenameHashed(
                                 logger = logger,
                                 input = imageFile,
                                 resized = resized,
