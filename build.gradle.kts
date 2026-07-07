@@ -33,17 +33,6 @@ tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
     outputFormatter = "html"
 }
 
-tasks.register("copyGitHooks", Copy::class) {
-    from(File(rootProject.rootDir, "scripts/git/pre-commit"))
-    into(File(rootProject.rootDir, ".git/hooks"))
-    filePermissions {
-        user {
-            read = true
-            execute = true
-        }
-    }
-}
-
 val verificationMetadataFile = File(rootProject.rootDir, "gradle/verification-metadata.xml")
 tasks.register("recopyVerificationMetadata") {
     verificationMetadataFile.resolveSibling("verification-metadata-base.xml")

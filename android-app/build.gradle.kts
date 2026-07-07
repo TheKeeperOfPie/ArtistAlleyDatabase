@@ -281,8 +281,6 @@ tasks.register<Exec>("launchReleaseMainActivity") {
     outputs.upToDateWhen { false }
 }
 
-tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
-
 tasks.named { it.contains("explodeCodeSource") }.configureEach {
     dependsOn("generateResourceAccessorsForAndroidMain")
     dependsOn("generateActualResourceCollectorsForAndroidMain")
