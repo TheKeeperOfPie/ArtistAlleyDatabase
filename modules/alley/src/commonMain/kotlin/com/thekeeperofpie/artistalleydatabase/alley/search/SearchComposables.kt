@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -23,13 +22,11 @@ import org.jetbrains.compose.resources.stringResource
 internal fun BottomSheetFilterDataYearHeader(
     dataYearHeaderState: DataYearHeaderState,
     scaffoldState: BottomSheetScaffoldState?,
-    onOpenExport: (DataYear) -> Unit,
     onOpenChangelog: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     DataYearHeader(
         state = dataYearHeaderState,
-        onOpenExport = onOpenExport,
         onOpenChangelog = onOpenChangelog,
         onOpenSettings = onOpenSettings,
     ) {

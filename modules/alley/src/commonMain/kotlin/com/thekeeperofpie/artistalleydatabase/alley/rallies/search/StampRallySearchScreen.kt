@@ -94,7 +94,6 @@ object StampRallySearchScreen {
                     BottomSheetFilterDataYearHeader(
                         dataYearHeaderState = dataYearHeaderState,
                         scaffoldState = scaffoldState,
-                        onOpenExport = onOpenExport,
                         onOpenChangelog = onOpenChangelog,
                         onOpenSettings = onOpenSettings,
                     )

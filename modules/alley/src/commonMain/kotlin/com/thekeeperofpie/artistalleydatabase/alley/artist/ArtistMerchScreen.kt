@@ -47,7 +47,6 @@ object ArtistMerchScreen {
         onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
@@ -79,7 +78,6 @@ object ArtistMerchScreen {
             onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
             onOpenMerch = onOpenMerch,
             onOpenSeries = onOpenSeries,
-            onOpenExport = onOpenExport,
             onOpenChangelog = onOpenChangelog,
             onOpenSettings = onOpenSettings,
             scaffoldState = scaffoldState,
@@ -98,7 +96,6 @@ object ArtistMerchScreen {
         onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
@@ -143,7 +140,6 @@ object ArtistMerchScreen {
                     scaffoldState = scaffoldState,
                     merchEntry = { merchEntry },
                     onFavoriteToggle = artistMerchViewModel::onFavoriteToggle,
-                    onOpenExport = onOpenExport,
                     onOpenChangelog = onOpenChangelog,
                     onOpenSettings = onOpenSettings,
                 )
@@ -168,7 +164,6 @@ object ArtistMerchScreen {
         scaffoldState: BottomSheetScaffoldState,
         merchEntry: () -> MerchWithUserData?,
         onFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
     ) {
@@ -191,7 +186,6 @@ object ArtistMerchScreen {
             BottomSheetFilterDataYearHeader(
                 dataYearHeaderState = dataYearHeaderState,
                 scaffoldState = scaffoldState,
-                onOpenExport = onOpenExport,
                 onOpenChangelog = onOpenChangelog,
                 onOpenSettings = onOpenSettings,
             )

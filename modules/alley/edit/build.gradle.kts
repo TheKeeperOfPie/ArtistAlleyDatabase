@@ -14,6 +14,7 @@ kotlin {
         commonMain.dependencies {
             api(libs.jetBrainsAndroidX.navigation3.ui)
 
+            implementation(libs.jetBrainsAndroidX.navigationevent.compose)
             implementation(libs.jetBrainsCompose.components.resources)
             implementation(libs.jetBrainsCompose.foundation)
             implementation(libs.jetBrainsCompose.material3)

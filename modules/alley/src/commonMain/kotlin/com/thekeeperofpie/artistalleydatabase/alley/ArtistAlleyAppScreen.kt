@@ -640,7 +640,6 @@ object ArtistAlleyAppScreen {
                     onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
-                    onOpenExport = onOpenExport,
                     onOpenChangelog = { onOpenSeriesTagChangelog(route.series) },
                     onOpenSettings = onOpenSettings,
                 )
@@ -691,7 +690,6 @@ object ArtistAlleyAppScreen {
                     onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
-                    onOpenExport = onOpenExport,
                     onOpenChangelog = { onOpenMerchTagChangelog(route.merch) },
                     onOpenSettings = onOpenSettings,
                 )

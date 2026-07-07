@@ -159,8 +159,6 @@ internal object StampRallyListScreen {
                                 rememberDataYearHeaderState(state.dataYear, null)
                             DataYearHeader(
                                 state = dataYearHeaderState,
-                                showFeedbackReminder = false,
-                                onOpenExport = {},
                                 onOpenChangelog = {},
                                 onOpenSettings = {},
                                 additionalActions = {

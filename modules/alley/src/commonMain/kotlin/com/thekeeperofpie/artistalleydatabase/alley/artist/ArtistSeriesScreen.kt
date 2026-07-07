@@ -51,7 +51,6 @@ object ArtistSeriesScreen {
         onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
@@ -86,7 +85,6 @@ object ArtistSeriesScreen {
             onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
             onOpenMerch = onOpenMerch,
             onOpenSeries = onOpenSeries,
-            onOpenExport = onOpenExport,
             onOpenChangelog = onOpenChangelog,
             onOpenSettings = onOpenSettings,
             scaffoldState = scaffoldState,
@@ -108,7 +106,6 @@ object ArtistSeriesScreen {
         onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
@@ -155,7 +152,6 @@ object ArtistSeriesScreen {
                     seriesEntry = { seriesEntry },
                     seriesImage = { seriesImage },
                     onFavoriteToggle = artistSeriesViewModel::onFavoriteToggle,
-                    onOpenExport = onOpenExport,
                     onOpenChangelog = onOpenChangelog,
                     onOpenSettings = onOpenSettings,
                 )
@@ -189,7 +185,6 @@ object ArtistSeriesScreen {
         seriesEntry: () -> SeriesWithUserData?,
         seriesImage: () -> String?,
         onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
     ) {
@@ -216,7 +211,6 @@ object ArtistSeriesScreen {
             BottomSheetFilterDataYearHeader(
                 dataYearHeaderState = dataYearHeaderState,
                 scaffoldState = scaffoldState,
-                onOpenExport = onOpenExport,
                 onOpenChangelog = onOpenChangelog,
                 onOpenSettings = onOpenSettings,
             )

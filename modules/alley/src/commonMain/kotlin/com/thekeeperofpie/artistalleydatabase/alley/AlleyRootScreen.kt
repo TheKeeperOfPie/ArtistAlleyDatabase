@@ -128,7 +128,6 @@ object AlleyRootScreen {
                             onSelectedTabIndexChanged = { selectedTabIndex = it },
                             onSeriesClick = onOpenSeries,
                             onMerchClick = onOpenMerch,
-                            onOpenExport = onOpenExport,
                             onOpenSeriesChangelog = onOpenSeriesChangelog,
                             onOpenMerchChangelog = onOpenMerchChangelog,
                             onOpenSettings = onOpenSettings,

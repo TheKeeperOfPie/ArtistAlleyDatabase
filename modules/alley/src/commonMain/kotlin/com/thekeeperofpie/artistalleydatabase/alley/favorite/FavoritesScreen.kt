@@ -685,7 +685,6 @@ object FavoritesScreen {
         Column {
             DataYearHeader(
                 state = dataYearHeaderState,
-                onOpenExport = { eventSink(Event.OpenExport(it)) },
                 onOpenChangelog = { eventSink(Event.OpenChangelog) },
                 onOpenSettings = { eventSink(Event.OpenSettings) },
             ) {

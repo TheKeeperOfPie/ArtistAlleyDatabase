@@ -72,6 +72,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
+import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.FeedbackHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -156,13 +158,16 @@ object ArtistSearchScreen {
             },
             onClickBack,
             header = {
-                BottomSheetFilterDataYearHeader(
-                    dataYearHeaderState = dataYearHeaderState,
-                    scaffoldState = scaffoldState,
-                    onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenChangelog,
-                    onOpenSettings = onOpenSettings,
-                )
+                Column {
+                    ConventionCountdownHeader(dataYearHeaderState.year, onOpenExport)
+                    FeedbackHeader(dataYearHeaderState.year)
+                    BottomSheetFilterDataYearHeader(
+                        dataYearHeaderState = dataYearHeaderState,
+                        scaffoldState = scaffoldState,
+                        onOpenChangelog = onOpenChangelog,
+                        onOpenSettings = onOpenSettings,
+                    )
+                }
             },
             scaffoldState,
             scrollStateSaver,
@@ -578,7 +583,6 @@ object ArtistSearchScreen {
                 BottomSheetFilterDataYearHeader(
                     dataYearHeaderState = dataYearHeaderState,
                     scaffoldState = scaffoldState,
-                    onOpenExport = {},
                     onOpenChangelog = {},
                     onOpenSettings = {},
                 )

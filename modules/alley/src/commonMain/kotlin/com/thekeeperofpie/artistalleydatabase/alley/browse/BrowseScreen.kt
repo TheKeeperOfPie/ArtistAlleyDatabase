@@ -99,7 +99,6 @@ object BrowseScreen {
         onSelectedTabIndexChanged: (Int) -> Unit,
         onSeriesClick: (DataYear, String) -> Unit,
         onMerchClick: (DataYear, String) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenSeriesChangelog: (DataYear) -> Unit,
         onOpenMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
@@ -201,7 +200,6 @@ object BrowseScreen {
                                             },
                                         )
                                     },
-                                    onOpenExport = onOpenExport,
                                     onOpenChangelog = {
                                         onOpenSeriesChangelog(dataYearHeaderState.year)
                                     },
@@ -251,7 +249,6 @@ object BrowseScreen {
                                         },
                                     )
                                 },
-                                onOpenExport = onOpenExport,
                                 onOpenChangelog = {
                                     onOpenMerchChangelog(dataYearHeaderState.year)
                                 },
@@ -276,7 +273,6 @@ object BrowseScreen {
         itemKey: (T) -> Any,
         item: @Composable (T?) -> Unit,
         scrollStateSaver: ScrollStateSaver,
-        onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
         additionalHeader: LazyListScope.() -> Unit = {},
@@ -366,7 +362,6 @@ object BrowseScreen {
                         BottomSheetFilterDataYearHeader(
                             dataYearHeaderState = dataYearHeaderState,
                             scaffoldState = scaffoldState,
-                            onOpenExport = onOpenExport,
                             onOpenChangelog = onOpenChangelog,
                             onOpenSettings = onOpenSettings,
                         )

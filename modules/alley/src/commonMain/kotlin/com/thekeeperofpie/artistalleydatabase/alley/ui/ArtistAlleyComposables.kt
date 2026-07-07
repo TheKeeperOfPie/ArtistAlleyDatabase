@@ -588,80 +588,81 @@ class DataYearHeaderState(
 private val UPCOMING_PROMPT_DURATION = 15.days
 
 @Composable
+internal fun ConventionCountdownHeader(year: DataYear, onOpenExport: (DataYear) -> Unit) {
+    val windowSizeClass = currentWindowSizeClass()
+    val relativeTime = remember(windowSizeClass, year) {
+        if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+            return@remember null
+        }
+        val start = year.dates.start.atStartOfDayIn(year.dates.timeZone)
+        val now = Clock.System.now()
+        if (start > now && start - now < UPCOMING_PROMPT_DURATION) {
+            HumanReadable.timeAgo(start)
+        } else {
+            null
+        }
+    }
+    if (relativeTime != null) {
+        ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                val text = buildAnnotatedString {
+                    append(stringResource(year.shortName))
+                    append(" is ")
+                    withStyle(
+                        SpanStyle(
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.Black,
+                        )
+                    ) {
+                        append(relativeTime)
+                    }
+                    append(stringResource(Res.string.alley_con_upcoming_suffix))
+                }
+                Text(
+                    text = text,
+                    modifier = Modifier.weight(1f)
+                )
+                Button(onClick = { onOpenExport(year) }) {
+                    Text(stringResource(Res.string.alley_con_upcoming_show_qr))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun FeedbackHeader(year: DataYear) {
+    val isAlmostOver = remember(year) {
+        val dates = year.dates
+        (dates.end.atStartOfDayIn(dates.timeZone) - 1.days) < Clock.System.now()
+    }
+    if (isAlmostOver) {
+        val link = when (year) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_NYC_2024 -> null
+            DataYear.ANIME_EXPO_2025 -> BuildKonfig.feedbackFormLink
+            DataYear.ANIME_EXPO_2026 -> BuildKonfig.feedbackFormLinkAnimeExpo2026
+            DataYear.ANIME_NYC_2025 -> BuildKonfig.feedbackFormLinkAnimeNyc2025
+        }
+        if (link != null) {
+            FeedbackPrompt(year, link)
+        }
+    }
+}
+
+@Composable
 fun DataYearHeader(
     state: DataYearHeaderState,
-    showFeedbackReminder: Boolean = true,
-    onOpenExport: (DataYear) -> Unit,
     onOpenChangelog: () -> Unit,
     onOpenSettings: () -> Unit,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
     Column {
-        val year = state.year
-        val windowSizeClass = currentWindowSizeClass()
-        val relativeTime = remember(windowSizeClass, year) {
-            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
-                return@remember null
-            }
-            val start = year.dates.start.atStartOfDayIn(year.dates.timeZone)
-            val now = Clock.System.now()
-            if (start > now && start - now < UPCOMING_PROMPT_DURATION) {
-                HumanReadable.timeAgo(start)
-            } else {
-                null
-            }
-        }
-        if (relativeTime != null) {
-            ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
-                ) {
-                    val text = buildAnnotatedString {
-                        append(stringResource(year.shortName))
-                        append(" is ")
-                        withStyle(
-                            SpanStyle(
-                                color = MaterialTheme.colorScheme.tertiary,
-                                fontWeight = FontWeight.Black,
-                            )
-                        ) {
-                            append(relativeTime)
-                        }
-                        append(stringResource(Res.string.alley_con_upcoming_suffix))
-                    }
-                    Text(
-                        text = text,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Button(onClick = { onOpenExport(state.year) }) {
-                        Text(stringResource(Res.string.alley_con_upcoming_show_qr))
-                    }
-                }
-            }
-        }
-
-        if (showFeedbackReminder) {
-            val isAlmostOver = remember(year) {
-                val dates = year.dates
-                (dates.end.atStartOfDayIn(dates.timeZone) - 1.days) < Clock.System.now()
-            }
-            if (isAlmostOver) {
-                val link = when (year) {
-                    DataYear.ANIME_EXPO_2023,
-                    DataYear.ANIME_EXPO_2024,
-                    DataYear.ANIME_NYC_2024 -> null
-                    DataYear.ANIME_EXPO_2025 -> BuildKonfig.feedbackFormLink
-                    DataYear.ANIME_EXPO_2026 -> BuildKonfig.feedbackFormLinkAnimeExpo2026
-                    DataYear.ANIME_NYC_2025 -> BuildKonfig.feedbackFormLinkAnimeNyc2025
-                }
-                if (link != null) {
-                    FeedbackPrompt(year, link)
-                }
-            }
-        }
-
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (state.lockedYear) {
                 Text(

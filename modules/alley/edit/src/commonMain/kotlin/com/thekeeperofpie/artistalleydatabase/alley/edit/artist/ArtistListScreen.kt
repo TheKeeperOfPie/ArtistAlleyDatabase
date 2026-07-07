@@ -162,8 +162,6 @@ internal object ArtistListScreen {
                                 rememberDataYearHeaderState(state.dataYear, null)
                             DataYearHeader(
                                 state = dataYearHeaderState,
-                                showFeedbackReminder = false,
-                                onOpenExport = {},
                                 onOpenChangelog = {},
                                 onOpenSettings = {},
                                 additionalActions = {
