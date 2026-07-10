@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +62,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_file
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_open_metrics
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
@@ -112,6 +114,7 @@ internal fun AlleySettingsScreen(
     onNavigateBack: () -> Unit,
     onOpenExport: () -> Unit,
     onOpenLibraries: () -> Unit,
+    onOpenMetrics: () -> Unit,
 ) {
     val viewModel = viewModel { graph.alleySettingsViewModel() }
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
@@ -122,7 +125,7 @@ internal fun AlleySettingsScreen(
             modifier = Modifier.widthIn(max = 1200.dp),
         ) {
             when (it.id) {
-                "header" -> Header(onOpenLibraries)
+                "header" -> Header(onOpenLibraries = onOpenLibraries, onOpenMetrics = onOpenMetrics)
                 "footer" -> Footer()
                 "export" -> ExportSection(onOpenExport)
                 "import" -> ImportSection(
@@ -145,7 +148,7 @@ internal fun AlleySettingsScreen(
 }
 
 @Composable
-private fun Header(onOpenLibraries: () -> Unit) {
+private fun Header(onOpenLibraries: () -> Unit, onOpenMetrics: () -> Unit) {
     OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth()) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -208,7 +211,7 @@ private fun Header(onOpenLibraries: () -> Unit) {
                 )
             }
 
-            Column {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 val uriHandler = LocalUriHandler.current
                 Row {
                     TooltipIconButton(
@@ -240,6 +243,10 @@ private fun Header(onOpenLibraries: () -> Unit) {
                         onClick = onOpenLibraries,
                         contentDescription = aboutLibraries,
                     )
+                }
+
+                FilledTonalButton(onClick = onOpenMetrics) {
+                    Text(stringResource(Res.string.alley_settings_open_metrics))
                 }
             }
         }
@@ -644,7 +651,7 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
 @Preview
 @Composable
 private fun HeaderPreview() = PreviewDark {
-    Header(onOpenLibraries = {})
+    Header(onOpenLibraries = {}, onOpenMetrics = {})
 }
 
 @Preview

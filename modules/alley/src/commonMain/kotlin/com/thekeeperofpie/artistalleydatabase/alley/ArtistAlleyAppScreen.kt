@@ -45,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
+import com.thekeeperofpie.artistalleydatabase.alley.metrics.MetricsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
@@ -520,6 +521,25 @@ object ArtistAlleyAppScreen {
                 )
             }
 
+            sharedElementEntry<AlleyDestination.Metrics> {
+                MetricsScreen(
+                    graph = graph,
+                    onNavigateBack = navStack::onBack,
+                    onClickArtist = {
+                        navStack.navigate(
+                            AlleyDestination.ArtistDetails(
+                                year = it.year,
+                                id = it.id.toString(),
+                                booth = it.booth,
+                                name = it.name,
+                            )
+                        )
+                    },
+                    onClickSeries = { onOpenSeries(it.year, it.id) },
+                    onClickMerch = { onOpenMerch(it.year, it.id) },
+                )
+            }
+
             sharedElementEntry<AlleyDestination.Settings> {
                 AlleySettingsScreen(
                     graph = graph,
@@ -530,7 +550,10 @@ object ArtistAlleyAppScreen {
                     },
                     onOpenLibraries = {
                         navStack.navigate(AlleyDestination.AboutLibraries)
-                    }
+                    },
+                    onOpenMetrics = {
+                        navStack.navigate(AlleyDestination.Metrics)
+                    },
                 )
             }
 

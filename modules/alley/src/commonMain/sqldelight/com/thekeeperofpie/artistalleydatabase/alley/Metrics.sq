@@ -1,0 +1,15 @@
+getPopularSeries:
+SELECT seriesId, COUNT(*) AS count
+FROM artistSeriesConnection
+WHERE (yearFlags & :flags) != 0
+GROUP BY seriesId
+ORDER BY count DESC
+LIMIT 10;
+
+getPopularMerch:
+SELECT merchId, COUNT(*) AS count
+FROM artistMerchConnection
+WHERE (yearFlags & :flags) != 0
+GROUP BY merchId
+ORDER BY count DESC
+LIMIT 10;

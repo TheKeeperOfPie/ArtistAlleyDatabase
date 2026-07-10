@@ -120,6 +120,9 @@ sealed interface AlleyDestination : NavKey {
     data class MerchMap(val year: DataYear? = null, val merch: String) : AlleyDestination
 
     @Serializable
+    data object Metrics : AlleyDestination
+
+    @Serializable
     data object Settings : AlleyDestination
 
     @Serializable
@@ -189,6 +192,7 @@ sealed interface AlleyDestination : NavKey {
         is MerchChangelog -> "changelog/merch"
         is MerchTagChangelog -> "changelog/merch/${Uri.encode(merch)}"
         is MerchMap -> "merch/map/${year.serializedNameOrAll}/${Uri.encode(merch)}"
+        Metrics -> "metrics"
         is Series -> "series/${year.serializedNameOrAll}/${Uri.encode(series)}"
         is SeriesChangelog -> "changelog/series"
         is SeriesTagChangelog -> "changelog/series/${Uri.encode(series)}"
@@ -308,6 +312,7 @@ sealed interface AlleyDestination : NavKey {
                         3 -> Merch(year = parts[1].toDataYearOrNull(), merch = Uri.decode(parts[2]))
                         else -> null
                     }
+                    "metrics" -> Metrics
                     "series" -> when (parts.size) {
                         4 if parts[1] == "map" ->
                             SeriesMap(

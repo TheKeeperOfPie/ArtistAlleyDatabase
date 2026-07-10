@@ -658,11 +658,12 @@ internal fun FeedbackHeader(year: DataYear) {
 @Composable
 fun DataYearHeader(
     state: DataYearHeaderState,
-    onOpenChangelog: () -> Unit,
-    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenChangelog: (() -> Unit)? = null,
+    onOpenSettings: (() -> Unit)? = null,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
-    Column {
+    Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (state.lockedYear) {
                 Text(
@@ -687,18 +688,22 @@ fun DataYearHeader(
                 additionalActions()
             }
 
-            IconButton(onClick = onOpenChangelog) {
-                Icon(
-                    imageVector = Icons.Default.ChangeHistory,
-                    contentDescription = stringResource(Res.string.alley_changelog),
-                )
+            if (onOpenChangelog != null) {
+                IconButton(onClick = onOpenChangelog) {
+                    Icon(
+                        imageVector = Icons.Default.ChangeHistory,
+                        contentDescription = stringResource(Res.string.alley_changelog),
+                    )
+                }
             }
 
-            IconButton(onClick = onOpenSettings) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = stringResource(Res.string.alley_settings),
-                )
+            if (onOpenSettings != null) {
+                IconButton(onClick = onOpenSettings) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(Res.string.alley_settings),
+                    )
+                }
             }
         }
     }

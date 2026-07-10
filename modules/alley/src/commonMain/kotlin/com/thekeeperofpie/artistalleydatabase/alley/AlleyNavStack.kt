@@ -45,6 +45,7 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyDestination.MerchChangelog.serializer())
             subclass(serializer = AlleyDestination.MerchTagChangelog.serializer())
             subclass(serializer = AlleyDestination.MerchMap.serializer())
+            subclass(serializer = AlleyDestination.Metrics.serializer())
             subclass(serializer = AlleyDestination.Settings.serializer())
             subclass(serializer = AlleyDestination.StampRallies.serializer())
             subclass(serializer = AlleyDestination.StampRallyDetails.serializer())
