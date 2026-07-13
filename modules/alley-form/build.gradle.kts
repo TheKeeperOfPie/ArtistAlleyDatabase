@@ -56,6 +56,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.jetBrainsAndroidX.navigationevent.compose)
             implementation(libs.jetBrainsCompose.runtime)
             implementation(libs.jetBrainsCompose.ui)
 

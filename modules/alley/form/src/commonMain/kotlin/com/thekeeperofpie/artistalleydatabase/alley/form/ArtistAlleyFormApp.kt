@@ -145,7 +145,7 @@ fun EntryProviderScope<NavKey>.addFormEntryProviders(
         ArtistFormHomeScreen(
             onOpenForm = {
                 onNavigate(
-                    AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026)
+                    AlleyFormDestination.ArtistForm(DataYear.LATEST)
                 )
             },
         )

@@ -37,8 +37,8 @@ internal class DiscordApi(
             required = true,
             choices = listOf(
                 CommandRegisterRequest.Option.Choice(
-                    name = "AX 2026",
-                    value = DataYear.ANIME_EXPO_2026.serializedName,
+                    name = DataYear.LATEST.serializedName,
+                    value = DataYear.LATEST.serializedName,
                 ),
             ),
         )

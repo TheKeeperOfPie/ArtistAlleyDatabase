@@ -130,7 +130,7 @@ internal class ForumSyncer(private val environment: Environment) {
         |
         |This is a mirror of ${AlleyUtils.siteUrl}, providing an easy way to view all of the artists that will be tabling at ${
             getString(
-                DataYear.ANIME_EXPO_2026.fullName
+                DataYear.LATEST.fullName
             )
         }. We encourage you to use the site instead as it offers a better UI, search by tags, and offline support.
         |## Attendees
@@ -343,7 +343,7 @@ internal class ForumSyncer(private val environment: Environment) {
                 seriesConfirmed: List<String>,
             ): MessageData {
                 val images = AlleyImageUtils.getArtistImagesForForumPost(
-                    year = DataYear.ANIME_EXPO_2026,
+                    year = DataYear.LATEST,
                     images = entry.images.takeIf { entry.fallbackImageYear == null }.orEmpty(),
                     tempImages = entry.tempImages.orEmpty(),
                     embeds = entry.embeds.orEmpty(),
@@ -366,7 +366,7 @@ internal class ForumSyncer(private val environment: Environment) {
 
                 val thumbnailImage = entry.profileImage
                     ?.let {
-                        AlleyImageUtils.getProfileImageWithPath(DataYear.ANIME_EXPO_2026, it)
+                        AlleyImageUtils.getProfileImageWithPath(DataYear.LATEST, it)
                     }
 
                 val thumbnailSwatch = thumbnailImage?.first
@@ -577,7 +577,7 @@ internal class ForumSyncer(private val environment: Environment) {
                                 style = MessageComponent.Button.Style.LINK,
                                 label = "Open in Directory",
                                 url = BuildKonfig.directoryUrl +
-                                        "/artist/${DataYear.ANIME_EXPO_2026.serializedName}/${entry.id}",
+                                        "/artist/${DataYear.LATEST.serializedName}/${entry.id}",
                             )
                         )
                     )

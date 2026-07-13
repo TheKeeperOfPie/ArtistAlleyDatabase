@@ -46,9 +46,9 @@ class MerchResolutionViewModel(
 
     private suspend fun commit(merch: MerchInfo): BackendRequest.ArtistSave.Response {
         loadArtists().forEach {
-            val artist = editDatabase.loadArtist(DataYear.ANIME_EXPO_2026, it.id) ?: return@forEach
+            val artist = editDatabase.loadArtist(DataYear.LATEST, it.id) ?: return@forEach
             val response = editDatabase.saveArtist(
-                dataYear = DataYear.ANIME_EXPO_2026,
+                dataYear = DataYear.LATEST,
                 initial = artist,
                 updated = artist.copy(
                     merchInferred = artist.merchInferred.map { if (it == merchId) merch.name else it },

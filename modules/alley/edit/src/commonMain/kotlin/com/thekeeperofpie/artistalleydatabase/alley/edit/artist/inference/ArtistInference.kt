@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
+import com.thekeeperofpie.artistalleydatabase.alley.utils.start
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.StringUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -27,11 +28,9 @@ class ArtistInference(
     private val artistEntryDao: ArtistEntryDao,
 ) {
     private val previousYears = flowFromSuspend {
-        (artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2025) +
-                artistEntryDao.getArtistInferenceData(DataYear.ANIME_NYC_2025) +
-                artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2024) +
-                artistEntryDao.getArtistInferenceData(DataYear.ANIME_NYC_2024) +
-                artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2023))
+        DataYear.entries.sortedByDescending { it.dates.start }
+            .minus(DataYear.LATEST)
+            .flatMap { artistEntryDao.getArtistInferenceData(it) }
     }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
     private val dataFinalized =
         previousYears.mapLatest {
@@ -41,7 +40,7 @@ class ArtistInference(
         }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
     private val dataFinalizedAndPending =
         previousYears.mapLatest {
-            (it + artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2026))
+            (it + artistEntryDao.getArtistInferenceData(DataYear.LATEST))
                 .groupBy { it.artistId }
                 .mapValues(::ArtistData)
                 .values

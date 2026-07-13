@@ -376,7 +376,7 @@ private fun entryProvider(
                 // TODO: Support other conventions?
                 navStack.navigate(
                     AlleyEditDestination.ArtistFormMerge(
-                        dataYear = DataYear.ANIME_EXPO_2026,
+                        dataYear = DataYear.LATEST,
                         artistId = it,
                     )
                 )
@@ -385,7 +385,7 @@ private fun entryProvider(
                 // TODO: Support other conventions?
                 navStack.navigate(
                     AlleyEditDestination.ArtistFormHistory(
-                        dataYear = DataYear.ANIME_EXPO_2026,
+                        dataYear = DataYear.LATEST,
                         artistId = artistId,
                         formTimestamp = formTimestamp,
                     )
@@ -570,7 +570,7 @@ private fun entryProvider(
             onSelectEntry = { artistId, stampRallyId ->
                 navStack.navigate(
                     AlleyEditDestination.StampRallyFormMerge(
-                        dataYear = DataYear.ANIME_EXPO_2026,
+                        dataYear = DataYear.LATEST,
                         artistId = artistId,
                         stampRallyId = stampRallyId,
                     )
@@ -579,7 +579,7 @@ private fun entryProvider(
             onSelectHistoryEntry = { artistId, stampRallyId, formTimestamp ->
                 navStack.navigate(
                     AlleyEditDestination.StampRallyFormHistory(
-                        dataYear = DataYear.ANIME_EXPO_2026,
+                        dataYear = DataYear.LATEST,
                         artistId = artistId,
                         stampRallyId = stampRallyId,
                         formTimestamp = formTimestamp,
@@ -633,7 +633,7 @@ private fun entryProvider(
                 // TODO: Support other years?
                 navStack.navigate(
                     AlleyEditDestination.RemoteArtistDataMerge(
-                        dataYear = DataYear.ANIME_EXPO_2026,
+                        dataYear = DataYear.LATEST,
                         id = it.id,
                     )
                 )
@@ -641,7 +641,7 @@ private fun entryProvider(
             onSelectHistoryEntry = {
                 navStack.navigate(
                     AlleyEditDestination.RemoteArtistDataHistoryMerge(
-                        dataYear = DataYear.ANIME_EXPO_2026,
+                        dataYear = DataYear.LATEST,
                         id = it.id,
                         timestamp = it.timestamp,
                     )

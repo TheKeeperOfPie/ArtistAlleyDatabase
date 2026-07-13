@@ -59,7 +59,7 @@ object DebugTestData {
         )
 
         editRemoteDatabase.submitRemoteArtistData(
-            dataYear = DataYear.ANIME_EXPO_2026,
+            dataYear = DataYear.LATEST,
             data = listOf(
                 ArtistRemoteEntry(
                     confirmedId = null,
@@ -84,7 +84,7 @@ object DebugTestData {
     private suspend fun initializeTestArtist(
         remoteDatabase: AlleyEditRemoteDatabase,
     ): ArtistDatabaseEntry.Impl {
-        val dataYear = DataYear.ANIME_EXPO_2026
+        val dataYear = DataYear.LATEST
 
         // Seed some initial data to make it easier to test out features locally
         val artistUpdates = listOf<(ArtistDatabaseEntry.Impl) -> ArtistDatabaseEntry.Impl>(
@@ -217,7 +217,7 @@ object DebugTestData {
         )
 
         var previous = StampRallyDatabaseEntry(
-            year = DataYear.ANIME_EXPO_2026,
+            year = DataYear.LATEST,
             id = Uuid.random().toString(),
             fandom = "Test stamp rally",
             hostTable = "C39",
@@ -240,14 +240,14 @@ object DebugTestData {
             lastEditTime = Clock.System.now(),
         )
         database.saveStampRally(
-            dataYear = DataYear.ANIME_EXPO_2026,
+            dataYear = DataYear.LATEST,
             initial = null,
             updated = previous
         )
         updates.forEach {
             val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.seconds)
             database.saveStampRally(
-                dataYear = DataYear.ANIME_EXPO_2026,
+                dataYear = DataYear.LATEST,
                 initial = previous,
                 updated = next
             )

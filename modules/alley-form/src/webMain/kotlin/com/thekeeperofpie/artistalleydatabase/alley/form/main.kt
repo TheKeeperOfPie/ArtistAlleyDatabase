@@ -131,7 +131,7 @@ private fun Content(graph: ArtistAlleyFormGraph) {
             uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_ENCRYPTED_PARAM)
                 ?.let { ArtistFormAccessKey.setKeyEncrypted(it) }
             if (uri?.getQueryParameter("openForm").toBoolean()) {
-                navStack.navigate(AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026))
+                navStack.navigate(AlleyFormDestination.ArtistForm(DataYear.LATEST))
             }
         }
 

@@ -48,9 +48,9 @@ class SeriesResolutionViewModel(
 
     private suspend fun commit(series: SeriesInfo): BackendRequest.ArtistSave.Response {
         loadArtists().forEach {
-            val artist = editDatabase.loadArtist(DataYear.ANIME_EXPO_2026, it.id) ?: return@forEach
+            val artist = editDatabase.loadArtist(DataYear.LATEST, it.id) ?: return@forEach
             val response = editDatabase.saveArtist(
-                dataYear = DataYear.ANIME_EXPO_2026,
+                dataYear = DataYear.LATEST,
                 initial = artist,
                 updated = artist.copy(
                     seriesInferred = artist.seriesInferred.map { if (it == seriesId) series.id else it },

@@ -45,7 +45,7 @@ class AdminViewModel(
             if (it == null) {
                 emptyList()
             } else {
-                remoteDataDiffer.calculateDiff(DataYear.ANIME_EXPO_2026, it)
+                remoteDataDiffer.calculateDiff(DataYear.LATEST, it)
             }
         }
         .flowOn(dispatchers.io)
@@ -60,7 +60,7 @@ class AdminViewModel(
 
     internal fun submitRemoteDiff(diff: List<ArtistRemoteEntry>) {
         viewModelScope.launch {
-            database.submitRemoteArtistData(DataYear.ANIME_EXPO_2026, diff)
+            database.submitRemoteArtistData(DataYear.LATEST, diff)
             remoteSyncFile.value = null
         }
     }
