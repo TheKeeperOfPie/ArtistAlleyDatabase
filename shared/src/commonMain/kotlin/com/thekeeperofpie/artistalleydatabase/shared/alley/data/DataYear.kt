@@ -114,6 +114,22 @@ enum class DataYear(
             timeZoneOffsetHours = -4,
         ),
     ),
+
+//    @SerialName("ANYC2026")
+//    ANIME_NYC_2026(
+//        serializedName = "ANYC2026",
+//        convention = Convention.ANIME_NYC,
+//        artistTableName = "artistEntryAnimeNyc2026",
+//        stampRallyTableName = null,
+//        folderName = "animeNyc2026",
+//        dates = Dates(
+//            year = 2026,
+//            month = 8,
+//            startDay = 20,
+//            endDay = 23,
+//            timeZoneOffsetHours = -4,
+//        ),
+//    ),
     ;
 
     val stampRallyTableNameOrThrow: String
@@ -139,9 +155,9 @@ enum class DataYear(
         val LATEST = ANIME_EXPO_2026
 
         fun deserialize(value: String) = when (value) {
-            "YEAR_2023" -> DataYear.ANIME_EXPO_2023
-            "YEAR_2024" -> DataYear.ANIME_EXPO_2024
-            "YEAR_2025" -> DataYear.ANIME_EXPO_2025
+            "YEAR_2023" -> ANIME_EXPO_2023
+            "YEAR_2024" -> ANIME_EXPO_2024
+            "YEAR_2025" -> ANIME_EXPO_2025
             else -> DataYear.entries.find { it.serializedName == value }
         }
     }

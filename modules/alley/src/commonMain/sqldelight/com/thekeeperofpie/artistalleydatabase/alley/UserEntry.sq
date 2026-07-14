@@ -52,6 +52,13 @@ ON artistEntryAnimeNyc2025.id = artistUserEntry.artistId AND 'ANYC2025' = artist
 LEFT OUTER JOIN artistNotes
 ON artistEntryAnimeNyc2025.id = artistNotes.artistId AND 'ANYC2025' = artistNotes.dataYear;
 
+getBoothsWithFavoritesAnimeNyc2026:
+SELECT artistEntryAnimeNyc2026.id, artistEntryAnimeNyc2026.booth, artistEntryAnimeNyc2026.name, artistEntryAnimeNyc2026.images, artistEntryAnimeNyc2026.fallbackImageYear, artistEntryAnimeNyc2026.tempImages, artistEntryAnimeNyc2026.embeds, artistUserEntry.favorite, artistNotes.dataYear, artistNotes.notes FROM artistEntryAnimeNyc2026
+LEFT OUTER JOIN artistUserEntry
+ON artistEntryAnimeNyc2026.id = artistUserEntry.artistId AND 'ANYC2026' = artistUserEntry.dataYear
+LEFT OUTER JOIN artistNotes
+ON artistEntryAnimeNyc2026.id = artistNotes.artistId AND 'ANYC2026' = artistNotes.dataYear;
+
 getStampRallyUserEntry:
 SELECT * FROM stampRallyUserEntry
 WHERE stampRallyId = :stampRallyId;

@@ -1547,11 +1547,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 inferredAnimeExpo2026 = inferredAnimeExpo2026.toLong(),
                 inferredAnimeNyc2024 = inferredAnimeNyc2024.toLong(),
                 inferredAnimeNyc2025 = inferredAnimeNyc2025.toLong(),
+                inferredAnimeNyc2026 = 0L,//inferredAnimeNyc2026.toLong(),
                 confirmedAnimeExpo2024 = confirmedAnimeExpo2024.toLong(),
                 confirmedAnimeExpo2025 = confirmedAnimeExpo2025.toLong(),
                 confirmedAnimeExpo2026 = confirmedAnimeExpo2026.toLong(),
                 confirmedAnimeNyc2024 = confirmedAnimeNyc2024.toLong(),
                 confirmedAnimeNyc2025 = confirmedAnimeNyc2025.toLong(),
+                confirmedAnimeNyc2026 = 0L,//confirmedAnimeNyc2026.toLong(),
                 id = seriesId,
             )
         }

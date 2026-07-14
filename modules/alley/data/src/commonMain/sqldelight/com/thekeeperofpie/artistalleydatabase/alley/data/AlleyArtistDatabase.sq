@@ -212,6 +212,69 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2025_fts USING FTS5 (
 );
 
 CREATE TABLE
+    IF NOT EXISTS artistEntryAnimeNyc2026 (
+        id TEXT NOT NULL,
+        status TEXT AS ArtistStatus NOT NULL,
+        booth TEXT COLLATE NOCASE,
+        name TEXT NOT NULL COLLATE NOCASE,
+        summary TEXT,
+        socialLinks TEXT AS List<String> NOT NULL,
+        storeLinks TEXT AS List<String> NOT NULL,
+        portfolioLinks TEXT AS List<String> NOT NULL,
+        catalogLinks TEXT AS List<String> NOT NULL,
+        linkFlags INTEGER NOT NULL DEFAULT 0,
+        linkFlags2 INTEGER NOT NULL DEFAULT 0,
+        notes TEXT,
+        commissions TEXT AS List<String> NOT NULL,
+        commissionFlags INTEGER NOT NULL DEFAULT 0,
+        seriesInferred TEXT AS List<String> NOT NULL,
+        seriesConfirmed TEXT AS List<String> NOT NULL,
+        merchInferred TEXT AS List<String> NOT NULL,
+        merchConfirmed TEXT AS List<String> NOT NULL,
+        images TEXT AS List<DatabaseImage> NOT NULL,
+        fallbackImageYear TEXT AS DataYear DEFAULT NULL,
+        tempImages TEXT AS List<DatabaseImage> DEFAULT NULL,
+        profileImage TEXT AS DatabaseImage DEFAULT NULL,
+        embeds TEXT AS Map<String, DatabaseImage> DEFAULT NULL,
+        editorNotes TEXT,
+        lastEditor TEXT,
+        lastEditTime TEXT AS Instant,
+        verifiedArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
+        newArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (id)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2026_fts USING FTS5 (
+    id,
+    booth,
+    name,
+    summary,
+    notes,
+    seriesInferred,
+    seriesConfirmed,
+    merchInferred,
+    merchConfirmed,
+    content=artistEntryAnimeNyc2026,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE TABLE
+    IF NOT EXISTS artistEntryAnimeNyc2026Changelog (
+        artistId TEXT AS Uuid NOT NULL,
+        date TEXT NOT NULL,
+        booth TEXT,
+        name TEXT NOT NULL,
+        seriesInferred TEXT AS Set<String>,
+        seriesConfirmed TEXT AS Set<String>,
+        merchInferred TEXT AS Set<String>,
+        merchConfirmed TEXT AS Set<String>,
+        isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
+        images TEXT AS List<DatabaseImage>,
+        isTempImages INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (artistId, date)
+    );
+
+CREATE TABLE
     IF NOT EXISTS artistEntryAnimeNyc2024 (
         id TEXT NOT NULL,
         booth TEXT COLLATE NOCASE,
@@ -456,11 +519,13 @@ CREATE TABLE
         inferredAnimeExpo2026 INTEGER NOT NULL DEFAULT 0,
         inferredAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         inferredAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
+        inferredAnimeNyc2026 INTEGER NOT NULL DEFAULT 0,
         confirmed2024 INTEGER NOT NULL DEFAULT 0,
         confirmed2025 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeExpo2026 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
+        confirmedAnimeNyc2026 INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
 
@@ -479,11 +544,13 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     inferredAnimeExpo2026,
     inferredAnimeNyc2024,
     inferredAnimeNyc2025,
+    inferredAnimeNyc2026,
     confirmed2024,
     confirmed2025,
     confirmedAnimeExpo2026,
     confirmedAnimeNyc2024,
     confirmedAnimeNyc2025,
+    confirmedAnimeNyc2026,
     content=seriesEntry,
     tokenize="unicode61 remove_diacritics 2"
 );

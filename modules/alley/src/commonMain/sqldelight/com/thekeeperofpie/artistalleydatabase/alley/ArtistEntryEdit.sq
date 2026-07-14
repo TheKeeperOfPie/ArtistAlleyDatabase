@@ -15,3 +15,6 @@ SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeNyc2024;
 
 getArtistInferenceDataAnimeNyc2025:
 SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeNyc2025;
+
+getArtistInferenceDataAnimeNyc2026:
+SELECT id, name, socialLinks, storeLinks, portfolioLinks, catalogLinks FROM artistEntryAnimeNyc2026;

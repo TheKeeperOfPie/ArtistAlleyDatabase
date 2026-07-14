@@ -1,0 +1,29 @@
+getArtists:
+SELECT id, booth, name, socialLinks, storeLinks, portfolioLinks, catalogLinks, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed, images
+FROM artistEntryAnimeNyc2026;
+
+insertArtist:
+INSERT OR REPLACE INTO artistEntryAnimeNyc2026
+VALUES ?;
+
+getArtist:
+SELECT * FROM artistEntryAnimeNyc2026
+WHERE artistEntryAnimeNyc2026.id = :id;
+
+getHistory:
+SELECT * FROM artistEntryAnimeNyc2026History
+WHERE id = :id
+ORDER BY lastEditTime DESC;
+
+insertHistory:
+INSERT INTO artistEntryAnimeNyc2026History
+VALUES ?;
+
+markArtistHasSubmittedForm:
+UPDATE artistEntryAnimeNyc2026
+SET verifiedArtist = 1
+WHERE id = :artistId;
+
+deleteArtist:
+DELETE FROM artistEntryAnimeNyc2026
+WHERE id = :artistId;

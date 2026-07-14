@@ -1,0 +1,48 @@
+getEntrySummaries:
+SELECT confirmedId, booth, name, timestamp FROM artistRemoteDataAnimeNyc2026;
+
+geHistoryEntrySummaries:
+SELECT confirmedId, booth, name, timestamp FROM artistRemoteDataAnimeNyc2026History;
+
+getEntry:
+SELECT * FROM artistRemoteDataAnimeNyc2026
+WHERE booth = :booth AND name = :name;
+
+getHistoryEntry:
+SELECT * FROM artistRemoteDataAnimeNyc2026History
+WHERE booth = :booth AND name = :name AND timestamp = :timestamp;
+
+getHistoryEntries:
+SELECT * FROM artistRemoteDataAnimeNyc2026History
+WHERE booth = :booth AND name = :name;
+
+getEntries:
+SELECT * FROM artistRemoteDataAnimeNyc2026;
+
+getMostRecentHistoryEntries:
+SELECT artistRemoteDataAnimeNyc2026History.*
+FROM (
+  SELECT artistRemoteDataAnimeNyc2026History.*, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
+  FROM artistRemoteDataAnimeNyc2026History
+) artistRemoteDataAnimeNyc2026History
+WHERE rowNumber = 1;
+
+getMostRecentHistorySummaries:
+SELECT confirmedId, booth, name, timestamp
+FROM (
+  SELECT confirmedId, booth, name, timestamp, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
+  FROM artistRemoteDataAnimeNyc2026History
+) artistRemoteDataAnimeNyc2026History
+WHERE rowNumber = 1;
+
+insertEntry:
+INSERT OR REPLACE INTO artistRemoteDataAnimeNyc2026
+VALUES ?;
+
+consumeEntry:
+DELETE FROM artistRemoteDataAnimeNyc2026
+WHERE booth = :booth AND name = :name AND timestamp = :timestamp;
+
+insertHistory:
+INSERT INTO artistRemoteDataAnimeNyc2026History
+VALUES ?;

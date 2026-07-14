@@ -21,6 +21,7 @@ internal object Databases {
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
         ),
         artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
+        artistEntryAnimeNyc2026Adapter = ColumnAdapters.artistEntryAnimeNyc2026Adapter,
         stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
         stampRallyQueueEntryAdapter = StampRallyQueueEntry.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,

@@ -87,6 +87,18 @@ INNER JOIN artistEntryAnimeNyc2025 ON (artistSeriesConnection.artistId = artistE
 WHERE artistSeriesConnection.seriesId = :seriesId
 AND (artistSeriesConnection.yearFlags & 512) != 0;
 
+getBoothsBySeriesIdAnimeNyc2026:
+SELECT artistEntryAnimeNyc2026.booth FROM artistSeriesConnection
+INNER JOIN artistEntryAnimeNyc2026 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2026.id)
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND (artistSeriesConnection.yearFlags & 1024) != 0;
+
+getBoothsBySeriesIdConfirmedAnimeNyc2026:
+SELECT artistEntryAnimeNyc2026.booth FROM artistSeriesConnection
+INNER JOIN artistEntryAnimeNyc2026 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2026.id)
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND (artistSeriesConnection.yearFlags & 2048) != 0;
+
 getRallyCount:
 SELECT COUNT(*) FROM stampRallySeriesConnection
 WHERE dataYear = :dataYear AND seriesId = :seriesId;

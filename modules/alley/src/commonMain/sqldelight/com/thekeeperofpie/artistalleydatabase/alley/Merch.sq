@@ -27,6 +27,10 @@ getMerchEntriesAnimeNyc2025:
 SELECT * FROM merchEntry
 WHERE (yearFlags & 256) != 0;
 
+getMerchEntriesAnimeNyc2026:
+SELECT * FROM merchEntry
+WHERE (yearFlags & 512) != 0;
+
 getMerchSize2024:
 SELECT COUNT(*) FROM merchEntry
 WHERE (yearFlags & 1) != 0;
@@ -46,6 +50,10 @@ WHERE (yearFlags & 64) != 0;
 getMerchSizeAnimeNyc2025:
 SELECT COUNT(*) FROM merchEntry
 WHERE (yearFlags & 256) != 0;
+
+getMerchSizeAnimeNyc2026:
+SELECT COUNT(*) FROM merchEntry
+WHERE (yearFlags & 512) != 0;
 
 getBoothsByMerchId2024:
 SELECT artistEntry2024.booth FROM artistMerchConnection
@@ -106,6 +114,18 @@ SELECT artistEntryAnimeNyc2025.booth FROM artistMerchConnection
 INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2025.id)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 512) != 0;
+
+getBoothsByMerchIdAnimeNyc2026:
+SELECT artistEntryAnimeNyc2026.booth FROM artistMerchConnection
+INNER JOIN artistEntryAnimeNyc2026 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2026.id)
+WHERE artistMerchConnection.merchId = :merchId
+AND (artistMerchConnection.yearFlags & 1024) != 0;
+
+getBoothsByMerchIdConfirmedAnimeNyc2026:
+SELECT artistEntryAnimeNyc2026.booth FROM artistMerchConnection
+INNER JOIN artistEntryAnimeNyc2026 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2026.id)
+WHERE artistMerchConnection.merchId = :merchId
+AND (artistMerchConnection.yearFlags & 2048) != 0;
 
 getMerchChangelog:
 SELECT * FROM merchEntryChangelog;

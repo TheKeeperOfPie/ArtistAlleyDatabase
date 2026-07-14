@@ -7,6 +7,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo202
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntryChangelog
@@ -248,6 +250,32 @@ internal object Utils {
                 commissionsAdapter = listStringAdapter,
                 imagesAdapter = listDatabaseImageAdapter,
                 fallbackImageYearAdapter = dataYearAdapter,
+            ),
+            artistEntryAnimeNyc2026Adapter = ArtistEntryAnimeNyc2026.Adapter(
+                statusAdapter = artistStatusAdapter,
+                socialLinksAdapter = listStringAdapter,
+                storeLinksAdapter = listStringAdapter,
+                portfolioLinksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                seriesInferredAdapter = listStringAdapter,
+                seriesConfirmedAdapter = listStringAdapter,
+                merchInferredAdapter = listStringAdapter,
+                merchConfirmedAdapter = listStringAdapter,
+                commissionsAdapter = listStringAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
+                tempImagesAdapter = listDatabaseImageAdapter,
+                profileImageAdapter = databaseImageAdapter,
+                fallbackImageYearAdapter = dataYearAdapter,
+                embedsAdapter = embedsAdapter,
+                lastEditTimeAdapter = instantAdapter,
+            ),
+            artistEntryAnimeNyc2026ChangelogAdapter = ArtistEntryAnimeNyc2026Changelog.Adapter(
+                artistIdAdapter = uuidAdapter,
+                seriesInferredAdapter = setStringAdapter,
+                seriesConfirmedAdapter = setStringAdapter,
+                merchInferredAdapter = setStringAdapter,
+                merchConfirmedAdapter = setStringAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
             ),
             stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
                 tablesAdapter = listStringAdapter,

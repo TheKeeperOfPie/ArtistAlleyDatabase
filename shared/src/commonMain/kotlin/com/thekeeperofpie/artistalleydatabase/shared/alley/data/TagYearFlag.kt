@@ -25,6 +25,8 @@ enum class TagYearFlag(year: DataYear) {
             hasAnimeNyc2024Confirmed: Boolean = false,
             hasAnimeNyc2025Inferred: Boolean = false,
             hasAnimeNyc2025Confirmed: Boolean = false,
+            hasAnimeNyc2026Inferred: Boolean = false,
+            hasAnimeNyc2026Confirmed: Boolean = false,
         ): Long {
             val years = listOfNotNull(
                 ANIME_EXPO_2024_INFERRED.takeIf { hasAnimeExpo2024Inferred || hasAnimeExpo2024Confirmed },

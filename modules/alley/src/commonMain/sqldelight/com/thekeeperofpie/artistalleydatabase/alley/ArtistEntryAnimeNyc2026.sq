@@ -1,0 +1,29 @@
+getEntry:
+SELECT artistEntryAnimeNyc2026.*, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2026
+LEFT OUTER JOIN artistUserEntry
+ON artistEntryAnimeNyc2026.id = artistUserEntry.artistId AND 'AX2026' = artistUserEntry.dataYear
+WHERE id = :id;
+
+getEntriesByBooth:
+SELECT artistEntryAnimeNyc2026.*
+FROM artistEntryAnimeNyc2026
+WHERE booth = :booth;
+
+getAllEntries:
+SELECT id, booth, name, socialLinks, storeLinks, portfolioLinks, catalogLinks, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed, images
+FROM artistEntryAnimeNyc2026;
+
+getImagesById:
+SELECT artistEntryAnimeNyc2026.images FROM artistEntryAnimeNyc2026
+WHERE artistEntryAnimeNyc2026.id = :artistId;
+
+getChangelog:
+SELECT * FROM artistEntryAnimeNyc2026Changelog
+WHERE :catalogsOnly IS FALSE OR images IS NOT NULL;
+
+getChangelogEntry:
+SELECT * FROM artistEntryAnimeNyc2026Changelog
+WHERE artistId = :artistId AND date = :date;
+
+getTables:
+SELECT booth, name FROM artistEntryAnimeNyc2026;

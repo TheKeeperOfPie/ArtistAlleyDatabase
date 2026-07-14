@@ -26,6 +26,8 @@ object DaoUtils {
         artistEntryAnimeExpo2026ChangelogAdapter = ColumnAdapters.artistEntryAnimeExpo2026ChangelogAdapter,
         artistEntryAnimeNyc2024Adapter = ColumnAdapters.artistEntryAnimeNyc2024Adapter,
         artistEntryAnimeNyc2025Adapter = ColumnAdapters.artistEntryAnimeNyc2025Adapter,
+        artistEntryAnimeNyc2026Adapter = ColumnAdapters.artistEntryAnimeNyc2026Adapter,
+        artistEntryAnimeNyc2026ChangelogAdapter = ColumnAdapters.artistEntryAnimeNyc2026ChangelogAdapter,
         stampRallyEntry2023Adapter = ColumnAdapters.stampRallyEntry2023Adapter,
         stampRallyEntry2024Adapter = ColumnAdapters.stampRallyEntry2024Adapter,
         stampRallyEntry2025Adapter = ColumnAdapters.stampRallyEntry2025Adapter,

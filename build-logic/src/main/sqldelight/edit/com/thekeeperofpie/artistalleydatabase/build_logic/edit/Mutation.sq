@@ -40,6 +40,10 @@ insertStampRallyEntryAnimeExpo2026Changelog:
 INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026Changelog
 VALUES ?;
 
+insertArtistEntryAnimeNyc2026Changelog:
+INSERT OR REPLACE INTO artistEntryAnimeNyc2026Changelog
+VALUES ?;
+
 insertSeriesChangelog:
 INSERT OR REPLACE INTO seriesEntryChangelog
 VALUES ?;
@@ -133,6 +137,17 @@ updateArtistEntryAnimeNyc2025:
 INSERT OR REPLACE INTO artistEntryAnimeNyc2025
 VALUES ?;
 
+getAllArtistEntryAnimeNyc2026:
+SELECT * FROM artistEntryAnimeNyc2026;
+
+getImagesAnimeNyc2026:
+SELECT images FROM artistEntryAnimeNyc2026
+WHERE id = :id;
+
+updateArtistEntryAnimeNyc2026:
+INSERT OR REPLACE INTO artistEntryAnimeNyc2026
+VALUES ?;
+
 updateStampRallyEntryAnimeExpo2026:
 INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026
 VALUES ?;
@@ -144,11 +159,13 @@ inferred2025 = :inferredAnimeExpo2025,
 inferredAnimeExpo2026 = :inferredAnimeExpo2026,
 inferredAnimeNyc2024 = :inferredAnimeNyc2024,
 inferredAnimeNyc2025 = :inferredAnimeNyc2025,
+inferredAnimeNyc2026 = :inferredAnimeNyc2026,
 confirmed2024 = :confirmedAnimeExpo2024,
 confirmed2025 = :confirmedAnimeExpo2025,
 confirmedAnimeExpo2026 = :confirmedAnimeExpo2026,
 confirmedAnimeNyc2024 = :confirmedAnimeNyc2024,
-confirmedAnimeNyc2025 = :confirmedAnimeNyc2025
+confirmedAnimeNyc2025 = :confirmedAnimeNyc2025,
+confirmedAnimeNyc2026 = :confirmedAnimeNyc2026
 WHERE id = :id;
 
 updateMerchYearFlags:
@@ -157,4 +174,6 @@ UPDATE merchEntry SET yearFlags = :yearFlags WHERE name = :id;
 cleanUpForRelease {
     UPDATE artistEntryAnimeExpo2026 SET editorNotes = NULL;
     UPDATE artistEntryAnimeExpo2026 SET lastEditor = NULL;
+    UPDATE artistEntryAnimeNyc2026 SET editorNotes = NULL;
+    UPDATE artistEntryAnimeNyc2026 SET lastEditor = NULL;
 }
