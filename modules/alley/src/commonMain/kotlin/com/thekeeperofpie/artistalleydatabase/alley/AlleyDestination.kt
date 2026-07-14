@@ -53,7 +53,7 @@ sealed interface AlleyDestination : NavKey {
     data class ArtistsList(val year: DataYear, val serializedBooths: String) : AlleyDestination
 
     @Serializable
-    data object ArtistChangelog : AlleyDestination
+    data class ArtistChangelog(val year: DataYear) : AlleyDestination
 
     @Serializable
     data class Export(val dataYear: DataYear) : AlleyDestination
@@ -129,7 +129,7 @@ sealed interface AlleyDestination : NavKey {
     data class StampRallies(val year: DataYear?, val series: String) : AlleyDestination
 
     @Serializable
-    data object StampRallyChangelog : AlleyDestination
+    data class StampRallyChangelog(val year: DataYear) : AlleyDestination
 
     @Serializable
     data class StampRallyDetails(
@@ -156,14 +156,12 @@ sealed interface AlleyDestination : NavKey {
     @Serializable
     data class SeriesChangelog(val year: DataYear) : AlleyDestination
 
-    // TODO: Split by year
     @Serializable
     data class SeriesTagChangelog(val series: String) : AlleyDestination
 
     @Serializable
     data class MerchChangelog(val year: DataYear) : AlleyDestination
 
-    // TODO: Split by year
     @Serializable
     data class MerchTagChangelog(val merch: String) : AlleyDestination
 
@@ -172,13 +170,13 @@ sealed interface AlleyDestination : NavKey {
         is ArtistDetails -> "artist/${year.serializedName}/${id ?: booth}"
         is ArtistMap -> "artist/map/$id"
         is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
-        ArtistChangelog -> "changelog"
+        is ArtistChangelog -> "changelog/${year.serializedName}"
         is Export -> "export/${dataYear.serializedName}"
-        is FavoritesChangelog -> "changelog/favorites"
-        is FavoriteArtistsChangelog -> "changelog/favorites/artists"
-        is FavoriteSeriesChangelog -> "changelog/favorites/series"
-        is FavoriteMerchChangelog -> "changelog/favorites/merch"
-        is FavoriteRalliesChangelog -> "changelog/favorites/rallies"
+        is FavoritesChangelog -> "changelog/${dataYear.serializedName}/favorites"
+        is FavoriteArtistsChangelog -> "changelog/${dataYear.serializedName}/favorites/artists"
+        is FavoriteSeriesChangelog -> "changelog/${dataYear.serializedName}/favorites/series"
+        is FavoriteMerchChangelog -> "changelog/${dataYear.serializedName}/favorites/merch"
+        is FavoriteRalliesChangelog -> "changelog/${dataYear.serializedName}/favorites/rallies"
         Home -> ""
         is Images -> {
             val typePath = when (type) {
@@ -199,7 +197,7 @@ sealed interface AlleyDestination : NavKey {
         is SeriesMap -> "series/map/${year.serializedNameOrAll}/${Uri.encode(series)}"
         Settings -> "settings"
         is StampRallies -> "stamp_rallies/${year.serializedNameOrAll}/${Uri.encode(series)}"
-        is StampRallyChangelog -> "changelog/rallies"
+        is StampRallyChangelog -> "changelog/${year.serializedName}/rallies"
         is StampRallyDetails -> "stamp_rally/${year.serializedName}/$id"
         is StampRallyMap -> "stamp_rally/map/${year.serializedName}/$id"
     }
@@ -256,17 +254,22 @@ sealed interface AlleyDestination : NavKey {
                                     MerchTagChangelog(Uri.decode(merchId))
                                 }
                             }
-                            "favorites" -> {
+                            else -> {
+                                val dataYear = parts.getOrNull(1).toDataYearOrLatest()
                                 when (parts.getOrNull(2)) {
-                                    "artists" -> FavoriteArtistsChangelog(DataYear.LATEST)
-                                    "series" -> FavoriteSeriesChangelog(DataYear.LATEST)
-                                    "merch" -> FavoriteMerchChangelog(DataYear.LATEST)
-                                    "rallies" -> FavoriteRalliesChangelog(DataYear.LATEST)
-                                    else -> FavoritesChangelog(DataYear.LATEST)
+                                    "favorites" -> {
+                                        when (parts.getOrNull(2)) {
+                                            "artists" -> FavoriteArtistsChangelog(dataYear)
+                                            "series" -> FavoriteSeriesChangelog(dataYear)
+                                            "merch" -> FavoriteMerchChangelog(dataYear)
+                                            "rallies" -> FavoriteRalliesChangelog(dataYear)
+                                            else -> FavoritesChangelog(dataYear)
+                                        }
+                                    }
+                                    "rallies" -> StampRallyChangelog(dataYear)
+                                    else -> ArtistChangelog(dataYear)
                                 }
                             }
-                            "rallies" -> StampRallyChangelog
-                            else -> ArtistChangelog
                         }
                     }
                     "export" -> Export( parts.getOrNull(1).toDataYearOrLatest())

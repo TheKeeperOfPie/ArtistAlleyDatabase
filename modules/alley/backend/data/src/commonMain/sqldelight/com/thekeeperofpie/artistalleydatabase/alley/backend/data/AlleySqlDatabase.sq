@@ -49,6 +49,33 @@ CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
 
 CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEntryAnimeExpo2026History (id);
 
+CREATE TABLE IF NOT EXISTS artistEntryAnimeNyc2026History (
+    id TEXT,
+    status TEXT AS ArtistStatus,
+    booth TEXT COLLATE NOCASE,
+    name TEXT COLLATE NOCASE,
+    summary TEXT,
+    socialLinks TEXT AS List<String>,
+    storeLinks TEXT AS List<String>,
+    portfolioLinks TEXT AS List<String>,
+    catalogLinks TEXT AS List<String>,
+    notes TEXT,
+    commissions TEXT AS List<String>,
+    seriesInferred TEXT AS List<String>,
+    seriesConfirmed TEXT AS List<String>,
+    merchInferred TEXT AS List<String>,
+    merchConfirmed TEXT AS List<String>,
+    images TEXT AS List<DatabaseImage>,
+    profileImage TEXT AS DatabaseImage DEFAULT NULL,
+    editorNotes TEXT,
+    lastEditor TEXT,
+    lastEditTime TEXT AS Instant NOT NULL,
+    formTimestamp TEXT AS Instant,
+    remoteTimestamp TEXT AS Instant
+);
+
+CREATE INDEX IF NOT EXISTS index_artistEntryAnimeNyc2026History_id ON artistEntryAnimeNyc2026History (id);
+
 CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     id TEXT,
     fandom TEXT COLLATE NOCASE,

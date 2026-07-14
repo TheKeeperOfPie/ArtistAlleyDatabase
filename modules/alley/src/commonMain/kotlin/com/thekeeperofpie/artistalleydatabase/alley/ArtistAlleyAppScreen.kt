@@ -187,12 +187,14 @@ object ArtistAlleyAppScreen {
         val onOpenExport: (DataYear) -> Unit = {
             navStack.navigate(AlleyDestination.Export(it))
         }
-        val onOpenArtistChangelog = { navStack.navigate(AlleyDestination.ArtistChangelog) }
+        val onOpenArtistChangelog: (DataYear) -> Unit =
+            { navStack.navigate(AlleyDestination.ArtistChangelog(it)) }
         val onOpenSeriesTagChangelog: (String) -> Unit =
             { navStack.navigate(AlleyDestination.SeriesTagChangelog(it)) }
         val onOpenMerchTagChangelog: (String) -> Unit =
             { navStack.navigate(AlleyDestination.MerchTagChangelog(it)) }
-        val onOpenStampRallyChangelog = { navStack.navigate(AlleyDestination.StampRallyChangelog) }
+        val onOpenStampRallyChangelog: (DataYear) -> Unit =
+            { navStack.navigate(AlleyDestination.StampRallyChangelog(it)) }
 
         val onClickChangelogArtist: (DataYear, ArtistChangelogEntry) -> Unit =
             { year, artist ->
@@ -387,8 +389,7 @@ object ArtistAlleyAppScreen {
             }
 
             sharedElementEntry<AlleyDestination.ArtistChangelog> {
-                // TODO: Split by DataYear
-                val year = DataYear.ANIME_EXPO_2026
+                val year = it.year
                 ArtistChangelogScreen(
                     graph = graph,
                     route = it,
@@ -580,8 +581,7 @@ object ArtistAlleyAppScreen {
             }
 
             sharedElementEntry<AlleyDestination.StampRallyChangelog> {
-                // TODO: Split by DataYear
-                val year = DataYear.ANIME_EXPO_2026
+                val year = it.year
                 StampRallyChangelogScreen(
                     graph = graph,
                     dataYear = year,
@@ -677,8 +677,8 @@ object ArtistAlleyAppScreen {
             }
 
             sharedElementEntry<AlleyDestination.SeriesTagChangelog> { route ->
-                // TODO: Split by year
-                val year = DataYear.ANIME_EXPO_2026
+                // TODO: Series tags are not inherently per-year, what should this link to?
+                val year = DataYear.LATEST
                 TagChangelogScreen(
                     graph = graph,
                     dataYear = year,
@@ -727,8 +727,8 @@ object ArtistAlleyAppScreen {
             }
 
             sharedElementEntry<AlleyDestination.MerchTagChangelog> { route ->
-                // TODO: Split by year
-                val year = DataYear.ANIME_EXPO_2026
+                // TODO: Merch tags are not inherently per-year, what should this link to?
+                val year = DataYear.LATEST
                 TagChangelogScreen(
                     graph = graph,
                     dataYear = year,

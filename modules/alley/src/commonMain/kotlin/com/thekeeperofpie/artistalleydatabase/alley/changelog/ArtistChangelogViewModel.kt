@@ -27,6 +27,7 @@ class ArtistChangelogViewModel(
     val seriesEntryCache: SeriesEntryCache,
     val settings: ArtistAlleySettings,
     userEntryDao: UserEntryDao,
+    @Assisted dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -37,7 +38,7 @@ class ArtistChangelogViewModel(
 
     internal val changes = combine(userEntryDao.getTagFavorites(), catalogsOnly, ::Pair)
         .mapLatest { (tagFavorites, catalogsOnly) ->
-            artistEntryDao.getChangelog(catalogsOnly)
+            artistEntryDao.getChangelog(dataYear, catalogsOnly)
                 .asSequence()
                 .map {
                     it.toChangelogEntry(

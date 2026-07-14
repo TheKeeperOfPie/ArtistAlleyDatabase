@@ -5,7 +5,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -48,6 +47,9 @@ class TagEntryDao(
                         DataYear.ANIME_NYC_2025 -> seriesDao.getBoothsBySeriesIdConfirmedAnimeNyc2025(seriesId)
                             .awaitAsList()
                             .map { it.booth }
+                        DataYear.ANIME_NYC_2026 -> seriesDao.getBoothsBySeriesIdConfirmedAnimeNyc2026(seriesId)
+                            .awaitAsList()
+                            .map { it.booth }
                     }
                 } else {
                     when (year) {
@@ -64,6 +66,9 @@ class TagEntryDao(
                             .awaitAsList()
                             .map { it.booth }
                         DataYear.ANIME_NYC_2025 -> seriesDao.getBoothsBySeriesIdAnimeNyc2025(seriesId)
+                            .awaitAsList()
+                            .map { it.booth }
+                        DataYear.ANIME_NYC_2026 -> seriesDao.getBoothsBySeriesIdAnimeNyc2026(seriesId)
                             .awaitAsList()
                             .map { it.booth }
                     }
@@ -87,6 +92,9 @@ class TagEntryDao(
                         DataYear.ANIME_NYC_2025 -> merchDao.getBoothsByMerchIdConfirmedAnimeNyc2025(merchId)
                             .awaitAsList()
                             .map { it.booth }
+                        DataYear.ANIME_NYC_2026 -> merchDao.getBoothsByMerchIdConfirmedAnimeNyc2026(merchId)
+                            .awaitAsList()
+                            .map { it.booth }
                     }
                 } else {
                     when (year) {
@@ -103,6 +111,9 @@ class TagEntryDao(
                             .awaitAsList()
                             .map { it.booth }
                         DataYear.ANIME_NYC_2025 -> merchDao.getBoothsByMerchIdAnimeNyc2025(merchId)
+                            .awaitAsList()
+                            .map { it.booth }
+                        DataYear.ANIME_NYC_2026 -> merchDao.getBoothsByMerchIdAnimeNyc2026(merchId)
                             .awaitAsList()
                             .map { it.booth }
                     }

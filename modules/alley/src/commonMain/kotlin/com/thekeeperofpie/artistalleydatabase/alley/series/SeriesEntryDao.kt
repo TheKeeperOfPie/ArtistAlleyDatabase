@@ -202,6 +202,11 @@ class SeriesEntryDao(
         } else {
             "inferredAnimeNyc2025"
         }
+        DataYear.ANIME_NYC_2026 -> if (showOnlyConfirmedTags) {
+            "confirmedAnimeNyc2026"
+        } else {
+            "inferredAnimeNyc2026"
+        }
     }
 
     fun searchSeries(

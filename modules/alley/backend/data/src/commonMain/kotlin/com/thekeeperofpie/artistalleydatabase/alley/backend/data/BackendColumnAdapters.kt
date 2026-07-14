@@ -33,6 +33,36 @@ object BackendColumnAdapters {
         timestampAdapter = ColumnAdapters.instantAdapter,
     )
 
+    val artistEntryAnimeNyc2026HistoryAdapter = ArtistEntryAnimeNyc2026History.Adapter(
+        statusAdapter = ColumnAdapters.artistStatusAdapter,
+        socialLinksAdapter = ColumnAdapters.listStringAdapter,
+        storeLinksAdapter = ColumnAdapters.listStringAdapter,
+        portfolioLinksAdapter = ColumnAdapters.listStringAdapter,
+        catalogLinksAdapter = ColumnAdapters.listStringAdapter,
+        seriesInferredAdapter = ColumnAdapters.listStringAdapter,
+        seriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
+        merchInferredAdapter = ColumnAdapters.listStringAdapter,
+        merchConfirmedAdapter = ColumnAdapters.listStringAdapter,
+        commissionsAdapter = ColumnAdapters.listStringAdapter,
+        imagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
+        profileImageAdapter = ColumnAdapters.databaseImageAdapter,
+        lastEditTimeAdapter = ColumnAdapters.instantAdapter,
+        formTimestampAdapter = ColumnAdapters.instantAdapter,
+        remoteTimestampAdapter = ColumnAdapters.instantAdapter,
+    )
+
+    val artistRemoteDataAnimeNyc2026Adapter = ArtistRemoteDataAnimeNyc2026.Adapter(
+        confirmedIdAdapter = ColumnAdapters.uuidAdapter,
+        linksAdapter = ColumnAdapters.listStringAdapter,
+        timestampAdapter = ColumnAdapters.instantAdapter,
+    )
+
+    val artistRemoteDataAnimeNyc2026HistoryAdapter = ArtistRemoteDataAnimeNyc2026History.Adapter(
+        confirmedIdAdapter = ColumnAdapters.uuidAdapter,
+        linksAdapter = ColumnAdapters.listStringAdapter,
+        timestampAdapter = ColumnAdapters.instantAdapter,
+    )
+
     val stampRallyEntryAnimeExpo2026HistoryAdapter = StampRallyEntryAnimeExpo2026History.Adapter(
         tablesAdapter = ColumnAdapters.listStringAdapter,
         startTablesAdapter = ColumnAdapters.setStringAdapter,

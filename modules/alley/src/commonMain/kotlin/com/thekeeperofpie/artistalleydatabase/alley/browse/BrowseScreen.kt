@@ -200,9 +200,7 @@ object BrowseScreen {
                                             },
                                         )
                                     },
-                                    onOpenChangelog = {
-                                        onOpenSeriesChangelog(dataYearHeaderState.year)
-                                    },
+                                    onOpenChangelog = onOpenSeriesChangelog,
                                     onOpenSettings = onOpenSettings,
                                     scrollStateSaver = seriesScrollStateSaver,
                                     additionalHeader = {
@@ -249,9 +247,7 @@ object BrowseScreen {
                                         },
                                     )
                                 },
-                                onOpenChangelog = {
-                                    onOpenMerchChangelog(dataYearHeaderState.year)
-                                },
+                                onOpenChangelog = onOpenMerchChangelog,
                                 onOpenSettings = onOpenSettings,
                                 scrollStateSaver = merchScrollStateSaver,
                             )
@@ -273,7 +269,7 @@ object BrowseScreen {
         itemKey: (T) -> Any,
         item: @Composable (T?) -> Unit,
         scrollStateSaver: ScrollStateSaver,
-        onOpenChangelog: () -> Unit,
+        onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         additionalHeader: LazyListScope.() -> Unit = {},
     ) {

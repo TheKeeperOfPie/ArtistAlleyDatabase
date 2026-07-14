@@ -40,13 +40,26 @@ open class ArtistTableAutocomplete(
     )
 
     private val animeExpo2026 = flowFromSuspend { loadTables(DataYear.ANIME_EXPO_2026) }
-        .stateIn(applicationScope, SharingStarted.Eagerly, emptyList())
+        .stateIn(applicationScope, SharingStarted.Lazily, emptyList())
 
     private val animeExpo2026ByBooth = animeExpo2026.mapState(applicationScope) {
         it.associateBy { it.booth }
     }
 
-    private val sharedQueue = ConcurrentPriorityQueue<Pair<ArtistTable, Int>, String>(
+    private val animeNyc2026 = flowFromSuspend { loadTables(DataYear.ANIME_NYC_2026) }
+        .stateIn(applicationScope, SharingStarted.Eagerly, emptyList())
+
+    private val animeNyc2026ByBooth = animeNyc2026.mapState(applicationScope) {
+        it.associateBy { it.booth }
+    }
+
+    private val sharedQueueAnimeExpo2026 = ConcurrentPriorityQueue<Pair<ArtistTable, Int>, String>(
+        maxSize = 20,
+        comparator = compareByDescending { it.second },
+        keySelector = { it.first.booth },
+    )
+
+    private val sharedQueueAnimeNyc2026 = ConcurrentPriorityQueue<Pair<ArtistTable, Int>, String>(
         maxSize = 20,
         comparator = compareByDescending { it.second },
         keySelector = { it.first.booth },
@@ -60,6 +73,7 @@ open class ArtistTableAutocomplete(
         DataYear.ANIME_NYC_2025,
             -> defaultFlowByBooth
         DataYear.ANIME_EXPO_2026 -> animeExpo2026ByBooth
+        DataYear.ANIME_NYC_2026 -> animeNyc2026ByBooth
     }
 
     fun predictions(dataYear: DataYear, query: String) = when {
@@ -73,7 +87,24 @@ open class ArtistTableAutocomplete(
                 -> defaultFlow
             DataYear.ANIME_EXPO_2026 ->
                 animeExpo2026.mapLatest {
-                    val tables = sharedQueue.mutate {
+                    val tables = sharedQueueAnimeExpo2026.mutate {
+                        it.forEach {
+                            val score = if (it.booth.contains(query, ignoreCase = true)) {
+                                100
+                            } else {
+                                MicroFuzz.ratio(query, it.name ?: it.booth)
+                            }
+                            add(it to score)
+                        }
+                    }.items.value.mapNotNull { result -> result.first.takeIf { result.second > 10 } }
+                    val queryAsBooth = StampRallyUtils.toValidBooth(query)
+                    val queryAsTable = queryAsBooth?.let { ArtistTable(booth = it, name = null) }
+                        ?.takeIf { tables.none { it.booth == queryAsBooth } }
+                    tables + listOfNotNull(queryAsTable)
+                }
+            DataYear.ANIME_NYC_2026 ->
+                animeNyc2026.mapLatest {
+                    val tables = sharedQueueAnimeNyc2026.mutate {
                         it.forEach {
                             val score = if (it.booth.contains(query, ignoreCase = true)) {
                                 100

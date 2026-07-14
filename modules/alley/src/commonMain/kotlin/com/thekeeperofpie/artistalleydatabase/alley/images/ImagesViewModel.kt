@@ -22,7 +22,7 @@ class ImagesViewModel(
                 val artist = artistEntryDao.getEntry(route.year, route.id)?.artist ?: return null
                 if (route.changelogDate != null) {
                     val changelog =
-                        artistEntryDao.getChangelogEntry(Uuid.parse(route.id), route.changelogDate)
+                        artistEntryDao.getChangelogEntry(route.year, Uuid.parse(route.id), route.changelogDate)
                             ?: return null
                     val images = changelog.catalogImages(route.year) ?: return null
                     type.copy(

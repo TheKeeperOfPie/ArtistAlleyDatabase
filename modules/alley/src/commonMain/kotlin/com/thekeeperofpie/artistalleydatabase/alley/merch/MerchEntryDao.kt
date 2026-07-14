@@ -134,6 +134,7 @@ class MerchEntryDao(
             DataYear.ANIME_EXPO_2026 -> merchDao.getMerchEntriesAnimeExpo2026().awaitAsList()
             DataYear.ANIME_NYC_2024 -> merchDao.getMerchEntriesAnimeNyc2024().awaitAsList()
             DataYear.ANIME_NYC_2025 -> merchDao.getMerchEntriesAnimeNyc2025().awaitAsList()
+            DataYear.ANIME_NYC_2026 -> merchDao.getMerchEntriesAnimeNyc2026().awaitAsList()
         }.filterNot { it.name.contains("Commissions") }
     }
 

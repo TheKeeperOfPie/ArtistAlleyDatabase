@@ -85,7 +85,8 @@ class AlleyEditDatabase(
         DataYear.ANIME_NYC_2024,
         DataYear.ANIME_NYC_2025,
             -> emptyList()
-        DataYear.ANIME_EXPO_2026 -> artistEntryDao.getTables(dataYear)
+        DataYear.ANIME_EXPO_2026,
+        DataYear.ANIME_NYC_2026 -> artistEntryDao.getTables(dataYear)
     }
 
     suspend fun saveArtist(

@@ -73,7 +73,7 @@ class TagChangelogViewModel(
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
     internal val changes = flowFromSuspend {
-        val artists = artistEntryDao.getChangelog(false)
+        val artists = artistEntryDao.getChangelog(dataYear, false)
             .map(ChangelogEntry::Artist)
         val allRallies = stampRallyEntryDao.getAllEntriesForChangelog(dataYear)
         val stampRallies = stampRallyEntryDao.getChangelog(dataYear)

@@ -239,6 +239,8 @@
     <string name="alley_data_year_anime_nyc_2024_short">ANYC’24</string>
     <string name="alley_data_year_anime_nyc_2025_full">Anime NYC 2025</string>
     <string name="alley_data_year_anime_nyc_2025_short">ANYC’25</string>
+    <string name="alley_data_year_anime_nyc_2026_full">Anime NYC 2026</string>
+    <string name="alley_data_year_anime_nyc_2026_short">ANYC’26</string>
     <string name="alley_data_year_convention_anime_expo">Anime Expo</string>
     <string name="alley_data_year_convention_anime_nyc">Anime NYC</string>
     <string name="alley_switch_data_year_convention">Switch convention</string>

@@ -648,6 +648,7 @@ internal fun FeedbackHeader(year: DataYear) {
             DataYear.ANIME_EXPO_2025 -> BuildKonfig.feedbackFormLink
             DataYear.ANIME_EXPO_2026 -> BuildKonfig.feedbackFormLinkAnimeExpo2026
             DataYear.ANIME_NYC_2025 -> BuildKonfig.feedbackFormLinkAnimeNyc2025
+            DataYear.ANIME_NYC_2026 -> null // TODO
         }
         if (link != null) {
             FeedbackPrompt(year, link)
@@ -659,7 +660,7 @@ internal fun FeedbackHeader(year: DataYear) {
 fun DataYearHeader(
     state: DataYearHeaderState,
     modifier: Modifier = Modifier,
-    onOpenChangelog: (() -> Unit)? = null,
+    onOpenChangelog: ((DataYear) -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
@@ -689,7 +690,7 @@ fun DataYearHeader(
             }
 
             if (onOpenChangelog != null) {
-                IconButton(onClick = onOpenChangelog) {
+                IconButton(onClick = { onOpenChangelog(state.year) }) {
                     Icon(
                         imageVector = Icons.Default.ChangeHistory,
                         contentDescription = stringResource(Res.string.alley_changelog),

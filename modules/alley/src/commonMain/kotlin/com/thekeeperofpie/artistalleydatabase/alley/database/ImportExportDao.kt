@@ -39,6 +39,9 @@ class ImportExportDao(
     suspend fun getExportPartialArtistsAnimeNyc2025() =
         database().userImportExportQueries.getExportPartialArtistsAnimeNyc2025().awaitAsList()
 
+    suspend fun getExportPartialArtistsAnimeNyc2026() =
+        database().userImportExportQueries.getExportPartialArtistsAnimeNyc2026().awaitAsList()
+
     suspend fun getExportPartialStampRallies2023() =
         database().userImportExportQueries.getExportPartialStampRallies2023().awaitAsList()
 
@@ -68,6 +71,9 @@ class ImportExportDao(
 
     suspend fun getExportFullArtistsAnimeNyc2025() =
         database().userImportExportQueries.getExportFullArtistsAnimeNyc2025().awaitAsList()
+
+    suspend fun getExportFullArtistsAnimeNyc2026() =
+        database().userImportExportQueries.getExportFullArtistsAnimeNyc2026().awaitAsList()
 
     suspend fun getExportFullStampRallies2023() =
         database().userImportExportQueries.getExportFullStampRallies2023().awaitAsList()

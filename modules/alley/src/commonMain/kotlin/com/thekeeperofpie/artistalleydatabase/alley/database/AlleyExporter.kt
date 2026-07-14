@@ -128,6 +128,12 @@ class AlleyExporter(
                 favorite = { it.favorite },
                 ignored = { it.ignored },
             )
+            DataYear.ANIME_NYC_2026 -> sink.writeData(
+                source = importExportDao.getExportPartialArtistsAnimeNyc2026(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
         }
 
         when (year) {
@@ -157,6 +163,7 @@ class AlleyExporter(
             )
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
+            DataYear.ANIME_NYC_2026,
                 -> Unit // Doesn't have stamp rallies
         }
     }
@@ -298,6 +305,19 @@ class AlleyExporter(
                         )
                     },
                 )
+                DataYear.ANIME_NYC_2026 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2026(),
+                    id = { it.id },
+                    insert = { artistId, favorite, ignored ->
+                        importExportDao.importArtist(
+                            artistId = artistId,
+                            dataYear = DataYear.ANIME_NYC_2026,
+                            favorite = favorite,
+                            ignored = ignored,
+                        )
+                    },
+                )
             }
 
             when (dataYear) {
@@ -327,6 +347,7 @@ class AlleyExporter(
                 )
                 DataYear.ANIME_NYC_2024,
                 DataYear.ANIME_NYC_2025,
+                DataYear.ANIME_NYC_2026,
                     -> Unit // Doesn't have stamp rallies
             }
 
@@ -474,6 +495,14 @@ class AlleyExporter(
                             )
                         }
                     DataYear.ANIME_NYC_2025 -> importExportDao.getExportFullArtistsAnimeNyc2025()
+                        .associate {
+                            it.id to FullExport.ArtistData(
+                                DaoUtils.coerceBooleanForJs(it.favorite),
+                                DaoUtils.coerceBooleanForJs(it.ignored),
+                                it.notes
+                            )
+                        }
+                    DataYear.ANIME_NYC_2026 -> importExportDao.getExportFullArtistsAnimeNyc2026()
                         .associate {
                             it.id to FullExport.ArtistData(
                                 DaoUtils.coerceBooleanForJs(it.favorite),

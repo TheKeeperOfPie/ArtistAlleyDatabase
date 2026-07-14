@@ -51,7 +51,7 @@ object ArtistSeriesScreen {
         onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         artistSearchViewModel: ArtistSearchViewModel = viewModel {
@@ -106,7 +106,7 @@ object ArtistSeriesScreen {
         onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     ) {
@@ -185,7 +185,7 @@ object ArtistSeriesScreen {
         seriesEntry: () -> SeriesWithUserData?,
         seriesImage: () -> String?,
         onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) {
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)

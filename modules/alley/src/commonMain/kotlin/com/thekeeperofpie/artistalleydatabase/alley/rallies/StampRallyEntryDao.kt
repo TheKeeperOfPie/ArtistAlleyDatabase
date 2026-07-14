@@ -451,6 +451,7 @@ class StampRallyEntryDao(
                 ?.toStampRallyWithUserData()
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
+            DataYear.ANIME_NYC_2026,
                 -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
@@ -491,6 +492,7 @@ class StampRallyEntryDao(
             }
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
+            DataYear.ANIME_NYC_2026,
                 -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
@@ -660,6 +662,7 @@ class StampRallyEntryDao(
             )
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
+            DataYear.ANIME_NYC_2026,
                 -> throw IllegalStateException("Cannot load rallies for $year")
         }.joinToString()
 
@@ -786,6 +789,7 @@ class StampRallyEntryDao(
                 DataYear.ANIME_EXPO_2026 -> toStampRallyWithUserDataAnimeExpo2026()
                 DataYear.ANIME_NYC_2024,
                 DataYear.ANIME_NYC_2025,
+                DataYear.ANIME_NYC_2026,
                     -> throw IllegalStateException("ANYC shouldn't have rallies")
             }
         }
@@ -819,6 +823,7 @@ class StampRallyEntryDao(
                 }
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
+            DataYear.ANIME_NYC_2026,
                 -> emptyList()
         }
 
@@ -829,6 +834,7 @@ class StampRallyEntryDao(
             DataYear.ANIME_EXPO_2025,
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
+            DataYear.ANIME_NYC_2026,
                 -> emptyMap()
             DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
                 .associateBy { Uuid.parse(it.id) }

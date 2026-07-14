@@ -116,7 +116,7 @@ object ArtistSearchScreen {
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenExport: (DataYear) -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         viewModel: ArtistSearchViewModel = viewModel {
             graph.artistSearchViewModelFactory.create(

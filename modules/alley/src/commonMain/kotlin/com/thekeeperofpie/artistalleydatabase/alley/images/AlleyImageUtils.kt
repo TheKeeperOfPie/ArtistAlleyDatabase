@@ -22,7 +22,8 @@ object AlleyImageUtils {
         DataYear.ANIME_NYC_2024,
         DataYear.ANIME_NYC_2025,
             -> "files/images/${year.folderName}/catalogs/$imageName"
-        DataYear.ANIME_EXPO_2026 -> "files/images/$imageName"
+        DataYear.ANIME_EXPO_2026,
+        DataYear.ANIME_NYC_2026 -> "files/images/$imageName"
     }
 
     fun getArtistImages(
@@ -145,7 +146,8 @@ object AlleyImageUtils {
                 DataYear.ANIME_NYC_2024,
                 DataYear.ANIME_NYC_2025,
                     -> "files/images/${year.folderName}/rallies/${it.name}"
-                DataYear.ANIME_EXPO_2026 -> "files/images/${it.name}"
+                DataYear.ANIME_EXPO_2026,
+                DataYear.ANIME_NYC_2026 -> "files/images/${it.name}"
             }
             CatalogImage(
                 uri = Uri.parse(Res.getUri(path)),
@@ -170,7 +172,8 @@ object AlleyImageUtils {
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> "files/images/${year.folderName}/catalogs/${it.name}"
-            DataYear.ANIME_EXPO_2026 -> "files/images/${it.name}"
+            DataYear.ANIME_EXPO_2026,
+            DataYear.ANIME_NYC_2026 -> "files/images/${it.name}"
         }
     }.ifEmpty { tempImages.map { "files/images/${it.name}" } }
         .ifEmpty { getEmbedImagesMap(embeds).map { it.first } }

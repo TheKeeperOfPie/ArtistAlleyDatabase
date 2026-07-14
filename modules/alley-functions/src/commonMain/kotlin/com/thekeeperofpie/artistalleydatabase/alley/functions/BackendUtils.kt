@@ -55,6 +55,12 @@ internal object BackendUtils {
                 .awaitAsOneOrNull()
                 ?.toArtistDatabaseEntry()
                 ?.fixForJs()
+            DataYear.ANIME_NYC_2026 -> Databases.editDatabase(context)
+                .artistEntryAnimeNyc2026Queries
+                .getArtist(artistId.toString())
+                .awaitAsOneOrNull()
+                ?.toArtistDatabaseEntry()
+                ?.fixForJs()
             // TODO: Support other conventions?
             DataYear.ANIME_EXPO_2023,
             DataYear.ANIME_EXPO_2024,
@@ -215,6 +221,7 @@ internal object BackendUtils {
             DataYear.ANIME_EXPO_2025,
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
+            DataYear.ANIME_NYC_2026,
                 -> null // TODO: Return legacy years?
         }
 

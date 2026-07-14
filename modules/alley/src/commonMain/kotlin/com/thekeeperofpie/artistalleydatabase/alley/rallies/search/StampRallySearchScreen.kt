@@ -49,7 +49,7 @@ object StampRallySearchScreen {
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenExport: (DataYear) -> Unit,
-        onOpenChangelog: () -> Unit,
+        onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         viewModel: StampRallySearchViewModel = viewModel {
             graph.stampRallySearchViewModelFactory.create(

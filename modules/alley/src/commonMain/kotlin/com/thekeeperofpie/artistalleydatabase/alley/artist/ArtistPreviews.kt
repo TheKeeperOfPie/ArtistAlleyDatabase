@@ -10,7 +10,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
     override val values = sequence {
         val databaseEntry =
             ArtistDatabaseEntry.Impl(
-                year = DataYear.ANIME_EXPO_2026,
+                year = DataYear.LATEST,
                 id = "artistId",
                 status = ArtistStatus.FINAL,
                 booth = "C39",

@@ -53,7 +53,7 @@ internal object ArtistChangelogScreen {
         onClickMerch: (String) -> Unit,
         onClickImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
         viewModel: ArtistChangelogViewModel = viewModel {
-            graph.artistChangelogViewModelFactory.create(createSavedStateHandle())
+            graph.artistChangelogViewModelFactory.create(route.year, createSavedStateHandle())
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()

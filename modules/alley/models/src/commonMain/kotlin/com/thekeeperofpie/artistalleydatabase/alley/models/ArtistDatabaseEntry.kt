@@ -166,7 +166,8 @@ val ArtistDatabaseEntry.isAdult: Boolean
         DataYear.ANIME_EXPO_2024,
         DataYear.ANIME_EXPO_2025,
         DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025 -> false
+        DataYear.ANIME_NYC_2025,
+        DataYear.ANIME_NYC_2026 -> false
     }
 
 fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(

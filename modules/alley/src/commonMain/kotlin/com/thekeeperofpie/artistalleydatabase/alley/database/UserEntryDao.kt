@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2025
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -118,6 +119,20 @@ private fun GetBoothsWithFavoritesAnimeNyc2025.toBoothWithFavorite() =
         hasNotes = !notes.isNullOrBlank(),
     )
 
+private fun GetBoothsWithFavoritesAnimeNyc2026.toBoothWithFavorite() =
+    BoothWithFavorite(
+        year = DataYear.ANIME_NYC_2026,
+        id = id,
+        booth = booth,
+        name = name,
+        images = images,
+        fallbackImageYear = fallbackImageYear,
+        tempImages = tempImages.orEmpty(),
+        embeds = embeds.orEmpty(),
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        hasNotes = !notes.isNullOrBlank(),
+    )
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @SingleIn(AppScope::class)
 class UserEntryDao(
@@ -169,6 +184,10 @@ class UserEntryDao(
                         .mapToList(PlatformDispatchers.IO)
                         .map { dataYear to it.map { it.toBoothWithFavorite() } }
                     DataYear.ANIME_NYC_2025 -> getBoothsWithFavoritesAnimeNyc2025()
+                        .asFlow()
+                        .mapToList(PlatformDispatchers.IO)
+                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
+                    DataYear.ANIME_NYC_2026 -> getBoothsWithFavoritesAnimeNyc2026()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
                         .map { dataYear to it.map { it.toBoothWithFavorite() } }

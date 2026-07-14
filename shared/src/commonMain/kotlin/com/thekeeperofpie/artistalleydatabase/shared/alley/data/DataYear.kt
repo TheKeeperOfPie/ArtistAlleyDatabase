@@ -115,21 +115,21 @@ enum class DataYear(
         ),
     ),
 
-//    @SerialName("ANYC2026")
-//    ANIME_NYC_2026(
-//        serializedName = "ANYC2026",
-//        convention = Convention.ANIME_NYC,
-//        artistTableName = "artistEntryAnimeNyc2026",
-//        stampRallyTableName = null,
-//        folderName = "animeNyc2026",
-//        dates = Dates(
-//            year = 2026,
-//            month = 8,
-//            startDay = 20,
-//            endDay = 23,
-//            timeZoneOffsetHours = -4,
-//        ),
-//    ),
+    @SerialName("ANYC2026")
+    ANIME_NYC_2026(
+        serializedName = "ANYC2026",
+        convention = Convention.ANIME_NYC,
+        artistTableName = "artistEntryAnimeNyc2026",
+        stampRallyTableName = null,
+        folderName = "animeNyc2026",
+        dates = Dates(
+            year = 2026,
+            month = 8,
+            startDay = 20,
+            endDay = 23,
+            timeZoneOffsetHours = -4,
+        ),
+    ),
     ;
 
     val stampRallyTableNameOrThrow: String
@@ -152,7 +152,7 @@ enum class DataYear(
     )
 
     companion object {
-        val LATEST = ANIME_EXPO_2026
+        val LATEST = ANIME_NYC_2026
 
         fun deserialize(value: String) = when (value) {
             "YEAR_2023" -> ANIME_EXPO_2023

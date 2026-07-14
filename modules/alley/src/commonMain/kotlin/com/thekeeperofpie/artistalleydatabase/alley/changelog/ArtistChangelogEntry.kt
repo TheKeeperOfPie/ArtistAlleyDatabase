@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog
 
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.datetime.LocalDate
@@ -20,7 +20,7 @@ data class ArtistChangelogEntry(
     val images: List<CatalogImage>,
 )
 
-fun ArtistEntryAnimeExpo2026Changelog.toChangelogEntry(
+fun ArtistEntryDao.ArtistChangelogEntry.toChangelogEntry(
     dataYear: DataYear,
     randomSeed: Int,
     showOnlyConfirmedTags: Boolean,

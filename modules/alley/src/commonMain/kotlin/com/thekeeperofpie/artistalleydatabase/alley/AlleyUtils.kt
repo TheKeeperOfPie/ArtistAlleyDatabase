@@ -13,6 +13,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_data_year_ani
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_anime_nyc_2024_short
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_anime_nyc_2025_full
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_anime_nyc_2025_short
+import artistalleydatabase.modules.alley.generated.resources.alley_data_year_anime_nyc_2026_full
+import artistalleydatabase.modules.alley.generated.resources.alley_data_year_anime_nyc_2026_short
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_convention_anime_expo
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_convention_anime_nyc
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -33,6 +35,7 @@ val DataYear.fullName
         DataYear.ANIME_EXPO_2026 -> Res.string.alley_data_year_anime_expo_2026_full
         DataYear.ANIME_NYC_2024 -> Res.string.alley_data_year_anime_nyc_2024_full
         DataYear.ANIME_NYC_2025 -> Res.string.alley_data_year_anime_nyc_2025_full
+        DataYear.ANIME_NYC_2026 -> Res.string.alley_data_year_anime_nyc_2026_full
     }
 
 val DataYear.Convention.fullName
@@ -49,4 +52,5 @@ val DataYear.shortName
         DataYear.ANIME_EXPO_2026 -> Res.string.alley_data_year_anime_expo_2026_short
         DataYear.ANIME_NYC_2024 -> Res.string.alley_data_year_anime_nyc_2024_short
         DataYear.ANIME_NYC_2025 -> Res.string.alley_data_year_anime_nyc_2025_short
+        DataYear.ANIME_NYC_2026 -> Res.string.alley_data_year_anime_nyc_2026_short
     }

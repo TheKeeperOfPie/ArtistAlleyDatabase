@@ -26,7 +26,7 @@ class FavoritesChangelogUseCase<Input>(
     @Assisted private val filterRally: StampRallyChangelogEntry.(Input) -> Boolean,
 ) {
     private val changelog = flowFromSuspend {
-        val artists = artistEntryDao.getChangelog(false)
+        val artists = artistEntryDao.getChangelog(dataYear, false)
             .map(ChangelogEntry::Artist)
         val allRallies = stampRallyEntryDao.getAllEntriesForChangelog(dataYear)
         val stampRallies = stampRallyEntryDao.getChangelog(dataYear)

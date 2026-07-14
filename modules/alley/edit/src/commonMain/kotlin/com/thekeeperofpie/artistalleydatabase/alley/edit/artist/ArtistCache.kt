@@ -24,9 +24,13 @@ class ArtistCache(
     val artistsAnimeExpo2026 = refreshFlow.updates
         .mapLatest { database.loadArtists(DataYear.ANIME_EXPO_2026).reversed() }
         .stateIn(applicationScope, SharingStarted.Eagerly, emptyList())
+    val artistsAnimeNyc2026 = refreshFlow.updates
+        .mapLatest { database.loadArtists(DataYear.ANIME_NYC_2026).reversed() }
+        .stateIn(applicationScope, SharingStarted.Eagerly, emptyList())
 
     fun artists(dataYear: DataYear): Flow<List<ArtistSummary>> = when (dataYear) {
         DataYear.ANIME_EXPO_2026 -> artistsAnimeExpo2026
+        DataYear.ANIME_NYC_2026 -> artistsAnimeNyc2026
         DataYear.ANIME_EXPO_2023,
         DataYear.ANIME_EXPO_2024,
         DataYear.ANIME_EXPO_2025,

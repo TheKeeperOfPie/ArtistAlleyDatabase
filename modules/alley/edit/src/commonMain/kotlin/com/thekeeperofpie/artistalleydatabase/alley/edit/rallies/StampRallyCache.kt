@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -12,6 +11,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 
@@ -28,6 +28,7 @@ class StampRallyCache(
 
     fun stampRallies(dataYear: DataYear): Flow<List<StampRallySummary>> = when (dataYear) {
         DataYear.ANIME_EXPO_2026 -> stampRalliesAnimeExpo2026
+        DataYear.ANIME_NYC_2026 -> flowOf(emptyList())
         DataYear.ANIME_EXPO_2023,
         DataYear.ANIME_EXPO_2024,
         DataYear.ANIME_EXPO_2025,

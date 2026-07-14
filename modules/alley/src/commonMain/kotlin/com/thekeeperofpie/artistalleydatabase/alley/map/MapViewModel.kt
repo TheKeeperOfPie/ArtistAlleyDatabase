@@ -76,6 +76,11 @@ class MapViewModel(
                         showOutdatedCatalogs = showOutdatedCatalogs,
                         showRandomCatalogImage = showRandomCatalogImage,
                     )
+                    DataYear.ANIME_NYC_2026 -> mapAnimeNyc2026Booths(
+                        booths = booths,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
                 }
             }
                 .flowOn(CustomDispatchers.IO)
@@ -333,6 +338,14 @@ class MapViewModel(
                 }
         }.flatten()
     }
+
+    private fun mapAnimeNyc2026Booths(
+        booths: List<BoothWithFavorite>,
+        showOutdatedCatalogs: Boolean,
+        showRandomCatalogImage: Boolean,
+    ): List<Table> =
+        // TODO: Real map
+        mapAnimeNyc2025Booths(booths, showOutdatedCatalogs, showRandomCatalogImage)
 
     private fun animeExpo2026IndexX(letter: Char) = when (letter) {
         'A' -> 0
