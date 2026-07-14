@@ -5,9 +5,9 @@ import kotlin.uuid.Uuid
 
 @Serializable
 internal data class AlleyChangelog(
-    val artistDiffs: List<ArtistDiff>,
+    val artistDiffs: Map<DataYear, List<ArtistDiff>>,
     val artistLastEditTimes: Map<DataYear, Map<Uuid, Instant>>,
-    val rallyDiffs: List<StampRallyDiff>,
+    val rallyDiffs: Map<DataYear, List<StampRallyDiff>>,
     val rallyLastEditTimes: Map<DataYear, Map<Uuid, Instant>>,
     val seriesDiffs: List<SeriesDiff>,
     val merchDiffs: List<MerchDiff>,

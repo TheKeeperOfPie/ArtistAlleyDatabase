@@ -943,7 +943,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             Json.decodeFromStream<AlleyChangelog>(it)
         }
         database.transaction {
-            alleyChangelog.artistDiffs.forEach {
+            alleyChangelog.artistDiffs[DataYear.ANIME_EXPO_2026]?.forEach {
                 database.mutationQueries.insertArtistEntryAnimeExpo2026Changelog(
                     ArtistEntryAnimeExpo2026Changelog(
                         artistId = it.artistId,
@@ -963,7 +963,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
 
         database.transaction {
-            alleyChangelog.rallyDiffs.forEach {
+            alleyChangelog.rallyDiffs[DataYear.ANIME_EXPO_2026]?.forEach {
                 database.mutationQueries.insertStampRallyEntryAnimeExpo2026Changelog(
                     StampRallyEntryAnimeExpo2026Changelog(
                         stampRallyId = it.stampRallyId,
