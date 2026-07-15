@@ -18,10 +18,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
+    internal suspend fun lastViewedUpdates(
+        events: ReceiveChannel<LastViewedEvent>,
+        onEvent: (LastViewedEvent) -> Unit,
+    )
+
     suspend fun databaseCreate()
 
     suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl?

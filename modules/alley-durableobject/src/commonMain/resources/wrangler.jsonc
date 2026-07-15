@@ -1,0 +1,27 @@
+{
+    "name": "artist-alley-durableobject",
+    "main": "src/ArtistAlleyDatabase-modules-alley-durableobject.mjs",
+    "compatibility_date": "2026-03-10",
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
+    "workers_dev": false,
+    "preview_urls": false,
+    "observability": {
+        "enabled": true
+    },
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "LAST_VIEWED_SERVER",
+                "class_name": "LastViewedServer"
+            }
+        ]
+    },
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": ["LastViewedServer"]
+        }
+    ]
+}

@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormM
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormQueueViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.catalog.ArtistCatalogsQueueViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.lastviewed.LastViewedConnection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchResolutionViewModel
@@ -61,6 +62,7 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
     val artistHistoryViewModelFactory: ArtistHistoryViewModel.Factory
     val artistListViewModelFactory: ArtistListViewModel.Factory
     val imagesEditViewModelFactory: ImagesEditViewModel.Factory
+    val lastViewedConnection: LastViewedConnection
     val merchEditViewModelFactory: MerchEditViewModel.Factory
     val merchListViewModelFactory: MerchListViewModel.Factory
     val seriesEditViewModelFactory: SeriesEditViewModel.Factory

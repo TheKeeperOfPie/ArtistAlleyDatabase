@@ -4,14 +4,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.CloudflareAccessPlugin
 import com.thekeeperofpie.artistalleydatabase.cloudflare.D1Database
+import com.thekeeperofpie.artistalleydatabase.cloudflare.DurableObjectNamespace
 import com.thekeeperofpie.artistalleydatabase.cloudflare.KeyValueStore
 import com.thekeeperofpie.artistalleydatabase.cloudflare.R2Bucket
 import org.w3c.fetch.Request
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.startCoroutine
-import kotlin.js.Promise
 
 external interface EventContext {
     val request: Request
@@ -32,4 +28,5 @@ external interface Env {
     val IMAGES_ACCESS_KEY_ID: String
     val IMAGES_SECRET_ACCESS_KEY_ID: String
     val IMAGES_CLOUDFLARE_URL: String
+    val LAST_VIEWED_SERVER: DurableObjectNamespace
 }

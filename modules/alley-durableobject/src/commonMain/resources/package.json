@@ -1,0 +1,8 @@
+{
+	"name": "artist-alley-durableobject",
+	"version": "0.0.0",
+	"private": true,
+	"dependencies": {
+		"wrangler": "^4.76.0"
+	}
+}

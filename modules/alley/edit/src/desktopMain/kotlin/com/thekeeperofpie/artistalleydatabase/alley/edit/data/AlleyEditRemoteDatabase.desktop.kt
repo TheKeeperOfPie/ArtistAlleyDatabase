@@ -25,9 +25,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.toStampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.delay
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
@@ -69,6 +71,13 @@ actual class AlleyEditRemoteDatabase(
     private var stampRallyLinksQueue = mutableMapOf<DataYear, MutableList<StampRallyQueueEntry>>()
 
     private val simulatedLatency = 1.seconds
+
+    internal actual suspend fun lastViewedUpdates(
+        events: ReceiveChannel<LastViewedEvent>,
+        onEvent: (LastViewedEvent) -> Unit,
+    ) {
+        // TODO
+    }
 
     actual suspend fun databaseCreate(): Unit = Unit
 

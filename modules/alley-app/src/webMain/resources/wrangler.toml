@@ -33,3 +33,8 @@ bucket_name = "artist-alley-images"
 IMAGES_ACCESS_KEY_ID = "imagesAccessKeyId"
 IMAGES_SECRET_ACCESS_KEY_ID = "imagesSecretAccessKeyId"
 IMAGES_CLOUDFLARE_URL = "imagesCloudflareUrl"
+
+[[durable_objects.bindings]]
+name = "LAST_VIEWED_SERVER"
+class_name = "LastViewedServer"
+script_name = "artist-alley-durableobject"

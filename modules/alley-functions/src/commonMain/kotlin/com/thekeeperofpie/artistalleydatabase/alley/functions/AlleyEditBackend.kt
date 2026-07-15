@@ -62,7 +62,20 @@ object AlleyEditBackend {
         val firstSegment = pathSegments.getOrNull(0)
 
         // Assumes that middleware has authorized non-form requests already
+        val request = context.request
         return when (firstSegment) {
+            "updates" -> {
+                if (request.method != "GET") {
+                    Response("Failed to open socket", ResponseInit(status = 400))
+                } else if (request.headers.get("Upgrade") != "websocket") {
+                    Response("Failed to open socket", ResponseInit(status = 426))
+                } else {
+                    context.env.LAST_VIEWED_SERVER
+                        .getByName("lastViewed")
+                        .fetch(request)
+                        .await()
+                }
+            }
             "image" -> BackendUtils.loadImage(
                 context,
                 pathSegments.drop(1).joinToString(separator = "/"),
@@ -71,7 +84,7 @@ object AlleyEditBackend {
                 context,
                 pathSegments.drop(1).joinToString(separator = "/"),
             )
-            else -> Json.decodeFromString<BackendRequest>(context.request.text().await()).run {
+            else -> Json.decodeFromString<BackendRequest>(request.text().await()).run {
                 when (this) {
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
                     is BackendRequest.ArtistWithFormMetadata ->

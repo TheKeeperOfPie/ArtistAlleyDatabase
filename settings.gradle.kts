@@ -101,6 +101,7 @@ include(
     ":modules:alley-app",
     ":modules:alley-app:service-worker",
     ":modules:alley-discord",
+    ":modules:alley-durableobject",
     ":modules:alley-edit",
     ":modules:alley-form",
     ":modules:alley-forum",

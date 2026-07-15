@@ -23,19 +23,31 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLProtocol
 import io.ktor.http.contentType
+import io.ktor.websocket.Frame
+import io.ktor.websocket.readText
 import kotlinx.browser.window
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -45,6 +57,50 @@ actual class AlleyEditRemoteDatabase(
     private val dispatchers: CustomDispatchers,
     private val ktorClient: HttpClient,
 ) {
+    private val client by lazy {
+        HttpClient {
+            install(WebSockets)
+        }
+    }
+
+    internal actual suspend fun lastViewedUpdates(
+        events: ReceiveChannel<LastViewedEvent>,
+        onEvent: (LastViewedEvent) -> Unit,
+    ) {
+        val isInsecure = window.location.protocol == "http:"
+        client.webSocket(
+            method = HttpMethod.Get,
+            host = window.location.host,
+            path = "/edit/api/updates",
+            request = { url.protocol = if (isInsecure) URLProtocol.WS else URLProtocol.WSS }
+        ) {
+            coroutineScope {
+                launch {
+                    for (event in incoming) {
+                        when (event) {
+                            is Frame.Binary,
+                            is Frame.Close,
+                            is Frame.Ping,
+                            is Frame.Pong -> ConsoleLogger.log("Received incoming frame $event")
+                            is Frame.Text ->
+                                onEvent(Json.decodeFromString<LastViewedEvent>(event.readText()))
+                        }
+                    }
+                }
+                launch {
+                    for (event in events) {
+                        ConsoleLogger.log("Sending event $event")
+                        when (event) {
+                            LastViewedEvent.Ping -> outgoing.send(Frame.Ping(byteArrayOf()))
+                            else -> outgoing.send(Frame.Text(Json.encodeToString(event)))
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
     actual suspend fun databaseCreate() {
         sendRequest(BackendRequest.DatabaseCreate)
     }
@@ -595,7 +651,11 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun queueStampRally(dataYear: DataYear, link: String, booths: Set<String>): Unit =
+    actual suspend fun queueStampRally(
+        dataYear: DataYear,
+        link: String,
+        booths: Set<String>,
+    ): Unit =
         withContext(dispatchers.io) {
             try {
                 sendRequest(BackendRequest.QueueStampRally(dataYear, link, booths))

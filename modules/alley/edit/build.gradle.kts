@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.ksoup)
+            implementation(libs.ktor.client.websockets)
             implementation(libs.material.kolor)
             implementation(libs.stately.concurrent.collections)
 

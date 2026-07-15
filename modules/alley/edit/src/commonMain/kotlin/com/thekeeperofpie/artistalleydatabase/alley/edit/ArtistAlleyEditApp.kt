@@ -25,10 +25,12 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -89,6 +91,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.mapLatest
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -97,6 +102,13 @@ fun ArtistAlleyEditApp(
     navStack: ArtistAlleyEditTopLevelStacks = rememberArtistAlleyEditTopLevelStacks(),
     onDebugOpenForm: (formLink: String) -> Unit = {},
 ) {
+    val lastViewedConnection = graph.lastViewedConnection
+    LaunchedEffect(lastViewedConnection) {
+        snapshotFlow { navStack.navBackStack() }
+            .mapLatest { it.lastOrNull() }
+            .filterIsInstance<AlleyEditDestination>()
+            .collectLatest(lastViewedConnection::onPageView)
+    }
     CompositionLocalProvider(LocalNavigationController provides remember {
         object : NavigationController {
             override fun navigateUp(): Boolean = false
