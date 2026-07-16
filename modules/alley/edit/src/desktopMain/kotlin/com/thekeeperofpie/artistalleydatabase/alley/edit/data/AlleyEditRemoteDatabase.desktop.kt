@@ -29,7 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.delay
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
@@ -73,7 +73,7 @@ actual class AlleyEditRemoteDatabase(
     private val simulatedLatency = 1.seconds
 
     internal actual suspend fun lastViewedUpdates(
-        events: ReceiveChannel<LastViewedEvent>,
+        events: Flow<LastViewedEvent>,
         onEvent: (LastViewedEvent) -> Unit,
     ) {
         // TODO

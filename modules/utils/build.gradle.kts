@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     id("library-android")
     id("library-desktop")
@@ -20,9 +18,15 @@ kotlin {
 
 kotlin {
     sourceSets {
-        androidMain.dependencies {
-            api(libs.androidx.security.crypto)
-            implementation(projects.modules.utilsBuildConfig)
+        val jvmMain = create("jvmMain") {
+            dependsOn(commonMain.get())
+        }
+        androidMain {
+            dependsOn(jvmMain)
+            dependencies {
+                api(libs.androidx.security.crypto)
+                implementation(projects.modules.utilsBuildConfig)
+            }
         }
         commonMain.dependencies {
             api(libs.bignum)
@@ -30,8 +34,11 @@ kotlin {
             api(libs.uri.kmp)
             implementation(libs.kotlinx.serialization.json.io)
         }
-        desktopMain.dependencies {
-            implementation(libs.jimfs)
+        named("desktopMain") {
+            dependsOn(jvmMain)
+            dependencies {
+                implementation(libs.jimfs)
+            }
         }
     }
 }

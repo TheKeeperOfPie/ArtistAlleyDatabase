@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
@@ -43,11 +44,13 @@ import io.ktor.http.contentType
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import kotlinx.browser.window
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -64,7 +67,7 @@ actual class AlleyEditRemoteDatabase(
     }
 
     internal actual suspend fun lastViewedUpdates(
-        events: ReceiveChannel<LastViewedEvent>,
+        events: Flow<LastViewedEvent>,
         onEvent: (LastViewedEvent) -> Unit,
     ) {
         val isInsecure = window.location.protocol == "http:"
@@ -88,14 +91,19 @@ actual class AlleyEditRemoteDatabase(
                     }
                 }
                 launch {
-                    for (event in events) {
+                    events.collect { event ->
                         ConsoleLogger.log("Sending event $event")
-                        when (event) {
-                            LastViewedEvent.Ping -> outgoing.send(Frame.Ping(byteArrayOf()))
-                            else -> outgoing.send(Frame.Text(Json.encodeToString(event)))
-                        }
-
+                        outgoing.send(Frame.Text(Json.encodeToString(event)))
                     }
+                }
+                launch {
+                    // TODO: Only send ping 60 seconds after any last event
+                    val initialDelay = if (BuildKonfig.isWasmDebug) 5.seconds else 60.seconds
+                    val period = if (BuildKonfig.isWasmDebug) 15.seconds else 60.seconds
+                    interval(initialDelay = initialDelay, period = period)
+                        .collectLatest {
+                            outgoing.send(Frame.Ping(byteArrayOf()))
+                        }
                 }
             }
         }

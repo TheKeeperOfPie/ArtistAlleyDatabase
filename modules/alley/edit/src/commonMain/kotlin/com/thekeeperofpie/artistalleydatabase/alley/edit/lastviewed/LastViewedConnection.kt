@@ -3,19 +3,24 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.lastviewed
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.hoc081098.flowext.interval
+import com.hoc081098.flowext.retryWithExponentialBackoff
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditRemoteDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedPage
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PageVisibility
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
@@ -24,40 +29,46 @@ import kotlin.time.Duration.Companion.seconds
 class LastViewedConnection(
     appScope: ApplicationScope,
     remoteDatabase: AlleyEditRemoteDatabase,
+    pageVisibility: PageVisibility,
 ) {
     var usersToViewedPages by mutableStateOf(emptyMap<String, List<String>>())
         private set
 
-    private val events = Channel<LastViewedEvent>(capacity = 10)
+    private val events = MutableSharedFlow<LastViewedEvent>(
+        replay = 1,
+        extraBufferCapacity = 10,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
 
     init {
         appScope.launch {
-            try {
-                remoteDatabase.lastViewedUpdates(
-                    events = events,
-                    onEvent = {
-                        when (it) {
-                            is LastViewedEvent.Debug -> ConsoleLogger.log("Received LastViewedEvent.Debug: ${it.message}")
-                            is LastViewedEvent.Sync -> usersToViewedPages = it.usersToViewedPages
-                            is LastViewedEvent.Update,
-                            is LastViewedEvent.Ping,
-                                -> Unit
-                        }
-                    },
-                )
-                ConsoleLogger.log("Closing socket")
-            } catch (t: Throwable) {
-                t.printStackTrace()
-            }
-        }
-        appScope.launch {
-            // TODO: Only send ping 60 seconds after any last event
-            val initialDelay = if (BuildKonfig.isWasmDebug) 5.seconds else 60.seconds
-            val period = if (BuildKonfig.isWasmDebug) 15.seconds else 60.seconds
-            interval(initialDelay, period)
-                .collectLatest {
-                    events.send(LastViewedEvent.Debug("Pinging"))
+            pageVisibility.isVisible.flatMapLatest {
+                ConsoleLogger.log("Page visibility changed $it")
+                if (!it) return@flatMapLatest emptyFlow()
+                channelFlow<Unit> {
+                    try {
+                        remoteDatabase.lastViewedUpdates(
+                            events = events,
+                            onEvent = {
+                                when (it) {
+                                    is LastViewedEvent.Debug -> ConsoleLogger.log("Received LastViewedEvent.Debug: ${it.message}")
+                                    is LastViewedEvent.Sync -> usersToViewedPages =
+                                        it.usersToViewedPages
+                                    is LastViewedEvent.Update,
+                                        -> Unit
+                                }
+                            },
+                        )
+                    } catch (t: Throwable) {
+                        t.printStackTrace()
+                        close(t)
+                    } finally {
+                        ConsoleLogger.log("Socket closed")
+                    }
                 }
+                    .retryWithExponentialBackoff(5.seconds, 2.0, 10)
+                    .catch {}
+            }.collect()
         }
     }
 
@@ -98,6 +109,6 @@ class LastViewedConnection(
             AlleyEditDestination.TagResolution,
                 -> return
         }
-        events.trySend(LastViewedEvent.Update(page))
+        events.tryEmit(LastViewedEvent.Update(page))
     }
 }

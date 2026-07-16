@@ -13,7 +13,4 @@ sealed interface LastViewedEvent {
 
     @Serializable
     data class Update(val page: LastViewedPage) : LastViewedEvent
-
-    @Serializable
-    data object Ping : LastViewedEvent
 }
