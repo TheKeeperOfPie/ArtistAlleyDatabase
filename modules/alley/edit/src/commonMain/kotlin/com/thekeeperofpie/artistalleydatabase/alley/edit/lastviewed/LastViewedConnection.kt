@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
 @Inject
@@ -31,7 +32,9 @@ class LastViewedConnection(
     remoteDatabase: AlleyEditRemoteDatabase,
     pageVisibility: PageVisibility,
 ) {
-    var usersToViewedPages by mutableStateOf(emptyMap<String, List<String>>())
+    private val instanceId = Uuid.random()
+
+    var usersToVisits by mutableStateOf(emptyMap<String, List<LastViewedEvent.Sync.PageVisit>>())
         private set
 
     private val events = MutableSharedFlow<LastViewedEvent>(
@@ -48,12 +51,14 @@ class LastViewedConnection(
                 channelFlow<Unit> {
                     try {
                         remoteDatabase.lastViewedUpdates(
+                            instanceId = instanceId,
                             events = events,
                             onEvent = {
+                                ConsoleLogger.log("Received LastViewedEvent: $it")
                                 when (it) {
-                                    is LastViewedEvent.Debug -> ConsoleLogger.log("Received LastViewedEvent.Debug: ${it.message}")
-                                    is LastViewedEvent.Sync -> usersToViewedPages =
-                                        it.usersToViewedPages
+                                    is LastViewedEvent.Sync -> usersToVisits =
+                                        it.usersToVisits
+                                    is LastViewedEvent.Debug,
                                     is LastViewedEvent.Update,
                                         -> Unit
                                 }

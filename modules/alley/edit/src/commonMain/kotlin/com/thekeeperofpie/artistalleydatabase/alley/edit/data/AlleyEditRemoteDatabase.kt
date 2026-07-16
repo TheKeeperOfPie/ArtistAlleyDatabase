@@ -25,6 +25,7 @@ import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
     internal suspend fun lastViewedUpdates(
+        instanceId: Uuid,
         events: Flow<LastViewedEvent>,
         onEvent: (LastViewedEvent) -> Unit,
     )

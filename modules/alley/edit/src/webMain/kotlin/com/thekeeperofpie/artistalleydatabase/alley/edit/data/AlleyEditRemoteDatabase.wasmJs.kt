@@ -67,6 +67,7 @@ actual class AlleyEditRemoteDatabase(
     }
 
     internal actual suspend fun lastViewedUpdates(
+        instanceId: Uuid,
         events: Flow<LastViewedEvent>,
         onEvent: (LastViewedEvent) -> Unit,
     ) {

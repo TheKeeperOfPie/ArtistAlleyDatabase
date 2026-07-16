@@ -93,7 +93,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberN
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.mapLatest
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -104,8 +103,7 @@ fun ArtistAlleyEditApp(
 ) {
     val lastViewedConnection = graph.lastViewedConnection
     LaunchedEffect(lastViewedConnection) {
-        snapshotFlow { navStack.navBackStack() }
-            .mapLatest { it.lastOrNull() }
+        snapshotFlow { navStack.navBackStack().lastOrNull() }
             .filterIsInstance<AlleyEditDestination>()
             .collectLatest(lastViewedConnection::onPageView)
     }

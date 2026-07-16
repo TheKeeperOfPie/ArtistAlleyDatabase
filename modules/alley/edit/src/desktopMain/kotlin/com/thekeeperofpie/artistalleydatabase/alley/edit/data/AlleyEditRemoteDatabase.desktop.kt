@@ -73,6 +73,7 @@ actual class AlleyEditRemoteDatabase(
     private val simulatedLatency = 1.seconds
 
     internal actual suspend fun lastViewedUpdates(
+        instanceId: Uuid,
         events: Flow<LastViewedEvent>,
         onEvent: (LastViewedEvent) -> Unit,
     ) {

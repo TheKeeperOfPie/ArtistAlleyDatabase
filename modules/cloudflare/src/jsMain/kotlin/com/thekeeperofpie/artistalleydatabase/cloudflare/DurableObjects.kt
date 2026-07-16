@@ -16,20 +16,24 @@ abstract external class DurableObject(state: DurableObjectState, env: dynamic) {
 }
 
 external interface DurableObjectState {
+    val storage: DurableObjectStorage
     fun acceptWebSocket(webSocket: CloudflareWebSocket, tags: Array<String> = definedExternally)
     fun getWebSockets(tag: String = definedExternally): Array<CloudflareWebSocket>
     fun setWebSocketAutoResponse(pair: WebSocketRequestResponsePair?)
+    fun blockConcurrencyWhile(callback: () -> Promise<Any?>): Promise<Any?>
+}
+
+external interface DurableObjectStorage {
+    fun get(key: String): Promise<dynamic>
+    fun put(key: String, value: dynamic): Promise<Unit>
+    fun delete(key: String): Promise<Boolean>
 }
 
 external interface DurableObjectNamespace {
     fun getByName(name: String): DurableObjectStub
-    fun idFromName(name: String): DurableObjectId
-    fun get(id: DurableObjectId): DurableObjectStub
 }
 
 external interface DurableObjectStub {
     fun fetch(request: Request): Promise<Response>
     fun fetch(url: String, init: dynamic = definedExternally): Promise<Response>
 }
-
-external interface DurableObjectId
