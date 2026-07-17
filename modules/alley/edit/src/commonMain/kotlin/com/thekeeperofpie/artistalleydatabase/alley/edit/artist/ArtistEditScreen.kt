@@ -162,8 +162,8 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 
-private val ACTIVE_DELAY_DURATION = 1.minutes
-private val ACTIVE_DELAY_STEP = 1.seconds
+private val ACTIVE_DELAY_DURATION = 10.minutes
+private val ACTIVE_DELAY_STEP = 30.seconds
 private const val ACTIVE_DELAY_MIN_ALPHA = 0.15f
 
 object ArtistEditScreen {
