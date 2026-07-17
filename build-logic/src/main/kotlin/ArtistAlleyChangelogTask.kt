@@ -1,4 +1,5 @@
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -55,40 +56,58 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val animeExpo2026SnapshotsDirectory: DirectoryProperty
 
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val animeNyc2026SnapshotsDirectory: DirectoryProperty
+
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
 
     init {
         animeExpo2026SnapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/animeExpo2026/edit"))
+        animeNyc2026SnapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/animeNyc2026/edit"))
         outputFile.convention(layout.buildDirectory.file("generated/changelog.json"))
     }
 
     private val filteredTableNames = listOf(
         "artistEntryAnimeExpo2026",
         "stampRallyEntryAnimeExpo2026",
+        "artistEntryAnimeNyc2026",
         "seriesEntry",
         "merchEntry",
     ).map { "\"$it\"" }.toSet()
 
     @TaskAction
     fun process() {
-        if (!animeExpo2026SnapshotsDirectory.get().asFile.exists()) return
-
         runBlocking {
             @Suppress("NewApi")
             Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)
                 .use {
                     withContext(it.asCoroutineDispatcher()) {
                         val tagDiffs = parseTags()
-                        val (animeExpo2026ArtistLastEditTimes, animeExpo2026RallyLastEditTimes, animeExpo2026Diffs) = parseAnimeExpo2026()
+                        val (
+                            animeExpo2026ArtistLastEditTimes,
+                            animeExpo2026RallyLastEditTimes,
+                            animeExpo2026Diffs,
+                        ) = parseAnimeExpo2026()
+                        val (
+                            animeNyc2026ArtistLastEditTimes,
+                            animeNyc2026Diffs,
+                        ) = parseAnimeNyc2026()
 
                         outputFile.get().asFile.outputStream().use {
                             // TODO: Filter to values that still exist in the latest snapshot, to
                             //  ignore deleted entries
                             Json.encodeToStream(
                                 value = AlleyChangelog(
-                                    artistDiffs = mapOf(DataYear.ANIME_EXPO_2026 to animeExpo2026Diffs.artistDiffs),
-                                    artistLastEditTimes = mapOf(DataYear.ANIME_EXPO_2026 to animeExpo2026ArtistLastEditTimes),
+                                    artistDiffs = mapOf(
+                                        DataYear.ANIME_EXPO_2026 to animeExpo2026Diffs.artistDiffs,
+                                        DataYear.ANIME_NYC_2026 to animeNyc2026Diffs.artistDiffs,
+                                    ),
+                                    artistLastEditTimes = mapOf(
+                                        DataYear.ANIME_EXPO_2026 to animeExpo2026ArtistLastEditTimes,
+                                        DataYear.ANIME_NYC_2026 to animeNyc2026ArtistLastEditTimes,
+                                    ),
                                     rallyDiffs = mapOf(DataYear.ANIME_EXPO_2026 to animeExpo2026Diffs.rallyDiffs),
                                     rallyLastEditTimes = mapOf(DataYear.ANIME_EXPO_2026 to animeExpo2026RallyLastEditTimes),
                                     seriesDiffs = tagDiffs.seriesDiffs,
@@ -151,6 +170,9 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     private suspend fun parseAnimeExpo2026() = coroutineScope {
         val artistLastEditTimes = mutableMapOf<Uuid, Instant>()
         val rallyLastEditTimes = mutableMapOf<Uuid, Instant>()
+        if (!animeExpo2026SnapshotsDirectory.get().asFile.exists()) {
+            return@coroutineScope Triple(artistLastEditTimes, rallyLastEditTimes, DataYearDiffs())
+        }
 
         val snapshotFiles = animeExpo2026SnapshotsDirectory.get().asFileTree.files
             .map(::readSnapshotFile)
@@ -227,6 +249,77 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         }
 
         Triple(artistLastEditTimes, rallyLastEditTimes, diffs)
+    }
+
+    private suspend fun parseAnimeNyc2026() = coroutineScope {
+        val artistLastEditTimes = mutableMapOf<Uuid, Instant>()
+        if (!animeNyc2026SnapshotsDirectory.get().asFile.exists()) {
+            return@coroutineScope artistLastEditTimes to DataYearDiffs()
+        }
+
+        val snapshotFiles = animeNyc2026SnapshotsDirectory.get().asFileTree.files
+            .map(::readSnapshotFile)
+            .groupBy { it.date }
+            .toList()
+            .map { it.second.maxBy { it.timestamp } }
+            .sortedBy { it.timestamp }
+
+        val latestArtists = mutableSetOf<ArtistEntry>()
+        val latestImageNames = mutableSetOf<String>()
+        val latestSnapshot = snapshotFiles.lastOrNull()
+            ?.let {
+                readSnapshot(
+                    snapshotFile = it,
+                    artists = {
+                        getAllArtistEntryAnimeNyc2026().executeAsList().map(::ArtistEntry)
+                    },
+                    rallies = { emptyList() },
+                )
+            }
+        if (latestSnapshot != null) {
+            latestArtists += latestSnapshot.artists
+
+            // Check only names so that width/height presence doesn't matter
+            latestImageNames += latestSnapshot.artists.flatMap { it.images.map { it.name } }
+        }
+
+        val diffs = trackStage("ArtistChangelogDiffs") {
+            snapshotFiles
+                .map {
+                    async {
+                        readSnapshot(
+                            snapshotFile = it,
+                            artists = {
+                                getAllArtistEntryAnimeNyc2026().executeAsList().map(::ArtistEntry)
+                            },
+                            rallies = { emptyList() },
+                        )
+                    }
+                }
+                .awaitAll()
+                .also {
+                    if (it.any { it == null }) {
+                        throw IllegalStateException("Failed to read snapshot files")
+                    }
+                }
+                .filterNotNull()
+                .fold(DataYearDiffs()) { before, current ->
+                    val artistDiffs = diffArtists(
+                        lastEditTimes = artistLastEditTimes,
+                        latestArtists = latestArtists,
+                        latestImageNames = latestImageNames,
+                        before = before,
+                        current = current,
+                    )
+
+                    before.copy(
+                        artistDiffs = before.artistDiffs + artistDiffs,
+                        latestArtists = current.artists,
+                    )
+                }
+        }
+
+        artistLastEditTimes to diffs
     }
 
     private fun readSnapshotFile(file: File): SnapshotFile {
@@ -529,6 +622,17 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         val images: List<DatabaseImage>,
     ) {
         constructor(entry: ArtistEntryAnimeExpo2026) : this(
+            id = entry.id,
+            booth = entry.booth,
+            name = entry.name,
+            seriesInferred = entry.seriesInferred,
+            seriesConfirmed = entry.seriesConfirmed,
+            merchInferred = entry.merchInferred,
+            merchConfirmed = entry.merchConfirmed,
+            images = entry.images,
+        )
+
+        constructor(entry: ArtistEntryAnimeNyc2026) : this(
             id = entry.id,
             booth = entry.booth,
             name = entry.name,
