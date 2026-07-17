@@ -46,7 +46,7 @@ class Worker {
                                 identifier = null,
                                 sql = """
                                     |CREATE TABLE
-                                    |    IF NOT EXISTS artistEntryAnimeExpo2026 (
+                                    |    IF NOT EXISTS artistEntryAnimeNyc2026 (
                                     |        id TEXT NOT NULL,
                                     |        status TEXT NOT NULL,
                                     |        booth TEXT COLLATE NOCASE,
@@ -84,36 +84,6 @@ class Worker {
                                     |        link TEXT NOT NULL,
                                     |        PRIMARY KEY (dataYear, booth)
                                     |    );
-                                    |CREATE TABLE
-                                    |    IF NOT EXISTS stampRallyQueueEntry (
-                                    |        dataYear TEXT NOT NULL,
-                                    |        booths TEXT NOT NULL,
-                                    |        link TEXT NOT NULL,
-                                    |        PRIMARY KEY (dataYear, link)
-                                    |    );
-                                    |    
-                                    |CREATE TABLE
-                                    |    IF NOT EXISTS stampRallyEntryAnimeExpo2026 (
-                                    |        id TEXT NOT NULL,
-                                    |        fandom TEXT NOT NULL COLLATE NOCASE,
-                                    |        tables TEXT NOT NULL,
-                                    |        startTables TEXT DEFAULT NULL,
-                                    |        endTables TEXT DEFAULT NULL,
-                                    |        links TEXT NOT NULL,
-                                    |        tableMin INTEGER,
-                                    |        totalCost INTEGER,
-                                    |        prize TEXT,
-                                    |        prizeLimit INTEGER,
-                                    |        prizeMerch TEXT DEFAULT NULL,
-                                    |        series TEXT NOT NULL,
-                                    |        merch TEXT NOT NULL,
-                                    |        notes TEXT,
-                                    |        images TEXT NOT NULL,
-                                    |        editorNotes TEXT,
-                                    |        lastEditor TEXT,
-                                    |        lastEditTime TEXT,
-                                    |        PRIMARY KEY (id)
-                                    |    );
                                 """.trimMargin(),
                                 parameters = 0,
                             ).await()
@@ -129,7 +99,7 @@ class Worker {
                                 """.trimMargin(),
                                 parameters = 0
                             ).await()
-                        val queries = Databases.backendDatabase(env).discordArtistEntryAnimeExpo2026Queries
+                        val queries = Databases.backendDatabase(env).discordArtistEntryAnimeNyc2026Queries
                         queries.insertTestArtist()
                         queries.updateTestArtistSocialLink(listOf(socialLink))
                         jsonResponse("Updated test artist social link to $socialLink")

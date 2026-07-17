@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
-import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
@@ -113,7 +111,7 @@ internal object BotBackend {
 
                 val database = Databases.backendDatabase(env)
                 val artist =
-                    database.discordArtistEntryAnimeExpo2026Queries.getArtistByBooth(booth.toString())
+                    database.discordArtistEntryAnimeNyc2026Queries.getArtistByBooth(booth.toString())
                         .awaitAsOneOrNull()
                 if (artist == null) {
                     return api.patchFailure(
@@ -169,86 +167,6 @@ internal object BotBackend {
 
                 DiscordInteractionPatchResponse(
                     content = content + didNotPostDefaultReason?.let { "\n$it" },
-                    flags = MessageFlags(MessageFlag.EPHEMERAL),
-                )
-            }
-            "rally" -> {
-                val userId = interaction.member?.user?.id
-                val allowedEditorUserIds = env.DISCORD_EDITORS.split(",")
-                if (userId !in allowedEditorUserIds) {
-                    return api.patchFailure(
-                        interactionToken = interaction.token,
-                        message = "You are not allowed to record rallies, please ping <@${allowedEditorUserIds.firstOrNull()}> with the link instead"
-                    )
-                }
-
-                val options = when (val optionsResult = validateHasOptions(command)) {
-                    is OptionResult.Failure -> return api.fail(interaction, optionsResult)
-                    is OptionResult.Success -> optionsResult.value
-                }
-
-                val dataYear = when (val dataYearResult = parseDataYear(options)) {
-                    is OptionResult.Failure -> return api.fail(interaction, dataYearResult)
-                    is OptionResult.Success -> dataYearResult.value
-                }
-
-                val boothsValue = options.find { it.name == "booths" }?.value
-                val booths = boothsValue?.split(",")?.map { it.trim() }
-                    ?.mapNotNull(Booth::fromStringOrNull)
-                    .orEmpty()
-
-                val link = when (val linkResult = parseLink(options)) {
-                    is OptionResult.Failure -> return api.fail(interaction, linkResult)
-                    is OptionResult.Success -> linkResult.value
-                }
-
-                val database = Databases.backendDatabase(env)
-                val queries = database.stampRallyQueueEntryQueries
-                val existingLinks = queries.getRallyLinks().awaitAsList().flatten()
-                val existingEntry = queries.getRallyEntry(dataYear, link)
-                    .awaitAsOneOrNull()
-
-                val newLink = link !in existingLinks && existingEntry == null
-                if (newLink) {
-                    queries.insertRallyEntry(
-                        StampRallyQueueEntry(
-                            dataYear = dataYear,
-                            booths = booths.map { it.toString() }.toSet(),
-                            link = link,
-                        )
-                    )
-                }
-
-                val boothsText = booths.joinToString(", ")
-                val post = options.firstOrNull { it.name == "post" }
-                    ?.value
-                    ?.lowercase()
-                    ?.toBooleanStrictOrNull()
-                    ?: newLink
-                if (post) {
-                    val message = buildString {
-                        append("New rally")
-                        if (booths.isNotEmpty()) {
-                            append(" for ")
-                            append(boothsText)
-                        }
-                        append(": ")
-                        append(displayLink(link))
-                    }
-                    api.sendMessage(
-                        channelId = env.DISCORD_PUBLIC_CHANNEL_ID,
-                        message = message,
-                    )
-                }
-
-                val result = if (newLink) {
-                    "Recorded rally for $boothsText: $link"
-                } else {
-                    "Already recorded $link"
-                }
-
-                DiscordInteractionPatchResponse(
-                    content = result,
                     flags = MessageFlags(MessageFlag.EPHEMERAL),
                 )
             }
@@ -453,7 +371,7 @@ internal object BotBackend {
         }
 
         val artistEntry = Databases.backendDatabase(env)
-            .discordArtistEntryAnimeExpo2026Queries
+            .discordArtistEntryAnimeNyc2026Queries
             .getArtistByBooth(booth)
             .awaitAsOneOrNull()
             ?: return null

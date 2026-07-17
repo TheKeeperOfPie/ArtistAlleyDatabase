@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.discord.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
@@ -20,13 +19,7 @@ internal object Databases {
         artistCatalogQueueEntryAdapter = ArtistCatalogQueueEntry.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
         ),
-        artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
         artistEntryAnimeNyc2026Adapter = ColumnAdapters.artistEntryAnimeNyc2026Adapter,
-        stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
-        stampRallyQueueEntryAdapter = StampRallyQueueEntry.Adapter(
-            dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            boothsAdapter = ColumnAdapters.setStringAdapter,
-        ),
     )
 
     fun formDatabase(env: Env) = AlleyFormDatabase(
