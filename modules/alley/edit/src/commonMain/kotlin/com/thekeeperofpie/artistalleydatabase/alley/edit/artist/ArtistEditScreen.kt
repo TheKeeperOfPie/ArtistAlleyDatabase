@@ -3,24 +3,37 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -38,12 +51,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -76,6 +92,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing_booth_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
+import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -92,6 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.rememb
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.lastviewed.ActiveUserData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.DeleteButton
@@ -118,6 +136,9 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.DoneAll
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Merge
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Warning
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedPage
+import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
@@ -133,10 +154,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.serialization.json.Json
+import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
+
+private val ACTIVE_DELAY_DURATION = 1.minutes
+private val ACTIVE_DELAY_STEP = 1.seconds
+private const val ACTIVE_DELAY_MIN_ALPHA = 0.15f
 
 object ArtistEditScreen {
 
@@ -177,9 +205,12 @@ object ArtistEditScreen {
         }
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
+        val lastViewedConnection = graph.lastViewedConnection
         ArtistEditScreen(
             dataYear = dataYear,
+            artistId = artistId,
             state = viewModel.state,
+            usersToVisits = { lastViewedConnection.usersToVisits },
             seriesById = { seriesById },
             seriesPredictions = viewModel::seriesPredictions,
             merchById = { merchById },
@@ -213,7 +244,9 @@ object ArtistEditScreen {
     @Composable
     operator fun invoke(
         dataYear: DataYear,
+        artistId: Uuid,
         state: State,
+        usersToVisits: () -> Map<String, List<LastViewedEvent.Sync.PageVisit>>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
@@ -272,27 +305,96 @@ object ArtistEditScreen {
             topBar = {
                 TopAppBar(
                     title = {
-                        val formState = state.artistFormState
-                        val name = formState.info.name.value.text.ifBlank {
-                            formState.editorState.id.value.text.toString()
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.height(IntrinsicSize.Min)
+                        ) {
+                            val usersToVisits = usersToVisits()
+                            val activeUserData = remember(artistId, usersToVisits) {
+                                ActiveUserData(LastViewedPage.ArtistEdit(artistId), usersToVisits)
+                            }
+                            activeUserData.users.forEach {
+                                val timestamp = it.timestamp
+                                fun alpha(): Float {
+                                    val now = Clock.System.now()
+                                    val inactive = now - ACTIVE_DELAY_DURATION
+                                    return if (timestamp < inactive) {
+                                        ACTIVE_DELAY_MIN_ALPHA
+                                    } else if (timestamp >= now) {
+                                        1f
+                                    } else {
+                                        AnimationUtils.lerp(
+                                            start = ACTIVE_DELAY_MIN_ALPHA,
+                                            end = 1f,
+                                            progress = ((timestamp - inactive) / ACTIVE_DELAY_DURATION).toFloat(),
+                                        )
+                                    }
+                                }
+                                val alpha by produceState(alpha(), timestamp) {
+                                    interval(initialDelay = ACTIVE_DELAY_STEP, period = ACTIVE_DELAY_STEP)
+                                        .collectLatest { value = alpha() }
+                                }
+                                TooltipBox(
+                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                        positioning = TooltipAnchorPosition.Below,
+                                    ),
+                                    tooltip = {
+                                        PlainTooltip {
+                                            Text(
+                                                text = "${it.identifier}\n${
+                                                    HumanReadable.timeAgo(
+                                                        timestamp
+                                                    )
+                                                }",
+                                                textAlign = TextAlign.Center,
+                                            )
+                                        }
+                                    },
+                                    state = rememberTooltipState(),
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .aspectRatio(1f, matchHeightConstraintsFirst = true)
+                                        .alpha(alpha)
+                                        .background(it.backgroundColor, CircleShape)
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Text(
+                                            text = it.identifier.take(1),
+                                            autoSize = TextAutoSize.StepBased(
+                                                4.sp,
+                                                LocalTextStyle.current.fontSize
+                                            ),
+                                            color = it.textColor,
+                                        )
+                                    }
+                                }
+                            }
+
+                            val formState = state.artistFormState
+                            val name = formState.info.name.value.text.ifBlank {
+                                formState.editorState.id.value.text.toString()
+                            }
+                            val conventionName = stringResource(dataYear.shortName)
+                            val booth = formState.info.booth.value.text.toString()
+                            val text = if (booth.isNotEmpty()) {
+                                stringResource(
+                                    Res.string.alley_edit_artist_edit_title_editing_booth_name,
+                                    conventionName,
+                                    booth,
+                                    name,
+                                )
+                            } else {
+                                stringResource(
+                                    Res.string.alley_edit_artist_edit_title_editing_name,
+                                    conventionName,
+                                    name,
+                                )
+                            }
+                            Text(text = text)
                         }
-                        val conventionName = stringResource(dataYear.shortName)
-                        val booth = formState.info.booth.value.text.toString()
-                        val text = if (booth.isNotEmpty()) {
-                            stringResource(
-                                Res.string.alley_edit_artist_edit_title_editing_booth_name,
-                                conventionName,
-                                booth,
-                                name,
-                            )
-                        } else {
-                            stringResource(
-                                Res.string.alley_edit_artist_edit_title_editing_name,
-                                conventionName,
-                                name,
-                            )
-                        }
-                        Text(text = text)
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {

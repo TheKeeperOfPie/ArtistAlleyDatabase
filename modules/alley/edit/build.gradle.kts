@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.concurrent.priority.queue)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.fuzzykot)
+            implementation(libs.human.readable)
             implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.navigation3)
             implementation(libs.jetBrainsCompose.material3.windowSizeClass)
             implementation(libs.kermit)

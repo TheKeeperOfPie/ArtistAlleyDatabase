@@ -119,10 +119,10 @@ class LastViewedServer(state: DurableObjectState, env: Env) : DurableObject(stat
     ) {
         try {
             ws.close(code, reason)
-            sendSync(caller = ws)
         } catch (t: Throwable) {
             t.printStackTrace()
         }
+        sendSync(caller = ws)
     }
 
     override fun webSocketError(ws: CloudflareWebSocket, error: Any) {

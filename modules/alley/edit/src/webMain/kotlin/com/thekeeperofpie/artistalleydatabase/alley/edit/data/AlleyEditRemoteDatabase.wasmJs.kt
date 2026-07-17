@@ -76,7 +76,10 @@ actual class AlleyEditRemoteDatabase(
             method = HttpMethod.Get,
             host = window.location.host,
             path = "/edit/api/updates",
-            request = { url.protocol = if (isInsecure) URLProtocol.WS else URLProtocol.WSS }
+            request = {
+                url.protocol = if (isInsecure) URLProtocol.WS else URLProtocol.WSS
+                url.parameters.append("instanceId", instanceId.toString())
+            }
         ) {
             coroutineScope {
                 launch {
