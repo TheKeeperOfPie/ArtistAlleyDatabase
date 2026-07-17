@@ -206,7 +206,7 @@ object MapScreen {
 
             val quantizedTranslation by remember {
                 derivedStateOf {
-                    val translation= transformState.translation.value
+                    val translation = transformState.translation.value
                     Offset(
                         x = (translation.x / 32f).roundToInt() * 32f,
                         y = (translation.y / 32f).roundToInt() * 32f
@@ -537,7 +537,11 @@ object MapScreen {
         val showText get() = layoutScale > SHOW_TEXT_MIN_SCALE
 
         val userScale
-            get() = ln(scale / scaleRange.start) / ln(scaleRange.endInclusive / scaleRange.start)
+            get() = if (scaleRange.start == scaleRange.endInclusive) {
+                1f
+            } else {
+                ln(scale / scaleRange.start) / ln(scaleRange.endInclusive / scaleRange.start)
+            }
 
         suspend fun updateScaleFromUser(@FloatRange(0.0, 1.0) scale: Float) {
             updateScale(scaleRange.start * (scaleRange.endInclusive / scaleRange.start).pow(scale))
