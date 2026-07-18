@@ -131,11 +131,13 @@ class SeriesEntryDao(
         "inferredAnimeExpo2026",
         "inferredAnimeNyc2024",
         "inferredAnimeNyc2025",
+        "inferredAnimeNyc2026",
         "confirmed2024",
         "confirmed2025",
         "confirmedAnimeExpo2026",
         "confirmedAnimeNyc2024",
         "confirmedAnimeNyc2025",
+        "confirmedAnimeNyc2026",
     ).joinToString { "seriesEntry.$it" }
 
     suspend fun getSeriesAndImageIds() = seriesDao().getSeriesAndImageIds().awaitAsList()

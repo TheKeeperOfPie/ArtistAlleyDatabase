@@ -450,64 +450,78 @@ class AlleyExporter(
             }
     }
 
-    suspend fun exportFull(sink: Sink) {
+    suspend fun exportFull(includeMetadata: Boolean, sink: Sink) {
         val artists: Map<String?, Map<String, FullExport.ArtistData>> =
             DataYear.entries.associate {
                 val data = when (it) {
                     DataYear.ANIME_EXPO_2023 -> importExportDao.getExportFullArtists2023()
                         .associate {
                             it.id to FullExport.ArtistData(
-                                DaoUtils.coerceBooleanForJs(it.favorite),
-                                DaoUtils.coerceBooleanForJs(it.ignored),
-                                it.notes
+                                booth = it.booth.takeIf { includeMetadata },
+                                name = it.name.takeIf { includeMetadata },
+                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                                notes = it.notes,
                             )
                         }
                     DataYear.ANIME_EXPO_2024 -> importExportDao.getExportFullArtists2024()
                         .associate {
                             it.id to FullExport.ArtistData(
-                                DaoUtils.coerceBooleanForJs(it.favorite),
-                                DaoUtils.coerceBooleanForJs(it.ignored),
-                                it.notes
+                                booth = it.booth.takeIf { includeMetadata },
+                                name = it.name.takeIf { includeMetadata },
+                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                                notes = it.notes,
                             )
                         }
                     DataYear.ANIME_EXPO_2025 -> importExportDao.getExportFullArtists2025()
                         .associate {
                             it.id to FullExport.ArtistData(
-                                DaoUtils.coerceBooleanForJs(it.favorite),
-                                DaoUtils.coerceBooleanForJs(it.ignored),
-                                it.notes
+                                booth = it.booth.takeIf { includeMetadata },
+                                name = it.name.takeIf { includeMetadata },
+                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                                notes = it.notes,
                             )
                         }
                     DataYear.ANIME_EXPO_2026 -> importExportDao.getExportFullArtistsAnimeExpo2026()
                         .associate {
                             it.id to FullExport.ArtistData(
-                                DaoUtils.coerceBooleanForJs(it.favorite),
-                                DaoUtils.coerceBooleanForJs(it.ignored),
-                                it.notes
+                                booth = it.booth.takeIf { includeMetadata },
+                                name = it.name.takeIf { includeMetadata },
+                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                                notes = it.notes,
                             )
                         }
                     DataYear.ANIME_NYC_2024 -> importExportDao.getExportFullArtistsAnimeNyc2024()
                         .associate {
                             it.id to FullExport.ArtistData(
-                                DaoUtils.coerceBooleanForJs(it.favorite),
-                                DaoUtils.coerceBooleanForJs(it.ignored),
-                                it.notes
+                                booth = it.booth.takeIf { includeMetadata },
+                                name = it.name.takeIf { includeMetadata },
+                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                                notes = it.notes,
                             )
                         }
                     DataYear.ANIME_NYC_2025 -> importExportDao.getExportFullArtistsAnimeNyc2025()
                         .associate {
                             it.id to FullExport.ArtistData(
-                                DaoUtils.coerceBooleanForJs(it.favorite),
-                                DaoUtils.coerceBooleanForJs(it.ignored),
-                                it.notes
+                                booth = it.booth.takeIf { includeMetadata },
+                                name = it.name.takeIf { includeMetadata },
+                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                                notes = it.notes,
                             )
                         }
                     DataYear.ANIME_NYC_2026 -> importExportDao.getExportFullArtistsAnimeNyc2026()
                         .associate {
                             it.id to FullExport.ArtistData(
-                                DaoUtils.coerceBooleanForJs(it.favorite),
-                                DaoUtils.coerceBooleanForJs(it.ignored),
-                                it.notes
+                                booth = it.booth.takeIf { includeMetadata },
+                                name = it.name.takeIf { includeMetadata },
+                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                                notes = it.notes,
                             )
                         }
                 }
@@ -518,33 +532,33 @@ class AlleyExporter(
         rallies += importExportDao.getExportFullStampRallies2023()
             .associate {
                 it.id to FullExport.RallyData(
-                    DaoUtils.coerceBooleanForJs(it.favorite),
-                    DaoUtils.coerceBooleanForJs(it.ignored),
-                    it.notes,
+                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                    notes = it.notes,
                 )
             }
         rallies += importExportDao.getExportFullStampRallies2024()
             .map {
                 it.id to FullExport.RallyData(
-                    DaoUtils.coerceBooleanForJs(it.favorite),
-                    DaoUtils.coerceBooleanForJs(it.ignored),
-                    it.notes,
+                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                    notes = it.notes,
                 )
             }
         rallies += importExportDao.getExportFullStampRallies2025()
             .map {
                 it.id to FullExport.RallyData(
-                    DaoUtils.coerceBooleanForJs(it.favorite),
-                    DaoUtils.coerceBooleanForJs(it.ignored),
-                    it.notes,
+                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                    notes = it.notes,
                 )
             }
         rallies += importExportDao.getExportFullStampRalliesAnimeExpo2026()
             .map {
                 it.id to FullExport.RallyData(
-                    DaoUtils.coerceBooleanForJs(it.favorite),
-                    DaoUtils.coerceBooleanForJs(it.ignored),
-                    it.notes,
+                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                    notes = it.notes,
                 )
             }
 
@@ -607,6 +621,8 @@ class AlleyExporter(
     ) {
         @Serializable
         data class ArtistData(
+            val booth: String? = null,
+            val name: String? = null,
             @SerialName("f")
             val favorite: Boolean = false,
             @SerialName("i")
@@ -617,6 +633,8 @@ class AlleyExporter(
 
         @Serializable
         data class RallyData(
+            val fandom: String? = null,
+            val tables: List<String>? = null,
             @SerialName("f")
             val favorite: Boolean = false,
             @SerialName("i")

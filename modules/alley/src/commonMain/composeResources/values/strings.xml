@@ -407,13 +407,18 @@
     <string name="alley_con_upcoming_suffix">, export data to your phone so your favorites are available at con</string>
     <string name="alley_con_upcoming_show_qr">Show QR</string>
 
-    <string name="alley_export_notes_warning">Note: QR code will not export notes field or series/merch favorites, consider downloading the data to a file to include them</string>
+    <string name="alley_export_notes_warning">Note: QR code will not export notes field or series/merch favorites</string>
     <string name="alley_export_download_content_description">Download</string>
     <string name="alley_export_qr_code_intro">Browser data is unreliable; export often to avoid data loss</string>
     <string name="alley_export_qr_code_explanation">Scan with another device's camera</string>
     <string name="alley_export_qr_code_content_description">Import link QR code</string>
     <string name="alley_export_qr_code_or_open_explanation">Or open this URL on the other device</string>
     <string name="alley_export_qr_code_url_label">URL</string>
+    <string name="alley_export_qr_code_type_label">Export type</string>
+    <string name="alley_export_qr_code_type_qr_code">QR code</string>
+    <string name="alley_export_qr_code_type_json_file">JSON file</string>
+    <string name="alley_export_qr_code_type_json_include_metadata">Include metadata (artist booth, names, rally fandom)</string>
+    <string name="alley_export_qr_code_json_download">Download JSON file</string>
     <string name="alley_export_qr_code_data_year_label">Convention</string>
 
     <string name="alley_close_content_description">Close X</string>

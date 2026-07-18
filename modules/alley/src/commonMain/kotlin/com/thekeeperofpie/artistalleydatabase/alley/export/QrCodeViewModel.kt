@@ -18,10 +18,10 @@ class QrCodeViewModel(
     private val exporter: AlleyExporter,
 ) : ViewModel() {
 
-    fun download() {
+    fun download(includeMetadata: Boolean) {
         viewModelScope.launch(dispatchers.io) {
             val data = Buffer().use {
-                exporter.exportFull(it)
+                exporter.exportFull(includeMetadata, it)
                 it.readString()
             }
             ImportExportUtils.download(true, data)
