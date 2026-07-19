@@ -126,11 +126,14 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         val legacyMerchIds = loadLegacyMerchIds()
 
         val snapshotFiles = animeExpo2026SnapshotsDirectory.get().asFileTree.files
+            .plus(animeNyc2026SnapshotsDirectory.get().asFileTree.files)
+            .asSequence()
             .map(::readSnapshotFile)
             .groupBy { it.date }
             .toList()
             .map { it.second.maxBy { it.timestamp } }
             .sortedBy { it.timestamp }
+            .toList()
 
         trackStage("ArtistChangelogTagDiffs") {
             snapshotFiles
