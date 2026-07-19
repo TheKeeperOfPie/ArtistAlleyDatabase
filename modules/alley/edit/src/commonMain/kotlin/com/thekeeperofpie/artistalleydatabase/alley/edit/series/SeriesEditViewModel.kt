@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -247,6 +248,7 @@ class SeriesEditViewModel(
         val synonyms = state.synonyms.toList()
         val link = state.link.value.text.toString()
         return seriesType to SeriesInfo(
+            rowid = SeriesRowId(0),
             id = id,
             uuid = Uuid.parse(uuid),
             notes = notes,

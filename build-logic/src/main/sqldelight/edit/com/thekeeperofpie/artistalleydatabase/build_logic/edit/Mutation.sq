@@ -208,4 +208,6 @@ cleanUpForRelease {
     UPDATE artistEntryAnimeExpo2026 SET lastEditor = NULL;
     UPDATE artistEntryAnimeNyc2026 SET editorNotes = NULL;
     UPDATE artistEntryAnimeNyc2026 SET lastEditor = NULL;
+    UPDATE stampRallyEntryAnimeExpo2026 SET editorNotes = NULL;
+    UPDATE stampRallyEntryAnimeExpo2026 SET lastEditor = NULL;
 }

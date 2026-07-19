@@ -51,7 +51,7 @@ val SeriesSource.textRes
         SeriesSource.NONE -> Res.string.alley_series_source_none
     }
 
-internal fun GetSeries.toSeriesInfo() = SeriesInfo(
+fun GetSeries.toSeriesInfo() = SeriesInfo(
     rowid = SeriesRowId(rowid),
     id = id,
     uuid = Uuid.parse(uuid),
@@ -73,7 +73,7 @@ internal fun GetSeries.toSeriesInfo() = SeriesInfo(
     link = link,
 )
 
-internal fun GetSeriesById.toSeriesInfo() = SeriesInfo(
+fun GetSeriesById.toSeriesInfo() = SeriesInfo(
     rowid = SeriesRowId(rowid),
     id = id,
     uuid = Uuid.parse(uuid),

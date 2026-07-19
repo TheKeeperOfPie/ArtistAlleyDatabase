@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.tags
 
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
-import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
