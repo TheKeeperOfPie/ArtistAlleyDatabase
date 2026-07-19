@@ -14,9 +14,10 @@ SELECT id, booth, name, links, storeLinks, catalogLinks, seriesInferred, seriesC
 FROM artistEntry2025;
 
 getStampRallyEntries:
-SELECT stampRallyEntry2025.* FROM stampRallyArtistConnection
-INNER JOIN stampRallyEntry2025 ON (stampRallyArtistConnection.stampRallyId = stampRallyEntry2025.id)
-WHERE stampRallyArtistConnection.artistId = :artistId;
+SELECT stampRallyEntry2025.* FROM artistEntry2025
+JOIN stampRallyArtistConnection ON artistEntry2025.rowid = stampRallyArtistConnection.artistRowId
+JOIN stampRallyEntry2025 ON stampRallyArtistConnection.stampRallyRowId = stampRallyEntry2025.rowid
+WHERE artistEntry2025.id = :artistId;
 
 getImagesById:
 SELECT artistEntry2025.images FROM artistEntry2025

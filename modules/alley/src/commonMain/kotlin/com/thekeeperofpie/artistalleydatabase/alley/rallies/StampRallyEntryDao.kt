@@ -557,8 +557,9 @@ class StampRallyEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.id IN (SELECT stampRallyId FROM stampRallySeriesConnection " +
-                        "WHERE stampRallySeriesConnection.seriesId IN ($seriesList))"
+                this += "$tableName.rowid IN (SELECT stampRallyRowId FROM stampRallySeriesConnection " +
+                        "WHERE stampRallySeriesConnection.seriesId IN ($seriesList) " +
+                        "AND stampRallySeriesConnection.dataYear = '${year.serializedName}')"
             }
 
             if (year.dates.year >= 2026) {
@@ -567,16 +568,18 @@ class StampRallyEntryDao(
                         DatabaseUtils.sqlEscapeString(it)
                     }
 
-                    this += "$tableName.id IN (SELECT stampRallyId FROM stampRallyMerchConnection " +
-                            "WHERE stampRallyMerchConnection.merchId IN ($merchList))"
+                    this += "$tableName.rowid IN (SELECT stampRallyRowId FROM stampRallyMerchConnection " +
+                            "WHERE stampRallyMerchConnection.merchId IN ($merchList) " +
+                            "AND stampRallyMerchConnection.dataYear = '${year.serializedName}')"
                 }
                 if (filterParams.prizeMerchIdIn.isNotEmpty()) {
                     val prizeMerchList = filterParams.prizeMerchIdIn.joinToString(separator = ",") {
                         DatabaseUtils.sqlEscapeString(it)
                     }
 
-                    this += "$tableName.id IN (SELECT stampRallyId FROM stampRallyPrizeMerchConnection " +
-                            "WHERE stampRallyPrizeMerchConnection.merchId IN ($prizeMerchList))"
+                    this += "$tableName.rowid IN (SELECT stampRallyRowId FROM stampRallyPrizeMerchConnection " +
+                            "WHERE stampRallyPrizeMerchConnection.merchId IN ($prizeMerchList) " +
+                            "AND stampRallyPrizeMerchConnection.dataYear = '${year.serializedName}')"
                 }
             }
         }
@@ -593,7 +596,7 @@ class StampRallyEntryDao(
                 "ORDER BY $tableName.totalCost $ascending NULLS LAST"
         }
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
-        val imageSubquery = StampRallyUtils.imageSubquery("$tableName.id")
+        val imageSubquery = StampRallyUtils.imageSubquery("$tableName.rowid", year)
         val selectFields = when (year) {
             DataYear.ANIME_EXPO_2023 -> listOf(
                 "$tableName.id",
@@ -651,13 +654,13 @@ class StampRallyEntryDao(
                 """(
                     SELECT
                         json_group_array (
-                            json_object ('booth', a.booth, 'profileImage', a.profileImage)
+                            json_object ('booth', artistEntryAnimeExpo2026.booth, 'profileImage', artistEntryAnimeExpo2026.profileImage)
                         )
                     FROM
-                        artistEntryAnimeExpo2026 a
-                        JOIN stampRallyArtistConnection ac ON ac.artistId = a.id
+                        artistEntryAnimeExpo2026
+                        JOIN stampRallyArtistConnection ON stampRallyArtistConnection.artistRowId = artistEntryAnimeExpo2026.rowid
                     WHERE
-                        ac.stampRallyId = $tableName.id
+                        stampRallyArtistConnection.stampRallyRowId = $tableName.rowid
                  )""".trimMargin(),
             )
             DataYear.ANIME_NYC_2024,

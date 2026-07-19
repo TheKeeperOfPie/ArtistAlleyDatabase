@@ -1,3 +1,4 @@
+
 import ImageUtils.parseScaledImageWidthHeight
 import Utils.createEditDatabase
 import app.cash.sqldelight.Query
@@ -267,7 +268,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             }
 
                             val artistTagConnections = trackStage("ArtistConnections") {
-                                buildArtistConnections(driver, database)
+                                buildArtistConnections(driver)
                             }
                             trackStage("SeriesInferredConfirmedCounts") {
                                 updateSeriesInferredConfirmedCounts(database, artistTagConnections)
@@ -1433,10 +1434,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private suspend fun buildArtistConnections(
-        driver: SqlDriver,
-        database: BuildLogicEditDatabase,
-    ): ArtistTagConnections {
+    private suspend fun buildArtistConnections(driver: SqlDriver): ArtistTagConnections {
         val connections = ArtistTagConnections()
 
         suspend fun executeQuery(tableName: String) = driver.executeQuery(
@@ -1615,55 +1613,54 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun buildStampRallyConnections(database: BuildLogicEditDatabase) {
-        database.stampRallyEntry2023Queries.getAllEntries().executeAsList().forEach {
-            val stampRallyId = it.id
+        database.mutationQueries.getStampRalliesAnimeExpo2023().executeAsList().forEach {
+            val stampRallyRowId = it.rowid
             it.tables
                 .mapNotNull {
-                    database.artistEntry2023Queries.getEntriesByBooth(it).executeAsOneOrNull()
+                    database.mutationQueries.getRowIdsByBoothAnimeExpo2023(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyId = stampRallyId, artistId = it.id) }
+                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
                 .forEach(database.mutationQueries::insertArtistConnection)
         }
-        database.stampRallyEntry2024Queries.getAllEntries().executeAsList().forEach {
-            val stampRallyId = it.id
+        database.mutationQueries.getStampRalliesAnimeExpo2024().executeAsList().forEach {
+            val stampRallyRowId = it.rowid
             it.tables
                 .mapNotNull {
-                    database.artistEntry2024Queries.getEntriesByBooth(it).executeAsOneOrNull()
+                    database.mutationQueries.getRowIdsByBoothAnimeExpo2024(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyId = stampRallyId, artistId = it.id) }
+                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
                 .forEach(database.mutationQueries::insertArtistConnection)
         }
-        database.stampRallyEntry2025Queries.getAllEntries().executeAsList().forEach {
-            val stampRallyId = it.id
+        database.mutationQueries.getStampRalliesAnimeExpo2025().executeAsList().forEach {
+            val stampRallyRowId = it.rowid
             it.tables
                 .mapNotNull {
-                    database.artistEntry2025Queries.getEntriesByBooth(it).executeAsOneOrNull()
+                    database.mutationQueries.getRowIdsByBoothAnimeExpo2025(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyId = stampRallyId, artistId = it.id) }
+                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
                 .forEach(database.mutationQueries::insertArtistConnection)
             it.series
                 .map {
                     StampRallySeriesConnection(
-                        stampRallyId = stampRallyId,
+                        stampRallyRowId = stampRallyRowId,
                         seriesId = it,
                         dataYear = DataYear.ANIME_EXPO_2025,
                     )
                 }
                 .forEach(database.mutationQueries::insertStampRallySeriesConnection)
         }
-        database.stampRallyEntryAnimeExpo2026Queries.getAllEntries().executeAsList().forEach {
-            val stampRallyId = it.id
+        database.mutationQueries.getStampRalliesAnimeExpo2026().executeAsList().forEach {
+            val stampRallyRowId = it.rowid
             it.tables
                 .mapNotNull {
-                    database.artistEntryAnimeExpo2026Queries.getEntriesByBooth(it)
-                        .executeAsOneOrNull()
+                    database.mutationQueries.getRowIdsByBoothAnimeExpo2026(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyId = stampRallyId, artistId = it.id) }
+                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
                 .forEach(database.mutationQueries::insertArtistConnection)
             it.series
                 .map {
                     StampRallySeriesConnection(
-                        stampRallyId = stampRallyId,
+                        stampRallyRowId = stampRallyRowId,
                         seriesId = it,
                         dataYear = DataYear.ANIME_EXPO_2026,
                     )
@@ -1672,7 +1669,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             it.merch
                 .map {
                     StampRallyMerchConnection(
-                        stampRallyId = stampRallyId,
+                        stampRallyRowId = stampRallyRowId,
                         merchId = it,
                         dataYear = DataYear.ANIME_EXPO_2026,
                     )
@@ -1681,7 +1678,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             it.prizeMerch
                 ?.map {
                     StampRallyPrizeMerchConnection(
-                        stampRallyId = stampRallyId,
+                        stampRallyRowId = stampRallyRowId,
                         merchId = it,
                         dataYear = DataYear.ANIME_EXPO_2026,
                     )

@@ -451,39 +451,39 @@ CREATE TABLE
 
 CREATE TABLE
     IF NOT EXISTS stampRallyArtistConnection (
-        stampRallyId TEXT NOT NULL,
-        artistId TEXT NOT NULL,
-        PRIMARY KEY (stampRallyId, artistId)
+        stampRallyRowId INTEGER NOT NULL,
+        artistRowId INTEGER NOT NULL,
+        PRIMARY KEY (stampRallyRowId, artistRowId)
     ) WITHOUT ROWID;
 
-CREATE INDEX IF NOT EXISTS index_stampRallyArtistConnection_artistId ON stampRallyArtistConnection (artistId);
+CREATE INDEX IF NOT EXISTS index_stampRallyArtistConnection_artistRowId ON stampRallyArtistConnection (artistRowId);
 
 CREATE TABLE
     IF NOT EXISTS stampRallySeriesConnection (
-        stampRallyId TEXT NOT NULL,
+        stampRallyRowId INTEGER NOT NULL,
         seriesId TEXT NOT NULL,
         dataYear TEXT AS DataYear NOT NULL,
-        PRIMARY KEY (stampRallyId, seriesId)
+        PRIMARY KEY (stampRallyRowId, seriesId)
     ) WITHOUT ROWID;
 
 CREATE INDEX IF NOT EXISTS index_stampRallySeriesConnection_seriesId ON stampRallySeriesConnection (seriesId);
 
 CREATE TABLE
     IF NOT EXISTS stampRallyMerchConnection (
-        stampRallyId TEXT NOT NULL,
+        stampRallyRowId INTEGER NOT NULL,
         merchId TEXT NOT NULL,
         dataYear TEXT AS DataYear NOT NULL,
-        PRIMARY KEY (stampRallyId, merchId)
+        PRIMARY KEY (stampRallyRowId, merchId)
     ) WITHOUT ROWID;
 
 CREATE INDEX IF NOT EXISTS index_stampRallyMerchConnection_merchId ON stampRallyMerchConnection (merchId);
 
 CREATE TABLE
     IF NOT EXISTS stampRallyPrizeMerchConnection (
-        stampRallyId TEXT NOT NULL,
+        stampRallyRowId INTEGER NOT NULL,
         merchId TEXT NOT NULL,
         dataYear TEXT AS DataYear NOT NULL,
-        PRIMARY KEY (stampRallyId, merchId)
+        PRIMARY KEY (stampRallyRowId, merchId)
     ) WITHOUT ROWID;
 
 CREATE INDEX IF NOT EXISTS index_stampRallyPrizeMerchConnection_merchId ON stampRallyPrizeMerchConnection (merchId);

@@ -80,8 +80,8 @@ class MetricsDao(
         val statement = """
             SELECT artistId, $artistTable.booth, $artistTable.name, COUNT(*) AS count
             FROM stampRallyArtistConnection
-            INNER JOIN $rallyTable ON stampRallyArtistConnection.stampRallyId = $rallyTable.id
-            INNER JOIN $artistTable ON stampRallyArtistConnection.artistId = $artistTable.id
+            INNER JOIN $rallyTable ON stampRallyArtistConnection.stampRallyRowId = $rallyTable.rowid
+            INNER JOIN $artistTable ON stampRallyArtistConnection.artistRowId = $artistTable.rowid
             GROUP BY artistId
             ORDER BY count DESC
             LIMIT 10

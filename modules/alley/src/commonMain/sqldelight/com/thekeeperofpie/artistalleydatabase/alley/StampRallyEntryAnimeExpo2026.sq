@@ -8,9 +8,10 @@ getAllEntries:
 SELECT * FROM stampRallyEntryAnimeExpo2026;
 
 getArtistEntries:
-SELECT artistEntryAnimeExpo2026.* FROM stampRallyArtistConnection
-INNER JOIN artistEntryAnimeExpo2026 ON (stampRallyArtistConnection.artistId = artistEntryAnimeExpo2026.id)
-WHERE stampRallyArtistConnection.stampRallyId = :stampRallyId;
+SELECT artistEntryAnimeExpo2026.* FROM artistEntryAnimeExpo2026
+JOIN stampRallyArtistConnection ON artistEntryAnimeExpo2026.rowid = stampRallyArtistConnection.artistRowId
+JOIN stampRallyEntryAnimeExpo2026 ON stampRallyArtistConnection.stampRallyRowId = stampRallyEntryAnimeExpo2026.rowid
+WHERE stampRallyEntryAnimeExpo2026.id = :stampRallyId;
 
 getChangelog:
 SELECT * FROM stampRallyEntryAnimeExpo2026Changelog;

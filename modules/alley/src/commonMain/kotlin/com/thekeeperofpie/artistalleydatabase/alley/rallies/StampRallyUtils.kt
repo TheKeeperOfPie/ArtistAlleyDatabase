@@ -5,6 +5,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit_unknown
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -19,24 +20,25 @@ val StampRallyEntryAnimeExpo2026.startTableOrDefault: String?
 
 internal object StampRallyUtils  {
 
-    fun imageSubquery(idField: String) = """(
+    fun imageSubquery(rowIdField: String, dataYear: DataYear) = """(
             SELECT
                 json_group_array (
                     json_object (
-                        'id', s.id,
-                        'aniListId', s.aniListId,
-                        'wikipediaId', s.wikipediaId,
-                        'tmdbId', s.tmdbId,
-                        'tmdbType', s.tmdbType,
-                        'steamId', s.steamId,
-                        'steamImagePath', s.steamImagePath,
-                        'openLibraryId', s.openLibraryId
+                        'id', seriesEntry.id,
+                        'aniListId', seriesEntry.aniListId,
+                        'wikipediaId', seriesEntry.wikipediaId,
+                        'tmdbId', seriesEntry.tmdbId,
+                        'tmdbType', seriesEntry.tmdbType,
+                        'steamId', seriesEntry.steamId,
+                        'steamImagePath', seriesEntry.steamImagePath,
+                        'openLibraryId', seriesEntry.openLibraryId
                     )
                 )
             FROM
-                seriesEntry s
-                JOIN stampRallySeriesConnection sc ON sc.seriesId = s.id
+                seriesEntry
+                JOIN stampRallySeriesConnection ON stampRallySeriesConnection.seriesId = seriesEntry.id
             WHERE
-                sc.stampRallyId = $idField
+                stampRallySeriesConnection.stampRallyRowId = $rowIdField
+                AND stampRallySeriesConnection.dataYear = '${dataYear.serializedName}'
         )""".trimIndent()
 }

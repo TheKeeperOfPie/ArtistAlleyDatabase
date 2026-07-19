@@ -152,6 +152,38 @@ updateStampRallyEntryAnimeExpo2026:
 INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026
 VALUES ?;
 
+getStampRalliesAnimeExpo2023:
+SELECT rowid AS rowid, tables FROM stampRallyEntry2023;
+
+getStampRalliesAnimeExpo2024:
+SELECT rowid AS rowid, tables FROM stampRallyEntry2024;
+
+getStampRalliesAnimeExpo2025:
+SELECT rowid AS rowid, tables, series FROM stampRallyEntry2025;
+
+getStampRalliesAnimeExpo2026:
+SELECT rowid AS rowid, tables, series, merch, prizeMerch FROM stampRallyEntryAnimeExpo2026;
+
+getRowIdsByBoothAnimeExpo2023:
+SELECT rowid AS rowid
+FROM artistEntry2023
+WHERE booth = :booth;
+
+getRowIdsByBoothAnimeExpo2024:
+SELECT rowid AS rowid
+FROM artistEntry2024
+WHERE booth = :booth;
+
+getRowIdsByBoothAnimeExpo2025:
+SELECT rowid AS rowid
+FROM artistEntry2025
+WHERE booth = :booth;
+
+getRowIdsByBoothAnimeExpo2026:
+SELECT rowid AS rowid
+FROM artistEntryAnimeExpo2026
+WHERE booth = :booth;
+
 updateSeriesTagCounts:
 UPDATE seriesEntry SET
 inferred2024 = :inferredAnimeExpo2024,

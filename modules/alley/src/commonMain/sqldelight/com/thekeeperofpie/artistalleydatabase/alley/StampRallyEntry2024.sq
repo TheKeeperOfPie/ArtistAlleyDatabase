@@ -8,6 +8,7 @@ getAllEntries:
 SELECT * FROM stampRallyEntry2024;
 
 getArtistEntries:
-SELECT artistEntry2024.* FROM stampRallyArtistConnection
-INNER JOIN artistEntry2024 ON (stampRallyArtistConnection.artistId = artistEntry2024.id)
-WHERE stampRallyArtistConnection.stampRallyId = :stampRallyId;
+SELECT artistEntry2024.* FROM stampRallyEntry2024
+JOIN stampRallyArtistConnection ON stampRallyEntry2024.rowid = stampRallyArtistConnection.stampRallyRowId
+JOIN artistEntry2024 ON stampRallyArtistConnection.artistRowId = artistEntry2024.rowid
+WHERE stampRallyEntry2024.id = :stampRallyId;

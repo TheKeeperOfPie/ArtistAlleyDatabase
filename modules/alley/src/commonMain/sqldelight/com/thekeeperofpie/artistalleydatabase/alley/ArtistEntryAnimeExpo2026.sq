@@ -14,9 +14,10 @@ SELECT id, booth, name, socialLinks, storeLinks, portfolioLinks, catalogLinks, s
 FROM artistEntryAnimeExpo2026;
 
 getStampRallyEntries:
-SELECT stampRallyEntryAnimeExpo2026.* FROM stampRallyArtistConnection
-INNER JOIN stampRallyEntryAnimeExpo2026 ON (stampRallyArtistConnection.stampRallyId = stampRallyEntryAnimeExpo2026.id)
-WHERE stampRallyArtistConnection.artistId = :artistId;
+SELECT stampRallyEntryAnimeExpo2026.* FROM artistEntryAnimeExpo2026
+JOIN stampRallyArtistConnection ON artistEntryAnimeExpo2026.rowid = stampRallyArtistConnection.artistRowId
+JOIN stampRallyEntryAnimeExpo2026 ON stampRallyArtistConnection.stampRallyRowId = stampRallyEntryAnimeExpo2026.rowid
+WHERE artistEntryAnimeExpo2026.id = :artistId;
 
 getImagesById:
 SELECT artistEntryAnimeExpo2026.images FROM artistEntryAnimeExpo2026
