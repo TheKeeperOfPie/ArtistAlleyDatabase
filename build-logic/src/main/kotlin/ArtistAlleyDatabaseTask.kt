@@ -1,6 +1,9 @@
 import ImageUtils.parseScaledImageWidthHeight
 import Utils.createEditDatabase
 import app.cash.sqldelight.Query
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlCursor
+import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026Changelog
@@ -264,7 +267,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             }
 
                             val artistTagConnections = trackStage("ArtistConnections") {
-                                buildArtistConnections(database)
+                                buildArtistConnections(driver, database)
                             }
                             trackStage("SeriesInferredConfirmedCounts") {
                                 updateSeriesInferredConfirmedCounts(database, artistTagConnections)
@@ -306,7 +309,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                         )
                                         val brokenArtists = seriesConnections
                                             .filter { it.value.seriesId == badSeries }
-                                            .map { it.value.artistId }
+                                            .map { it.value.artistRowId }
                                         logTagError(badSeries, "Broken artists: $brokenArtists")
                                     }
                                 }
@@ -332,7 +335,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                         )
                                         val brokenArtists = merchConnections
                                             .filter { it.value.merchId == badMerch }
-                                            .map { it.value.artistId }
+                                            .map { it.value.artistRowId }
                                         logTagError(badMerch, "Broken artists: $brokenArtists")
                                     }
                                 }
@@ -1402,11 +1405,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private data class ArtistTagConnections(
-        val series: MutableMap<Pair<String, String>, ArtistSeriesConnection> = mutableMapOf(),
-        val merch: MutableMap<Pair<String, String>, ArtistMerchConnection> = mutableMapOf(),
+        val series: MutableMap<Pair<Long, String>, ArtistSeriesConnection> = mutableMapOf(),
+        val merch: MutableMap<Pair<Long, String>, ArtistMerchConnection> = mutableMapOf(),
     ) {
         fun addConnection(connection: ArtistSeriesConnection) {
-            val idPair = connection.let { it.artistId to it.seriesId }
+            val idPair = connection.let { it.artistRowId to it.seriesId }
             val existing = series[idPair]
             if (existing == null) {
                 series[idPair] = connection
@@ -1418,7 +1421,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
 
         fun addConnection(connection: ArtistMerchConnection) {
-            val idPair = connection.let { it.artistId to it.merchId }
+            val idPair = connection.let { it.artistRowId to it.merchId }
             val existing = merch[idPair]
             if (existing == null) {
                 merch[idPair] = connection
@@ -1430,87 +1433,36 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun buildArtistConnections(database: BuildLogicEditDatabase): ArtistTagConnections {
+    private suspend fun buildArtistConnections(
+        driver: SqlDriver,
+        database: BuildLogicEditDatabase,
+    ): ArtistTagConnections {
         val connections = ArtistTagConnections()
 
-        // ANIME_EXPO_2023 skipped because it didn't have tags
+        suspend fun executeQuery(tableName: String) = driver.executeQuery(
+            identifier = null,
+            sql = """
+                SELECT rowid, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed
+                FROM $tableName;
+            """.trimIndent(),
+            mapper = { it.toArtistConnectionDataList() },
+            parameters = 0,
+        ).await()
 
-        database.artistEntry2024Queries.getAllEntries().executeAsList().forEach {
-            connections.addArtistConnections(
-                artistId = it.id,
-                dataYear = DataYear.ANIME_EXPO_2024,
-                seriesInferred = it.seriesInferred,
-                seriesConfirmed = it.seriesConfirmed,
-                merchInferred = it.merchInferred,
-                merchConfirmed = it.merchConfirmed,
-            )
-        }
-
-        database.artistEntry2025Queries.getAllEntries().executeAsList().forEach {
-            connections.addArtistConnections(
-                artistId = it.id,
-                dataYear = DataYear.ANIME_EXPO_2025,
-                seriesInferred = it.seriesInferred,
-                seriesConfirmed = it.seriesConfirmed,
-                merchInferred = it.merchInferred,
-                merchConfirmed = it.merchConfirmed,
-            )
-        }
-
-        database.artistEntryAnimeExpo2026Queries.getAllEntries().executeAsList().forEach {
-            connections.addArtistConnections(
-                artistId = it.id,
-                dataYear = DataYear.ANIME_EXPO_2026,
-                seriesInferred = it.seriesInferred,
-                seriesConfirmed = it.seriesConfirmed,
-                merchInferred = it.merchInferred,
-                merchConfirmed = it.merchConfirmed,
-            )
-        }
-
-        database.artistEntryAnimeNyc2024Queries.getAllEntries().executeAsList().forEach {
-            connections.addArtistConnections(
-                artistId = it.id,
-                dataYear = DataYear.ANIME_NYC_2024,
-                seriesInferred = it.seriesInferred,
-                seriesConfirmed = it.seriesConfirmed,
-                merchInferred = it.merchInferred,
-                merchConfirmed = it.merchConfirmed,
-            )
-        }
-
-        database.artistEntryAnimeNyc2025Queries.getAllEntries().executeAsList().forEach {
-            connections.addArtistConnections(
-                artistId = it.id,
-                dataYear = DataYear.ANIME_NYC_2025,
-                seriesInferred = it.seriesInferred,
-                seriesConfirmed = it.seriesConfirmed,
-                merchInferred = it.merchInferred,
-                merchConfirmed = it.merchConfirmed,
-            )
-        }
-
-        database.artistEntryAnimeNyc2026Queries.getAllEntries().executeAsList().forEach {
-            connections.addArtistConnections(
-                artistId = it.id,
-                dataYear = DataYear.ANIME_NYC_2026,
-                seriesInferred = it.seriesInferred,
-                seriesConfirmed = it.seriesConfirmed,
-                merchInferred = it.merchInferred,
-                merchConfirmed = it.merchConfirmed,
-            )
+        DataYear.entries.forEach { dataYear ->
+            // ANIME_EXPO_2023 skipped because it didn't have tags
+            if (dataYear == DataYear.ANIME_EXPO_2023) return@forEach
+            executeQuery(dataYear.artistTableName).forEach {
+                connections.addArtistConnections(dataYear, it)
+            }
         }
 
         return connections
     }
 
     private fun ArtistTagConnections.addArtistConnections(
-        artistId: String,
         dataYear: DataYear,
-        seriesInferred: List<String>,
-        seriesConfirmed: List<String>,
-        merchInferred: List<String>,
-        merchConfirmed: List<String>,
+        data: ArtistConnectionData,
     ) {
         val (inferredFlag, confirmedFlag) = when (dataYear) {
             DataYear.ANIME_EXPO_2023 -> 0L to 0L
@@ -1527,33 +1479,42 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             DataYear.ANIME_NYC_2026 -> TagYearFlag.getFlags(hasAnimeNyc2026Inferred = true) to
                     TagYearFlag.getFlags(hasAnimeNyc2026Confirmed = true)
         }
-        seriesInferred.forEach {
+        val artistRowId = data.artistRowId
+        data.seriesInferred.forEach {
             addConnection(
                 ArtistSeriesConnection(
-                    artistId = artistId,
+                    artistRowId = artistRowId,
                     seriesId = it,
                     yearFlags = inferredFlag
                 )
             )
         }
-        seriesConfirmed.forEach {
+        data.seriesConfirmed.forEach {
             addConnection(
                 ArtistSeriesConnection(
-                    artistId = artistId,
+                    artistRowId = artistRowId,
                     seriesId = it,
                     yearFlags = confirmedFlag,
                 )
             )
         }
 
-        merchInferred.forEach {
+        data.merchInferred.forEach {
             addConnection(
-                ArtistMerchConnection(artistId = artistId, merchId = it, yearFlags = inferredFlag)
+                ArtistMerchConnection(
+                    artistRowId = artistRowId,
+                    merchId = it,
+                    yearFlags = inferredFlag
+                )
             )
         }
-        merchConfirmed.forEach {
+        data.merchConfirmed.forEach {
             addConnection(
-                ArtistMerchConnection(artistId = artistId, merchId = it, yearFlags = confirmedFlag)
+                ArtistMerchConnection(
+                    artistRowId = artistRowId,
+                    merchId = it,
+                    yearFlags = confirmedFlag
+                )
             )
         }
     }
@@ -1836,6 +1797,30 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
+    private fun SqlCursor.toArtistConnectionDataList() = QueryResult.Value(
+        buildList {
+            while (next().value) {
+                add(
+                    ArtistConnectionData(
+                        artistRowId = getLong(0)!!,
+                        seriesInferred = getString(1)
+                            ?.let { Json.decodeFromString<List<String>>(it) }
+                            .orEmpty(),
+                        seriesConfirmed = getString(2)
+                            ?.let { Json.decodeFromString<List<String>>(it) }
+                            .orEmpty(),
+                        merchInferred = getString(3)
+                            ?.let { Json.decodeFromString<List<String>>(it) }
+                            .orEmpty(),
+                        merchConfirmed = getString(4)
+                            ?.let { Json.decodeFromString<List<String>>(it) }
+                            .orEmpty(),
+                    )
+                )
+            }
+        }
+    )
+
     // Copied from ArtistInference since it isn't accessible here
     private class ArtistInferenceProvider(database: BuildLogicEditDatabase, artistId: String) {
         private val animeExpo2023 by lazy {
@@ -1936,6 +1921,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val resized: Boolean,
         val width: Int,
         val height: Int,
+    )
+
+    private data class ArtistConnectionData(
+        val artistRowId: Long,
+        val seriesInferred: List<String>,
+        val seriesConfirmed: List<String>,
+        val merchInferred: List<String>,
+        val merchConfirmed: List<String>,
     )
 
     companion object {

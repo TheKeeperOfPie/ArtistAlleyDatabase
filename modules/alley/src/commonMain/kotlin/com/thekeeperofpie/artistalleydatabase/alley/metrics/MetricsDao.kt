@@ -35,7 +35,7 @@ class MetricsDao(
         val statement = """
             SELECT artistId, $tableName.booth, $tableName.name, COUNT(*) AS count
             FROM artistSeriesConnection
-            INNER JOIN $tableName ON artistSeriesConnection.artistId = $tableName.id
+            INNER JOIN $tableName ON artistSeriesConnection.artistRowId = $tableName.rowid
             WHERE (yearFlags & $flags) != 0
             GROUP BY artistId
             ORDER BY count DESC
@@ -59,7 +59,7 @@ class MetricsDao(
         val statement = """
             SELECT artistId, $tableName.booth, $tableName.name, COUNT(*) AS count
             FROM artistMerchConnection
-            INNER JOIN $tableName ON artistMerchConnection.artistId = $tableName.id
+            INNER JOIN $tableName ON artistMerchConnection.artistRowId = $tableName.rowid
             WHERE (yearFlags & $flags) != 0
             GROUP BY artistId
             ORDER BY count DESC

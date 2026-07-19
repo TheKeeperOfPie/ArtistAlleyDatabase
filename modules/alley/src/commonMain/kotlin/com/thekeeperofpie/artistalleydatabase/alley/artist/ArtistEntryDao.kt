@@ -935,7 +935,7 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
+                this += "$tableName.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
                         yearFilter +
                         "artistSeriesConnection.seriesId IN ($seriesList))"
             }
@@ -956,7 +956,7 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
+                this += "$tableName.rowid IN (SELECT artistRowId from artistMerchConnection WHERE " +
                         yearFilter +
                         "artistMerchConnection.merchId IN ($merchList))"
             }
@@ -1277,7 +1277,7 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
+                this += "$tableName.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
                         yearFilter +
                         "artistSeriesConnection.seriesId IN ($seriesList))"
             }
@@ -1298,7 +1298,7 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
+                this += "$tableName.rowid IN (SELECT artistRowId from artistMerchConnection WHERE " +
                         yearFilter +
                         "artistMerchConnection.merchId IN ($merchList))"
             }

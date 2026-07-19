@@ -57,73 +57,73 @@ WHERE (yearFlags & 512) != 0;
 
 getBoothsByMerchId2024:
 SELECT artistEntry2024.booth FROM artistMerchConnection
-INNER JOIN artistEntry2024 ON (artistMerchConnection.artistId = artistEntry2024.id)
+INNER JOIN artistEntry2024 ON (artistMerchConnection.artistRowId = artistEntry2024.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 1) != 0;
 
 getBoothsByMerchIdConfirmed2024:
 SELECT artistEntry2024.booth FROM artistMerchConnection
-INNER JOIN artistEntry2024 ON (artistMerchConnection.artistId = artistEntry2024.id)
+INNER JOIN artistEntry2024 ON (artistMerchConnection.artistRowId = artistEntry2024.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 2) != 0;
 
 getBoothsByMerchId2025:
 SELECT artistEntry2025.booth FROM artistMerchConnection
-INNER JOIN artistEntry2025 ON (artistMerchConnection.artistId = artistEntry2025.id)
+INNER JOIN artistEntry2025 ON (artistMerchConnection.artistRowId = artistEntry2025.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 4) != 0;
 
 getBoothsByMerchIdConfirmed2025:
 SELECT artistEntry2025.booth FROM artistMerchConnection
-INNER JOIN artistEntry2025 ON (artistMerchConnection.artistId = artistEntry2025.id)
+INNER JOIN artistEntry2025 ON (artistMerchConnection.artistRowId = artistEntry2025.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 8) != 0;
 
 getBoothsByMerchIdAnimeExpo2026:
 SELECT artistEntryAnimeExpo2026.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeExpo2026 ON (artistMerchConnection.artistId = artistEntryAnimeExpo2026.id)
+INNER JOIN artistEntryAnimeExpo2026 ON (artistMerchConnection.artistRowId = artistEntryAnimeExpo2026.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 16) != 0;
 
 getBoothsByMerchIdConfirmedAnimeExpo2026:
 SELECT artistEntryAnimeExpo2026.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeExpo2026 ON (artistMerchConnection.artistId = artistEntryAnimeExpo2026.id)
+INNER JOIN artistEntryAnimeExpo2026 ON (artistMerchConnection.artistRowId = artistEntryAnimeExpo2026.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 32) != 0;
 
 getBoothsByMerchIdAnimeNyc2024:
 SELECT artistEntryAnimeNyc2024.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeNyc2024 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2024.id)
+INNER JOIN artistEntryAnimeNyc2024 ON (artistMerchConnection.artistRowId = artistEntryAnimeNyc2024.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 64) != 0;
 
 getBoothsByMerchIdConfirmedAnimeNyc2024:
 SELECT artistEntryAnimeNyc2024.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeNyc2024 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2024.id)
+INNER JOIN artistEntryAnimeNyc2024 ON (artistMerchConnection.artistRowId = artistEntryAnimeNyc2024.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 128) != 0;
 
 getBoothsByMerchIdAnimeNyc2025:
 SELECT artistEntryAnimeNyc2025.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2025.id)
+INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistRowId = artistEntryAnimeNyc2025.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 256) != 0;
 
 getBoothsByMerchIdConfirmedAnimeNyc2025:
 SELECT artistEntryAnimeNyc2025.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2025.id)
+INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistRowId = artistEntryAnimeNyc2025.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 512) != 0;
 
 getBoothsByMerchIdAnimeNyc2026:
 SELECT artistEntryAnimeNyc2026.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeNyc2026 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2026.id)
+INNER JOIN artistEntryAnimeNyc2026 ON (artistMerchConnection.artistRowId = artistEntryAnimeNyc2026.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 1024) != 0;
 
 getBoothsByMerchIdConfirmedAnimeNyc2026:
 SELECT artistEntryAnimeNyc2026.booth FROM artistMerchConnection
-INNER JOIN artistEntryAnimeNyc2026 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2026.id)
+INNER JOIN artistEntryAnimeNyc2026 ON (artistMerchConnection.artistRowId = artistEntryAnimeNyc2026.rowid)
 WHERE artistMerchConnection.merchId = :merchId
 AND (artistMerchConnection.yearFlags & 2048) != 0;
 
