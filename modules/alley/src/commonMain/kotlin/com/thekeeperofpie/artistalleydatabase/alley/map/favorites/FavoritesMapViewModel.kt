@@ -12,11 +12,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_o
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
-import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagAutocomplete
@@ -60,7 +61,7 @@ class FavoritesMapViewModel(
     val query =
         savedStateHandle.saveable(key = "query", saver = TextFieldState.Saver, { TextFieldState() })
 
-    val seriesIdIn = savedStateHandle.getMutableStateFlow("seriesIdIn", emptyList<String>())
+    val seriesRowIdIn = savedStateHandle.getMutableStateFlow("seriesIdIn", emptyList<SeriesRowId>())
     val merchIdIn = savedStateHandle.getMutableStateFlow("merchIdIn", emptyList<String>())
 
     val tagResults = combine(settings.dataYear, snapshotFlow { query.text.toString() }, ::Pair)
@@ -81,7 +82,7 @@ class FavoritesMapViewModel(
     val highlightedBooths = combine(
         settings.dataYear,
         settings.showOnlyConfirmedTags,
-        seriesIdIn,
+        seriesRowIdIn,
         merchIdIn,
         ::TagInput,
     ).mapLatest {
@@ -136,8 +137,8 @@ class FavoritesMapViewModel(
     )
 
     fun onSeriesSelected(seriesInfo: SeriesInfo, selected: Boolean) =
-        seriesIdIn.update {
-            val id = seriesInfo.id
+        seriesRowIdIn.update {
+            val id = seriesInfo.rowid
             if (selected) {
                 if (id in it) {
                     it
@@ -164,14 +165,14 @@ class FavoritesMapViewModel(
         }
 
     fun onClearTags() {
-        seriesIdIn.value = emptyList()
+        seriesRowIdIn.value = emptyList()
         merchIdIn.value = emptyList()
     }
 
     private data class TagInput(
         val dataYear: DataYear,
         val showOnlyConfirmedTags: Boolean,
-        val seriesIdIn: List<String>,
+        val seriesIdIn: List<SeriesRowId>,
         val merchIdIn: List<String>,
     )
 

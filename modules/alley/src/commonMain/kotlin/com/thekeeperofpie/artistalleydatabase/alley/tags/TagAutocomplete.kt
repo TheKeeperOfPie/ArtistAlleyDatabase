@@ -27,6 +27,10 @@ open class TagAutocomplete(
     val seriesById = flowFromSuspend { loadSeries() }
         .stateIn(applicationScope, SharingStarted.Eagerly, emptyMap())
 
+    val seriesByRowId = seriesById.mapState(applicationScope) {
+        it.values.associateBy { it.rowid }
+    }
+
     val merchById = flowFromSuspend { loadMerch() }
         .stateIn(applicationScope, SharingStarted.Eagerly, emptyMap())
 

@@ -1,8 +1,9 @@
 getPopularSeries:
-SELECT seriesId, COUNT(*) AS count
+SELECT seriesEntry.id, COUNT(*) AS count
 FROM artistSeriesConnection
-WHERE (yearFlags & :flags) != 0
-GROUP BY seriesId
+JOIN seriesEntry ON artistSeriesConnection.seriesRowId = seriesEntry.rowid
+WHERE (artistSeriesConnection.yearFlags & :flags) != 0
+GROUP BY seriesEntry.id
 ORDER BY count DESC
 LIMIT 10;
 

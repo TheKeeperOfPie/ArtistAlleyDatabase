@@ -9,6 +9,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_language_opti
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_romaji
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -30,6 +31,7 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
     if (!LocalInspectionMode.current) throw IllegalStateException("Must be in preview")
     return SeriesWithUserData(
         series = SeriesInfo(
+            rowid = SeriesRowId(0),
             id = id,
             uuid = Uuid.parse(id),
             notes = null,

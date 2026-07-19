@@ -20,7 +20,13 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_source
 import artistalleydatabase.modules.alley.generated.resources.alley_series_source_web_novel
 import artistalleydatabase.modules.alley.generated.resources.alley_series_source_web_series
 import artistalleydatabase.modules.alley.generated.resources.alley_series_source_webtoon
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeries
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesById
+import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import kotlin.uuid.Uuid
 
 val SeriesSource.textRes
     get() = when (this) {
@@ -44,3 +50,48 @@ val SeriesSource.textRes
         SeriesSource.WEBTOON -> Res.string.alley_series_source_webtoon
         SeriesSource.NONE -> Res.string.alley_series_source_none
     }
+
+internal fun GetSeries.toSeriesInfo() = SeriesInfo(
+    rowid = SeriesRowId(rowid),
+    id = id,
+    uuid = Uuid.parse(uuid),
+    notes = notes,
+    aniListId = aniListId,
+    aniListType = AniListType.parse(aniListType),
+    wikipediaId = wikipediaId,
+    tmdbId = tmdbId,
+    tmdbType = tmdbType,
+    steamId = steamId,
+    steamImagePath = steamImagePath,
+    openLibraryId = openLibraryId,
+    source = source ?: SeriesSource.NONE,
+    titlePreferred = titlePreferred,
+    titleEnglish = titleEnglish,
+    titleRomaji = titleRomaji,
+    titleNative = titleNative,
+    synonyms = synonyms.orEmpty(),
+    link = link,
+)
+
+internal fun GetSeriesById.toSeriesInfo() = SeriesInfo(
+    rowid = SeriesRowId(rowid),
+    id = id,
+    uuid = Uuid.parse(uuid),
+    notes = notes,
+    aniListId = aniListId,
+    aniListType = AniListType.parse(aniListType),
+    wikipediaId = wikipediaId,
+    tmdbId = tmdbId,
+    tmdbType = tmdbType,
+    steamId = steamId,
+    steamImagePath = steamImagePath,
+    openLibraryId = openLibraryId,
+    source = source ?: SeriesSource.NONE,
+    titlePreferred = titlePreferred,
+    titleEnglish = titleEnglish,
+    titleRomaji = titleRomaji,
+    titleNative = titleNative,
+    synonyms = synonyms.orEmpty(),
+    link = link,
+)
+

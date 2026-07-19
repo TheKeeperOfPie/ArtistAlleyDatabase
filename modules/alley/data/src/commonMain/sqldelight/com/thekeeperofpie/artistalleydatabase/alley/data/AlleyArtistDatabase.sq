@@ -315,12 +315,12 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2024_fts USING FTS5 (
 CREATE TABLE
     IF NOT EXISTS artistSeriesConnection (
         artistRowId INTEGER NOT NULL,
-        seriesId TEXT NOT NULL,
+        seriesRowId INTEGER NOT NULL,
         yearFlags INTEGER NOT NULL DEFAULT 0,
-        PRIMARY KEY (artistRowId, seriesId)
+        PRIMARY KEY (artistRowId, seriesRowId)
     ) WITHOUT ROWID;
 
-CREATE INDEX IF NOT EXISTS index_artistSeriesConnection_seriesId ON artistSeriesConnection (seriesId);
+CREATE INDEX IF NOT EXISTS index_artistSeriesConnection_seriesRowId ON artistSeriesConnection (seriesRowId);
 
 CREATE TABLE
     IF NOT EXISTS artistMerchConnection (

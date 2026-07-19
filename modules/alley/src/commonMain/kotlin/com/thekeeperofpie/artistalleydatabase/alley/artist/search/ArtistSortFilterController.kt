@@ -60,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -471,8 +472,8 @@ class ArtistSortFilterController(
         FilterParams(
             sortOption = it[0] as ArtistSearchSortOption,
             sortAscending = it[1] as Boolean,
-            seriesIn = setOfNotNull((it[2] as SeriesInfo?)?.id) +
-                    (it[3] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.id },
+            seriesIn = setOfNotNull((it[2] as SeriesInfo?)?.rowid) +
+                    (it[3] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.rowid },
             merchIn = (it[4] as Set<String>) + setOfNotNull(lockedMerchId),
             commissionsIn = it[5] as Set<CommissionType>,
             linkTypesIn = (it[6] as Set<String>).map(Link.Type::valueOf).toSet(),
@@ -501,7 +502,7 @@ class ArtistSortFilterController(
     data class FilterParams(
         val sortOption: ArtistSearchSortOption,
         val sortAscending: Boolean,
-        val seriesIn: Set<String>,
+        val seriesIn: Set<SeriesRowId>,
         val merchIn: Set<String>,
         val commissionsIn: Set<CommissionType>,
         val linkTypesIn: Set<Link.Type>,

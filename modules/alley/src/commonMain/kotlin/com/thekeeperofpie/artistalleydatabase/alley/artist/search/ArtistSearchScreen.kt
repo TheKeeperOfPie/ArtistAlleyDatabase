@@ -106,8 +106,6 @@ object ArtistSearchScreen {
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
         lockedYear: DataYear?,
-        lockedSeries: String?,
-        lockedMerch: String?,
         isRoot: Boolean,
         lockedSerializedBooths: String?,
         onClickBack: (() -> Unit)?,
@@ -121,8 +119,8 @@ object ArtistSearchScreen {
         viewModel: ArtistSearchViewModel = viewModel {
             graph.artistSearchViewModelFactory.create(
                 lockedYear = lockedYear,
-                lockedSeries = lockedSeries,
-                lockedMerch = lockedMerch,
+                lockedSeries = null,
+                lockedMerch = null,
                 isRoot = isRoot,
                 lockedSerializedBooths = lockedSerializedBooths,
                 savedStateHandle = createSavedStateHandle(),

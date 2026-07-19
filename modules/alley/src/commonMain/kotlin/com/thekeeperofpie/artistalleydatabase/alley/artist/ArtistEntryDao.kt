@@ -36,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -932,12 +933,12 @@ class ArtistEntryDao(
                 }
 
                 val seriesList = filterParams.seriesIn.joinToString(separator = ",") {
-                    DatabaseUtils.sqlEscapeString(it)
+                    DatabaseUtils.sqlEscapeString(it.rowid.toString())
                 }
 
                 this += "$tableName.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
                         yearFilter +
-                        "artistSeriesConnection.seriesId IN ($seriesList))"
+                        "artistSeriesConnection.seriesRowId IN ($seriesList))"
             }
 
             if (filterParams.merchIn.isNotEmpty()) {
@@ -1255,7 +1256,7 @@ class ArtistEntryDao(
 
     suspend fun searchBooths(
         year: DataYear,
-        seriesIds: Set<String>,
+        seriesIds: Set<SeriesRowId>,
         merchIds: Set<String>,
         showOnlyConfirmedTags: Boolean = false,
     ): Set<String> {
@@ -1274,12 +1275,12 @@ class ArtistEntryDao(
                 }
 
                 val seriesList = seriesIds.joinToString(separator = ",") {
-                    DatabaseUtils.sqlEscapeString(it)
+                    DatabaseUtils.sqlEscapeString(it.rowid.toString())
                 }
 
                 this += "$tableName.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
                         yearFilter +
-                        "artistSeriesConnection.seriesId IN ($seriesList))"
+                        "artistSeriesConnection.seriesRowId IN ($seriesList))"
             }
 
             if (merchIds.isNotEmpty()) {

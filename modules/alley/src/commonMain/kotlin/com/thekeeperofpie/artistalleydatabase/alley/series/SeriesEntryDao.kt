@@ -13,12 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdsWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -34,7 +33,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlin.uuid.Uuid
 
-fun SqlCursor.toSeriesEntry(database: AlleySqlDatabase): SeriesEntry =
+fun SqlCursor.toSeriesEntry(database: AlleySqlDatabase) =
     database.seriesQueries.getSeriesById("").mapper(this)
 
 fun SqlCursor.toSeriesWithUserData(database: AlleySqlDatabase): SeriesWithUserData =
@@ -42,6 +41,7 @@ fun SqlCursor.toSeriesWithUserData(database: AlleySqlDatabase): SeriesWithUserDa
 
 fun GetSeriesByIdWithUserData.toSeriesWithUserData() = SeriesWithUserData(
     series = SeriesInfo(
+        rowid = SeriesRowId(rowid),
         id = id,
         uuid = Uuid.parse(uuid),
         notes = notes,
@@ -69,6 +69,7 @@ fun GetSeriesByIdWithUserData.toSeriesWithUserData() = SeriesWithUserData(
 
 fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
     series = SeriesInfo(
+        rowid = SeriesRowId(rowid),
         id = id,
         uuid = Uuid.parse(uuid),
         notes = notes,
@@ -108,6 +109,7 @@ class SeriesEntryDao(
     )
 
     private val selectFields = listOf(
+        "rowid",
         "id",
         "uuid",
         "notes",

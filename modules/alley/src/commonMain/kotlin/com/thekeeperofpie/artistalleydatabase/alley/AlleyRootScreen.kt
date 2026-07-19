@@ -96,8 +96,6 @@ object AlleyRootScreen {
                         ArtistSearchScreen(
                             graph = graph,
                             lockedYear = null,
-                            lockedSeries = null,
-                            lockedMerch = null,
                             isRoot = true,
                             lockedSerializedBooths = null,
                             onClickBack = null,

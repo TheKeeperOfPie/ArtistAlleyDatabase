@@ -102,7 +102,7 @@ class MetricsDao(
         daoMetrics()
             .getPopularSeries(tagFlags(year, includeInferred))
             .awaitAsList()
-            .map { SeriesData(year, it.seriesId, it.count) }
+            .map { SeriesData(year, it.id, it.count) }
 
     suspend fun getPopularMerch(
         year: DataYear,

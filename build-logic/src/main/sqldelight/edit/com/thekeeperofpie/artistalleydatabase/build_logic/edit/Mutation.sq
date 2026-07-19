@@ -7,7 +7,7 @@ INSERT OR REPLACE INTO artistMerchConnection
 VALUES ?;
 
 getSeries:
-SELECT * FROM seriesEntry;
+SELECT rowid AS rowid, * FROM seriesEntry;
 
 insertSeries:
 INSERT OR REPLACE INTO seriesEntry

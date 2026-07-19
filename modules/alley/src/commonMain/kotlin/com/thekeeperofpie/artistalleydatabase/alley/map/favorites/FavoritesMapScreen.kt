@@ -62,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -90,9 +91,9 @@ object FavoritesMapScreen {
         },
     ) {
         val tagResults by viewModel.tagResults.collectAsStateWithLifecycle()
-        val seriesIdIn by viewModel.seriesIdIn.collectAsStateWithLifecycle()
+        val seriesIdIn by viewModel.seriesRowIdIn.collectAsStateWithLifecycle()
         val merchIdIn by viewModel.merchIdIn.collectAsStateWithLifecycle()
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val seriesByRowId by viewModel.tagAutocomplete.seriesByRowId.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val highlightedBooths by viewModel.highlightedBooths.collectAsStateWithLifecycle()
         FavoritesMapScreen(
@@ -103,7 +104,7 @@ object FavoritesMapScreen {
             highlightedBooths = { highlightedBooths },
             seriesIdIn = { seriesIdIn },
             merchIdIn = { merchIdIn },
-            seriesById = { seriesById },
+            seriesByRowId = { seriesByRowId },
             merchById = { merchById },
             onArtistClick = onArtistClick,
             onSeriesSelected = viewModel::onSeriesSelected,
@@ -120,9 +121,9 @@ object FavoritesMapScreen {
         tagResults: () -> Pair<List<MerchInfo>, List<SeriesInfo>>,
         mapTransformState: MapScreen.TransformState,
         highlightedBooths: () -> Set<String>,
-        seriesIdIn: () -> List<String>,
+        seriesIdIn: () -> List<SeriesRowId>,
         merchIdIn: () -> List<String>,
-        seriesById: () -> Map<String, SeriesInfo>,
+        seriesByRowId: () -> Map<SeriesRowId, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         onSeriesSelected: (SeriesInfo, Boolean) -> Unit,
@@ -309,7 +310,7 @@ object FavoritesMapScreen {
 
                     val seriesIdIn = seriesIdIn()
                     val merchIdIn = merchIdIn()
-                    val seriesById = seriesById()
+                    val seriesByRowId = seriesByRowId()
                     val merchById = merchById()
                     val languageOptionMedia = LocalLanguageOptionMedia.current
                     if (merchIdIn.isNotEmpty() || seriesIdIn.isNotEmpty()) {
@@ -345,7 +346,7 @@ object FavoritesMapScreen {
                                 items = seriesIdIn,
                                 key = { "series$it" },
                                 contentType = { "series" }) {
-                                val series = seriesById[it]
+                                val series = seriesByRowId[it]
                                 FilterChip(
                                     selected = true,
                                     label = { Text(series?.name(languageOptionMedia).orEmpty()) },

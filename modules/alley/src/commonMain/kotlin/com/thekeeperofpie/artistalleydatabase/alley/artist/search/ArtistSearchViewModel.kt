@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.Named
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -124,8 +123,8 @@ class ArtistSearchViewModel(
 
     val query = MutableStateFlow("")
 
-    val unfilteredCount = combine(year, query, ::Pair)
-        .flatMapLatest { (year, query) ->
+    val unfilteredCount = combine(lockedSeriesEntry, year, query, ::Triple)
+        .flatMapLatest { (seriesInfo, year, query) ->
             artistEntryDao.searchCount(
                 year = year,
                 query = query,
@@ -133,7 +132,7 @@ class ArtistSearchViewModel(
                     ArtistSortFilterController.FilterParams(
                         sortOption = ArtistSearchSortOption.BOOTH,
                         sortAscending = true,
-                        seriesIn = setOfNotNull(lockedSeries),
+                        seriesIn = setOfNotNull(seriesInfo?.rowid),
                         merchIn = setOfNotNull(lockedMerch),
                         commissionsIn = emptySet(),
                         linkTypesIn = emptySet(),
@@ -230,17 +229,5 @@ class ArtistSearchViewModel(
 
     fun toggleIgnored(entry: ArtistEntryGridModel, ignored: Boolean) {
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
-    }
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            lockedYear: DataYear?,
-            @Named("lockedSeries") lockedSeries: String?,
-            @Named("lockedMerch") lockedMerch: String?,
-            isRoot: Boolean,
-            @Named("lockedSerializedBooths") lockedSerializedBooths: String?,
-            savedStateHandle: SavedStateHandle,
-        ): ArtistSearchViewModel
     }
 }

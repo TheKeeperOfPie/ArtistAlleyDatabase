@@ -17,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
-import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
@@ -37,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
@@ -46,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
 import org.w3c.fetch.Headers
@@ -1817,4 +1818,48 @@ object AlleyEditBackend {
             timestamp = lastEditTime,
             formTimestamp = formTimestamp,
         )
+
+    private fun GetSeries.toSeriesInfo() = SeriesInfo(
+        rowid = SeriesRowId(rowid),
+        id = id,
+        uuid = Uuid.parse(uuid),
+        notes = notes,
+        aniListId = aniListId,
+        aniListType = AniListType.parse(aniListType),
+        wikipediaId = wikipediaId,
+        tmdbId = tmdbId,
+        tmdbType = tmdbType,
+        steamId = steamId,
+        steamImagePath = steamImagePath,
+        openLibraryId = openLibraryId,
+        source = source ?: SeriesSource.NONE,
+        titlePreferred = titlePreferred,
+        titleEnglish = titleEnglish,
+        titleRomaji = titleRomaji,
+        titleNative = titleNative,
+        synonyms = synonyms.orEmpty(),
+        link = link,
+    )
+
+    private fun GetSeriesById.toSeriesInfo() = SeriesInfo(
+        rowid = SeriesRowId(rowid),
+        id = id,
+        uuid = Uuid.parse(uuid),
+        notes = notes,
+        aniListId = aniListId,
+        aniListType = AniListType.parse(aniListType),
+        wikipediaId = wikipediaId,
+        tmdbId = tmdbId,
+        tmdbType = tmdbType,
+        steamId = steamId,
+        steamImagePath = steamImagePath,
+        openLibraryId = openLibraryId,
+        source = source ?: SeriesSource.NONE,
+        titlePreferred = titlePreferred,
+        titleEnglish = titleEnglish,
+        titleRomaji = titleRomaji,
+        titleNative = titleNative,
+        synonyms = synonyms.orEmpty(),
+        link = link,
+    )
 }

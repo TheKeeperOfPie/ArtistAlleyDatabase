@@ -361,8 +361,6 @@ object ArtistAlleyAppScreen {
                 ArtistSearchScreen(
                     graph = graph,
                     lockedYear = it.year,
-                    lockedSeries = null,
-                    lockedMerch = null,
                     isRoot = false,
                     lockedSerializedBooths = it.serializedBooths,
                     scrollStateSaver = ScrollStateSaver(),

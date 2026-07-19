@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject

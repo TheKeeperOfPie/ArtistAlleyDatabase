@@ -40,6 +40,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_clear_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -233,6 +234,7 @@ class SeriesAutocompleteSection(
 
     @Serializable
     data class SeriesFilterEntry(
+        val rowid: SeriesRowId,
         val id: String,
         val titlePreferred: String,
         val titleEnglish: String,
@@ -240,6 +242,7 @@ class SeriesAutocompleteSection(
         val titleNative: String,
     ) {
         constructor(entry: SeriesInfo) : this(
+            rowid = entry.rowid,
             id = entry.id,
             titlePreferred = entry.titlePreferred,
             titleEnglish = entry.titleEnglish,

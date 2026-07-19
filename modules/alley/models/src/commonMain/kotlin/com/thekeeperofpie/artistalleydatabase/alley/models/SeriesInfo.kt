@@ -7,6 +7,7 @@ import kotlin.uuid.Uuid
 
 @Serializable
 data class SeriesInfo(
+    val rowid: SeriesRowId,
     val id: String,
     val uuid: Uuid,
     val notes: String?,
@@ -43,6 +44,7 @@ data class SeriesInfo(
 
     companion object {
         fun fake(id: String) = SeriesInfo(
+            rowid = SeriesRowId(0),
             id = id,
             uuid = Utils.uuidFromRandomBytes(id),
             notes = null,

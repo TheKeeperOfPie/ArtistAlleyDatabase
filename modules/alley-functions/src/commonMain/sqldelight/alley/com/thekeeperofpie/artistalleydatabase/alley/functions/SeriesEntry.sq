@@ -1,5 +1,5 @@
 getSeries:
-SELECT * FROM seriesEntry;
+SELECT rowid AS rowid, * FROM seriesEntry;
 
 insertSeries:
 INSERT OR REPLACE INTO seriesEntry
@@ -10,5 +10,5 @@ DELETE FROM seriesEntry
 WHERE :id = seriesEntry.id;
 
 getSeriesById:
-SELECT * FROM seriesEntry
+SELECT rowid AS rowid, * FROM seriesEntry
 WHERE :id = seriesEntry.id;
