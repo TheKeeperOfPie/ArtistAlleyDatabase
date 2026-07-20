@@ -161,7 +161,7 @@ interface ArtistDatabaseEntry {
 
 val ArtistDatabaseEntry.isAdult: Boolean
     get() = when (year) {
-        DataYear.ANIME_EXPO_2026 -> booth?.let(Booth::fromStringOrNull)?.letter in setOf('U', 'V')
+        DataYear.ANIME_EXPO_2026 -> booth?.let(Booth::fromStringOrNull)?.letters in setOf("U", "V")
         DataYear.ANIME_EXPO_2023,
         DataYear.ANIME_EXPO_2024,
         DataYear.ANIME_EXPO_2025,

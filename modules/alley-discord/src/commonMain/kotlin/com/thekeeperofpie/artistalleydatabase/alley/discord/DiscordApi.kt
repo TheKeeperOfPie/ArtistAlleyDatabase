@@ -48,7 +48,7 @@ internal class DiscordApi(
         description = "Table number (e.g. M39)",
         required = true,
         minLength = 2,
-        maxLength = 3,
+        maxLength = 4,
     )
 
     suspend fun syncCommands(): String = registerCommand(

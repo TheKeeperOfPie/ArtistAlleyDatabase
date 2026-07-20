@@ -6,6 +6,7 @@ internal object StampRallyUtils {
 
     fun toValidBooth(rawBooth: String): String? {
         val input = rawBooth.replace("-", "")
+        // TODO: Doesn't support double letter booths
         return when (input.length) {
             2 -> {
                 val letter = input[0].uppercaseChar()

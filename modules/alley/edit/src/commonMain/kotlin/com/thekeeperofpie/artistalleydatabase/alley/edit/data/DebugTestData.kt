@@ -23,7 +23,8 @@ object DebugTestData {
     ) {
         if (initialized) return
         initialized = true
-        val artist = initializeTestArtist(editRemoteDatabase)
+        val dataYear = DataYear.LATEST
+        val artist = initializeTestArtist(dataYear, editRemoteDatabase)
         val artistAfter = artist.copy(
             name = artist.name + " - edited",
             summary = "New description",
@@ -31,8 +32,8 @@ object DebugTestData {
             merchConfirmed = artist.merchConfirmed.drop(1) + "Photocards",
         )
 
-        val stampRally = initializeTestStampRally(editRemoteDatabase)
-        val stampRallyAfter = stampRally.copy(
+        val stampRally = initializeTestStampRally(dataYear, editRemoteDatabase)
+        val stampRallyAfter = stampRally?.copy(
             fandom = stampRally.fandom + " - edited",
             tables = listOf("C38", "C39", "C41"),
             prizeLimit = 25,
@@ -52,14 +53,14 @@ object DebugTestData {
             artist.year,
             beforeArtist = artist,
             afterArtist = artistAfter,
-            beforeStampRallies = listOf(stampRally),
-            afterStampRallies = listOf(stampRallyAfter),
+            beforeStampRallies = listOfNotNull(stampRally),
+            afterStampRallies = listOfNotNull(stampRallyAfter),
             deletedRallyIds = emptyList(),
             formNotes = "Some test artist form notes",
         )
 
         editRemoteDatabase.submitRemoteArtistData(
-            dataYear = DataYear.LATEST,
+            dataYear = dataYear,
             data = listOf(
                 ArtistRemoteEntry(
                     confirmedId = null,
@@ -82,10 +83,9 @@ object DebugTestData {
     }
 
     private suspend fun initializeTestArtist(
+        dataYear: DataYear,
         remoteDatabase: AlleyEditRemoteDatabase,
     ): ArtistDatabaseEntry.Impl {
-        val dataYear = DataYear.LATEST
-
         // Seed some initial data to make it easier to test out features locally
         val artistUpdates = listOf<(ArtistDatabaseEntry.Impl) -> ArtistDatabaseEntry.Impl>(
             { it.copy(name = "First Last", lastEditor = "firstlast@example.org") },
@@ -198,7 +198,11 @@ object DebugTestData {
         return previous
     }
 
-    private suspend fun initializeTestStampRally(database: AlleyEditRemoteDatabase): StampRallyDatabaseEntry {
+    private suspend fun initializeTestStampRally(
+        dataYear: DataYear,
+        database: AlleyEditRemoteDatabase,
+    ): StampRallyDatabaseEntry? {
+        if (dataYear.stampRallyTableName == null) return null
         val updates = listOf<(StampRallyDatabaseEntry) -> StampRallyDatabaseEntry>(
             {
                 it.copy(
@@ -217,7 +221,7 @@ object DebugTestData {
         )
 
         var previous = StampRallyDatabaseEntry(
-            year = DataYear.LATEST,
+            year = dataYear,
             id = Uuid.random().toString(),
             fandom = "Test stamp rally",
             hostTable = "C39",
@@ -240,7 +244,7 @@ object DebugTestData {
             lastEditTime = Clock.System.now(),
         )
         database.saveStampRally(
-            dataYear = DataYear.LATEST,
+            dataYear = dataYear,
             initial = null,
             updated = previous
         )

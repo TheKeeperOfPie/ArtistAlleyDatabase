@@ -1156,7 +1156,7 @@ object ArtistFormScreen {
                         derivedStateOf {
                             if (dataYear != DataYear.ANIME_EXPO_2026) return@derivedStateOf false
                             Booth.fromStringOrNull(state.info.booth.value.text.toString())
-                                ?.letter in setOf('U', 'V')
+                                ?.letters in setOf("U", "V")
                         }
                     }
                     if (showAdultSectionWarning) {

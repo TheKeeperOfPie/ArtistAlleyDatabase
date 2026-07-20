@@ -66,12 +66,12 @@ object AdminScreen {
                         modifier = Modifier.padding(16.dp)
                     ) {
                         val remoteSyncFileLauncher =
-                            rememberFilePickerLauncher(FileKitType.File("html")) {
+                            rememberFilePickerLauncher(FileKitType.File("json")) {
                                 viewModel.onRemoteSyncFileChosen(it)
                             }
 
                         FilledTonalButton(onClick = { remoteSyncFileLauncher.launch() }) {
-                            Text("Load remote HTML")
+                            Text("Load remote JSON")
                         }
 
                         val diff by viewModel.remoteSyncDiff.collectAsStateWithLifecycle()

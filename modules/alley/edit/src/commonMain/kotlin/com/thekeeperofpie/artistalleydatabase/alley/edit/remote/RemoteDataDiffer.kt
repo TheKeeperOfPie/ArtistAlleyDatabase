@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.remote
 
-import com.fleeksoft.ksoup.Ksoup
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
@@ -13,6 +12,8 @@ import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.nameWithoutExtension
 import io.github.vinceglb.filekit.readString
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlin.time.Instant
 
 @SingleIn(AppScope::class)
@@ -20,9 +21,15 @@ import kotlin.time.Instant
 class RemoteDataDiffer(
     val editDatabase: AlleyEditDatabase,
 ) {
+    private val json = Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+    }
+
     suspend fun calculateDiff(dataYear: DataYear, file: PlatformFile): List<ArtistRemoteEntry> {
-        val timestamp = Instant.parseOrNull(file.nameWithoutExtension)
-            ?: Instant.parseOrNull("${file.nameWithoutExtension}T00:00:00Z")
+        val fixedName = file.nameWithoutExtension.replace(';', ':')
+        val timestamp = Instant.parseOrNull(fixedName)
+            ?: Instant.parseOrNull("${fixedName}T00:00:00Z")
         return if (timestamp == null) {
             // TODO: Better surface errors
             emptyList()
@@ -41,48 +48,15 @@ class RemoteDataDiffer(
         }
     }
 
-
     private suspend fun parseEntries(file: PlatformFile, timestamp: Instant) =
-        Ksoup.parse(file.readString())
-            .select(".event")
-            .mapNotNull {
-                val title = it.selectFirst(".title")
-                val name = (title?.selectFirst("a")?.text()?.ifEmpty { null }
-                    ?: title?.text())
-                    ?.ifBlank { null }
-                    ?: return@mapNotNull null
-                val booth = it.selectFirst(".channel")?.selectFirst("span")?.text()
-                    ?.let {
-                        val letter = it.firstOrNull() ?: return@let null
-                        val number = it.drop(1).padStart(2, '0')
-                        "$letter$number"
-                    }
-                    ?.ifBlank { null }
-                    ?: return@mapNotNull null
-                val link = title?.selectFirst("a")?.attr("href")
-                val socials = title?.selectFirst(".socials").let {
-                    try {
-                        it?.select("a")?.map { it.attr("href") }
-                    } catch (_: Throwable) {
-                        null
-                    }
-                }
-                val website = it.selectFirst(".start")
-                    ?.selectFirst("a")
-                    ?.attr("href")
-                    ?.removeSuffix("/")
-                val summary = it.selectFirst(".desc")?.text()
-                val links = (socials.orEmpty() + link + website)
-                    .filterNotNull()
-                    .map(::fixLink)
-                    .distinct()
-                    .sorted()
+        json.decodeFromString<List<Entry>>(file.readString())
+            .map {
                 ArtistRemoteEntry(
                     confirmedId = null,
-                    booth = booth,
-                    name = name,
-                    summary = summary,
-                    links = links,
+                    booth = it.booth,
+                    name = it.name,
+                    summary = it.summary,
+                    links = it.links.map { fixLink(it) },
                     timestamp = timestamp,
                 )
             }
@@ -104,4 +78,13 @@ class RemoteDataDiffer(
 
         return trimmedLink
     }
+
+    @Serializable
+    data class Entry(
+        val booth: String,
+        val name: String,
+        val links: List<String>,
+        val summary: String?,
+        val tags: List<String>,
+    )
 }
