@@ -457,47 +457,22 @@ object ArtistFormScreen {
                                 Spacer(Modifier.height(16.dp))
                                 HorizontalDivider()
 
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.alley_form_stamp_rallies_header),
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        modifier = Modifier.weight(1f)
+                                if (dataYear.stampRallyTableName != null) {
+                                    StampRallySection(
+                                        dataYear = dataYear,
+                                        state = state,
+                                        initialRallies = initialRallies,
+                                        seriesById = seriesById,
+                                        seriesPredictions = seriesPredictions,
+                                        merchById = merchById,
+                                        merchPredictions = merchPredictions,
+                                        tablePredictions = tablePredictions,
+                                        seriesImage = seriesImage,
+                                        onClickEditImages = onClickEditImages,
+                                        modifier = modifier,
                                     )
-
-                                    if (state.stampRallyStates.size < StampRallyDatabaseEntry.MAX_STAMP_RALLIES) {
-                                        FilledTonalButton(
-                                            onClick = {
-                                                state.stampRallyStates += newStampRallyFormState(
-                                                    state
-                                                )
-                                            },
-                                        ) {
-                                            Text(stringResource(Res.string.alley_form_stamp_rallies_action_add))
-                                        }
-                                    }
                                 }
 
-                                StampRallyForms(
-                                    dataYear = dataYear,
-                                    state = state,
-                                    initialRallies = initialRallies,
-                                    seriesById = seriesById,
-                                    seriesPredictions = seriesPredictions,
-                                    merchById = merchById,
-                                    merchPredictions = merchPredictions,
-                                    tablePredictions = tablePredictions,
-                                    seriesImage = seriesImage,
-                                    onClickEditImages = onClickEditImages,
-                                )
-
-                                if (state.stampRallyStates.isNotEmpty()) {
-                                    Spacer(Modifier.height(16.dp))
-                                }
-
-                                HorizontalDivider()
                                 Spacer(Modifier.height(16.dp))
 
                                 FilledTonalButton(
@@ -643,6 +618,65 @@ object ArtistFormScreen {
                 header = Res.string.alley_form_notes,
                 label = { Text(stringResource(Res.string.alley_form_artist_form_notes_placeholder)) },
             )
+        }
+    }
+
+    @Composable
+    private fun StampRallySection(
+        dataYear: DataYear,
+        state: State,
+        initialRallies: () -> List<StampRallyDatabaseEntry>,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
+        seriesImage: (SeriesInfo) -> String?,
+        onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        Column(modifier = modifier) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(Res.string.alley_form_stamp_rallies_header),
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (state.stampRallyStates.size < StampRallyDatabaseEntry.MAX_STAMP_RALLIES) {
+                    FilledTonalButton(
+                        onClick = {
+                            state.stampRallyStates += newStampRallyFormState(
+                                state
+                            )
+                        },
+                    ) {
+                        Text(stringResource(Res.string.alley_form_stamp_rallies_action_add))
+                    }
+                }
+            }
+
+            StampRallyForms(
+                dataYear = dataYear,
+                state = state,
+                initialRallies = initialRallies,
+                seriesById = seriesById,
+                seriesPredictions = seriesPredictions,
+                merchById = merchById,
+                merchPredictions = merchPredictions,
+                tablePredictions = tablePredictions,
+                seriesImage = seriesImage,
+                onClickEditImages = onClickEditImages,
+            )
+
+            if (state.stampRallyStates.isNotEmpty()) {
+                Spacer(Modifier.height(16.dp))
+            }
+
+            HorizontalDivider()
         }
     }
 
