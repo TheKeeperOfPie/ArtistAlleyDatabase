@@ -1,5 +1,5 @@
 {
-    "name": "artist-alley-durableobject",
+    "name": "artist-alley-durable-object",
     "main": "src/ArtistAlleyDatabase-modules-alley-durableobject.mjs",
     "compatibility_date": "2026-03-10",
     "compatibility_flags": [
