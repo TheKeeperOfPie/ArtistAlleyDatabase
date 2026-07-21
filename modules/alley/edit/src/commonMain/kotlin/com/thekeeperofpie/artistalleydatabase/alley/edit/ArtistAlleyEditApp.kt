@@ -190,23 +190,29 @@ private fun NavigationSuiteScope.navItems(
     showOverflow: () -> Boolean,
     onChangeOverflow: (Boolean) -> Unit,
 ) {
+    val dataYear = DataYear.LATEST
+    val entries = TopLevelStackKey.entries
     if (layoutType == NavigationSuiteType.NavigationBar) {
-        TopLevelStackKey.entries.take(5)
+        entries.take(5)
             .forEachIndexed { index, key ->
-                item(
-                    icon = {
-                        Icon(
-                            imageVector = key.icon,
-                            contentDescription = stringResource(key.title)
-                        )
-                    },
-                    label = { Text(stringResource(key.title)) },
-                    selected = navStack.topLevelStackIndex == index,
-                    onClick = { navStack.moveToTopLevelStack(index) },
-                    modifier = Modifier.zIndex(3f)
-                )
+                if (key.shouldShow(dataYear)) {
+                    item(
+                        icon = {
+                            Icon(
+                                imageVector = key.icon,
+                                contentDescription = stringResource(key.title)
+                            )
+                        },
+                        label = { Text(stringResource(key.title)) },
+                        selected = navStack.topLevelStackIndex == index,
+                        onClick = { navStack.moveToTopLevelStack(index) },
+                        modifier = Modifier.zIndex(3f)
+                    )
+                }
             }
-        val remaining = TopLevelStackKey.entries.drop(5)
+        val remaining = entries
+            .filter { it.shouldShow(dataYear) }
+            .drop(5)
         if (remaining.isNotEmpty()) {
             item(
                 icon = {
@@ -252,21 +258,39 @@ private fun NavigationSuiteScope.navItems(
             )
         }
     } else {
-        TopLevelStackKey.entries.forEachIndexed { index, key ->
-            item(
-                icon = {
-                    Icon(
-                        imageVector = key.icon,
-                        contentDescription = stringResource(key.title)
-                    )
-                },
-                label = { Text(stringResource(key.title)) },
-                selected = navStack.topLevelStackIndex == index,
-                onClick = { navStack.moveToTopLevelStack(index) },
-                modifier = Modifier.zIndex(3f)
-            )
+        entries.forEachIndexed { index, key ->
+            if (key.shouldShow(dataYear)) {
+                item(
+                    icon = {
+                        Icon(
+                            imageVector = key.icon,
+                            contentDescription = stringResource(key.title)
+                        )
+                    },
+                    label = { Text(stringResource(key.title)) },
+                    selected = navStack.topLevelStackIndex == index,
+                    onClick = { navStack.moveToTopLevelStack(index) },
+                    modifier = Modifier.zIndex(3f)
+                )
+            }
         }
     }
+}
+
+private fun TopLevelStackKey.shouldShow(dataYear: DataYear) = when (this) {
+    TopLevelStackKey.ARTISTS,
+    TopLevelStackKey.SERIES,
+    TopLevelStackKey.MERCH,
+    TopLevelStackKey.ARTIST_FORMS,
+    TopLevelStackKey.ARTIST_CATALOGS,
+    TopLevelStackKey.REMOTE_ARTIST_DATA,
+    TopLevelStackKey.TAG_RESOLUTION,
+    TopLevelStackKey.ADMIN,
+        -> true
+    TopLevelStackKey.RALLIES,
+    TopLevelStackKey.RALLY_FORMS,
+    TopLevelStackKey.STAMP_RALLY_LINKS,
+        -> dataYear.stampRallyTableName != null
 }
 
 @Composable
