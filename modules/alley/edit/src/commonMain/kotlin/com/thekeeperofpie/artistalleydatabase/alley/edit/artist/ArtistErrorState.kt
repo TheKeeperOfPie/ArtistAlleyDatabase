@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_booth
+import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
@@ -59,11 +60,7 @@ fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): State<String
     return remember {
         derivedStateOf {
             val booth = boothState.value.text.toString()
-            if (booth.isNotBlank() && (
-                        booth.length != 3 ||
-                                !booth.first().isLetter() ||
-                                booth.drop(1).toIntOrNull() == null)
-            ) {
+            if (booth.length < 3 || Booth.fromStringOrNull(booth) == null) {
                 errorMessage
             } else {
                 null
