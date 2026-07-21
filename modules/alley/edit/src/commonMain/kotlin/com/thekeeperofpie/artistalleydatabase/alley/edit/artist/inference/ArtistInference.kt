@@ -197,6 +197,7 @@ class ArtistInference(
         private val animeExpo2023 = CompletableDeferred<ArtistEntry?>()
         private val animeExpo2024 = CompletableDeferred<ArtistEntry?>()
         private val animeExpo2025 = CompletableDeferred<ArtistEntry?>()
+        private val animeExpo2026 = CompletableDeferred<ArtistEntry?>()
         private val animeNyc2024 = CompletableDeferred<ArtistEntry?>()
         private val animeNyc2025 = CompletableDeferred<ArtistEntry?>()
 
@@ -221,6 +222,13 @@ class ArtistInference(
             return animeExpo2025.getCompleted()
         }
 
+        private suspend fun animeExpo2026(): ArtistEntry? {
+            if (!animeExpo2026.isCompleted) {
+                animeExpo2026.complete(dao.getEntry(DataYear.ANIME_EXPO_2026, artistId)?.artist)
+            }
+            return animeExpo2026.getCompleted()
+        }
+
         private suspend fun animeNyc2024(): ArtistEntry? {
             if (!animeNyc2024.isCompleted) {
                 animeNyc2024.complete(dao.getEntry(DataYear.ANIME_NYC_2024, artistId)?.artist)
@@ -240,7 +248,8 @@ class ArtistInference(
 
         private suspend fun cascadeLists(value: ArtistEntry.() -> List<String>): List<String> =
             // In order of data quality
-            animeExpo2025()?.value()
+            animeExpo2026()?.value()
+                .ifNullOrEmpty { animeExpo2025()?.value() }
                 .ifNullOrEmpty { animeExpo2024()?.value() }
                 .ifNullOrEmpty { animeNyc2025()?.value() }
                 .ifNullOrEmpty { animeNyc2024()?.value() }
@@ -249,7 +258,8 @@ class ArtistInference(
 
         private suspend fun cascadeString(value: ArtistEntry.() -> String?): String? =
             // In order of data quality
-            animeExpo2025()?.value()?.takeIf { it.isNotBlank() }
+            animeExpo2026()?.value()?.takeIf { it.isNotBlank() }
+                ?.ifEmpty { animeExpo2025()?.value()?.takeIf { it.isNotBlank() } }
                 ?.ifEmpty { animeExpo2024()?.value()?.takeIf { it.isNotBlank() } }
                 ?.ifEmpty { animeNyc2025()?.value()?.takeIf { it.isNotBlank() } }
                 ?.ifEmpty { animeNyc2024()?.value()?.takeIf { it.isNotBlank() } }
