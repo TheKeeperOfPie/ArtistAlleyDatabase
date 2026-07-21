@@ -210,9 +210,7 @@ private fun NavigationSuiteScope.navItems(
                     )
                 }
             }
-        val remaining = entries
-            .filter { it.shouldShow(dataYear) }
-            .drop(5)
+        val remaining = entries.drop(5)
         if (remaining.isNotEmpty()) {
             item(
                 icon = {
@@ -232,19 +230,21 @@ private fun NavigationSuiteScope.navItems(
                                         .background(MaterialTheme.colorScheme.surface)
                                 ) {
                                     remaining.forEachIndexed { index, key ->
-                                        Text(
-                                            text = stringResource(key.title),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    navStack.moveToTopLevelStack(index + 5)
-                                                    onChangeOverflow(false)
-                                                }
-                                                .padding(
-                                                    horizontal = 16.dp,
-                                                    vertical = 8.dp
-                                                )
-                                        )
+                                        if (key.shouldShow(dataYear)) {
+                                            Text(
+                                                text = stringResource(key.title),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        navStack.moveToTopLevelStack(index + 5)
+                                                        onChangeOverflow(false)
+                                                    }
+                                                    .padding(
+                                                        horizontal = 16.dp,
+                                                        vertical = 8.dp
+                                                    )
+                                            )
+                                        }
                                     }
                                 }
                             }
