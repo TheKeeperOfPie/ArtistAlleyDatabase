@@ -37,4 +37,4 @@ IMAGES_CLOUDFLARE_URL = "imagesCloudflareUrl"
 [[durable_objects.bindings]]
 name = "LAST_VIEWED_SERVER"
 class_name = "LastViewedServer"
-script_name = "artist-alley-durableobject"
+script_name = "artist-alley-durable-object"
