@@ -282,20 +282,20 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
+    actual suspend fun loadArtistFormQueue(dataYear: DataYear): List<ArtistFormQueueEntry> =
         withContext(dispatchers.io) {
             try {
-                sendRequest(BackendRequest.ArtistFormQueue) ?: emptyList()
+                sendRequest(BackendRequest.ArtistFormQueue(dataYear)) ?: emptyList()
             } catch (t: Throwable) {
                 t.printStackTrace()
                 emptyList()
             }
         }
 
-    actual suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry> =
+    actual suspend fun loadArtistFormHistory(dataYear: DataYear): List<ArtistFormHistoryEntry> =
         withContext(dispatchers.io) {
             try {
-                sendRequest(BackendRequest.ArtistFormHistory) ?: emptyList()
+                sendRequest(BackendRequest.ArtistFormHistory(dataYear)) ?: emptyList()
             } catch (t: Throwable) {
                 t.printStackTrace()
                 emptyList()

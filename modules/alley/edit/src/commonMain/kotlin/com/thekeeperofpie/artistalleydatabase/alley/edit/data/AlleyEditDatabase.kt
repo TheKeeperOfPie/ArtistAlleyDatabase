@@ -134,11 +134,11 @@ class AlleyEditDatabase(
         forceRegenerate: Boolean,
     ): String? = remoteDatabase.generateFormLink(dataYear, artistId, forceRegenerate)
 
-    suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
-        remoteDatabase.loadArtistFormQueue()
+    suspend fun loadArtistFormQueue(dataYear: DataYear): List<ArtistFormQueueEntry> =
+        remoteDatabase.loadArtistFormQueue(dataYear)
 
-    suspend fun loadArtistFormQueueHistory(): List<ArtistFormHistoryEntry> =
-        remoteDatabase.loadArtistFormHistory()
+    suspend fun loadArtistFormQueueHistory(dataYear: DataYear): List<ArtistFormHistoryEntry> =
+        remoteDatabase.loadArtistFormHistory(dataYear)
 
     suspend fun loadArtistWithFormEntry(
         dataYear: DataYear,

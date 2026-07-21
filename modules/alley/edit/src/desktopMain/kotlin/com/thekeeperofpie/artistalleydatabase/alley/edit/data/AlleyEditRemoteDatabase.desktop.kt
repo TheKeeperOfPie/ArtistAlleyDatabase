@@ -29,8 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -234,7 +234,7 @@ actual class AlleyEditRemoteDatabase(
         return "localhost://form?${AlleyCryptography.ACCESS_KEY_PARAM}=${keys.privateKey}"
     }
 
-    actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
+    actual suspend fun loadArtistFormQueue(dataYear: DataYear): List<ArtistFormQueueEntry> =
         artistFormQueue.values.map {
             ArtistFormQueueEntry(
                 artistId = Uuid.parse(it.after.id),
@@ -243,7 +243,7 @@ actual class AlleyEditRemoteDatabase(
             )
         }
 
-    actual suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry> =
+    actual suspend fun loadArtistFormHistory(dataYear: DataYear): List<ArtistFormHistoryEntry> =
         artistFormHistory.map {
             ArtistFormHistoryEntry(
                 artistId = Uuid.parse(it.after.id),

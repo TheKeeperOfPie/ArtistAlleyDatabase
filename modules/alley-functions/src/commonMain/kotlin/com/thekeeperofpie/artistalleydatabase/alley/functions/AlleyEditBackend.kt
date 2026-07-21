@@ -94,8 +94,13 @@ object AlleyEditBackend {
                         makeResponse(commitArtistForm(context, this))
                     is BackendRequest.ArtistDelete -> makeResponse(deleteArtist(context, this))
                     is BackendRequest.ArtistFormHistory ->
-                        makeResponse(loadArtistFormHistory(context))
-                    is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
+                        makeResponse(loadArtistFormHistory(context, this))
+                    is BackendRequest.ArtistFormQueue -> makeResponse(
+                        loadArtistFormQueue(
+                            context,
+                            this
+                        )
+                    )
                     is BackendRequest.ArtistWithFormEntry ->
                         makeResponse(loadArtistWithFormEntry(context, this))
                     is BackendRequest.ArtistWithHistoricalFormEntry ->
@@ -234,7 +239,8 @@ object AlleyEditBackend {
         DataYear.ANIME_EXPO_2024,
         DataYear.ANIME_EXPO_2025,
         DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025 -> emptyList()
+        DataYear.ANIME_NYC_2025,
+            -> emptyList()
     }
 
     private suspend fun loadArtist(
@@ -317,10 +323,13 @@ object AlleyEditBackend {
                 -> null // TODO: Return legacy years?
         }
 
-    private suspend fun loadArtistFormQueue(context: EventContext): List<ArtistFormQueueEntry> =
+    private suspend fun loadArtistFormQueue(
+        context: EventContext,
+        request: BackendRequest.ArtistFormQueue,
+    ): List<ArtistFormQueueEntry> =
         Databases.formDatabase(context)
             .artistFormEntryQueries
-            .getFormQueue()
+            .getFormQueue(request.dataYear)
             .awaitAsList()
             .map {
                 ArtistFormQueueEntry(
@@ -330,10 +339,13 @@ object AlleyEditBackend {
                 )
             }
 
-    private suspend fun loadArtistFormHistory(context: EventContext): List<ArtistFormHistoryEntry> =
+    private suspend fun loadArtistFormHistory(
+        context: EventContext,
+        request: BackendRequest.ArtistFormHistory,
+    ): List<ArtistFormHistoryEntry> =
         Databases.formDatabase(context)
             .artistFormEntryQueries
-            .getFormHistory()
+            .getFormHistory(request.dataYear)
             .awaitAsList()
             .map {
                 ArtistFormHistoryEntry(

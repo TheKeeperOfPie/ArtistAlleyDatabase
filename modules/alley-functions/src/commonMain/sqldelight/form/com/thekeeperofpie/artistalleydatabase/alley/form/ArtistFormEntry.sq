@@ -4,10 +4,12 @@ WHERE dataYear = :dataYear AND artistId = :artistId;
 
 getFormQueue:
 SELECT artistId, beforeBooth, afterBooth, beforeName, afterName FROM artistFormEntry
+WHERE dataYear = :dataYear
 ORDER BY timestamp DESC;
 
 getFormHistory:
 SELECT artistId, beforeBooth, afterBooth, beforeName, afterName, timestamp FROM artistFormEntryHistory
+WHERE dataYear = :dataYear
 ORDER BY timestamp DESC;
 
 insertFormEntry:

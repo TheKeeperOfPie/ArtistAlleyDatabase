@@ -49,12 +49,11 @@ sealed interface BackendRequest {
         )
     }
 
-    // TODO: Split by DataYear
     @Serializable
-    data object ArtistFormHistory : BackendRequest, WithResponse<List<ArtistFormHistoryEntry>>
+    data class ArtistFormHistory(val dataYear: DataYear) : BackendRequest, WithResponse<List<ArtistFormHistoryEntry>>
 
     @Serializable
-    data object ArtistFormQueue : BackendRequest, WithResponse<List<ArtistFormQueueEntry>>
+    data class ArtistFormQueue(val dataYear: DataYear) : BackendRequest, WithResponse<List<ArtistFormQueueEntry>>
 
     @Serializable
     data class ArtistWithFormEntry(

@@ -80,8 +80,8 @@ expect class AlleyEditRemoteDatabase {
         forceRegenerate: Boolean,
     ): String?
 
-    suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry>
-    suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry>
+    suspend fun loadArtistFormQueue(dataYear: DataYear): List<ArtistFormQueueEntry>
+    suspend fun loadArtistFormHistory(dataYear: DataYear): List<ArtistFormHistoryEntry>
     suspend fun loadArtistWithFormEntry(
         dataYear: DataYear,
         artistId: Uuid,
