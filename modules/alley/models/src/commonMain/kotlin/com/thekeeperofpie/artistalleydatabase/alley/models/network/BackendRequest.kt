@@ -49,6 +49,7 @@ sealed interface BackendRequest {
         )
     }
 
+    // TODO: Split by DataYear
     @Serializable
     data object ArtistFormHistory : BackendRequest, WithResponse<List<ArtistFormHistoryEntry>>
 
@@ -124,7 +125,7 @@ sealed interface BackendRequest {
     }
 
     @Serializable
-    data object Artists : BackendRequest, WithResponse<List<ArtistSummary>>
+    data class Artists(val dataYear: DataYear) : BackendRequest, WithResponse<List<ArtistSummary>>
 
     @Serializable
     data class ArtistSave(
@@ -257,6 +258,7 @@ sealed interface BackendRequest {
         val stampRallyId: String,
     ) : BackendRequest, WithResponse<StampRallyDatabaseEntry?>
 
+    // TODO: Split by DataYear
     @Serializable
     data object StampRallies : BackendRequest, WithResponse<List<StampRallySummary>>
 

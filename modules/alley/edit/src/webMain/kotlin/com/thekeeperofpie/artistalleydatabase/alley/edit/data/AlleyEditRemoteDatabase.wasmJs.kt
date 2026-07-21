@@ -140,7 +140,7 @@ actual class AlleyEditRemoteDatabase(
 
     actual suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary> =
         withContext(dispatchers.io) {
-            sendRequest(BackendRequest.Artists).orEmpty()
+            sendRequest(BackendRequest.Artists(dataYear)).orEmpty()
         }
 
     actual suspend fun saveArtist(

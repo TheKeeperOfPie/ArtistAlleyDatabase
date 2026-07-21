@@ -102,7 +102,7 @@ object AlleyEditBackend {
                         makeResponse(loadArtistWithHistoricalFormEntry(context, this))
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
-                    is BackendRequest.Artists -> makeResponse(loadArtists(context))
+                    is BackendRequest.Artists -> makeResponse(loadArtists(context, this))
                     is BackendRequest.ArtistSave -> makeResponse(
                         saveArtist(
                             context = context,
@@ -188,8 +188,11 @@ object AlleyEditBackend {
 
     private suspend fun databaseCreate(context: EventContext) = Databases.create(context)
 
-    private suspend fun loadArtists(context: EventContext): List<ArtistSummary> =
-        Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
+    private suspend fun loadArtists(
+        context: EventContext,
+        request: BackendRequest.Artists,
+    ): List<ArtistSummary> = when (request.dataYear) {
+        DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
             .getArtists()
             .awaitAsList()
             .map {
@@ -208,6 +211,31 @@ object AlleyEditBackend {
                     images = it.images,
                 )
             }
+        DataYear.ANIME_NYC_2026 -> Databases.editDatabase(context).artistEntryAnimeNyc2026Queries
+            .getArtists()
+            .awaitAsList()
+            .map {
+                ArtistSummary(
+                    id = Uuid.parse(it.id),
+                    booth = it.booth,
+                    name = it.name,
+                    socialLinks = it.socialLinks,
+                    storeLinks = it.storeLinks,
+                    portfolioLinks = it.portfolioLinks,
+                    catalogLinks = it.catalogLinks,
+                    seriesInferred = it.seriesInferred,
+                    seriesConfirmed = it.seriesConfirmed,
+                    merchInferred = it.merchInferred,
+                    merchConfirmed = it.merchConfirmed,
+                    images = it.images,
+                )
+            }
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025 -> emptyList()
+    }
 
     private suspend fun loadArtist(
         context: EventContext,
