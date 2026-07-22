@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
+import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -339,13 +340,46 @@ class MapViewModel(
         }.flatten()
     }
 
+    private val animeNyc2026Booths = ('A'..'Z').map { it.toString() } + listOf("AA", "AB", "AC", "AD", "AE")
+    private fun animeNyc2026IndexX(booth: Booth): Int {
+        val isEven = (booth.number % 2) == 0
+
+        val offset = when {
+            booth.number <= 4 && (booth.letters == "AD" || booth.letters == "AE") ->
+                if (isEven) 0 else -2
+            isEven -> 1
+            else -> -1
+        }
+        return animeNyc2026Booths.indexOf(booth.letters) * 3 + offset - 1
+    }
+
     private fun mapAnimeNyc2026Booths(
         booths: List<BoothWithFavorite>,
         showOutdatedCatalogs: Boolean,
         showRandomCatalogImage: Boolean,
-    ): List<Table> =
-        // TODO: Real map
-        mapAnimeNyc2025Booths(booths, showOutdatedCatalogs, showRandomCatalogImage)
+    ): List<Table> {
+        @Suppress("UNCHECKED_CAST")
+        val letterToBooths = (booths.groupBy { it.booth?.let(Booth::fromStringOrNull) }
+            .filterKeys { it != null } as Map<Booth, List<BoothWithFavorite>>)
+            .toList()
+            .sortedBy { it.first }
+        return letterToBooths.mapIndexed { _, pair ->
+            pair.second.groupBy { it.booth?.let(Booth::fromStringOrNull) }
+                .mapNotNull { (booth, artists) ->
+                    booth ?: return@mapNotNull null
+                    val tableNumber = booth.number
+                    table(
+                        booth = booth.toString(),
+                        gridX = animeNyc2026IndexX(booth),
+                        gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) +
+                                (if (tableNumber > 18) 2 else 1),
+                        artists = artists,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
+                }
+        }.flatten()
+    }
 
     private fun animeExpo2026IndexX(letter: Char) = when (letter) {
         'A' -> 0

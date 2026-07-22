@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.images
 
 import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -72,12 +74,19 @@ object AlleyImageUtils {
 
     fun getEmbedImages(embeds: Map<String, DatabaseImage>) =
         getEmbedImagesMap(embeds)
-            .map { (path, width, height) ->
-                CatalogImage(
-                    uri = Uri.parse(Res.getUri(path)),
-                    width = width,
-                    height = height,
-                )
+            .mapNotNull { (path, width, height) ->
+                try {
+                    CatalogImage(
+                        uri = Uri.parse(Res.getUri(path)),
+                        width = width,
+                        height = height,
+                    )
+                } catch (t: Throwable) {
+                    if (PlatformSpecificConfig.type == PlatformType.DESKTOP) {
+                        t.printStackTrace()
+                    }
+                    null
+                }
             }
 
     private val embedOrder = listOf(
