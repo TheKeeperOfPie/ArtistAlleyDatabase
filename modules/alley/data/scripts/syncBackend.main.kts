@@ -44,8 +44,10 @@ if (PULL_REMOTE) {
             .apply { mkdirs() }
             .resolve("$snapshotTime.sql")
     )
+
+    // TODO: Generify snapshots
     editExportFile.copyTo(
-        dataDir.resolve("inputs/snapshots/animeExpo2026/edit")
+        dataDir.resolve("inputs/snapshots/animeNyc2026/edit")
             .apply { mkdirs() }
             .resolve("$snapshotTime.sql")
     )
@@ -64,7 +66,7 @@ if (PULL_REMOTE) {
             .resolve("$snapshotTime.sql")
     )
     formExportFile.copyTo(
-        dataDir.resolve("inputs/snapshots/animeExpo2026/form")
+        dataDir.resolve("inputs/snapshots/animeNyc2026/form")
             .apply { mkdirs() }
             .resolve("$snapshotTime.sql")
     )
@@ -89,6 +91,18 @@ if (PULL_REMOTE) {
             editExportFile.useLines {
                 it.filter { it.contains("\"stampRallyEntryAnimeExpo2026\"") }
                     .filterNot { it.contains("22222222-2222-2222-2222-222222222222") }
+                    .forEach(writer::appendLine)
+            }
+        }
+
+    dataDir.resolve("inputs/artists")
+        .apply { mkdirs() }
+        .resolve("animeNyc2026.sql")
+        .writer()
+        .use { writer ->
+            editExportFile.useLines {
+                it.filter { it.contains("\"artistEntryAnimeNyc2026\"") }
+                    .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
                     .forEach(writer::appendLine)
             }
         }
