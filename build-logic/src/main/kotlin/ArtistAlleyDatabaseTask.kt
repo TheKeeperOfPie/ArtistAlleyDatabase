@@ -484,7 +484,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                     val (driver, database) = Utils.createFormDatabase(file)
                     driver.use {
-                        database.verifiedQueries.getVerifiedArtistIds().executeAsList()
+                        database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_EXPO_2026).executeAsList()
                     }.also {
                         file.delete()
                     }
@@ -637,7 +637,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                     val (driver, database) = Utils.createFormDatabase(file)
                     driver.use {
-                        database.verifiedQueries.getVerifiedArtistIds().executeAsList()
+                        database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_NYC_2026).executeAsList()
                     }.also {
                         file.delete()
                     }
@@ -664,7 +664,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         .ifEmpty { inference.seriesInferred } - artist.seriesConfirmed.toSet()
                     val merchInferred = artist.merchInferred
                         .ifEmpty { inference.merchInferred } - artist.merchConfirmed.toSet()
-
 
                     val (linkFlags, linkFlags2) = Link.parseFlags(
                         socialLinks = socialLinks,
