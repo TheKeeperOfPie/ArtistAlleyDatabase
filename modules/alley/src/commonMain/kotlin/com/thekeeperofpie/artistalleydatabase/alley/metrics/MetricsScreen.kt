@@ -130,12 +130,16 @@ internal fun MetricsScreen(
                     onClickArtist = onClickArtist,
                 )
                 HorizontalDivider()
-                ArtistMetricsList(
-                    title = Res.string.alley_metrics_artist_most_rallies,
-                    artists = data.artistsByRallies,
-                    onClickArtist = onClickArtist,
-                )
-                HorizontalDivider()
+
+                if (dataYearHeaderState.year.stampRallyTableName != null) {
+                    ArtistMetricsList(
+                        title = Res.string.alley_metrics_artist_most_rallies,
+                        artists = data.artistsByRallies,
+                        onClickArtist = onClickArtist,
+                    )
+                    HorizontalDivider()
+                }
+
                 MetricsList(
                     title = Res.string.alley_metrics_popular_series,
                     values = data.series,
@@ -198,6 +202,9 @@ internal fun MetricsScreen(
                         )
                     }
                 }
+
+                HorizontalDivider()
+                Spacer(Modifier.height(120.dp))
             }
         }
     }
@@ -220,7 +227,7 @@ private fun <T> MetricsList(
         if (values.isEmpty()) {
             Text(
                 text = stringResource(Res.string.alley_metrics_no_data),
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         } else {
             values.forEachIndexed { index, value ->

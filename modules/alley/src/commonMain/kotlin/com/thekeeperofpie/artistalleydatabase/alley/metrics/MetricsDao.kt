@@ -33,11 +33,11 @@ class MetricsDao(
         val flags = tagFlags(year, includeInferred)
         val tableName = year.artistTableName
         val statement = """
-            SELECT artistId, $tableName.booth, $tableName.name, COUNT(*) AS count
+            SELECT $tableName.id, $tableName.booth, $tableName.name, COUNT(*) AS count
             FROM artistSeriesConnection
             INNER JOIN $tableName ON artistSeriesConnection.artistRowId = $tableName.rowid
             WHERE (yearFlags & $flags) != 0
-            GROUP BY artistId
+            GROUP BY artistRowId
             ORDER BY count DESC
             LIMIT 10
         """.trimIndent()
@@ -57,11 +57,11 @@ class MetricsDao(
         val flags = tagFlags(year, includeInferred)
         val tableName = year.artistTableName
         val statement = """
-            SELECT artistId, $tableName.booth, $tableName.name, COUNT(*) AS count
+            SELECT $tableName.id, $tableName.booth, $tableName.name, COUNT(*) AS count
             FROM artistMerchConnection
             INNER JOIN $tableName ON artistMerchConnection.artistRowId = $tableName.rowid
             WHERE (yearFlags & $flags) != 0
-            GROUP BY artistId
+            GROUP BY artistRowId
             ORDER BY count DESC
             LIMIT 10
         """.trimIndent()
@@ -78,11 +78,11 @@ class MetricsDao(
         val rallyTable = year.stampRallyTableName ?: return emptyList()
         val artistTable = year.artistTableName
         val statement = """
-            SELECT artistId, $artistTable.booth, $artistTable.name, COUNT(*) AS count
+            SELECT $artistTable.id, $artistTable.booth, $artistTable.name, COUNT(*) AS count
             FROM stampRallyArtistConnection
             INNER JOIN $rallyTable ON stampRallyArtistConnection.stampRallyRowId = $rallyTable.rowid
             INNER JOIN $artistTable ON stampRallyArtistConnection.artistRowId = $artistTable.rowid
-            GROUP BY artistId
+            GROUP BY artistRowId
             ORDER BY count DESC
             LIMIT 10
         """.trimIndent()

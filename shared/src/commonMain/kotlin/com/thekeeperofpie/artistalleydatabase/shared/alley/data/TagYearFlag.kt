@@ -42,7 +42,7 @@ enum class TagYearFlag(year: DataYear) {
                 ANIME_NYC_2025_INFERRED.takeIf { hasAnimeNyc2025Inferred || hasAnimeNyc2025Confirmed },
                 ANIME_NYC_2025_CONFIRMED.takeIf { hasAnimeNyc2025Confirmed },
                 ANIME_NYC_2026_INFERRED.takeIf { hasAnimeNyc2026Inferred || hasAnimeNyc2026Confirmed },
-                ANIME_NYC_2026_CONFIRMED.takeIf { hasAnimeNyc2025Confirmed },
+                ANIME_NYC_2026_CONFIRMED.takeIf { hasAnimeNyc2026Confirmed },
             )
             val entries = TagYearFlag.entries
             return years.fold(0L) { flags, type ->
@@ -62,7 +62,7 @@ enum class TagYearFlag(year: DataYear) {
                 DataYear.ANIME_EXPO_2026 -> if (confirmed) ANIME_EXPO_2026_CONFIRMED else ANIME_EXPO_2026_INFERRED
                 DataYear.ANIME_NYC_2024 -> if (confirmed) ANIME_NYC_2024_CONFIRMED else ANIME_NYC_2024_INFERRED
                 DataYear.ANIME_NYC_2025 -> if (confirmed) ANIME_NYC_2025_CONFIRMED else ANIME_NYC_2025_INFERRED
-                DataYear.ANIME_NYC_2026 -> if (confirmed) ANIME_NYC_2025_CONFIRMED else ANIME_NYC_2026_INFERRED
+                DataYear.ANIME_NYC_2026 -> if (confirmed) ANIME_NYC_2026_CONFIRMED else ANIME_NYC_2026_INFERRED
             }
             return 1L shl TagYearFlag.entries.indexOf(flag)
         }
