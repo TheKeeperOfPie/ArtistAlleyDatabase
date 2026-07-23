@@ -350,7 +350,7 @@ class MapViewModel(
             isEven -> 1
             else -> -1
         }
-        return animeNyc2026Booths.indexOf(booth.letters) * 3 + offset - 1
+        return animeNyc2026Booths.indexOf(booth.letters) * 3 + offset + 1
     }
 
     private fun mapAnimeNyc2026Booths(
