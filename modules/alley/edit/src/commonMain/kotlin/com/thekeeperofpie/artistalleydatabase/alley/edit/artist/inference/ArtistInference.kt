@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.yield
+import kotlin.jvm.JvmName
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -88,11 +89,11 @@ class ArtistInference(
     suspend fun getPreviousYearData(artistId: Uuid) =
         PreviousYearProvider(artistEntryDao, artistId.toString()).getData()
             .takeIf {
-                !it.summary.isNullOrBlank() ||
-                        it.socialLinks.isNotEmpty() ||
-                        it.storeLinks.isNotEmpty() ||
-                        it.seriesInferred.isNotEmpty() ||
-                        it.merchInferred.isNotEmpty()
+                !it.summary?.second.isNullOrBlank() ||
+                        !it.socialLinks?.second.isNullOrEmpty() ||
+                        !it.storeLinks?.second.isNullOrEmpty() ||
+                        !it.series?.second.isNullOrEmpty() ||
+                        !it.merch?.second.isNullOrEmpty()
             }
 
     private fun matchingLinks(
@@ -243,27 +244,36 @@ class ArtistInference(
             return animeNyc2025.getCompleted()
         }
 
-        private inline fun List<String>?.ifNullOrEmpty(defaultValue: () -> List<String>?) =
-            if (this.isNullOrEmpty()) defaultValue() else this
-
-        private suspend fun cascadeLists(value: ArtistEntry.() -> List<String>): List<String> =
+        private suspend fun cascadeLists(value: ArtistEntry.() -> List<String>): Pair<DataYear, List<String>>? =
             // In order of data quality
-            animeExpo2026()?.value()
-                .ifNullOrEmpty { animeExpo2025()?.value() }
-                .ifNullOrEmpty { animeExpo2024()?.value() }
-                .ifNullOrEmpty { animeNyc2025()?.value() }
-                .ifNullOrEmpty { animeNyc2024()?.value() }
-                .ifNullOrEmpty { animeExpo2023()?.value() }
-                .orEmpty()
+            animeExpo2026()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2026)
+                .ifEmpty { animeExpo2025()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2025) }
+                .ifEmpty { animeExpo2024()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2024) }
+                .ifEmpty { animeNyc2025()?.value()?.takeWithDataYear(DataYear.ANIME_NYC_2025) }
+                .ifEmpty { animeNyc2024()?.value()?.takeWithDataYear(DataYear.ANIME_NYC_2024) }
+                .ifEmpty { animeExpo2023()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2023) }
 
-        private suspend fun cascadeString(value: ArtistEntry.() -> String?): String? =
+        private suspend fun cascadeString(value: ArtistEntry.() -> String?): Pair<DataYear, String>? =
             // In order of data quality
-            animeExpo2026()?.value()?.takeIf { it.isNotBlank() }
-                ?.ifEmpty { animeExpo2025()?.value()?.takeIf { it.isNotBlank() } }
-                ?.ifEmpty { animeExpo2024()?.value()?.takeIf { it.isNotBlank() } }
-                ?.ifEmpty { animeNyc2025()?.value()?.takeIf { it.isNotBlank() } }
-                ?.ifEmpty { animeNyc2024()?.value()?.takeIf { it.isNotBlank() } }
-                ?.ifEmpty { animeExpo2023()?.value()?.takeIf { it.isNotBlank() } }
+            animeExpo2026()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2026)
+                .ifEmpty { animeExpo2025()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2025) }
+                .ifEmpty { animeExpo2024()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2024) }
+                .ifEmpty { animeNyc2025()?.value()?.takeWithDataYear(DataYear.ANIME_NYC_2025) }
+                .ifEmpty { animeNyc2024()?.value()?.takeWithDataYear(DataYear.ANIME_NYC_2024) }
+                .ifEmpty { animeExpo2023()?.value()?.takeWithDataYear(DataYear.ANIME_EXPO_2023) }
+
+        private fun List<String>.takeWithDataYear(year: DataYear) =
+            takeIf { it.isNotEmpty() }?.let { year to it }
+
+        @JvmName("ifEmptyListString")
+        private inline fun Pair<DataYear, List<String>>?.ifEmpty(block: () -> Pair<DataYear, List<String>>?) =
+            this?.takeIf { this.second.isNotEmpty() } ?: block()
+
+        private fun String.takeWithDataYear(year: DataYear) =
+            takeIf { it.isNotBlank() }?.let { year to it }
+
+        private inline fun Pair<DataYear, String>?.ifEmpty(block: () -> Pair<DataYear, String>?) =
+            this?.takeIf { this.second.isNotBlank() } ?: block()
 
         suspend fun getData() = ArtistPreviousYearData(
             artistId = artistId,
@@ -271,8 +281,8 @@ class ArtistInference(
             summary = cascadeString { summary },
             socialLinks = cascadeLists { socialLinks },
             storeLinks = cascadeLists { storeLinks },
-            seriesInferred = cascadeLists { seriesConfirmed.ifEmpty { seriesInferred } },
-            merchInferred = cascadeLists { merchConfirmed.ifEmpty { merchInferred } },
+            series = cascadeLists { seriesConfirmed.ifEmpty { seriesInferred } },
+            merch = cascadeLists { merchConfirmed.ifEmpty { merchInferred } },
         )
     }
 }

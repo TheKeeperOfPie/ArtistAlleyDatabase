@@ -97,7 +97,7 @@ class SameArtistPrompter(
         val previousYearData = sameArtist.value.result ?: return
         artistFormState.editorState.id.value.setTextAndPlaceCursorAtEnd(previousYearData.artistId)
         previousYearData.name?.let {
-            artistFormState.info.name.value.setTextAndPlaceCursorAtEnd(it)
+            artistFormState.info.name.value.setTextAndPlaceCursorAtEnd(it.second)
             artistFormState.info.name.lockState = EntryLockState.LOCKED
         }
         sameArtistId.value = null

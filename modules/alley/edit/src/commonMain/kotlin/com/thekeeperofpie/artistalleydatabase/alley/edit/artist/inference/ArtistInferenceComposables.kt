@@ -25,6 +25,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_confirm_merge
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_dismiss_merge
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_select_all
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,7 +51,6 @@ private fun ArtistInferenceMergeList(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             ) {
-
                 TriStateCheckbox(
                     state = groupState,
                     onClick = {
@@ -70,18 +70,23 @@ private fun ArtistInferenceMergeList(
         }
 
         ArtistInferenceField.entries.forEach { field ->
-            val fieldText = when (field) {
-                ArtistInferenceField.NAME -> previousYearData.name?.ifBlank { null }
-                ArtistInferenceField.SOCIAL_LINKS -> previousYearData.socialLinks.ifEmpty { null }
-                    ?.joinToString("\n")
-                ArtistInferenceField.STORE_LINKS -> previousYearData.storeLinks.ifEmpty { null }
-                    ?.joinToString("\n")
-                ArtistInferenceField.SERIES -> previousYearData.seriesInferred.ifEmpty { null }
-                    ?.joinToString()
-                ArtistInferenceField.MERCH -> previousYearData.merchInferred.ifEmpty { null }
-                    ?.joinToString()
+            val fieldPair = when (field) {
+                ArtistInferenceField.NAME -> previousYearData.name
+                ArtistInferenceField.SOCIAL_LINKS -> previousYearData.socialLinks?.let {
+                    it.first to it.second.joinToString("\n")
+                }
+                ArtistInferenceField.STORE_LINKS -> previousYearData.storeLinks?.let {
+                    it.first to it.second.joinToString("\n")
+                }
+                ArtistInferenceField.SERIES -> previousYearData.series?.let {
+                    it.first to it.second.joinToString("\n")
+                }
+                ArtistInferenceField.MERCH -> previousYearData.merch?.let {
+                    it.first to it.second.joinToString("\n")
+                }
             }
-            if (fieldText != null) {
+            if (fieldPair != null) {
+                val (dataYear, fieldText) = fieldPair
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -93,9 +98,9 @@ private fun ArtistInferenceMergeList(
                                 onCheckedChange = { fieldState[field] = it },
                             )
                         }
-                        Text(stringResource(field.label))
+                        Text(stringResource(field.labelWithYear, stringResource(dataYear.shortName)))
                         if (fieldText.length < 40) {
-                            Text(text = fieldText)
+                            Text(fieldText)
                         }
                     }
                     if (fieldText.length >= 40) {
