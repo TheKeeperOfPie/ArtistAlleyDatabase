@@ -171,6 +171,7 @@ val ArtistDatabaseEntry.isAdult: Boolean
     }
 
 fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(
+    status = status,
     id = Uuid.parse(id),
     booth = booth,
     name = name,

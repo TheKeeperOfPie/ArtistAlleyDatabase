@@ -68,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.Sort
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -261,6 +262,7 @@ internal object ArtistListScreen {
     @Composable
     private fun ArtistRow(artist: ArtistSummary, modifier: Modifier = Modifier) {
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = modifier.padding(horizontal = 16.dp),
         ) {
@@ -270,6 +272,18 @@ internal object ArtistListScreen {
                     .copy(fontFamily = FontFamily.Monospace),
                 modifier = Modifier.padding(vertical = 12.dp)
             )
+
+            val icon = when (artist.status) {
+                ArtistStatus.UNKNOWN,
+                ArtistStatus.INFERRED,
+                ArtistStatus.FINAL -> null
+                ArtistStatus.LOCKED,
+                ArtistStatus.NEEDS_ATTENTION -> artist.status.icon
+            }
+
+            if (icon != null) {
+                Icon(imageVector = icon, contentDescription = null)
+            }
 
             val text = artist.name.takeUnless { it.isBlank() } ?: artist.id.toString()
             Text(
@@ -299,6 +313,7 @@ private fun HomeScreenPreview() {
     ArtistListScreen(
         state = remember {
             val baseSummary = ArtistSummary(
+                status = ArtistStatus.UNKNOWN,
                 id = Uuid.random(),
                 booth = "",
                 name = "",

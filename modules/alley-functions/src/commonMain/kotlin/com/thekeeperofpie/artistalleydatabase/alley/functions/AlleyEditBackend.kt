@@ -202,6 +202,7 @@ object AlleyEditBackend {
             .awaitAsList()
             .map {
                 ArtistSummary(
+                    status = it.status,
                     id = Uuid.parse(it.id),
                     booth = it.booth,
                     name = it.name,
@@ -221,6 +222,7 @@ object AlleyEditBackend {
             .awaitAsList()
             .map {
                 ArtistSummary(
+                    status = it.status,
                     id = Uuid.parse(it.id),
                     booth = it.booth,
                     name = it.name,

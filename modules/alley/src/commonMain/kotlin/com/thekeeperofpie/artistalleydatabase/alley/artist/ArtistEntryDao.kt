@@ -41,6 +41,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
@@ -1342,6 +1343,7 @@ class ArtistEntryDao(
                 .map {
                     val images = it.images
                     ArtistSummary(
+                        status = ArtistStatus.UNKNOWN,
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
@@ -1360,6 +1362,7 @@ class ArtistEntryDao(
                 .map {
                     val images = it.images
                     ArtistSummary(
+                        status = ArtistStatus.UNKNOWN,
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
@@ -1378,6 +1381,7 @@ class ArtistEntryDao(
                 .map {
                     val images = it.images
                     ArtistSummary(
+                        status = ArtistStatus.UNKNOWN,
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
@@ -1395,6 +1399,7 @@ class ArtistEntryDao(
             DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
                 .map {
                     ArtistSummary(
+                        status = ArtistStatus.UNKNOWN,
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
@@ -1413,6 +1418,7 @@ class ArtistEntryDao(
                 .map {
                     val images = it.images
                     ArtistSummary(
+                        status = ArtistStatus.UNKNOWN,
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
@@ -1431,6 +1437,7 @@ class ArtistEntryDao(
                 .map {
                     val images = it.images
                     ArtistSummary(
+                        status = ArtistStatus.UNKNOWN,
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
@@ -1448,6 +1455,7 @@ class ArtistEntryDao(
             DataYear.ANIME_NYC_2026 -> daoAnimeNyc2026().getAllEntries().awaitAsList()
                 .map {
                     ArtistSummary(
+                        status = ArtistStatus.UNKNOWN,
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
