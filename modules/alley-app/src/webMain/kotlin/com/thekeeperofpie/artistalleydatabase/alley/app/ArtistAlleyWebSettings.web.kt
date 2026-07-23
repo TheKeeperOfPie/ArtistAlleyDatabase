@@ -98,8 +98,32 @@ class ArtistAlleyWebSettings(
     override val dataYear by register(
         serialize = { it.serializedName },
         deserialize = {
-            it?.let { serializedName -> DataYear.entries.find { it.serializedName == serializedName } }
-                ?: DataYear.LATEST
+            val value = try {
+                localStorage.getItem("dataYearLatest")?.let(DataYear::deserialize)
+            } catch (t: Throwable) {
+                ConsoleLogger.log("Failed to read dataYearLatest from localStorage: ${t.message}")
+                null
+            }
+            if (value == DataYear.LATEST) {
+                try {
+                    localStorage.getItem("dataYear")?.let(DataYear::deserialize)
+                } catch (t: Throwable) {
+                    ConsoleLogger.log("Failed to read dataYear from localStorage: ${t.message}")
+                    null
+                } ?: DataYear.LATEST
+            } else {
+                try {
+                    localStorage.setItem("dataYear", DataYear.LATEST.serializedName)
+                } catch (t: Throwable) {
+                    ConsoleLogger.log("Failed to write dataYear = ${DataYear.LATEST.serializedName} to localStorage: ${t.message}")
+                }
+                try {
+                    localStorage.setItem("dataYearLatest", DataYear.LATEST.serializedName)
+                } catch (t: Throwable) {
+                    ConsoleLogger.log("Failed to write dataYearLatest = ${DataYear.LATEST.serializedName} to localStorage: ${t.message}")
+                }
+                DataYear.LATEST
+            }
         },
     )
     override val languageOption by register(
