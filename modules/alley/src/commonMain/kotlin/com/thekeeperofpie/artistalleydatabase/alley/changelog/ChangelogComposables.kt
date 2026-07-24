@@ -251,10 +251,18 @@ fun ChangelogArtistRow(
             .fillMaxWidth()
             .clickable(onClick = onClick)
     ) {
+        val images = artist.images
+        val hasSeries = artist.seriesHighlighted.isNotEmpty() || artist.seriesRemaining.isNotEmpty()
+        val hasMerch = artist.merchHighlighted.isNotEmpty() || artist.merchRemaining.isNotEmpty()
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+            modifier = Modifier.padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 8.dp,
+                bottom = if (images.isEmpty() && !hasSeries && !hasMerch) 8.dp else 0.dp,
+            )
         ) {
             val lineHeightStyle = LineHeightStyle(
                 alignment = LineHeightStyle.Alignment.Center,
@@ -279,7 +287,6 @@ fun ChangelogArtistRow(
             )
         }
 
-        val images = artist.images
         if (images.isNotEmpty()) {
             ChangelogImages(
                 sharedElementId = artist.artistId,
@@ -288,8 +295,6 @@ fun ChangelogArtistRow(
             )
         }
 
-        val hasSeries = artist.seriesHighlighted.isNotEmpty() || artist.seriesRemaining.isNotEmpty()
-        val hasMerch = artist.merchHighlighted.isNotEmpty() || artist.merchRemaining.isNotEmpty()
 
         if (images.isEmpty() && (hasSeries || hasMerch)) {
             Spacer(Modifier.height(12.dp))
