@@ -121,7 +121,7 @@ enum class DataYear(
         convention = Convention.ANIME_NYC,
         artistTableName = "artistEntryAnimeNyc2026",
         stampRallyTableName = null,
-        folderName = "animeNyc2026",
+        folderName = "ANYC2026",
         dates = Dates(
             year = 2026,
             month = 8,
