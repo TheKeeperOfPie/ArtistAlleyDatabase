@@ -16,6 +16,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 
 @AssistedInject
@@ -41,7 +42,7 @@ class SeriesResolutionViewModel(
 
     fun onClickDone(series: SeriesInfo) = commitJob.launch { series }
 
-    private fun loadArtists() = artistCache.artistsAnimeExpo2026.value.filter {
+    private suspend fun loadArtists() = artistCache.artists(DataYear.LATEST).first().filter {
         it.seriesInferred.contains(seriesId) ||
                 it.seriesConfirmed.contains(seriesId)
     }

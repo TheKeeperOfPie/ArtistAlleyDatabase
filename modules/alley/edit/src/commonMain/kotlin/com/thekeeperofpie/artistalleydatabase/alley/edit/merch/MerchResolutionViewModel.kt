@@ -11,18 +11,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 
 @AssistedInject
 class MerchResolutionViewModel(
     private val artistCache: ArtistCache,
     private val editDatabase: AlleyEditDatabase,
-    dispatchers: CustomDispatchers,
     private val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val merchId: String,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -39,7 +38,7 @@ class MerchResolutionViewModel(
 
     fun onClickDone(merch: MerchInfo) = commitJob.launch { merch }
 
-    private fun loadArtists() = artistCache.artistsAnimeExpo2026.value.filter {
+    private suspend fun loadArtists() = artistCache.artists(DataYear.LATEST).first().filter {
         it.merchInferred.contains(merchId) ||
                 it.merchConfirmed.contains(merchId)
     }
