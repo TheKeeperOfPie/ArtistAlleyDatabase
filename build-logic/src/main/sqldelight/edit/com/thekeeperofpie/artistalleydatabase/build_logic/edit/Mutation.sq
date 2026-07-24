@@ -204,8 +204,10 @@ updateMerchYearFlags:
 UPDATE merchEntry SET yearFlags = :yearFlags WHERE name = :id;
 
 cleanUpForRelease {
+    UPDATE artistEntryAnimeExpo2026 SET status = '';
     UPDATE artistEntryAnimeExpo2026 SET editorNotes = NULL;
     UPDATE artistEntryAnimeExpo2026 SET lastEditor = NULL;
+    UPDATE artistEntryAnimeNyc2026 SET status = '';
     UPDATE artistEntryAnimeNyc2026 SET editorNotes = NULL;
     UPDATE artistEntryAnimeNyc2026 SET lastEditor = NULL;
     UPDATE stampRallyEntryAnimeExpo2026 SET editorNotes = NULL;
