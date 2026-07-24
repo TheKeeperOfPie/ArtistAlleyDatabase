@@ -76,9 +76,9 @@ dependencyResolutionManagement {
 
 plugins {
     id("com.autonomousapps.build-health").version("3.16.1")
-    id("com.android.application").version("9.4.0-alpha05").apply(false)
-    id("org.jetbrains.kotlin.android").version("2.4.10-RC2").apply(false)
-    id("org.jetbrains.kotlin.jvm").version("2.4.10-RC2").apply(false)
+    id("com.android.application").version("9.4.0-alpha06").apply(false)
+    id("org.jetbrains.kotlin.android").version("2.4.10").apply(false)
+    id("org.jetbrains.kotlin.jvm").version("2.4.10").apply(false)
     id("com.apollographql.apollo.external").version("4.4.3").apply(false)
 }
 
