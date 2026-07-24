@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistCache
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -25,7 +26,7 @@ class TagResolutionViewModel(
 ) : ViewModel() {
 
     val unknownSeriesAndArtists: StateFlow<List<Pair<String, List<ArtistSummary>>>> =
-        combine(tagAutocomplete.seriesById, artistCache.artistsAnimeExpo2026, ::Pair)
+        combine(tagAutocomplete.seriesById, artistCache.artists(DataYear.LATEST), ::Pair)
             .mapLatest { (seriesById, artists) ->
                 val unknown = mutableMapOf<String, MutableList<ArtistSummary>>()
                 artists.forEach { artist ->
@@ -43,7 +44,7 @@ class TagResolutionViewModel(
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val unknownMerchAndArtists: StateFlow<List<Pair<String, List<ArtistSummary>>>> =
-        combine(tagAutocomplete.merchById, artistCache.artistsAnimeExpo2026, ::Pair)
+        combine(tagAutocomplete.merchById, artistCache.artists(DataYear.LATEST), ::Pair)
             .mapLatest { (merchById, artists) ->
                 val unknown = mutableMapOf<String, MutableList<ArtistSummary>>()
                 artists.forEach { artist ->
