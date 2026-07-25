@@ -135,6 +135,15 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             .sortedBy { it.timestamp }
             .toList()
 
+        val latestSeriesIds = mutableSetOf<String>()
+        val latestMerchIds = mutableSetOf<String>()
+        val latestSnapshot = snapshotFiles.lastOrNull()
+            ?.let(::readTagSnapshot)
+        if (latestSnapshot != null) {
+            latestSeriesIds += latestSnapshot.seriesIds
+            latestMerchIds += latestSnapshot.merchIds
+        }
+
         trackStage("ArtistChangelogTagDiffs") {
             snapshotFiles
                 .map { async { readTagSnapshot(it) } }
@@ -154,10 +163,12 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     val seriesDiff = diffSeries(
                         before = before,
                         current = current,
+                        latestSeriesIds = latestSeriesIds,
                     )
                     val merchDiff = diffMerch(
                         before = before,
                         current = current,
+                        latestMerchIds = latestMerchIds,
                     )
 
                     before.copy(
@@ -568,14 +579,24 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             }
     }
 
-    private fun diffSeries(before: TagDiffs, current: TagSnapshotData): SeriesDiff? {
-        val diff = current.seriesIds - before.latestSeriesIds
+    private fun diffSeries(
+        before: TagDiffs,
+        current: TagSnapshotData,
+        latestSeriesIds: Set<String>,
+    ): SeriesDiff? {
+        val diff = (current.seriesIds - before.latestSeriesIds).toMutableSet()
+        diff.retainAll(latestSeriesIds)
         if (diff.isEmpty()) return null
         return SeriesDiff(date = current.date, diff)
     }
 
-    private fun diffMerch(before: TagDiffs, current: TagSnapshotData): MerchDiff? {
-        val diff = current.merchIds - before.latestMerchIds
+    private fun diffMerch(
+        before: TagDiffs,
+        current: TagSnapshotData,
+        latestMerchIds: Set<String>,
+    ): MerchDiff? {
+        val diff = (current.merchIds - before.latestMerchIds).toMutableSet()
+        diff.retainAll(latestMerchIds)
         if (diff.isEmpty()) return null
         return MerchDiff(date = current.date, diff)
     }
