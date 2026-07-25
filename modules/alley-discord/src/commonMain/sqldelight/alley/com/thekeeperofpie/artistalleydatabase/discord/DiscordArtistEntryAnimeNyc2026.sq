@@ -1,4 +1,4 @@
-getArtistByBooth:
+getArtistsByBooth:
 SELECT * FROM artistEntryAnimeNyc2026
 WHERE artistEntryAnimeNyc2026.booth = :booth;
 

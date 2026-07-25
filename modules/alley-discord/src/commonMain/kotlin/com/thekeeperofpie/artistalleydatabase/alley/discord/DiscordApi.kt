@@ -75,6 +75,11 @@ internal class DiscordApi(
                             type = OptionType.BOOLEAN,
                             description = "Post to public channel",
                         ),
+                        CommandRegisterRequest.Option(
+                            name = "discriminator",
+                            type = OptionType.STRING,
+                            description = "ID or name to select artist if multiple",
+                        ),
                     ),
                 ),
                 CommandRegisterRequest.Option(

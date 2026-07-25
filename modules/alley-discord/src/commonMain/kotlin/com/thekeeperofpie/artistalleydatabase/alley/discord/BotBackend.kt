@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
@@ -110,15 +112,18 @@ internal object BotBackend {
                 }
 
                 val database = Databases.backendDatabase(env)
-                val artist =
-                    database.discordArtistEntryAnimeNyc2026Queries.getArtistByBooth(booth.toString())
-                        .awaitAsOneOrNull()
-                if (artist == null) {
+                val artists = database.discordArtistEntryAnimeNyc2026Queries
+                    .getArtistsByBooth(booth.toString())
+                    .awaitAsList()
+                if (artists.isEmpty()) {
                     return api.patchFailure(
                         interactionToken = interaction.token,
                         message = "Could not find artist for booth $booth",
                     )
                 }
+
+                val discriminator = options.find { it.name == "discriminator" }?.value
+                val artist = findArtistFromDiscriminator(artists, link, discriminator)
 
                 if (link in artist.catalogLinks) {
                     return api.patchFailure(
@@ -266,6 +271,31 @@ internal object BotBackend {
         }
     }
 
+    private fun findArtistFromDiscriminator(
+        artists: List<ArtistEntryAnimeNyc2026>,
+        link: String,
+        discriminator: String?,
+    ): ArtistEntryAnimeNyc2026 {
+        val linkModel = Link.parse(link)
+        artists.forEach {
+            if (linkModel != null) {
+                val socialLinks = it.socialLinks.mapNotNull(Link::parse)
+                if (socialLinks.any {
+                    it.type == linkModel.type && it.identifier == linkModel.identifier
+                }) return it
+                val portfolioLinks = it.portfolioLinks.mapNotNull(Link::parse)
+                if (portfolioLinks.any {
+                    it.type == linkModel.type && it.identifier == linkModel.identifier
+                }) return it
+            }
+            if (discriminator != null) {
+                if (it.name.startsWith(discriminator)) return it
+                if (it.id.startsWith(discriminator)) return it
+            }
+        }
+        return artists.first()
+    }
+
     private fun validateHasOptions(
         command: InteractionRequestData.SlashCommand.Option,
     ): OptionResult<List<InteractionRequestData.SlashCommand.Option>> {
@@ -370,40 +400,43 @@ internal object BotBackend {
             }
         }
 
-        val artistEntry = Databases.backendDatabase(env)
+        val artistEntries = Databases.backendDatabase(env)
             .discordArtistEntryAnimeNyc2026Queries
-            .getArtistByBooth(booth)
-            .awaitAsOneOrNull()
-            ?: return null
+            .getArtistsByBooth(booth)
+            .awaitAsList()
 
-        val linkTypeToIdentifier = artistEntry.socialLinks.mapNotNull(Link::parse)
-            .associate { it.type to it.identifier }
-        val verified = connections.any {
-            val type = when (it.type) {
-                Connection.Type.BLUESKY -> Link.Type.BLUESKY
-                Connection.Type.FACEBOOK -> Link.Type.FACEBOOK
-                Connection.Type.INSTAGRAM -> Link.Type.INSTAGRAM
-                Connection.Type.TIK_TOK -> Link.Type.TIK_TOK
-                Connection.Type.TWITCH -> Link.Type.TWITCH
-                Connection.Type.YOU_TUBE -> Link.Type.YOU_TUBE
-                Connection.Type.X -> Link.Type.X
-                null -> return@any false
+        if (artistEntries.isEmpty()) return null
+
+        val verifiedArtist = artistEntries.find {
+            val linkTypeToIdentifier = it.socialLinks.mapNotNull(Link::parse)
+                .associate { it.type to it.identifier }
+            connections.any {
+                val type = when (it.type) {
+                    Connection.Type.BLUESKY -> Link.Type.BLUESKY
+                    Connection.Type.FACEBOOK -> Link.Type.FACEBOOK
+                    Connection.Type.INSTAGRAM -> Link.Type.INSTAGRAM
+                    Connection.Type.TIK_TOK -> Link.Type.TIK_TOK
+                    Connection.Type.TWITCH -> Link.Type.TWITCH
+                    Connection.Type.YOU_TUBE -> Link.Type.YOU_TUBE
+                    Connection.Type.X -> Link.Type.X
+                    null -> return@any false
+                }
+                val identifier = linkTypeToIdentifier[type]
+                    ?.ifBlank { null }
+                    ?.removePrefix("@") // TikTok is shown with an @ symbol on the site
+                    ?: return@any false
+                it.name.equals(identifier, ignoreCase = true)
             }
-            val identifier = linkTypeToIdentifier[type]
-                ?.ifBlank { null }
-                ?.removePrefix("@") // TikTok is shown with an @ symbol on the site
-                ?: return@any false
-            it.name.equals(identifier, ignoreCase = true)
         }
 
-        if (!verified) return null
+        if (verifiedArtist == null) return null
 
         val keys = AlleyCryptography.generate()
         Databases.formDatabase(env)
             .alleyFormPublicKeyQueries
             .insertPublicKey(
                 ArtistFormPublicKey(
-                    artistId = Uuid.parse(artistEntry.id),
+                    artistId = Uuid.parse(verifiedArtist.id),
                     publicKey = keys.publicKey,
                 )
             )
@@ -461,12 +494,14 @@ internal object BotBackend {
     private fun displayLink(link: String): String {
         val uri = Uri.parseOrNull(link) ?: return link
         return uri.buildUpon()
-            .authority(when (uri.authority) {
-                "x.com" -> "fixupx.com"
-                "instagram.com" -> "kkinstagram.com"
-                "tiktok.com" -> "tnktok.com"
-                else -> uri.authority
-            })
+            .authority(
+                when (uri.authority) {
+                    "x.com" -> "fixupx.com"
+                    "instagram.com" -> "kkinstagram.com"
+                    "tiktok.com" -> "tnktok.com"
+                    else -> uri.authority
+                }
+            )
             .build()
             .toString()
     }
