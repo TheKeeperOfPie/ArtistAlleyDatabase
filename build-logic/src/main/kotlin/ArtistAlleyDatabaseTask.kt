@@ -697,8 +697,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val newArtist = artist.copy(
                         socialLinks = socialLinks,
                         storeLinks = storeLinks,
-                        seriesInferred = seriesInferred,
-                        merchInferred = merchInferred,
+                        seriesInferred = seriesInferred.filter { !it.startsWith("Commission") },
+                        merchInferred = merchInferred.filter { !it.startsWith("Commission") },
                         linkFlags = linkFlags,
                         linkFlags2 = linkFlags2,
                         commissionFlags = commissionFlags,
