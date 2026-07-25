@@ -151,7 +151,9 @@ class MapViewModel(
         showRandomCatalogImage: Boolean,
         section: Table.AnimeExpoSection? = null,
     ): Table {
-        val primaryArtist = artists.first()
+        val primaryArtist =
+            artists.firstOrNull { it.images.isNotEmpty() && it.fallbackImageYear == null }
+                ?: artists.first()
         val images = if (primaryArtist.fallbackImageYear != null && showOutdatedCatalogs) {
             AlleyImageUtils.getArtistImages(
                 year = primaryArtist.fallbackImageYear,
@@ -200,7 +202,7 @@ class MapViewModel(
                 favorite = artists.any { it.favorite },
                 gridX = gridX,
                 gridY = gridY,
-                isFinalCatalog = artists.all {
+                isFinalCatalog = artists.any {
                     primaryArtist.images.isNotEmpty() && primaryArtist.fallbackImageYear == null
                 },
                 hasNotes = hasNotes,
@@ -340,7 +342,9 @@ class MapViewModel(
         }.flatten()
     }
 
-    private val animeNyc2026Booths = ('A'..'Z').map { it.toString() } + listOf("AA", "AB", "AC", "AD", "AE")
+    private val animeNyc2026Booths =
+        ('A'..'Z').map { it.toString() } + listOf("AA", "AB", "AC", "AD", "AE")
+
     private fun animeNyc2026IndexX(booth: Booth): Int {
         val isEven = (booth.number % 2) == 0
 
