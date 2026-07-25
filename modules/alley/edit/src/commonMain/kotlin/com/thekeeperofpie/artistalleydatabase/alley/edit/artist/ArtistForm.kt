@@ -474,7 +474,7 @@ private abstract class ArtistFormScopeImpl(
                     Res.string.alley_edit_artist_edit_booth
                 )
             },
-            inputTransformation = InputTransformation.maxLength(3).allCaps(Locale.current),
+            inputTransformation = InputTransformation.maxLength(4).allCaps(Locale.current),
             outputTransformation = revertDialogState.outputTransformation,
             label = label,
             errorText = errorText,

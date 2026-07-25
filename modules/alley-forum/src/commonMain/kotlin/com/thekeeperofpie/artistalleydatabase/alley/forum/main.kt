@@ -106,7 +106,7 @@ fun main() {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 val locale = LocalLocale.current
                                 val inputTransformation = remember(locale) {
-                                    InputTransformation.maxLength(3)
+                                    InputTransformation.maxLength(4)
                                         .allCaps(locale)
                                         .then {
                                             if (!asCharSequence().all { it.isLetterOrDigit() }) {
