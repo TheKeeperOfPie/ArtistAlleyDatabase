@@ -18,6 +18,7 @@ internal object Databases {
         driver = editSqlDriver(env),
         artistCatalogQueueEntryAdapter = ArtistCatalogQueueEntry.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
+            artistIdAdapter = ColumnAdapters.uuidAdapter,
         ),
         artistEntryAnimeNyc2026Adapter = ColumnAdapters.artistEntryAnimeNyc2026Adapter,
     )

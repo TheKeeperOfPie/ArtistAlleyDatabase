@@ -644,16 +644,16 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun queueArtistCatalog(dataYear: DataYear, booth: String, link: String?): Unit =
+    actual suspend fun queueArtistCatalog(dataYear: DataYear, artistId: Uuid, booth: String, link: String?): Unit =
         withContext(dispatchers.io) {
             try {
-                sendRequest(BackendRequest.QueueArtistCatalog(dataYear, booth, link))
+                sendRequest(BackendRequest.QueueArtistCatalog(dataYear, artistId, booth, link))
             } catch (t: Throwable) {
                 t.printStackTrace()
             }
         }
 
-    actual suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Pair<String, String>> =
+    actual suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Triple<Uuid, String, String>> =
         withContext(dispatchers.io) {
             try {
                 sendRequest(BackendRequest.ArtistCatalogsQueue(dataYear))!!

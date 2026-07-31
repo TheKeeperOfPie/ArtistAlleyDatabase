@@ -116,12 +116,8 @@ object AlleyEditBackend {
                             remoteTimestamp = null,
                         )
                     )
-                    is BackendRequest.ArtistCatalogsQueue -> makeResponse(
-                        artistCatalogsQueue(
-                            context,
-                            this
-                        )
-                    )
+                    is BackendRequest.ArtistCatalogsQueue ->
+                        makeResponse(artistCatalogsQueue(context, this))
                     is BackendRequest.DatabaseCreate -> makeResponse(databaseCreate(context))
                     is BackendRequest.GenerateFormKey ->
                         makeResponse(generateFormKey(context, this))
@@ -649,11 +645,11 @@ object AlleyEditBackend {
     private suspend fun artistCatalogsQueue(
         context: EventContext,
         request: BackendRequest.ArtistCatalogsQueue,
-    ): List<Pair<String, String>> = Databases.editDatabase(context)
+    ): List<Triple<Uuid, String, String>> = Databases.editDatabase(context)
         .artistCatalogQueueEntryQueries
         .getCatalogEntries(request.year)
         .awaitAsList()
-        .map { it.booth to it.link }
+        .map { Triple(it.artistId, it.booth, it.link) }
 
     private suspend fun queueArtistCatalog(
         context: EventContext,
@@ -668,6 +664,7 @@ object AlleyEditBackend {
             queries.insertCatalogEntry(
                 ArtistCatalogQueueEntry(
                     dataYear = request.dataYear,
+                    artistId = request.artistId,
                     booth = request.booth,
                     link = link,
                 )

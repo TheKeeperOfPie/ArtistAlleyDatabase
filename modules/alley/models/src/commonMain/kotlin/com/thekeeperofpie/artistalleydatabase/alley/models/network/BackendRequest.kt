@@ -50,10 +50,12 @@ sealed interface BackendRequest {
     }
 
     @Serializable
-    data class ArtistFormHistory(val dataYear: DataYear) : BackendRequest, WithResponse<List<ArtistFormHistoryEntry>>
+    data class ArtistFormHistory(val dataYear: DataYear) : BackendRequest,
+        WithResponse<List<ArtistFormHistoryEntry>>
 
     @Serializable
-    data class ArtistFormQueue(val dataYear: DataYear) : BackendRequest, WithResponse<List<ArtistFormQueueEntry>>
+    data class ArtistFormQueue(val dataYear: DataYear) : BackendRequest,
+        WithResponse<List<ArtistFormQueueEntry>>
 
     @Serializable
     data class ArtistWithFormEntry(
@@ -147,11 +149,15 @@ sealed interface BackendRequest {
 
     @Serializable
     data class ArtistCatalogsQueue(val year: DataYear) : BackendRequest,
-        WithResponse<List<Pair<String, String>>>
+        WithResponse<List<Triple<Uuid, String, String>>>
 
     @Serializable
-    data class QueueArtistCatalog(val dataYear: DataYear, val booth: String, val link: String?) :
-        BackendRequest, WithResponse<Unit>
+    data class QueueArtistCatalog(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val booth: String,
+        val link: String?,
+    ) : BackendRequest, WithResponse<Unit>
 
     @Serializable
     data object DatabaseCreate : BackendRequest, WithResponse<Unit>

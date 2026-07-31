@@ -96,10 +96,7 @@ internal object BotBackend {
                     is OptionResult.Success -> optionsResult.value
                 }
 
-                val dataYear = when (val dataYearResult = parseDataYear(options)) {
-                    is OptionResult.Failure -> return api.fail(interaction, dataYearResult)
-                    is OptionResult.Success -> dataYearResult.value
-                }
+                val dataYear = parseDataYear(options)
 
                 val booth = when (val boothResult = parseBooth(options)) {
                     is OptionResult.Failure -> return api.fail(interaction, boothResult)
@@ -141,6 +138,7 @@ internal object BotBackend {
                     .insertCatalogEntry(
                         ArtistCatalogQueueEntry(
                             dataYear = dataYear,
+                            artistId = Uuid.parse(artist.id),
                             booth = booth.toString(),
                             link = link,
                         )
@@ -181,10 +179,7 @@ internal object BotBackend {
                     is OptionResult.Success -> optionsResult.value
                 }
 
-                val dataYear = when (val dataYearResult = parseDataYear(options)) {
-                    is OptionResult.Failure -> return api.fail(interaction, dataYearResult)
-                    is OptionResult.Success -> dataYearResult.value
-                }
+                val dataYear = parseDataYear(options)
 
                 val booth = when (val boothResult = parseBooth(options)) {
                     is OptionResult.Failure -> return api.fail(interaction, boothResult)
@@ -231,14 +226,9 @@ internal object BotBackend {
 
     private fun parseDataYear(
         options: List<InteractionRequestData.SlashCommand.Option>,
-    ): OptionResult<DataYear> {
-        val dataYear = options.find { it.name == "convention" }?.value?.let(DataYear::deserialize)
-
-        if (dataYear == null) {
-            return OptionResult.Failure("Invalid convention")
-        }
-        return OptionResult.Success(dataYear)
-    }
+    ): DataYear = options.find { it.name == "convention" }?.value
+        ?.let(DataYear::deserialize)
+        ?: DataYear.LATEST
 
     private fun parseBooth(
         options: List<InteractionRequestData.SlashCommand.Option>,
@@ -281,16 +271,16 @@ internal object BotBackend {
             if (linkModel != null) {
                 val socialLinks = it.socialLinks.mapNotNull(Link::parse)
                 if (socialLinks.any {
-                    it.type == linkModel.type && it.identifier == linkModel.identifier
-                }) return it
+                        it.type == linkModel.type && it.identifier == linkModel.identifier
+                    }) return it
                 val portfolioLinks = it.portfolioLinks.mapNotNull(Link::parse)
                 if (portfolioLinks.any {
-                    it.type == linkModel.type && it.identifier == linkModel.identifier
-                }) return it
+                        it.type == linkModel.type && it.identifier == linkModel.identifier
+                    }) return it
             }
             if (discriminator != null) {
-                if (it.name.startsWith(discriminator)) return it
-                if (it.id.startsWith(discriminator)) return it
+                if (it.name.startsWith(discriminator, ignoreCase = true)) return it
+                if (it.id.startsWith(discriminator, ignoreCase = true)) return it
             }
         }
         return artists.first()

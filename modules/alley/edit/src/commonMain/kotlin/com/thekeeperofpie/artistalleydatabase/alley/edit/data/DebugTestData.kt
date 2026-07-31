@@ -192,6 +192,7 @@ object DebugTestData {
 
         remoteDatabase.queueArtistCatalog(
             dataYear = previous.year,
+            artistId = Uuid.parse(previous.id),
             booth = previous.booth ?: "C38",
             link = "https://example.com",
         )

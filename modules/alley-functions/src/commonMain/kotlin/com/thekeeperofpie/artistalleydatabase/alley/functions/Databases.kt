@@ -33,6 +33,7 @@ internal object Databases {
         driver = editSqlDriver(context),
         artistCatalogQueueEntryAdapter = ArtistCatalogQueueEntry.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
+            artistIdAdapter = ColumnAdapters.uuidAdapter,
         ),
         artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
         artistEntryAnimeExpo2026HistoryAdapter = BackendColumnAdapters.artistEntryAnimeExpo2026HistoryAdapter,

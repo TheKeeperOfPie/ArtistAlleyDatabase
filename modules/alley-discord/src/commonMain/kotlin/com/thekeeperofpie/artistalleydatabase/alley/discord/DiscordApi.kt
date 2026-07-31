@@ -34,7 +34,6 @@ internal class DiscordApi(
             name = "convention",
             type = OptionType.STRING,
             description = "Convention and year",
-            required = true,
             choices = listOf(
                 CommandRegisterRequest.Option.Choice(
                     name = DataYear.LATEST.serializedName,

@@ -141,9 +141,10 @@ CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeNyc2026History (
 
 CREATE TABLE IF NOT EXISTS artistCatalogQueueEntry (
     dataYear TEXT AS DataYear NOT NULL,
+    artistId TEXT AS Uuid NOT NULL,
     booth TEXT NOT NULL,
     link TEXT NOT NULL,
-    PRIMARY KEY (dataYear, booth)
+    PRIMARY KEY (dataYear, artistId)
 );
 
 CREATE TABLE IF NOT EXISTS stampRallyQueueEntry (

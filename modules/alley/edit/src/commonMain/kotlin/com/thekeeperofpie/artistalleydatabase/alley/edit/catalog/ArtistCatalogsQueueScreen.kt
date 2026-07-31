@@ -181,8 +181,8 @@ object ArtistCatalogsQueueScreen {
     }
 
     data class Catalog(
-        val booth: String,
         val artistId: Uuid,
+        val booth: String,
         val link: String,
     )
 }

@@ -175,8 +175,8 @@ expect class AlleyEditRemoteDatabase {
         isHistory: Boolean,
     ): BackendRequest.SaveRemoteArtistData.Response
 
-    suspend fun queueArtistCatalog(dataYear: DataYear, booth: String, link: String?)
-    suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Pair<String, String>>
+    suspend fun queueArtistCatalog(dataYear: DataYear, artistId: Uuid, booth: String, link: String?)
+    suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Triple<Uuid, String, String>>
 
     suspend fun queueStampRally(dataYear: DataYear, link: String, booths: Set<String>)
     suspend fun deleteStampRallyQueueEntry(dataYear: DataYear, link: String)

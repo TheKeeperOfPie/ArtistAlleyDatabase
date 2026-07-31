@@ -80,9 +80,10 @@ class Worker {
                                     |CREATE TABLE
                                     |    IF NOT EXISTS artistCatalogQueueEntry (
                                     |        dataYear TEXT NOT NULL,
+                                    |        artistId TEXT NOT NULL,
                                     |        booth TEXT NOT NULL,
                                     |        link TEXT NOT NULL,
-                                    |        PRIMARY KEY (dataYear, booth)
+                                    |        PRIMARY KEY (dataYear, artistId)
                                     |    );
                                 """.trimMargin(),
                                 parameters = 0,

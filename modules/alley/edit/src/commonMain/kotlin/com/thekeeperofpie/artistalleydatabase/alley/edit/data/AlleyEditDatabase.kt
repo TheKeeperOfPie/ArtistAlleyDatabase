@@ -287,8 +287,8 @@ class AlleyEditDatabase(
         isHistory = isHistory,
     )
 
-    suspend fun queueArtistCatalog(dataYear: DataYear, booth: String, link: String?) =
-        remoteDatabase.queueArtistCatalog(dataYear, booth, link)
+    suspend fun queueArtistCatalog(dataYear: DataYear, artistId: Uuid, booth: String, link: String?) =
+        remoteDatabase.queueArtistCatalog(dataYear, artistId, booth, link)
 
     suspend fun loadArtistCatalogsQueue(dataYear: DataYear) =
         remoteDatabase.loadArtistCatalogsQueue(dataYear)

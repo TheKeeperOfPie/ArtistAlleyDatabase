@@ -67,7 +67,7 @@ actual class AlleyEditRemoteDatabase(
     private var remoteArtistData = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
     private var remoteArtistDataHistory = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
 
-    private var artistCatalogsQueue = mutableMapOf<DataYear, MutableList<Pair<String, String>>>()
+    private var artistCatalogsQueue = mutableMapOf<DataYear, MutableList<Triple<Uuid, String, String>>>()
     private var stampRallyLinksQueue = mutableMapOf<DataYear, MutableList<StampRallyQueueEntry>>()
 
     private val simulatedLatency = 1.seconds
@@ -579,16 +579,16 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.SaveRemoteArtistData.Response.Success
     }
 
-    actual suspend fun queueArtistCatalog(dataYear: DataYear, booth: String, link: String?) {
+    actual suspend fun queueArtistCatalog(dataYear: DataYear, artistId: Uuid, booth: String, link: String?) {
         val list = artistCatalogsQueue.getOrPut(dataYear) { mutableListOf() }
         if (link == null) {
-            list.removeIf { it.first == booth }
+            list.removeIf { it.first == artistId }
         } else {
-            list.add(booth to link)
+            list.add(Triple(artistId, booth, link))
         }
     }
 
-    actual suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Pair<String, String>> =
+    actual suspend fun loadArtistCatalogsQueue(dataYear: DataYear): List<Triple<Uuid, String, String>> =
         artistCatalogsQueue[dataYear]?.toList().orEmpty()
 
     actual suspend fun queueStampRally(dataYear: DataYear, link: String, booths: Set<String>) {
