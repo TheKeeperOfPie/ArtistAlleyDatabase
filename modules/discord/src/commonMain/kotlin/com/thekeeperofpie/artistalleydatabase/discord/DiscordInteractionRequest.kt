@@ -10,7 +10,9 @@ data class DiscordInteractionRequest(
     val token: String,
     val data: InteractionRequestData? = null,
     val member: Member? = null,
+    val user: User? = null,
     @SerialName("guild_id")
     val guildId: String? = null,
+    val context: InteractionContext?,
 )
 

@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionPatchRes
 import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionRequest
 import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionResponse
 import com.thekeeperofpie.artistalleydatabase.discord.InteractionCallbackType
+import com.thekeeperofpie.artistalleydatabase.discord.InteractionContext
 import com.thekeeperofpie.artistalleydatabase.discord.InteractionRequestData
 import com.thekeeperofpie.artistalleydatabase.discord.InteractionType
 import com.thekeeperofpie.artistalleydatabase.discord.MessageComponent
@@ -56,18 +57,16 @@ internal object BotBackend {
 
         val interaction = json.decodeFromString<DiscordInteractionRequest>(body)
         val interactionType = interaction.type
-        val member = interaction.member
         if (interactionType == InteractionType.PING) {
             return jsonResponse(
                 DiscordInteractionResponse(type = InteractionCallbackType.PONG)
             )
         } else if (interactionType == null ||
-            member == null ||
-            interaction.guildId != env.DISCORD_GUILD_ID
+            (interaction.context == InteractionContext.GUILD && interaction.guildId != env.DISCORD_GUILD_ID)
         ) {
             return api.patchFailure(
                 interactionToken = interaction.token,
-                message = "AA Directory bot cannot be invoked in this server",
+                message = "AA Directory bot cannot be invoked in this server with context ${interaction.context}",
             )
         }
 
@@ -82,7 +81,7 @@ internal object BotBackend {
 
         val response = when (command.name) {
             "catalog" -> {
-                val userId = interaction.member?.user?.id
+                val userId = interaction.member?.user?.id ?: interaction.user?.id
                 val allowedEditorUserIds = env.DISCORD_EDITORS.split(",")
                 if (userId !in allowedEditorUserIds) {
                     return api.patchFailure(
@@ -186,7 +185,10 @@ internal object BotBackend {
                     is OptionResult.Success -> boothResult.value
                 }
 
-                val userId = member.user.id
+                val userId = interaction.member?.user?.id ?: return api.patchFailure(
+                    interactionToken = interaction.token,
+                    message = "Failed to read userId from interaction",
+                )
                 env.ARTIST_ALLEY_BOT_KV.put(userId, interaction.token).await()
                 DiscordInteractionPatchResponse(
                     // TODO: Use UI string for name

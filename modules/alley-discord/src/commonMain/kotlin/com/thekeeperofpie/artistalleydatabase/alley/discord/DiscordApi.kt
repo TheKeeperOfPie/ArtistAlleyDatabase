@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionPatchRes
 import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionRequest
 import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionResponse
 import com.thekeeperofpie.artistalleydatabase.discord.InteractionCallbackType
+import com.thekeeperofpie.artistalleydatabase.discord.InteractionContext
 import com.thekeeperofpie.artistalleydatabase.discord.InteractionResponseData
 import com.thekeeperofpie.artistalleydatabase.discord.MessageFlag
 import com.thekeeperofpie.artistalleydatabase.discord.MessageFlags
@@ -55,13 +56,14 @@ internal class DiscordApi(
             name = "aa",
             type = CommandRegisterRequest.CommandType.CHAT_INPUT,
             description = "Interact with the artistalley.directory site",
+            integrationTypes = CommandRegisterRequest.IntegrationType.entries,
+            contexts = InteractionContext.entries,
             options = listOf(
                 CommandRegisterRequest.Option(
                     name = "catalog",
                     type = OptionType.SUB_COMMAND,
                     description = "Record a catalog for an artist",
                     options = listOf(
-                        conventionOption,
                         boothOption,
                         CommandRegisterRequest.Option(
                             name = "link",
@@ -69,6 +71,7 @@ internal class DiscordApi(
                             description = "Catalog link",
                             required = true,
                         ),
+                        conventionOption,
                         CommandRegisterRequest.Option(
                             name = "post",
                             type = OptionType.BOOLEAN,
@@ -86,8 +89,8 @@ internal class DiscordApi(
                     type = OptionType.SUB_COMMAND,
                     description = "Verify as an artist tabling",
                     options = listOf(
-                        conventionOption,
                         boothOption,
+                        conventionOption,
                     ),
                 ),
             ),

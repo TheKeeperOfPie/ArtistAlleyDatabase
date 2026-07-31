@@ -9,6 +9,9 @@ data class CommandRegisterRequest(
     val type: CommandType,
     val description: String,
     val options: List<Option>? = null,
+    @SerialName("integration_types")
+    val integrationTypes: List<IntegrationType>? = null,
+    val contexts: List<InteractionContext>? = null,
 ) {
     @Serializable(with = CommandType.Serializer::class)
     enum class CommandType(val value: Int) {
@@ -22,6 +25,20 @@ data class CommandRegisterRequest(
             IntEnumSerializer<CommandType>(
                 entries = CommandType.entries,
                 serialName = "CommandType",
+                value = { it.value },
+            )
+    }
+
+    @Serializable(with = IntegrationType.Serializer::class)
+    enum class IntegrationType(val value: Int) {
+        GUILD_INSTALL(0),
+        USER_INSTALL(1),
+        ;
+
+        object Serializer :
+            IntEnumSerializer<IntegrationType>(
+                entries = IntegrationType.entries,
+                serialName = "IntegrationType",
                 value = { it.value },
             )
     }
