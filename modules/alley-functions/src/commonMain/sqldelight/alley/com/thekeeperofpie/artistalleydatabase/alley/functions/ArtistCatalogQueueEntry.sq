@@ -1,6 +1,6 @@
 getCatalogEntry:
 SELECT * FROM artistCatalogQueueEntry
-WHERE dataYear = :dataYear AND booth = :booth;
+WHERE dataYear = :dataYear AND artistId = :artistId;
 
 getCatalogEntries:
 SELECT * FROM artistCatalogQueueEntry
@@ -12,8 +12,8 @@ VALUES ?;
 
 deleteCatalogEntry:
 DELETE FROM artistCatalogQueueEntry
-WHERE dataYear = :dataYear AND booth = :booth;
+WHERE dataYear = :dataYear AND artistId = :artistId;
 
 consumeCatalogEntry:
 DELETE FROM artistCatalogQueueEntry
-WHERE dataYear = :dataYear AND booth = :booth AND link = :link;
+WHERE dataYear = :dataYear AND artistId = :artistId AND link = :link;

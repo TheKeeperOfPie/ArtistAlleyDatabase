@@ -129,8 +129,8 @@ internal object BotBackend {
                 }
 
                 val existingEntry = database.artistCatalogQueueEntryQueries.getCatalogEntry(
-                    dataYear,
-                    booth.toString()
+                    dataYear = dataYear,
+                    artistId = Uuid.parse(artist.id),
                 ).awaitAsOneOrNull()
 
                 database.artistCatalogQueueEntryQueries

@@ -557,19 +557,20 @@ object AlleyEditBackend {
                     lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
                     lastEditTime = Clock.System.now(),
                 )
+                val artistId = Uuid.parse(updatedArtist.id)
                 val historyEntry = ArtistHistoryEntry.create(
                     before = currentArtist,
                     after = updatedArtist,
                     formTimestamp = formTimestamp,
                     remoteTimestamp = remoteTimestamp,
-                ).toDatabaseEntryAnimExpo2026(Uuid.parse(updatedArtist.id))
+                ).toDatabaseEntryAnimExpo2026(artistId)
                 database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
                 database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
 
                 consumeCatalogEntry(
                     database = database,
                     dataYear = request.dataYear,
-                    booth = updatedArtist.booth,
+                    artistId = artistId,
                     catalogLinks = updatedArtist.catalogLinks
                 )
                 BackendRequest.ArtistSave.Response.Success
@@ -594,19 +595,20 @@ object AlleyEditBackend {
                     lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
                     lastEditTime = Clock.System.now(),
                 )
+                val artistId = Uuid.parse(updatedArtist.id)
                 val historyEntry = ArtistHistoryEntry.create(
                     before = currentArtist,
                     after = updatedArtist,
                     formTimestamp = formTimestamp,
                     remoteTimestamp = remoteTimestamp,
-                ).toDatabaseEntryAnimeNyc2026(Uuid.parse(updatedArtist.id))
+                ).toDatabaseEntryAnimeNyc2026(artistId)
                 database.artistEntryAnimeNyc2026Queries.insertHistory(historyEntry)
                 database.artistEntryAnimeNyc2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeNyc2026())
 
                 consumeCatalogEntry(
                     database = database,
                     dataYear = request.dataYear,
-                    booth = updatedArtist.booth,
+                    artistId = artistId,
                     catalogLinks = updatedArtist.catalogLinks
                 )
                 BackendRequest.ArtistSave.Response.Success
@@ -623,20 +625,20 @@ object AlleyEditBackend {
     private suspend fun consumeCatalogEntry(
         database: AlleySqlDatabase,
         dataYear: DataYear,
-        booth: String?,
+        artistId: Uuid?,
         catalogLinks: List<String>,
     ) {
         if (catalogLinks.isEmpty()) return
-        if (booth != null) {
+        if (artistId != null) {
             val existingCatalogEntry =
-                database.artistCatalogQueueEntryQueries.getCatalogEntry(dataYear, booth)
+                database.artistCatalogQueueEntryQueries.getCatalogEntry(dataYear, artistId)
                     .awaitAsOneOrNull() ?: return
             val existingLink = existingCatalogEntry.link.removeSuffix("/")
             if (existingLink in catalogLinks.map { it.removeSuffix("/") }) {
                 database.artistCatalogQueueEntryQueries.consumeCatalogEntry(
-                    dataYear,
-                    booth,
-                    existingLink
+                    dataYear = dataYear,
+                    artistId = artistId,
+                    link = existingLink,
                 )
             }
         }
@@ -659,7 +661,7 @@ object AlleyEditBackend {
         val queries = Databases.editDatabase(context)
             .artistCatalogQueueEntryQueries
         if (link == null) {
-            queries.deleteCatalogEntry(request.dataYear, request.booth)
+            queries.deleteCatalogEntry(request.dataYear, request.artistId)
         } else {
             queries.insertCatalogEntry(
                 ArtistCatalogQueueEntry(

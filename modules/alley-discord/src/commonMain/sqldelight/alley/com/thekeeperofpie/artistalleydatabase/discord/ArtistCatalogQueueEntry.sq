@@ -1,6 +1,6 @@
 getCatalogEntry:
 SELECT * FROM artistCatalogQueueEntry
-WHERE dataYear = :dataYear AND booth = :booth;
+WHERE dataYear = :dataYear AND artistId = :artistId;
 
 insertCatalogEntry:
 INSERT OR REPLACE INTO artistCatalogQueueEntry
