@@ -9,9 +9,9 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -39,7 +39,7 @@ class ArtistListViewModel(
         .debounce(500.milliseconds)
 
     private val missingLinks = artistEntries.mapLatest {
-        it.filter { it.socialLinks.isEmpty() && it.storeLinks.isEmpty() && it.portfolioLinks.isEmpty() && it.catalogLinks.isEmpty() }
+        it.filter { it.isMissingAllLinks || it.isMissingVerifiableLink }
     }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
 
     private val ArtistSummary.missingTags
@@ -117,8 +117,10 @@ class ArtistListViewModel(
 
     fun refresh() = artistCache.refresh()
 
-    @AssistedFactory
-    interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ArtistListViewModel
-    }
+    private val ArtistSummary.isMissingAllLinks
+        get() = socialLinks.isEmpty() && storeLinks.isEmpty() &&
+                portfolioLinks.isEmpty() && catalogLinks.isEmpty()
+
+    private val ArtistSummary.isMissingVerifiableLink
+        get() = socialLinks.map(Link::parse).none { it?.type?.verifiable == true }
 }

@@ -133,5 +133,18 @@ data class Link(
         OTHER_STORE,
         OTHER_NON_STORE,
         ;
+
+        val verifiable
+            get() = when (this) {
+                BLUESKY,
+                FACEBOOK,
+                INSTAGRAM,
+                TIK_TOK,
+                TWITCH,
+                YOU_TUBE,
+                X,
+                    -> true
+                else -> false
+            }
     }
 }
