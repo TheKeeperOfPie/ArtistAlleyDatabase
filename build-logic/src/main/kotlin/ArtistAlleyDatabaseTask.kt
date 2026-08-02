@@ -1,4 +1,3 @@
-
 import ImageUtils.parseScaledImageWidthHeight
 import Utils.createEditDatabase
 import app.cash.sqldelight.Query
@@ -326,6 +325,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 throw IllegalStateException("Broken tags must be resolved")
                             }
 
+                            trackStage("CheckLinks") {
+                                checkLinks(database)
+                            }
+
                             trackStage("CleanUpForRelease") {
                                 database.mutationQueries.cleanUpForRelease().await()
                                 // Don't retain user tables (merged from depending on :modules:alley:user)
@@ -484,7 +487,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                     val (driver, database) = Utils.createFormDatabase(file)
                     driver.use {
-                        database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_EXPO_2026).executeAsList()
+                        database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_EXPO_2026)
+                            .executeAsList()
                     }.also {
                         file.delete()
                     }
@@ -637,7 +641,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                     val (driver, database) = Utils.createFormDatabase(file)
                     driver.use {
-                        database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_NYC_2026).executeAsList()
+                        database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_NYC_2026)
+                            .executeAsList()
                     }.also {
                         file.delete()
                     }
@@ -1440,7 +1445,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private suspend fun buildArtistConnections(driver: SqlDriver, database: BuildLogicEditDatabase): ArtistTagConnections {
+    private suspend fun buildArtistConnections(
+        driver: SqlDriver,
+        database: BuildLogicEditDatabase,
+    ): ArtistTagConnections {
         val connections = ArtistTagConnections()
 
         val seriesIdsToRowIds = database.mutationQueries.getSeries().executeAsList()
@@ -1628,7 +1636,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .mapNotNull {
                     database.mutationQueries.getRowIdsByBoothAnimeExpo2023(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
+                .map {
+                    StampRallyArtistConnection(
+                        stampRallyRowId = stampRallyRowId,
+                        artistRowId = it
+                    )
+                }
                 .forEach(database.mutationQueries::insertArtistConnection)
         }
         database.mutationQueries.getStampRalliesAnimeExpo2024().executeAsList().forEach {
@@ -1637,7 +1650,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .mapNotNull {
                     database.mutationQueries.getRowIdsByBoothAnimeExpo2024(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
+                .map {
+                    StampRallyArtistConnection(
+                        stampRallyRowId = stampRallyRowId,
+                        artistRowId = it
+                    )
+                }
                 .forEach(database.mutationQueries::insertArtistConnection)
         }
         database.mutationQueries.getStampRalliesAnimeExpo2025().executeAsList().forEach {
@@ -1646,7 +1664,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .mapNotNull {
                     database.mutationQueries.getRowIdsByBoothAnimeExpo2025(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
+                .map {
+                    StampRallyArtistConnection(
+                        stampRallyRowId = stampRallyRowId,
+                        artistRowId = it
+                    )
+                }
                 .forEach(database.mutationQueries::insertArtistConnection)
             it.series
                 .map {
@@ -1664,7 +1687,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .mapNotNull {
                     database.mutationQueries.getRowIdsByBoothAnimeExpo2026(it).executeAsOneOrNull()
                 }
-                .map { StampRallyArtistConnection(stampRallyRowId = stampRallyRowId, artistRowId = it) }
+                .map {
+                    StampRallyArtistConnection(
+                        stampRallyRowId = stampRallyRowId,
+                        artistRowId = it
+                    )
+                }
                 .forEach(database.mutationQueries::insertArtistConnection)
             it.series
                 .map {
@@ -1702,7 +1730,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) {
         database.mutationQueries.getSeries().executeAsList().forEach {
             val seriesRowId = it.rowid
-            val connections = artistTagConnections.series.filter { it.value.seriesRowId == seriesRowId }
+            val connections =
+                artistTagConnections.series.filter { it.value.seriesRowId == seriesRowId }
 
             val inferredAnimeExpo2024 = connections.count {
                 TagYearFlag.hasFlag(
@@ -1803,31 +1832,43 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun SqlCursor.toArtistConnectionDataList(seriesIdsToRowIds: Map<String, Long>) = QueryResult.Value(
-        buildList {
-            while (next().value) {
-                add(
-                    ArtistConnectionData(
-                        artistRowId = getLong(0)!!,
-                        seriesInferred = getString(1)
-                            ?.let { Json.decodeFromString<List<String>>(it) }
-                            ?.mapNotNull { seriesIdsToRowIds[it] }
-                            .orEmpty(),
-                        seriesConfirmed = getString(2)
-                            ?.let { Json.decodeFromString<List<String>>(it) }
-                            ?.mapNotNull { seriesIdsToRowIds[it] }
-                            .orEmpty(),
-                        merchInferred = getString(3)
-                            ?.let { Json.decodeFromString<List<String>>(it) }
-                            .orEmpty(),
-                        merchConfirmed = getString(4)
-                            ?.let { Json.decodeFromString<List<String>>(it) }
-                            .orEmpty(),
-                    )
-                )
+    private fun checkLinks(database: BuildLogicEditDatabase) {
+        database.artistEntryAnimeNyc2026Queries.getAllEntries()
+            .executeAsList()
+            .forEach { artist ->
+                (artist.socialLinks + artist.storeLinks + artist.portfolioLinks + artist.catalogLinks)
+                    .filter { it.contains("?") }.forEach {
+                        logger.error("Bad link for ${artist.name}, contains query: $it")
+                    }
             }
-        }
-    )
+    }
+
+    private fun SqlCursor.toArtistConnectionDataList(seriesIdsToRowIds: Map<String, Long>) =
+        QueryResult.Value(
+            buildList {
+                while (next().value) {
+                    add(
+                        ArtistConnectionData(
+                            artistRowId = getLong(0)!!,
+                            seriesInferred = getString(1)
+                                ?.let { Json.decodeFromString<List<String>>(it) }
+                                ?.mapNotNull { seriesIdsToRowIds[it] }
+                                .orEmpty(),
+                            seriesConfirmed = getString(2)
+                                ?.let { Json.decodeFromString<List<String>>(it) }
+                                ?.mapNotNull { seriesIdsToRowIds[it] }
+                                .orEmpty(),
+                            merchInferred = getString(3)
+                                ?.let { Json.decodeFromString<List<String>>(it) }
+                                .orEmpty(),
+                            merchConfirmed = getString(4)
+                                ?.let { Json.decodeFromString<List<String>>(it) }
+                                .orEmpty(),
+                        )
+                    )
+                }
+            }
+        )
 
     // Copied from ArtistInference since it isn't accessible here
     private class ArtistInferenceProvider(database: BuildLogicEditDatabase, artistId: String) {
