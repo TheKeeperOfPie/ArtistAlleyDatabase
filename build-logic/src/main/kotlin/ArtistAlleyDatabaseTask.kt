@@ -1836,10 +1836,44 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         database.artistEntryAnimeNyc2026Queries.getAllEntries()
             .executeAsList()
             .forEach { artist ->
-                (artist.socialLinks + artist.storeLinks + artist.portfolioLinks + artist.catalogLinks)
-                    .filter { it.contains("?") }.forEach {
-                        logger.error("Bad link for ${artist.name}, contains query: $it")
+                val allLinks =
+                    artist.socialLinks + artist.storeLinks + artist.portfolioLinks + artist.catalogLinks
+                allLinks.filter { it.contains("?") }.forEach {
+                    logger.error("Bad link for ${artist.name}, contains query: $it")
+                }
+
+                allLinks.groupBy { Link.parse(it)?.let { it.type to it.identifier } }
+                    .filterValues { it.size > 1 }
+                    .forEach {
+                        logger.error("Bad link for ${artist.name}, duplicate: ${it.value.first()}")
                     }
+
+                if (artist.catalogLinks.isNotEmpty() && artist.images.isEmpty()) {
+                    logger.error("Bad catalog link for ${artist.name}, no images recorded")
+                }
+
+                val badSocialLinks = artist.socialLinks.filter {
+                    val type = Link.parse(it)?.type
+                    type != null &&
+                            (type.category != LinkCategory.SOCIALS &&
+                                    type.category != LinkCategory.SUPPORT)
+                }
+
+                val badStoreLinks = artist.storeLinks.filter {
+                    val type = Link.parse(it)?.type
+                    type != null &&
+                            (type.category != LinkCategory.STORES &&
+                                    !it.contains("shop", ignoreCase = true))
+                }
+
+                val badPortfolioLinks = artist.portfolioLinks.filter {
+                    val type = Link.parse(it)?.type
+                    type != null && type.category != LinkCategory.PORTFOLIOS
+                }
+
+                (badSocialLinks + badStoreLinks + badPortfolioLinks).forEach {
+                    logger.error("Bad link for ${artist.name}, wrong category: $it")
+                }
             }
     }
 
