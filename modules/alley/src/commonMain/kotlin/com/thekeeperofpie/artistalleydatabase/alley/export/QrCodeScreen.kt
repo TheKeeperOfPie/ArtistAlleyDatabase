@@ -61,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -300,6 +301,7 @@ private fun JsonFileSection(onClickDownload: (includeMetadata: Boolean) -> Unit)
     }
 }
 
+@Serializable
 private enum class ExportType(val textRes: StringResource) {
     QR_CODE(Res.string.alley_export_qr_code_type_qr_code),
     JSON_FILE(Res.string.alley_export_qr_code_type_json_file),
