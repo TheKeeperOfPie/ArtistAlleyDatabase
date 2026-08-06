@@ -1836,16 +1836,26 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         database.artistEntryAnimeNyc2026Queries.getAllEntries()
             .executeAsList()
             .forEach { artist ->
+                val badLinkPrefix = "Bad link for ${artist.booth} ${artist.name}"
                 val allLinks =
                     artist.socialLinks + artist.storeLinks + artist.portfolioLinks + artist.catalogLinks
                 allLinks.filter { it.contains("?") }.forEach {
-                    logger.error("Bad link for ${artist.name}, contains query: $it")
+                    logger.error("$badLinkPrefix, contains query: $it")
                 }
 
-                allLinks.groupBy { Link.parse(it)?.let { it.type to it.identifier } }
+                val groupedLinks =
+                    allLinks.groupBy { Link.parse(it)?.let { it.type to it.identifier } }
+                groupedLinks
+                    .filterKeys { it != null }
                     .filterValues { it.size > 1 }
+                    .plus(
+                        groupedLinks[null]
+                        ?.groupBy { it }
+                        ?.filterValues { it.size > 1 }
+                        .orEmpty()
+                    )
                     .forEach {
-                        logger.error("Bad link for ${artist.name}, duplicate: ${it.value.first()}")
+                        logger.error("$badLinkPrefix, duplicate: ${it.value.first()}")
                     }
 
                 if (artist.catalogLinks.isNotEmpty() && artist.images.isEmpty()) {
@@ -1872,7 +1882,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
 
                 (badSocialLinks + badStoreLinks + badPortfolioLinks).forEach {
-                    logger.error("Bad link for ${artist.name}, wrong category: $it")
+                    logger.error("$badLinkPrefix, wrong category: $it")
                 }
             }
     }
