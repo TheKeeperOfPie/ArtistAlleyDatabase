@@ -149,26 +149,21 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 "Failed to delete $databaseFile, manually delete to re-process inputs"
             )
         } else {
-            var (driver, database) = createEditDatabase(databaseFile)
-            driver.close()
-
-            listOf("artists", "stampRallies")
-                .flatMap { inputsDirectory.dir(it).get().asFile.listFiles().orEmpty().toList() }
-                .forEach { Utils.readSqlFile(databaseFile, it) }
-
-            // tags.sql must come last in order to overwrite legacy data
-            listOf("merchLegacy.sql", "seriesLegacy.sql", "tags.sql").forEach {
-                val tagFile = inputsDirectory.dir("tags/$it").get().asFile
-                if (tagFile.exists()) {
-                    Utils.readSqlFile(databaseFile, tagFile)
-                }
-            }
-
-            val pair = createEditDatabase(databaseFile)
-            driver = pair.first
-            database = pair.second
-
             runBlocking {
+                val (driver, database) = createEditDatabase(databaseFile)
+
+                listOf("artists", "stampRallies")
+                    .flatMap { inputsDirectory.dir(it).get().asFile.listFiles().orEmpty().toList() }
+                    .forEach { Utils.readSqlFile(driver, database, it) }
+
+                // tags.sql must come last in order to overwrite legacy data
+                listOf("merchLegacy.sql", "seriesLegacy.sql", "tags.sql").forEach {
+                    val tagFile = inputsDirectory.dir("tags/$it").get().asFile
+                    if (tagFile.exists()) {
+                        Utils.readSqlFile(driver, database, tagFile)
+                    }
+                }
+
                 @Suppress("NewApi")
                 Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)
                     .use {
@@ -380,16 +375,16 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             }
                         }
                     }
+
+                driver.close()
+
+                databaseFile.copyTo(outputDatabaseFile.get().asFile, overwrite = true)
+                val hash = Utils.hash(databaseFile)
+
+                databaseFile.delete()
+
+                outputDatabaseHashFile.get().asFile.writeText(hash.toString())
             }
-
-            driver.close()
-
-            databaseFile.copyTo(outputDatabaseFile.get().asFile, overwrite = true)
-            val hash = Utils.hash(databaseFile)
-
-            databaseFile.delete()
-
-            outputDatabaseHashFile.get().asFile.writeText(hash.toString())
         }
     }
 
@@ -477,20 +472,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 }
                 ?.let { snapshotFile ->
-                    val file = temporaryDir.resolve("animeExpo2026Form.sqlite")
-                    // First, create and immediately close the databases to initialize the schemas
-                    Utils.createFormDatabase(file).first.close()
-
-                    if (!Utils.readSqlFile(file, snapshotFile)) {
+                    val (driver, database) = Utils.createFormDatabase()
+                    if (!Utils.readSqlFile(driver, database, snapshotFile)) {
                         logger.error("Failed to apply before ${snapshotFile.absolutePath}")
                         return@let emptyList()
                     }
-                    val (driver, database) = Utils.createFormDatabase(file)
                     driver.use {
                         database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_EXPO_2026)
                             .executeAsList()
-                    }.also {
-                        file.delete()
                     }
                 }
                 .orEmpty()
@@ -631,20 +620,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 }
                 ?.let { snapshotFile ->
-                    val file = temporaryDir.resolve("animeNyc2026Form.sqlite")
-                    // First, create and immediately close the databases to initialize the schemas
-                    Utils.createFormDatabase(file).first.close()
-
-                    if (!Utils.readSqlFile(file, snapshotFile)) {
+                    val (driver, database) = Utils.createFormDatabase()
+                    if (!Utils.readSqlFile(driver, database, snapshotFile)) {
                         logger.error("Failed to apply before ${snapshotFile.absolutePath}")
                         return@let emptyList()
                     }
-                    val (driver, database) = Utils.createFormDatabase(file)
                     driver.use {
                         database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_NYC_2026)
                             .executeAsList()
-                    }.also {
-                        file.delete()
                     }
                 }
                 .orEmpty()
@@ -1850,9 +1833,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     .filterValues { it.size > 1 }
                     .plus(
                         groupedLinks[null]
-                        ?.groupBy { it }
-                        ?.filterValues { it.size > 1 }
-                        .orEmpty()
+                            ?.groupBy { it }
+                            ?.filterValues { it.size > 1 }
+                            .orEmpty()
                     )
                     .forEach {
                         logger.error("$badLinkPrefix, duplicate: ${it.value.first()}")

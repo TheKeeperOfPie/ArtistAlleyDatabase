@@ -1,4 +1,6 @@
 import app.cash.sqldelight.ColumnAdapter
+import app.cash.sqldelight.Transacter
+import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
@@ -31,12 +33,13 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.Json
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import java.io.File
-import java.util.concurrent.TimeUnit
 import java.util.zip.CRC32
 import kotlin.time.Instant
 import kotlin.time.measureTimedValue
@@ -138,32 +141,66 @@ internal object Utils {
     }
 
     context(task: Task)
-    fun readSqlFile(databaseFile: File, sqlFile: File): Boolean {
-        if (!sqlFile.exists()) return false
-
-        val process = ProcessBuilder(
-            "sqlite3",
-            databaseFile.absolutePath,
-            "\".read \'${sqlFile.absolutePath}\'\""
-        )
-            .inheritIO()
-            .redirectErrorStream(true)
-            .start()
-        val success = process.waitFor(90, TimeUnit.SECONDS)
-        if (!success) {
-            val errorText = process.inputStream.use {
-                it.reader().use {
-                    it.readText()
-                }
-            }
-            task.logger.error("Failed to apply ${sqlFile.absolutePath}, exited with ${process.exitValue()}")
-            errorText.lines().forEach(task.logger::error)
+    suspend fun readSqlFile(driver: SqlDriver, database: Transacter, sqlFile: File): Boolean {
+        val sqlText = sqlFile.readText().lines().joinToString("\n") {
+            it.replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS")
+                .replace("INSERT INTO", "INSERT OR REPLACE INTO")
         }
-        return success
+
+        return readSqlFile(driver, database, sqlText, sqlFile.absolutePath)
     }
 
-    fun createEditDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicEditDatabase> {
+    context(task: Task)
+    suspend fun readSqlFile(
+        driver: SqlDriver,
+        database: Transacter,
+        sqlText: String,
+        filePath: String? = null,
+    ): Boolean = try {
+        database.transaction {
+            val statements = mutableListOf<String>()
+            val statement = StringBuilder()
+            var inQuote = false
+            sqlText.forEach {
+                if (it == '\'') {
+                    inQuote = !inQuote
+                }
+                if (it == ';' && !inQuote) {
+                    statement.toString()
+                        .trim()
+                        .takeIf { it.isNotEmpty() }
+                        ?.let(statements::add)
+                    statement.clear()
+                } else {
+                    statement.append(it)
+                }
+            }
+            statement.toString()
+                .trim()
+                .takeIf { it.isNotEmpty() }
+                ?.let(statements::add)
+
+            statements.forEach {
+                driver.execute(null, it, 0)
+            }
+        }
+        true
+    } catch (throwable: Throwable) {
+        currentCoroutineContext().ensureActive()
+        try {
+            driver.execute(null, "ROLLBACK TRANSACTION", 0).await()
+        } catch (_: Throwable) {
+        }
+        task.logger.error("Failed to read $filePath", throwable)
+        false
+    }
+
+    fun createEditDatabase(dbFile: File): Pair<SqlDriver, BuildLogicEditDatabase> {
         val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
+        return driver to createEditDatabase(driver)
+    }
+
+    fun createEditDatabase(driver: SqlDriver): BuildLogicEditDatabase {
         try {
             BuildLogicEditDatabase.Schema.create(driver)
         } catch (_: Throwable) {
@@ -350,11 +387,11 @@ internal object Utils {
                 merchIdsAdapter = setStringAdapter,
             ),
         )
-        return driver to database
+        return database
     }
 
-    fun createFormDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicFormDatabase> {
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
+    fun createFormDatabase(): Pair<JdbcSqliteDriver, BuildLogicFormDatabase> {
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         try {
             BuildLogicFormDatabase.Schema.create(driver)
         } catch (_: Throwable) {

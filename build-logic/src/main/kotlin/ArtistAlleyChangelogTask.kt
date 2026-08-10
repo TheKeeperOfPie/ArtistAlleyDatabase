@@ -1,6 +1,10 @@
+
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
@@ -8,6 +12,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
@@ -31,9 +36,9 @@ import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlin.io.nameWithoutExtension
 import kotlin.io.outputStream
-import kotlin.io.resolve
+import kotlin.io.readText
 import kotlin.io.useLines
-import kotlin.io.writer
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.use
 import kotlin.uuid.Uuid
@@ -130,15 +135,15 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
             .asSequence()
             .map(::readSnapshotFile)
             .groupBy { it.date }
-            .toList()
-            .map { it.second.maxBy { it.timestamp } }
+            .asSequence()
+            .map { it.value.maxBy { it.timestamp } }
             .sortedBy { it.timestamp }
             .toList()
 
         val latestSeriesIds = mutableSetOf<String>()
         val latestMerchIds = mutableSetOf<String>()
         val latestSnapshot = snapshotFiles.lastOrNull()
-            ?.let(::readTagSnapshot)
+            ?.let { readTagSnapshot(it) }
         if (latestSnapshot != null) {
             latestSeriesIds += latestSnapshot.seriesIds
             latestMerchIds += latestSnapshot.merchIds
@@ -351,110 +356,90 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         )
     }
 
-    private fun readTagSnapshot(snapshotFile: SnapshotFile): TagSnapshotData? {
-        val databaseFile = temporaryDir.resolve("database-${snapshotFile.file.name}.sqlite")
-        val snapshotFilteredFile = temporaryDir.resolve("database-${snapshotFile.file.name}.sql")
-        listOf(snapshotFilteredFile, databaseFile).forEach(::verifyDelete)
-
-        // First, create and immediately close the databases to initialize the schemas
-        Utils.createEditDatabase(databaseFile).first.close()
-        filterSnapshot(snapshotFile.file, snapshotFilteredFile)
-        if (!Utils.readSqlFile(databaseFile, snapshotFilteredFile)) {
-            logger.error("Failed to read ${snapshotFile.file.absolutePath}")
-            return null
+    private suspend fun readSqlFile(file: File, filter: Boolean = true): Pair<SqlDriver, BuildLogicEditDatabase>? {
+        val driver = try {
+            JdbcSqliteDriver("jdbc:sqlite::memory:")
+        } catch (_: Throwable) {
+            delay(5.seconds)
+            JdbcSqliteDriver("jdbc:sqlite::memory:")
         }
-
-        val database = Utils.createEditDatabase(databaseFile)
-        val mutationQueries = database.second.mutationQueries
-        val seriesIds = mutationQueries.getSeries()
-            .executeAsList()
-            .map { it.id }
-            .toSet()
-        val merchIds = mutationQueries.getMerch()
-            .executeAsList()
-            .map { it.name }
-            .toSet()
-        return TagSnapshotData(
-            timestamp = snapshotFile.timestamp,
-            date = snapshotFile.date,
-            seriesIds = seriesIds,
-            merchIds = merchIds,
-        )
+        val database = Utils.createEditDatabase(driver)
+        try {
+            BuildLogicEditDatabase.Schema.create(driver)
+        } catch (_: Throwable) {
+            delay(5.seconds)
+            BuildLogicEditDatabase.Schema.create(driver)
+        }
+        val snapshot = if (filter) filterSnapshot(file) else file.readText()
+        Utils.readSqlFile(driver, database, snapshot)
+        return driver to database
     }
 
-    private fun readSnapshot(
+    private suspend fun readTagSnapshot(snapshotFile: SnapshotFile): TagSnapshotData? {
+        val (driver, database) = readSqlFile(snapshotFile.file) ?: return null
+        return driver.use {
+            val mutationQueries = database.mutationQueries
+            val seriesIds = mutationQueries.getSeries()
+                .executeAsList()
+                .map { it.id }
+                .toSet()
+            val merchIds = mutationQueries.getMerch()
+                .executeAsList()
+                .map { it.name }
+                .toSet()
+            TagSnapshotData(
+                timestamp = snapshotFile.timestamp,
+                date = snapshotFile.date,
+                seriesIds = seriesIds,
+                merchIds = merchIds,
+            )
+        }
+    }
+
+    private suspend fun readSnapshot(
         snapshotFile: SnapshotFile,
         artists: MutationQueries.() -> List<ArtistEntry>,
         rallies: MutationQueries.() -> List<StampRallyEntryAnimeExpo2026>,
     ): DataYearSnapshotData? {
-        val databaseFile = temporaryDir.resolve("database-${snapshotFile.file.name}.sqlite")
-        val snapshotFilteredFile = temporaryDir.resolve("database-${snapshotFile.file.name}.sql")
-        listOf(snapshotFilteredFile, databaseFile).forEach(::verifyDelete)
-
-        // First, create and immediately close the databases to initialize the schemas
-        Utils.createEditDatabase(databaseFile).first.close()
-        filterSnapshot(snapshotFile.file, snapshotFilteredFile)
-        if (!Utils.readSqlFile(databaseFile, snapshotFilteredFile)) {
-            logger.error("Failed to read ${snapshotFile.file.absolutePath}")
-            return null
+        val (driver, database) = readSqlFile(snapshotFile.file) ?: return null
+        return driver.use {
+            val mutationQueries = database.mutationQueries
+            DataYearSnapshotData(
+                timestamp = snapshotFile.timestamp,
+                date = snapshotFile.date,
+                artists = mutationQueries.artists(),
+                rallies = mutationQueries.rallies(),
+            )
         }
-
-        val database = Utils.createEditDatabase(databaseFile)
-        val mutationQueries = database.second.mutationQueries
-        return DataYearSnapshotData(
-            timestamp = snapshotFile.timestamp,
-            date = snapshotFile.date,
-            artists = mutationQueries.artists(),
-            rallies = mutationQueries.rallies(),
-        )
     }
 
-    private fun loadLegacySeriesIds(): Set<String> {
-        val seriesDatabaseFile =
-            temporaryDir.resolve("database-series-legacy.sqlite")
-                .apply(::verifyDelete)
+    private suspend fun loadLegacySeriesIds(): Set<String> {
         val seriesLegacySql = legacySeriesFile.get().asFile
-        // First, create and immediately close the databases to initialize the schemas
-        Utils.createEditDatabase(seriesDatabaseFile).first.close()
-        if (!Utils.readSqlFile(seriesDatabaseFile, seriesLegacySql)) {
-            throw IllegalStateException("Failed to read ${seriesLegacySql.absolutePath}")
+        val (driver, database) = readSqlFile(seriesLegacySql, filter = false)
+            ?: throw IllegalStateException("Failed to read ${seriesLegacySql.absolutePath}")
+        return driver.use {
+            database.mutationQueries.getSeries().executeAsList().map { it.id }.toSet()
         }
-        val seriesDatabase = Utils.createEditDatabase(seriesDatabaseFile).second
-        return seriesDatabase.mutationQueries.getSeries().executeAsList().map { it.id }.toSet()
     }
 
-    private fun loadLegacyMerchIds(): Set<String> {
-        val merchDatabaseFile = temporaryDir.resolve("database-merch-legacy.sqlite")
-            .apply(::verifyDelete)
+    private suspend fun loadLegacyMerchIds(): Set<String> {
         val merchLegacySql = legacyMerchFile.get().asFile
-        // First, create and immediately close the databases to initialize the schemas
-        Utils.createEditDatabase(merchDatabaseFile).first.close()
-        if (!Utils.readSqlFile(merchDatabaseFile, merchLegacySql)) {
-            throw IllegalStateException("Failed to read ${merchLegacySql.absolutePath}")
+        val (driver, database) = readSqlFile(merchLegacySql, filter = false)
+            ?: throw IllegalStateException("Failed to read ${merchLegacySql.absolutePath}")
+        return driver.use {
+            database.mutationQueries.getMerch().executeAsList().map { it.name }.toSet()
         }
-        val merchDatabase = Utils.createEditDatabase(merchDatabaseFile).second
-        return merchDatabase.mutationQueries.getMerch().executeAsList().map { it.name }.toSet()
     }
 
-    private fun filterSnapshot(source: File, target: File) {
-        target.writer().use { writer ->
-            source.useLines {
-                it.filter { line -> filteredTableNames.any { it in line } }
-                    .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
-                    .filterNot { it.contains("22222222-2222-2222-2222-222222222222") }
-                    .map {
-                        it.replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS")
-                            .replace("INSERT INTO", "INSERT OR REPLACE INTO")
-                    }
-                    .forEach(writer::appendLine)
+    private fun filterSnapshot(source: File) = source.useLines {
+        it.filter { line -> filteredTableNames.any { it in line } }
+            .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
+            .filterNot { it.contains("22222222-2222-2222-2222-222222222222") }
+            .map {
+                it.replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS")
+                    .replace("INSERT INTO", "INSERT OR REPLACE INTO")
             }
-        }
-    }
-
-    private fun verifyDelete(file: File) {
-        if (file.exists() && !file.delete()) {
-            throw IllegalStateException("Failed to delete ${file.absolutePath}")
-        }
+            .joinToString(separator = "\n")
     }
 
     private fun diffArtists(
