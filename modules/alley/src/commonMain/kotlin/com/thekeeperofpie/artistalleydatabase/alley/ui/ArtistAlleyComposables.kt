@@ -646,9 +646,9 @@ internal fun FeedbackHeader(year: DataYear) {
             DataYear.ANIME_EXPO_2024,
             DataYear.ANIME_NYC_2024 -> null
             DataYear.ANIME_EXPO_2025 -> BuildKonfig.feedbackFormLink
-            DataYear.ANIME_EXPO_2026 -> BuildKonfig.feedbackFormLinkAnimeExpo2026
+            DataYear.ANIME_EXPO_2026 -> BuildKonfig.feedbackFormLink2026
             DataYear.ANIME_NYC_2025 -> BuildKonfig.feedbackFormLinkAnimeNyc2025
-            DataYear.ANIME_NYC_2026 -> null // TODO
+            DataYear.ANIME_NYC_2026 -> BuildKonfig.feedbackFormLink2026
         }
         if (link != null) {
             FeedbackPrompt(year, link)
