@@ -135,15 +135,22 @@ object ArtistCatalogsQueueScreen {
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
             )
 
-            Text(
-                text = catalog.link,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 12.dp)
-            )
+            Column(modifier = Modifier.weight(1f).padding(vertical = 12.dp)) {
+                if (catalog.name != null) {
+                    Text(
+                        text = catalog.name,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                    )
+                }
+                Text(
+                    text = catalog.link,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                )
+            }
 
             var showConfirmDeleteDialog by remember { mutableStateOf(false) }
             IconButton(onClick = { showConfirmDeleteDialog = true }) {
@@ -183,6 +190,7 @@ object ArtistCatalogsQueueScreen {
     data class Catalog(
         val artistId: Uuid,
         val booth: String,
+        val name: String?,
         val link: String,
     )
 }
