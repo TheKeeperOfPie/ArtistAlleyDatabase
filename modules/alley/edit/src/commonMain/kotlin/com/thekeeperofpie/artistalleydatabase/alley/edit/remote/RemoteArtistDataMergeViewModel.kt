@@ -135,7 +135,10 @@ class RemoteArtistDataMergeViewModel(
             database.saveRemoteArtistData(
                 dataYear = dataYear,
                 initial = data.initial,
-                updated = data.capturedState.artist,
+                updated = data.capturedState.artist.copy(
+                    // TODO: Unify this logic
+                    _images = data.initial?.images.orEmpty(),
+                ),
                 entry = data.entry,
                 isHistory = false,
             ) to data.capturedState.artist.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
