@@ -10,6 +10,7 @@ import com.kmpalette.color
 import com.kmpalette.from
 import com.kmpalette.palette.graphics.Palette
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -65,6 +66,7 @@ internal class EmbedCache(
                         value
                     }
                 }
+                .filterKeys { Link.parse(it)?.shouldEmbed != false }
                 .toMutableMap()
             ignored = embeds.ignored.toMutableSet()
         } else {

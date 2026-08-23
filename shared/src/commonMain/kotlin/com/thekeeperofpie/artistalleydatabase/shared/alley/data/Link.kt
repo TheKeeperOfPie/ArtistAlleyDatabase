@@ -62,6 +62,12 @@ data class Link(
         }
     }
 
+    val shouldEmbed: Boolean
+        get() = when (type) {
+            Type.LINKTREE -> false
+            else -> true
+        }
+
     @Suppress("SpellCheckingInspection")
     @Serializable
     enum class Type(
