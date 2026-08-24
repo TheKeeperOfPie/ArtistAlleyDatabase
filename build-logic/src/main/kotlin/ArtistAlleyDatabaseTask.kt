@@ -1,5 +1,4 @@
 import ImageUtils.parseScaledImageWidthHeight
-import Utils.createEditDatabase
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
@@ -54,7 +53,6 @@ import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.util.concurrent.Executors
 import javax.inject.Inject
-import kotlin.io.copyTo
 import kotlin.io.inputStream
 import kotlin.io.nameWithoutExtension
 import kotlin.io.resolve
@@ -143,17 +141,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     fun process() {
         if (!inputsDirectory.get().asFile.exists()) return
         val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
-        val databaseFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
-        if (databaseFile.exists() && !databaseFile.delete()) {
-            throw IllegalStateException(
-                "Failed to delete $databaseFile, manually delete to re-process inputs"
-            )
-        } else {
-            runBlocking {
-                val (driver, database) = createEditDatabase(databaseFile)
+        runBlocking {
+            val (driver, database) = Utils.createEditDatabase()
+            driver.use {
 
                 listOf("artists", "stampRallies")
-                    .flatMap { inputsDirectory.dir(it).get().asFile.listFiles().orEmpty().toList() }
+                    .flatMap {
+                        inputsDirectory.dir(it).get().asFile.listFiles().orEmpty().toList()
+                    }
                     .forEach { Utils.readSqlFile(driver, database, it) }
 
                 // tags.sql must come last in order to overwrite legacy data
@@ -266,7 +261,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 buildArtistConnections(driver, database)
                             }
                             trackStage("SeriesInferredConfirmedCounts") {
-                                updateSeriesInferredConfirmedCounts(database, artistTagConnections)
+                                updateSeriesInferredConfirmedCounts(
+                                    database,
+                                    artistTagConnections
+                                )
                             }
                             trackStage("MerchYearFlags") {
                                 updateMerchYearFlags(database, artistTagConnections)
@@ -294,7 +292,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 val allEnteredMerchIds =
                                     merchConnections.map { it.value.merchId }.toSet()
                                 val allValidMerchIds =
-                                    database.merchQueries.getMerch().executeAsList().map { it.name }
+                                    database.merchQueries.getMerch().executeAsList()
+                                        .map { it.name }
                                         .toSet()
                                 val merchDiff = allEnteredMerchIds - allValidMerchIds
                                 if (merchDiff.isNotEmpty()) {
@@ -376,13 +375,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         }
                     }
 
-                driver.close()
+                val outputFile = outputDatabaseFile.get().asFile
+                trackStage("WriteDatabaseFile") {
+                    driver.getConnection().createStatement().use {
+                        it.executeUpdate("backup to ${outputFile.absolutePath}")
+                    }
+                }
 
-                databaseFile.copyTo(outputDatabaseFile.get().asFile, overwrite = true)
-                val hash = Utils.hash(databaseFile)
-
-                databaseFile.delete()
-
+                val hash = Utils.hash(outputFile)
                 outputDatabaseHashFile.get().asFile.writeText(hash.toString())
             }
         }
@@ -1607,7 +1607,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun buildStampRallyConnections(database: BuildLogicEditDatabase) {
-        database.mutationQueries.getStampRalliesAnimeExpo2023().executeAsList().forEach {
+        val artistConnections = mutableListOf<StampRallyArtistConnection>()
+        val seriesConnections = mutableListOf<StampRallySeriesConnection>()
+        val merchConnections = mutableListOf<StampRallyMerchConnection>()
+        val prizeMerchConnections = mutableListOf<StampRallyPrizeMerchConnection>()
+        artistConnections += database.mutationQueries.getStampRalliesAnimeExpo2023().executeAsList().flatMap {
             val stampRallyRowId = it.rowid
             it.tables
                 .mapNotNull {
@@ -1619,9 +1623,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         artistRowId = it
                     )
                 }
-                .forEach(database.mutationQueries::insertArtistConnection)
         }
-        database.mutationQueries.getStampRalliesAnimeExpo2024().executeAsList().forEach {
+        artistConnections += database.mutationQueries.getStampRalliesAnimeExpo2024().executeAsList().flatMap {
             val stampRallyRowId = it.rowid
             it.tables
                 .mapNotNull {
@@ -1633,11 +1636,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         artistRowId = it
                     )
                 }
-                .forEach(database.mutationQueries::insertArtistConnection)
         }
         database.mutationQueries.getStampRalliesAnimeExpo2025().executeAsList().forEach {
             val stampRallyRowId = it.rowid
-            it.tables
+            artistConnections += it.tables
                 .mapNotNull {
                     database.mutationQueries.getRowIdsByBoothAnimeExpo2025(it).executeAsOneOrNull()
                 }
@@ -1647,8 +1649,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         artistRowId = it
                     )
                 }
-                .forEach(database.mutationQueries::insertArtistConnection)
-            it.series
+            seriesConnections += it.series
                 .map {
                     StampRallySeriesConnection(
                         stampRallyRowId = stampRallyRowId,
@@ -1656,11 +1657,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         dataYear = DataYear.ANIME_EXPO_2025,
                     )
                 }
-                .forEach(database.mutationQueries::insertStampRallySeriesConnection)
         }
         database.mutationQueries.getStampRalliesAnimeExpo2026().executeAsList().forEach {
             val stampRallyRowId = it.rowid
-            it.tables
+            artistConnections += it.tables
                 .mapNotNull {
                     database.mutationQueries.getRowIdsByBoothAnimeExpo2026(it).executeAsOneOrNull()
                 }
@@ -1670,8 +1670,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         artistRowId = it
                     )
                 }
-                .forEach(database.mutationQueries::insertArtistConnection)
-            it.series
+            seriesConnections += it.series
                 .map {
                     StampRallySeriesConnection(
                         stampRallyRowId = stampRallyRowId,
@@ -1679,8 +1678,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         dataYear = DataYear.ANIME_EXPO_2026,
                     )
                 }
-                .forEach(database.mutationQueries::insertStampRallySeriesConnection)
-            it.merch
+            merchConnections += it.merch
                 .map {
                     StampRallyMerchConnection(
                         stampRallyRowId = stampRallyRowId,
@@ -1688,8 +1686,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         dataYear = DataYear.ANIME_EXPO_2026,
                     )
                 }
-                .forEach(database.mutationQueries::insertStampRallyMerchConnection)
-            it.prizeMerch
+            prizeMerchConnections += it.prizeMerch
                 ?.map {
                     StampRallyPrizeMerchConnection(
                         stampRallyRowId = stampRallyRowId,
@@ -1697,7 +1694,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         dataYear = DataYear.ANIME_EXPO_2026,
                     )
                 }
-                ?.forEach(database.mutationQueries::insertStampRallyPrizeMerchConnection)
+                .orEmpty()
+        }
+
+        database.transaction {
+            val mutationQueries = database.mutationQueries
+            artistConnections.forEach(mutationQueries::insertArtistConnection)
+            seriesConnections.forEach(mutationQueries::insertStampRallySeriesConnection)
+            merchConnections.forEach(mutationQueries::insertStampRallyMerchConnection)
+            prizeMerchConnections.forEach(mutationQueries::insertStampRallyPrizeMerchConnection)
         }
     }
 

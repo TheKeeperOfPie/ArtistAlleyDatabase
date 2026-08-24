@@ -196,8 +196,8 @@ internal object Utils {
         false
     }
 
-    fun createEditDatabase(dbFile: File): Pair<SqlDriver, BuildLogicEditDatabase> {
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
+    fun createEditDatabase(): Pair<JdbcSqliteDriver, BuildLogicEditDatabase> {
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         return driver to createEditDatabase(driver)
     }
 
