@@ -155,7 +155,14 @@ internal class EmbedCache(
 
         // Fetch first before checking ignored to ensure value is cached
         val fetchResult = fetchEmbedImage(imageLink)
-        if (ignored.contains(imageLink)) return null
+        if (ignored.contains(imageLink)) {
+            val embedImage = EmbedImage(
+                link = imageLink,
+                fetchResult = FetchResult(failureReason = EmbedFailureReason.IGNORED),
+            )
+            cache[targetLink] = embedImage
+            return null
+        }
 
         val embedImage = EmbedImage(link = imageLink, fetchResult = fetchResult)
         cache[targetLink] = embedImage
@@ -360,7 +367,7 @@ internal class EmbedCache(
     }
 
     enum class EmbedFailureReason {
-        FETCH, READ, WRITE, DIMENSIONS, EXCLUDED
+        FETCH, READ, WRITE, DIMENSIONS, IGNORED, EXCLUDED
     }
 
     @Serializable
