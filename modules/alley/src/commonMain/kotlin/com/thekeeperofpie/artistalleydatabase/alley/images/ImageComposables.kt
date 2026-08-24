@@ -71,7 +71,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -94,7 +93,6 @@ import coil3.size.SizeResolver
 import com.composables.core.ScrollArea
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.ui.WrappedViewConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ArrowLeft
@@ -167,13 +165,6 @@ fun ImagePager(
 ) {
     val scope = rememberCoroutineScope()
     Box(modifier = modifier) {
-        val existingViewConfiguration = LocalViewConfiguration.current
-        val newViewConfiguration = remember(existingViewConfiguration) {
-            WrappedViewConfiguration(
-                viewConfiguration = existingViewConfiguration,
-                overrideTouchSlop = existingViewConfiguration.touchSlop * 4,
-            )
-        }
         val userScrollEnabled by remember(pagerState, images, multiZoomableState) {
             derivedStateOf {
                 if (images.size <= 1) return@derivedStateOf false
@@ -186,7 +177,7 @@ fun ImagePager(
 
         var anySuccess by remember { mutableStateOf(false) }
 
-        CompositionLocalProvider(LocalViewConfiguration provides newViewConfiguration) {
+        CompositionLocalProvider {
             var minPagerHeight by remember { mutableIntStateOf(0) }
             val density = LocalDensity.current
             HorizontalPager(

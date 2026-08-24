@@ -205,7 +205,8 @@ object SearchScreen {
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = 72.dp,
                 topBar = topBar,
-                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+                // TODO: This breaks vertical scrolling with 1.12.0-beta03+
+//                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
             ) {
                 Content(
                     state = state,
