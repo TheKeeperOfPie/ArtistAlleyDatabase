@@ -60,7 +60,7 @@ compose.resources {
 apollo {
     service("aniList") {
         packageName.set("com.anilist.data")
-        dependsOn(project(":modules:anilist:data"))
+        dependsOn(projects.modules.anilist.data)
         codegenModels.set("responseBased")
         decapitalizeFields.set(true)
         plugin(projects.modules.apollo)

@@ -58,7 +58,7 @@ buildkonfig {
     }
 }
 
-val distribution: NamedDomainObjectProvider<Configuration> by configurations.registering {
+val distribution = configurations.create("distribution") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }

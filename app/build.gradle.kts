@@ -1,6 +1,8 @@
 @file:Suppress("UnstableApiUsage")
 
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
+import dev.zacsweers.metro.gradle.ExperimentalMetroGradleApi
+import dev.zacsweers.metro.gradle.RequiresIdeSupport
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
@@ -13,7 +15,6 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("androidx.room")
     alias(libs.plugins.dev.zacsweers.metro)
-    alias(libs.plugins.com.github.ben.manes.versions)
 }
 
 compose{
@@ -33,7 +34,7 @@ compose{
     }
 }
 
-@OptIn(DelicateMetroGradleApi::class)
+@OptIn(DelicateMetroGradleApi::class, RequiresIdeSupport::class, ExperimentalMetroGradleApi::class)
 metro {
     enableTopLevelFunctionInjection.set(false)
     generateContributionHintsInFir.set(false)
@@ -77,7 +78,7 @@ kotlin {
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kermit)
         }
-        val desktopMain by getting {
+        named("desktopMain") {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.androidx.sqlite.bundled)

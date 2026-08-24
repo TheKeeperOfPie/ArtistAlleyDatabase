@@ -20,6 +20,10 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
+            group("androidAndDesktop") {
+                withAndroidTarget()
+                withJvm()
+            }
             group("desktopAndWeb") {
                 withJvm()
                 withJs()
@@ -29,9 +33,7 @@ kotlin {
     }
 
     sourceSets {
-        val androidAndDesktopMain by creating {
-            dependsOn(commonMain.get())
-        }
+        val androidAndDesktopMain = getByName("androidAndDesktopMain")
         androidMain {
             dependsOn(androidAndDesktopMain)
             dependencies {
@@ -62,14 +64,9 @@ kotlin {
             implementation(projects.modules.icons)
             implementation(projects.modules.utils)
         }
-        desktopMain {
-            dependsOn(androidAndDesktopMain)
-        }
-        val desktopAndWebMain by getting {
-            dependencies {
-                implementation(libs.human.readable)
-                implementation(libs.material.kolor.palette.core)
-            }
+        getByName("desktopAndWebMain").dependencies {
+            implementation(libs.human.readable)
+            implementation(libs.material.kolor.palette.core)
         }
         webMain {
             dependencies {

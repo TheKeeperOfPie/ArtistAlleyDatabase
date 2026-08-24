@@ -71,12 +71,10 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
         }
-        val desktopMain by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-                implementation(libs.kotlinx.coroutines.swing)
-                implementation(libs.ktor.client.java)
-            }
+        getByName("desktopMain").dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.ktor.client.java)
         }
     }
 }
@@ -97,7 +95,7 @@ configurations.all {
     }
 }
 
-val distribution: NamedDomainObjectProvider<Configuration> by configurations.registering {
+val distribution = configurations.create("distribution") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }

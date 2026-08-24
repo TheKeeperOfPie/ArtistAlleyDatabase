@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
-    id("app.cash.sqldelight")
 }
 
 group = "com.thekeeperofpie.artistalleydatabase.cloudflare"
@@ -22,6 +21,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.sqldelight.runtime)
         }
     }
 }

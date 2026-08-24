@@ -1,10 +1,9 @@
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-
 buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
         google()
+        maven("https://central.sonatype.com/repository/maven-snapshots")
     }
     dependencies {
         classpath(libs.burst.gradle.plugin)
@@ -24,40 +23,11 @@ plugins {
     id(libs.plugins.org.jetbrains.kotlin.android.get().pluginId).apply(false)
     id(libs.plugins.com.mikepenz.aboutlibraries.plugin.get().pluginId) version
             libs.plugins.com.mikepenz.aboutlibraries.plugin.get().version.toString() apply false
-
-    alias(libs.plugins.com.github.ben.manes.versions)
-}
-
-tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
-    checkForGradleUpdate = true
-    outputFormatter = "html"
-}
-
-val verificationMetadataFile = File(rootProject.rootDir, "gradle/verification-metadata.xml")
-tasks.register("recopyVerificationMetadata") {
-    verificationMetadataFile.resolveSibling("verification-metadata-base.xml")
-        .copyTo(verificationMetadataFile, overwrite = true)
 }
 
 tasks.register("generateVerificationMetadata") {
     dependsOn("recopyVerificationMetadata")
     dependsOn("help")
     dependsOn("dependencyUpdates")
-//    dependsOn("createModuleGraph")
-    // https://github.com/autonomousapps/dependency-analysis-gradle-plugin/issues/1185
-//    dependsOn("buildHealth")
     finalizedBy(":app:licenseReleaseReport")
-}
-
-dependencyAnalysis {
-    issues {
-        all {
-            onAny {
-                severity("fail")
-            }
-            onUsedTransitiveDependencies {
-                severity("ignore")
-            }
-        }
-    }
 }

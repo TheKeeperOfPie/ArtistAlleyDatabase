@@ -7,7 +7,7 @@ plugins {
 
 kotlin {
     sourceSets {
-        val jvmMain by creating {
+        val jvmMain = create("jvmMain") {
             dependsOn(commonMain.get())
             dependencies {
                 implementation(libs.okhttp3.logging.interceptor)
@@ -21,9 +21,7 @@ kotlin {
                 implementation(projects.modules.utilsBuildConfig)
             }
         }
-        val desktopMain by getting {
-            dependsOn(jvmMain)
-        }
+        getByName("desktopMain").dependsOn(jvmMain)
         commonMain.dependencies {
             api(libs.apollo.runtime)
             api(libs.ktor.client.core)

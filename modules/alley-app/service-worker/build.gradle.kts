@@ -1,11 +1,9 @@
-import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
-
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
 }
 
 kotlin {
-    js(compiler = KotlinJsCompilerType.IR) {
+    js {
         binaries.executable()
         browser {
             commonWebpackConfig {
@@ -24,7 +22,7 @@ kotlin {
     }
 }
 
-val distribution: NamedDomainObjectProvider<Configuration> by configurations.registering {
+val distribution = configurations.create("distribution") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }

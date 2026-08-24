@@ -1,4 +1,6 @@
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
+import dev.zacsweers.metro.gradle.ExperimentalMetroGradleApi
+import dev.zacsweers.metro.gradle.RequiresIdeSupport
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -7,14 +9,13 @@ import java.util.Properties
 import java.util.zip.CRC32
 
 plugins {
-    id("about-libraries")
+    id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.multiplatform")
     alias(libs.plugins.dev.zacsweers.metro)
-    alias(libs.plugins.com.github.ben.manes.versions)
 }
 
 compose.desktop {
@@ -29,7 +30,7 @@ compose.desktop {
     }
 }
 
-@OptIn(DelicateMetroGradleApi::class)
+@OptIn(DelicateMetroGradleApi::class, RequiresIdeSupport::class, ExperimentalMetroGradleApi::class)
 metro {
     enableTopLevelFunctionInjection.set(false)
     generateContributionHintsInFir.set(false)
@@ -82,7 +83,7 @@ kotlin {
             implementation(libs.coil3.coil.network.ktor3)
             implementation(libs.kotlinx.coroutines.core)
         }
-        val nonServiceWorkerCommonMain by getting {
+        val nonServiceWorkerCommonMain = getByName("nonServiceWorkerCommonMain") {
             dependencies {
                 implementation(projects.modules.alley)
                 implementation(projects.modules.alley.data)
@@ -104,14 +105,12 @@ kotlin {
                 implementation(libs.kermit)
             }
         }
-        val desktopMain by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-                implementation(libs.kotlinx.coroutines.swing)
-                implementation(libs.ktor.client.java)
-            }
+        getByName("desktopMain").dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.ktor.client.java)
         }
-        val webMain by getting {
+        webMain {
             dependsOn(nonServiceWorkerCommonMain)
             dependencies {
                 implementation(libs.kotlinx.browser)
@@ -126,27 +125,27 @@ kotlin {
     }
 }
 
-val serviceWorkerOutput by configurations.creating {
+val serviceWorkerOutput = configurations.create("serviceWorkerOutput") {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
 
-val alleyEditOutput by configurations.creating {
+val alleyEditOutput = configurations.create("alleyEditOutput") {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
 
-val alleyFormOutput by configurations.creating {
+val alleyFormOutput = configurations.create("alleyFormOutput") {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
 
-val alleyFunctionsOutput by configurations.creating {
+val alleyFunctionsOutput = configurations.create("alleyFunctionsOutput") {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
 
-val alleyFunctionsMiddlewareOutput by configurations.creating {
+val alleyFunctionsMiddlewareOutput = configurations.create("alleyFunctionsMiddlewareOutput") {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
@@ -180,7 +179,7 @@ val outputDir = if (isWasmDebug) {
     "dist/web/productionExecutable"
 }
 
-val buildBothWebVariants by tasks.registering(Sync::class) {
+val buildBothWebVariants = tasks.register<Sync>("buildBothWebVariants") {
     outputs.upToDateWhen { false }
     val alleyAppTask = if (isWasmDebug) {
         "wasmJsBrowserDevelopmentExecutableDistribution"
@@ -200,7 +199,7 @@ val buildBothWebVariants by tasks.registering(Sync::class) {
     }
 }
 
-val copyServiceWorkerOutput by tasks.registering(Copy::class) {
+val copyServiceWorkerOutput = tasks.register<Copy>("copyServiceWorkerOutput") {
     outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
     from(serviceWorkerOutput)
@@ -208,7 +207,7 @@ val copyServiceWorkerOutput by tasks.registering(Copy::class) {
     duplicatesStrategy = DuplicatesStrategy.FAIL
 }
 
-val copyAlleyEdit by tasks.registering(Copy::class) {
+val copyAlleyEdit = tasks.register<Copy>("copyAlleyEdit") {
     outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
 
@@ -245,7 +244,7 @@ val copyAlleyEdit by tasks.registering(Copy::class) {
     }
 }
 
-val copyAlleyForm by tasks.registering(Copy::class) {
+val copyAlleyForm = tasks.register<Copy>("copyAlleyForm") {
     outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
 
@@ -282,7 +281,7 @@ val copyAlleyForm by tasks.registering(Copy::class) {
     }
 }
 
-val copyAlleyFunctions by tasks.registering(Copy::class) {
+val copyAlleyFunctions = tasks.register<Copy>("copyAlleyFunctions") {
     outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
     from(alleyFunctionsOutput)
@@ -312,7 +311,7 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
     }
 }
 
-val copyAlleyFunctionsMiddleware by tasks.registering(Copy::class) {
+val copyAlleyFunctionsMiddleware = tasks.register<Copy>("copyAlleyFunctionsMiddleware") {
     outputs.upToDateWhen { false }
     mustRunAfter(copyAlleyFunctions)
 

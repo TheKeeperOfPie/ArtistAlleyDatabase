@@ -20,7 +20,7 @@ sqldelight {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.backend.data")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
-            dependency(project(":modules:alley:data"))
+            dependency(projects.modules.alley.data)
         }
     }
 }

@@ -49,20 +49,20 @@ sqldelight {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
-            dependency(project(":modules:alley:backend:data"))
+            dependency(projects.modules.alley.backend.data)
             srcDirs(file("src/commonMain/sqldelight/alley"))
         }
         create("AlleyFormDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions.form")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
-            dependency(project(":modules:alley:form:data"))
+            dependency(projects.modules.alley.form.data)
             srcDirs(file("src/commonMain/sqldelight/form"))
         }
     }
 }
 
-val distribution: NamedDomainObjectProvider<Configuration> by configurations.registering {
+val distribution = configurations.create("distribution") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }

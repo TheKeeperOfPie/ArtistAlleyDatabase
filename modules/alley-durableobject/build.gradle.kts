@@ -39,7 +39,7 @@ tasks.withType<KotlinJsCompile>().configureEach {
     }
 }
 
-val distribution: NamedDomainObjectProvider<Configuration> by configurations.registering {
+val distribution = configurations.create("distribution") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }
@@ -62,7 +62,7 @@ val outputDir = if (isWasmDebug) {
 }
 val buildTask = tasks.named("jsProductionExecutableCompileSync")
 
-val syncOutput by tasks.registering(Sync::class) {
+val syncOutput = tasks.register<Sync>("syncOutput") {
     outputs.upToDateWhen { false }
     from(buildTask)
     into(layout.buildDirectory.dir(outputDir))

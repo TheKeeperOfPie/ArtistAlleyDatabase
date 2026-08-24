@@ -10,7 +10,6 @@ plugins {
     id("org.jetbrains.compose")
     id("androidx.room")
     alias(libs.plugins.dev.zacsweers.metro)
-    alias(libs.plugins.com.github.ben.manes.versions)
 }
 
 kotlin {

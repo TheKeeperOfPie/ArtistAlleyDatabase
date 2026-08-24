@@ -34,7 +34,7 @@ kotlin {
             api(libs.uri.kmp)
             implementation(libs.kotlinx.serialization.json.io)
         }
-        named("desktopMain") {
+        getByName("desktopMain") {
             dependsOn(jvmMain)
             dependencies {
                 implementation(libs.jimfs)

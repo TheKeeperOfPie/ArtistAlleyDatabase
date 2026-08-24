@@ -1,11 +1,10 @@
 
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 repositories {
     google()
     gradlePluginPortal()
     mavenCentral()
+    maven("https://central.sonatype.com/repository/maven-snapshots")
 }
 
 plugins {
@@ -15,14 +14,6 @@ plugins {
     alias(libs.plugins.org.jetbrains.compose)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.compose)
-}
-
-// Enable Enum.entries support
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        apiVersion = KotlinVersion.KOTLIN_2_2
-        languageVersion = KotlinVersion.KOTLIN_2_2
-    }
 }
 
 sqldelight {
@@ -55,7 +46,6 @@ sqldelight {
 }
 
 dependencies {
-    implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
     implementation(compose.desktop.currentOs)
     implementation(libs.androidx.annotation)
     implementation(libs.apache.commons.csv)
@@ -79,6 +69,7 @@ dependencies {
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
     implementation(libs.scrimage.core)
     implementation(libs.scrimage.webp)
+    implementation(libs.shared)
     implementation(libs.sqldelight.sqlite.driver)
     implementation(libs.webp.imageio)
 }

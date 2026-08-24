@@ -20,26 +20,23 @@ kotlin {
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.sqldelight.androidx.driver)
         }
-        val desktopMain by getting {
-            dependencies {
-                implementation(libs.sqldelight.sqlite.driver)
-            }
+        getByName("desktopMain").dependencies {
+            implementation(libs.sqldelight.sqlite.driver)
         }
-        val jsMain by getting {
-            dependencies {
-                implementation(libs.sqldelight.web.worker.driver.js)
-            }
+        jsMain.dependencies {
+            implementation(libs.sqldelight.web.worker.driver.js)
         }
-        val wasmJsMain by getting {
-            dependencies {
-                implementation(libs.sqldelight.web.worker.driver.wasm.js)
-            }
+        wasmJsMain.dependencies {
+            implementation(libs.sqldelight.web.worker.driver.wasm.js)
         }
-        val webMain by getting {
-            dependencies {
-                implementation(npm("@thekeeperofpie/alley-sqldelight-worker", file("../sqldelight-worker")))
-                implementation(npm("@sqlite.org/sqlite-wasm", "3.49.1-build2"))
-            }
+        webMain.dependencies {
+            implementation(
+                npm(
+                    "@thekeeperofpie/alley-sqldelight-worker",
+                    file("../sqldelight-worker"),
+                )
+            )
+            implementation(npm("@sqlite.org/sqlite-wasm", "3.49.1-build2"))
         }
     }
 }
@@ -58,7 +55,8 @@ sqldelight {
             generateAsync = true
 
             // :modules:alley:user:generateCommonMainAlleySqlDatabaseSchema
-            schemaOutputDirectory = project.layout.projectDirectory.dir("src/commonMain/sqldelight/databases")
+            schemaOutputDirectory =
+                project.layout.projectDirectory.dir("src/commonMain/sqldelight/databases")
             verifyMigrations = true
         }
     }

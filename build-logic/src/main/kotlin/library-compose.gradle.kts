@@ -8,28 +8,24 @@ plugins {
 
 kotlin {
     sourceSets {
-        commonMain {
-            dependencies {
-                resolveLibraries(
-                    "libs.jetBrainsCompose.components.resources",
-                    "libs.jetBrainsCompose.material3",
-                    "libs.jetBrainsCompose.foundation",
-                    "libs.jetBrainsCompose.runtime",
-                    "libs.jetBrainsCompose.ui",
-                    "libs.jetBrainsCompose.ui.tooling.preview",
-                ).forEach(::implementation)
-            }
+        commonMain.dependencies {
+            resolveLibraries(
+                "libs.jetBrainsCompose.components.resources",
+                "libs.jetBrainsCompose.material3",
+                "libs.jetBrainsCompose.foundation",
+                "libs.jetBrainsCompose.runtime",
+                "libs.jetBrainsCompose.ui",
+                "libs.jetBrainsCompose.ui.tooling.preview",
+            ).forEach(::implementation)
         }
         commonTest.dependencies {
             resolveLibraries("libs.jetBrainsCompose.ui.test")
                 .forEach(::implementation)
         }
-        val desktopTest by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-                resolveLibraries("libs.jetBrainsCompose.ui.tooling")
-                    .forEach(::implementation)
-            }
+        getByName("desktopTest").dependencies {
+            implementation(compose.desktop.currentOs)
+            resolveLibraries("libs.jetBrainsCompose.ui.tooling")
+                .forEach(::implementation)
         }
     }
 }

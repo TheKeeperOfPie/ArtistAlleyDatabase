@@ -1,3 +1,4 @@
+
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.Transacter
 import app.cash.sqldelight.db.SqlDriver
@@ -433,9 +434,9 @@ internal object Utils {
 }
 
 fun Project.resolveLibraries(vararg names: String) = names.map {
-    val libs = project.extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
+    val libs = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
     try {
-        libs.findLibrary(it.removePrefix("libs.").removePrefix("kspProcessors.")).get().get()
+        libs.findLibrary(it.removePrefix("libs.").removePrefix("kspProcessors.")).get()
     } catch (t: Throwable) {
         throw IllegalArgumentException("Failed to find $it", t)
     }

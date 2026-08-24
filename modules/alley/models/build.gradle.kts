@@ -1,5 +1,4 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     id("library-android")
@@ -12,10 +11,7 @@ kotlin {
     android { namespace = "com.thekeeperofpie.artistalleydatabase.alley.models" }
 
     sourceSets {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        applyDefaultHierarchyTemplate()
-
-        val jvmMain by creating {
+        val jvmMain = create("jvmMain") {
             dependsOn(commonMain.get())
         }
         androidMain { dependsOn(jvmMain) }

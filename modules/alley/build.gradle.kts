@@ -1,9 +1,8 @@
+
 import com.codingfeline.buildkonfig.compiler.FieldSpec
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.util.Properties
 
 plugins {
-    id("about-libraries")
     id("library-android")
     id("library-compose")
     id("library-desktop")
@@ -15,11 +14,10 @@ plugins {
 }
 
 kotlin {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate()
 
     sourceSets {
-        val jvmMain by creating {
+        val jvmMain = create("jvmMain") {
             dependsOn(commonMain.get())
         }
         commonMain.dependencies {
@@ -64,36 +62,28 @@ kotlin {
                 implementation(libs.sqldelight.androidx.driver)
             }
         }
-        val desktopMain by getting {
+        getByName("desktopMain") {
             dependsOn(jvmMain)
             dependencies {
                 implementation(libs.sqldelight.sqlite.driver)
             }
         }
-        val desktopTest by getting {
-            dependencies {
-                // TODO: Multiplatform variant doesn't resolve
-                implementation(libs.paging.testing)
-            }
+        getByName("desktopTest").dependencies {
+            // TODO: Multiplatform variant doesn't resolve
+            implementation(libs.paging.testing)
         }
-        val jsMain by getting {
-            dependencies {
-                implementation(libs.sqldelight.web.worker.driver.js)
-            }
+        jsMain.dependencies {
+            implementation(libs.sqldelight.web.worker.driver.js)
         }
-        val wasmJsMain by getting {
-            dependencies {
-                implementation(libs.sqldelight.web.worker.driver.wasm.js)
-            }
+        wasmJsMain.dependencies {
+            implementation(libs.sqldelight.web.worker.driver.wasm.js)
         }
-        val webMain by getting {
-            dependencies {
-                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
-                implementation(
-                    npm("@thekeeperofpie/alley-sqldelight-worker", file("./sqldelight-worker"))
-                )
-                implementation(npm("@sqlite.org/sqlite-wasm", "3.49.1-build2"))
-            }
+        webMain.dependencies {
+            implementation(devNpm("copy-webpack-plugin", "9.1.0"))
+            implementation(
+                npm("@thekeeperofpie/alley-sqldelight-worker", file("./sqldelight-worker"))
+            )
+            implementation(npm("@sqlite.org/sqlite-wasm", "3.49.1-build2"))
         }
     }
 }
@@ -129,7 +119,7 @@ buildkonfig {
 apollo {
     service("aniList") {
         packageName.set("com.anilist.data")
-        dependsOn(project(":modules:anilist:data"))
+        dependsOn(projects.modules.anilist.data)
         codegenModels.set("responseBased")
         decapitalizeFields.set(true)
         plugin(projects.modules.apollo)
@@ -142,8 +132,8 @@ sqldelight {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
-            dependency(project(":modules:alley:user"))
-            dependency(project(":modules:alley:data"))
+            dependency(projects.modules.alley.user)
+            dependency(projects.modules.alley.data)
         }
     }
 }

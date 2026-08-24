@@ -27,9 +27,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.shared)
             implementation(libs.uri.kmp)
             implementation(libs.whyoleg.cryptography.core)
             implementation(libs.whyoleg.cryptography.provider.optimal)
@@ -50,14 +50,14 @@ sqldelight {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.discord")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
-            dependency(project(":modules:alley:backend:data"))
+            dependency(projects.modules.alley.backend.data)
             srcDirs(file("src/commonMain/sqldelight/alley"))
         }
         create("AlleyFormDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.discord.form")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
-            dependency(project(":modules:alley:form:data"))
+            dependency(projects.modules.alley.form.data)
             srcDirs(file("src/commonMain/sqldelight/form"))
         }
     }
@@ -69,7 +69,7 @@ tasks.withType<KotlinJsCompile>().configureEach {
     }
 }
 
-val distribution: NamedDomainObjectProvider<Configuration> by configurations.registering {
+val distribution = configurations.create("distribution") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }
@@ -92,7 +92,7 @@ val outputDir = if (isWasmDebug) {
 }
 val buildTask = tasks.named("jsProductionExecutableCompileSync")
 
-val syncOutput by tasks.registering(Sync::class) {
+val syncOutput = tasks.register<Sync>("syncOutput") {
     outputs.upToDateWhen { false }
     from(buildTask)
     into(layout.buildDirectory.dir(outputDir))
