@@ -76,6 +76,13 @@ UPDATE stampRallyEntry2024 SET images = :images WHERE id = :id;
 updateStampRallyAnimeExpo2025Images:
 UPDATE stampRallyEntry2025 SET images = :images WHERE id = :id;
 
+updateArtistEntry:
+INSERT OR REPLACE INTO artistEntry
+VALUES ?;
+
+updateArtistEntryImages:
+UPDATE artistEntry SET images = :images WHERE id = :id AND dataYear = :dataYear;
+
 getAllArtistEntryAnimeExpo2023:
 SELECT * FROM artistEntry2023;
 

@@ -181,6 +181,26 @@ object ColumnAdapters {
         embedsAdapter = embedsAdapter,
         lastEditTimeAdapter = instantAdapter,
     )
+    val artistEntryAdapter = ArtistEntry.Adapter(
+        idAdapter = uuidAdapter,
+        dataYearAdapter = dataYearAdapter,
+        statusAdapter = artistStatusAdapter,
+        socialLinksAdapter = listStringAdapter,
+        storeLinksAdapter = listStringAdapter,
+        portfolioLinksAdapter = listStringAdapter,
+        catalogLinksAdapter = listStringAdapter,
+        seriesInferredAdapter = listStringAdapter,
+        seriesConfirmedAdapter = listStringAdapter,
+        merchInferredAdapter = listStringAdapter,
+        merchConfirmedAdapter = listStringAdapter,
+        commissionsAdapter = listStringAdapter,
+        imagesAdapter = listDatabaseImageAdapter,
+        tempImagesAdapter = listDatabaseImageAdapter,
+        profileImageAdapter = databaseImageAdapter,
+        fallbackImageYearAdapter = dataYearAdapter,
+        embedsAdapter = embedsAdapter,
+        lastEditTimeAdapter = instantAdapter,
+    )
     val artistEntryAnimeNyc2026ChangelogAdapter = ArtistEntryAnimeNyc2026Changelog.Adapter(
         artistIdAdapter = uuidAdapter,
         seriesInferredAdapter = setStringAdapter,

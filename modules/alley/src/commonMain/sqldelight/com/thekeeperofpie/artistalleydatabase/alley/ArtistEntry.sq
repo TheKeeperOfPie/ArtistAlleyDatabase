@@ -1,0 +1,20 @@
+getAllEntries:
+SELECT *
+FROM artistEntry
+WHERE dataYear = :dataYear;
+
+getEntry:
+SELECT artistEntry.*, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear
+WHERE artistEntry.dataYear = :dataYear AND artistEntry.id = :id;
+
+getEntriesByBooth:
+SELECT artistEntry.*
+FROM artistEntry
+WHERE dataYear = :dataYear AND booth = :booth;
+
+
+getImagesById:
+SELECT artistEntry.images FROM artistEntry
+WHERE dataYear = :dataYear AND id = :id;

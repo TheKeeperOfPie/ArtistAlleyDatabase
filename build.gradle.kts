@@ -3,7 +3,6 @@ buildscript {
         gradlePluginPortal()
         mavenCentral()
         google()
-        maven("https://central.sonatype.com/repository/maven-snapshots")
     }
     dependencies {
         classpath(libs.burst.gradle.plugin)

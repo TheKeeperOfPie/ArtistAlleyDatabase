@@ -3,6 +3,7 @@ import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.Transacter
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
@@ -290,6 +291,26 @@ internal object Utils {
                 fallbackImageYearAdapter = dataYearAdapter,
             ),
             artistEntryAnimeNyc2026Adapter = ArtistEntryAnimeNyc2026.Adapter(
+                statusAdapter = artistStatusAdapter,
+                socialLinksAdapter = listStringAdapter,
+                storeLinksAdapter = listStringAdapter,
+                portfolioLinksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                seriesInferredAdapter = listStringAdapter,
+                seriesConfirmedAdapter = listStringAdapter,
+                merchInferredAdapter = listStringAdapter,
+                merchConfirmedAdapter = listStringAdapter,
+                commissionsAdapter = listStringAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
+                tempImagesAdapter = listDatabaseImageAdapter,
+                profileImageAdapter = databaseImageAdapter,
+                fallbackImageYearAdapter = dataYearAdapter,
+                embedsAdapter = embedsAdapter,
+                lastEditTimeAdapter = instantAdapter,
+            ),
+            artistEntryAdapter = ArtistEntry.Adapter(
+                idAdapter = uuidAdapter,
+                dataYearAdapter = dataYearAdapter,
                 statusAdapter = artistStatusAdapter,
                 socialLinksAdapter = listStringAdapter,
                 storeLinksAdapter = listStringAdapter,

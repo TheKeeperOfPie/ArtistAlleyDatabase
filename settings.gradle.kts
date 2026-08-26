@@ -11,7 +11,6 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        maven("https://central.sonatype.com/repository/maven-snapshots")
     }
 }
 
@@ -21,7 +20,6 @@ dependencyResolutionManagement {
         maven("https://jitpack.io/")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
-        maven("https://central.sonatype.com/repository/maven-snapshots")
 
         // https://youtrack.jetbrains.com/issue/KT-68533/Kotlin-2.0-WasmJs-error-when-using-RepositoriesMode.FAILONPROJECTREPOS#focus=Comments-27-10172670.0-0
         mavenCentral {
