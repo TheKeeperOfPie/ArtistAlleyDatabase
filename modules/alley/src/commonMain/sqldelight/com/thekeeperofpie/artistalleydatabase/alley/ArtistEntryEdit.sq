@@ -1,8 +1,6 @@
-getArtistInferenceDataAnimeExpo2023:
-SELECT id, name, links, catalogLinks FROM artistEntry2023;
-
-getArtistInferenceDataAnimeExpo2024:
-SELECT id, name, links, storeLinks, catalogLinks FROM artistEntry2024;
+getArtistInferenceData:
+SELECT id, name, socialLinks, storeLinks, portfolioLinks, catalogLinks FROM artistEntry
+WHERE dataYear = :dataYear;
 
 getArtistInferenceDataAnimeExpo2025:
 SELECT id, name, links, storeLinks, catalogLinks FROM artistEntry2025;

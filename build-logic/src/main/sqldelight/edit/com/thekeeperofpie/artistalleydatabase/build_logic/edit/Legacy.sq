@@ -3,3 +3,9 @@ SELECT * FROM artistEntry2023;
 
 getStampRalliesAnimeExpo2023:
 SELECT * FROM stampRallyEntry2023;
+
+getAllArtistEntryAnimeExpo2024:
+SELECT * FROM artistEntry2024;
+
+getStampRalliesAnimeExpo2024:
+SELECT * FROM stampRallyEntry2024;

@@ -98,6 +98,10 @@ getStampRallyEntriesByYear:
 SELECT * FROM stampRallyEntry
 WHERE dataYear = :dataYear;
 
+getArtistImages:
+SELECT images FROM artistEntry
+WHERE dataYear = :dataYear AND id = :id;
+
 getAllArtistEntryAnimeExpo2024:
 SELECT * FROM artistEntry2024;
 
