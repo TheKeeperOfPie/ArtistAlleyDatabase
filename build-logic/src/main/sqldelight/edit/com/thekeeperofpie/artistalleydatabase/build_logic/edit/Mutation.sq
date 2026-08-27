@@ -52,9 +52,6 @@ insertMerchChangelog:
 INSERT OR REPLACE INTO merchEntryChangelog
 VALUES ?;
 
-updateArtistEntryAnimeExpo2023Images:
-UPDATE artistEntry2023 SET images = :images WHERE id = :id;
-
 updateArtistEntryAnimeExpo2024Images:
 UPDATE artistEntry2024 SET images = :images WHERE id = :id;
 
@@ -66,9 +63,6 @@ UPDATE artistEntryAnimeNyc2024 SET images = :images WHERE id = :id;
 
 updateArtistEntryAnimeNyc2025Images:
 UPDATE artistEntryAnimeNyc2025 SET images = :images WHERE id = :id;
-
-updateStampRallyAnimeExpo2023Images:
-UPDATE stampRallyEntry2023 SET images = :images WHERE id = :id;
 
 updateStampRallyAnimeExpo2024Images:
 UPDATE stampRallyEntry2024 SET images = :images WHERE id = :id;
@@ -86,6 +80,10 @@ UPDATE artistEntry SET images = :images WHERE dataYear = :dataYear AND id = :id;
 getArtistEntries:
 SELECT rowid AS rowid, * FROM artistEntry;
 
+getArtistEntriesByYear:
+SELECT * FROM artistEntry
+WHERE dataYear = :dataYear;
+
 updateStampRallyEntry:
 INSERT INTO stampRallyEntry
 VALUES ?;
@@ -96,8 +94,9 @@ UPDATE stampRallyEntry SET images = :images WHERE id = :id;
 getStampRallyEntries:
 SELECT rowid AS rowid, * FROM stampRallyEntry;
 
-getAllArtistEntryAnimeExpo2023:
-SELECT * FROM artistEntry2023;
+getStampRallyEntriesByYear:
+SELECT * FROM stampRallyEntry
+WHERE dataYear = :dataYear;
 
 getAllArtistEntryAnimeExpo2024:
 SELECT * FROM artistEntry2024;
@@ -172,9 +171,6 @@ updateStampRallyEntryAnimeExpo2026:
 INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026
 VALUES ?;
 
-getStampRalliesAnimeExpo2023:
-SELECT rowid AS rowid, tables FROM stampRallyEntry2023;
-
 getStampRalliesAnimeExpo2024:
 SELECT rowid AS rowid, tables FROM stampRallyEntry2024;
 
@@ -183,11 +179,6 @@ SELECT rowid AS rowid, tables, series FROM stampRallyEntry2025;
 
 getStampRalliesAnimeExpo2026:
 SELECT rowid AS rowid, tables, series, merch, prizeMerch FROM stampRallyEntryAnimeExpo2026;
-
-getRowIdsByBoothAnimeExpo2023:
-SELECT rowid AS rowid
-FROM artistEntry2023
-WHERE booth = :booth;
 
 getRowIdsByBoothAnimeExpo2024:
 SELECT rowid AS rowid

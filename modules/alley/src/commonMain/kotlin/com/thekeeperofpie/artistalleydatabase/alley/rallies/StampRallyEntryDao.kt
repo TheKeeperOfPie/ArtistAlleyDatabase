@@ -9,7 +9,6 @@ import app.cash.sqldelight.coroutines.mapToOneOrDefault
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryAnimeExpo2026Queries
@@ -17,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
@@ -43,45 +41,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.uuid.Uuid
-import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntryAnimeExpo2026.GetEntry as GetEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry.GetEntry
-
-fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
-    val stampRallyId = getString(0)!!
-    return StampRallyWithUserData(
-        stampRally = StampRallyDatabaseEntry(
-            year = DataYear.ANIME_EXPO_2023,
-            id = stampRallyId,
-            fandom = getString(1)!!,
-            hostTable = getString(2)!!,
-            tables = getString(3)!!.let(Json::decodeFromString),
-            startTables = emptySet(),
-            endTables = emptySet(),
-            links = getString(4)!!.let(Json::decodeFromString),
-            tableMin = null,
-            totalCost = null,
-            prize = null,
-            prizeLimit = null,
-            prizeMerch = emptyList(),
-            series = emptyList(),
-            merch = emptyList(),
-            notes = null,
-            images = getString(5)!!.let(Json::decodeFromString),
-            confirmed = true,
-            editorNotes = null,
-            lastEditor = null,
-            lastEditTime = null,
-        ),
-        userEntry = StampRallyUserEntry(
-            stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(6),
-            ignored = getBooleanFixed(7),
-        )
-    )
-}
 
 fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
@@ -362,30 +325,6 @@ private fun GetEntry.toStampRallyWithUserData() = StampRallyWithUserData(
         favorite = DaoUtils.coerceBooleanForJs(favorite),
         ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
-)
-
-fun StampRallyEntry2023.toStampRallyEntry() = StampRallyDatabaseEntry(
-    year = DataYear.ANIME_EXPO_2023,
-    id = id,
-    fandom = fandom,
-    hostTable = hostTable,
-    tables = tables,
-    startTables = emptySet(),
-    endTables = emptySet(),
-    links = links,
-    tableMin = null,
-    totalCost = null,
-    prize = null,
-    prizeLimit = null,
-    prizeMerch = emptyList(),
-    series = emptyList(),
-    merch = emptyList(),
-    notes = null,
-    images = images,
-    confirmed = true,
-    editorNotes = null,
-    lastEditor = null,
-    lastEditTime = null,
 )
 
 fun StampRallyEntry2024.toStampRallyEntry() = StampRallyDatabaseEntry(

@@ -1,0 +1,5 @@
+getAllArtistEntryAnimeExpo2023:
+SELECT * FROM artistEntry2023;
+
+getStampRalliesAnimeExpo2023:
+SELECT * FROM stampRallyEntry2023;
