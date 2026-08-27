@@ -87,7 +87,7 @@ enum class DataYear(
     ANIME_NYC_2024(
         serializedName = "ANYC2024",
         convention = Convention.ANIME_NYC,
-        artistTableName = "artistEntryAnimeNyc2024",
+        artistTableName = "artistEntry",
         stampRallyTableName = null,
         folderName = "animeNyc2024",
         dates = Dates(
