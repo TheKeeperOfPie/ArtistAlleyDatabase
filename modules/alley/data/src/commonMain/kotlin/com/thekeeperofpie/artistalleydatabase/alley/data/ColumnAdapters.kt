@@ -239,6 +239,19 @@ object ColumnAdapters {
         imagesAdapter = listDatabaseImageAdapter,
         lastEditTimeAdapter = instantAdapter,
     )
+    val stampRallyEntryAdapter = StampRallyEntry.Adapter(
+        dataYearAdapter = dataYearAdapter,
+        tablesAdapter = listStringAdapter,
+        startTablesAdapter = setStringAdapter,
+        endTablesAdapter = setStringAdapter,
+        linksAdapter = listStringAdapter,
+        tableMinAdapter = tableMinAdapter,
+        prizeMerchAdapter = listStringAdapter,
+        seriesAdapter = listStringAdapter,
+        merchAdapter = listStringAdapter,
+        imagesAdapter = listDatabaseImageAdapter,
+        lastEditTimeAdapter = instantAdapter,
+    )
 
     val seriesEntryAdapter = SeriesEntry.Adapter(
         sourceAdapter = object : ColumnAdapter<SeriesSource, String> {

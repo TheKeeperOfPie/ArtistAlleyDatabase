@@ -14,7 +14,12 @@ SELECT artistEntry.*
 FROM artistEntry
 WHERE dataYear = :dataYear AND booth = :booth;
 
-
 getImagesById:
 SELECT artistEntry.images FROM artistEntry
 WHERE dataYear = :dataYear AND id = :id;
+
+getStampRallyEntries:
+SELECT stampRallyEntry.* FROM artistEntry
+JOIN stampRallyArtistConnection ON artistEntry.rowid = stampRallyArtistConnection.artistRowId
+JOIN stampRallyEntry ON stampRallyArtistConnection.stampRallyRowId = stampRallyEntry.rowid
+WHERE artistEntry.dataYear = :dataYear AND artistEntry.id = :id;

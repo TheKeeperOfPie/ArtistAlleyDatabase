@@ -1,0 +1,47 @@
+import kotlin.String;
+import kotlin.collections.List;
+import kotlin.collections.Set;
+import kotlin.time.Instant;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin;
+
+CREATE TABLE
+    IF NOT EXISTS stampRallyEntry (
+        id TEXT NOT NULL,
+        dataYear TEXT AS DataYear NOT NULL,
+        fandom TEXT NOT NULL COLLATE NOCASE,
+        tables TEXT AS List<String> NOT NULL,
+        startTables TEXT AS Set<String> DEFAULT NULL,
+        endTables TEXT AS Set<String> DEFAULT NULL,
+        links TEXT AS List<String> NOT NULL,
+        tableMin INTEGER AS TableMin,
+        totalCost INTEGER,
+        prize TEXT,
+        prizeLimit INTEGER,
+        prizeMerch TEXT AS List<String> DEFAULT NULL,
+        series TEXT AS List<String> NOT NULL,
+        merch TEXT AS List<String> NOT NULL,
+        notes TEXT,
+        images TEXT AS List<DatabaseImage> NOT NULL,
+        editorNotes TEXT,
+        lastEditor TEXT,
+        lastEditTime TEXT AS Instant,
+        PRIMARY KEY (id, dataYear)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry_fts USING FTS5 (
+    id,
+    dataYear,
+    fandom,
+    tables,
+    prize,
+    prizeMerch,
+    series,
+    merch,
+    notes,
+    content=stampRallyEntry,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE INDEX IF NOT EXISTS index_stampRallyEntry_dataYear ON stampRallyEntry (dataYear);

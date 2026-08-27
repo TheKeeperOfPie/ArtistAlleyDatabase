@@ -33,6 +33,7 @@ object DaoUtils {
         stampRallyEntry2024Adapter = ColumnAdapters.stampRallyEntry2024Adapter,
         stampRallyEntry2025Adapter = ColumnAdapters.stampRallyEntry2025Adapter,
         stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
+        stampRallyEntryAdapter = ColumnAdapters.stampRallyEntryAdapter,
         artistNotesAdapter = ArtistNotes.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
         ),

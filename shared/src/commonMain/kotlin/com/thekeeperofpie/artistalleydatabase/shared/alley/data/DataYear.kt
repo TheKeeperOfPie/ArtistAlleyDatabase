@@ -24,7 +24,7 @@ enum class DataYear(
         serializedName = "AX2023",
         convention = Convention.ANIME_EXPO,
         artistTableName = "artistEntry",
-        stampRallyTableName = "stampRallyEntry2023",
+        stampRallyTableName = "stampRallyEntry",
         folderName = "2023",
         dates = Dates(
             year = 2023,

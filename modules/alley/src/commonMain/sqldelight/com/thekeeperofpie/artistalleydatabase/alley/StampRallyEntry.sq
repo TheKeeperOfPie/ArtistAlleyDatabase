@@ -1,0 +1,16 @@
+getAllEntries:
+SELECT *
+FROM stampRallyEntry
+WHERE dataYear = :dataYear;
+
+getEntry:
+SELECT stampRallyEntry.*, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
+WHERE stampRallyEntry.id = :id;
+
+getArtistEntries:
+SELECT artistEntry.* FROM artistEntry
+JOIN stampRallyArtistConnection ON artistEntry.rowid = stampRallyArtistConnection.artistRowId
+JOIN stampRallyEntry ON stampRallyArtistConnection.stampRallyRowId = stampRallyEntry.rowid
+WHERE stampRallyEntry.id = :stampRallyId;

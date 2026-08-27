@@ -8,9 +8,6 @@ import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource;
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin;
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType;
 
 CREATE TABLE
     IF NOT EXISTS artistEntry (

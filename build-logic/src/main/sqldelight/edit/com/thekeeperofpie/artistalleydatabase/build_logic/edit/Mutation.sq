@@ -81,7 +81,20 @@ INSERT OR REPLACE INTO artistEntry
 VALUES ?;
 
 updateArtistEntryImages:
-UPDATE artistEntry SET images = :images WHERE id = :id AND dataYear = :dataYear;
+UPDATE artistEntry SET images = :images WHERE dataYear = :dataYear AND id = :id;
+
+getArtistEntries:
+SELECT rowid AS rowid, * FROM artistEntry;
+
+updateStampRallyEntry:
+INSERT INTO stampRallyEntry
+VALUES ?;
+
+updateStampRallyImages:
+UPDATE stampRallyEntry SET images = :images WHERE id = :id;
+
+getStampRallyEntries:
+SELECT rowid AS rowid, * FROM stampRallyEntry;
 
 getAllArtistEntryAnimeExpo2023:
 SELECT * FROM artistEntry2023;
@@ -190,6 +203,11 @@ getRowIdsByBoothAnimeExpo2026:
 SELECT rowid AS rowid
 FROM artistEntryAnimeExpo2026
 WHERE booth = :booth;
+
+getRowIdsByBooth:
+SELECT rowid AS rowid
+FROM artistEntry
+WHERE dataYear = :dataYear AND booth = :booth;
 
 updateSeriesTagCounts:
 UPDATE seriesEntry SET

@@ -730,10 +730,9 @@ class ArtistEntryDao(
         when (dataYear) {
             DataYear.ANIME_EXPO_2023 -> dao().transactionWithResult {
                 val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
-                // TODO
-//                val stampRallies = dao().getStampRallyEntries(artistId).awaitAsList()
-//                    .map { it.toStampRallyEntry() }
-                ArtistWithStampRalliesEntry(artist, emptyList())
+                val stampRallies = dao().getStampRallyEntries(dataYear, Uuid.parse(artistId)).awaitAsList()
+                    .map { it.toStampRallyEntry(dataYear) }
+                ArtistWithStampRalliesEntry(artist, stampRallies)
             }
             DataYear.ANIME_EXPO_2024 -> dao2024().transactionWithResult {
                 val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
@@ -1241,7 +1240,7 @@ class ArtistEntryDao(
             tableNames = listOf("${year.artistTableName}_fts", "artistUserEntry"),
             mapper = when (year) {
                 DataYear.ANIME_EXPO_2023 -> { cursor, database ->
-                    cursor.toArtistWithUserData(database, DataYear.ANIME_EXPO_2023)
+                    cursor.toArtistWithUserData(database, year)
                 }
                 DataYear.ANIME_EXPO_2024 -> SqlCursor::toArtistWithUserData2024
                 DataYear.ANIME_EXPO_2025 -> SqlCursor::toArtistWithUserData2025
@@ -1321,7 +1320,7 @@ class ArtistEntryDao(
 
     suspend fun getImagesById(year: DataYear, artistId: String) = when (year) {
         DataYear.ANIME_EXPO_2023 -> dao().getImagesById(
-            DataYear.ANIME_EXPO_2023,
+            year,
             Uuid.parse(artistId)
         ).awaitAsOneOrNull()
         DataYear.ANIME_EXPO_2024 -> dao2024().getImagesById(artistId).awaitAsOneOrNull()
@@ -1334,7 +1333,7 @@ class ArtistEntryDao(
 
     suspend fun getAllEntries(year: DataYear) = withContext(PlatformDispatchers.IO) {
         when (year) {
-            DataYear.ANIME_EXPO_2023 -> dao().getAllEntries(DataYear.ANIME_EXPO_2023).awaitAsList()
+            DataYear.ANIME_EXPO_2023 -> dao().getAllEntries(year).awaitAsList()
                 .map {
                     ArtistSummary(
                         status = ArtistStatus.UNKNOWN,

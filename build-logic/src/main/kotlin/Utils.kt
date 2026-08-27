@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntryChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
@@ -355,6 +356,19 @@ internal object Utils {
                 tableMinAdapter = tableMinAdapter,
             ),
             stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
+                tablesAdapter = listStringAdapter,
+                startTablesAdapter = setStringAdapter,
+                endTablesAdapter = setStringAdapter,
+                linksAdapter = listStringAdapter,
+                tableMinAdapter = tableMinAdapter,
+                prizeMerchAdapter = listStringAdapter,
+                seriesAdapter = listStringAdapter,
+                merchAdapter = listStringAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
+                lastEditTimeAdapter = instantAdapter,
+            ),
+            stampRallyEntryAdapter = StampRallyEntry.Adapter(
+                dataYearAdapter = dataYearAdapter,
                 tablesAdapter = listStringAdapter,
                 startTablesAdapter = setStringAdapter,
                 endTablesAdapter = setStringAdapter,
