@@ -23,11 +23,11 @@ object DaoUtils {
         artistEntry2024Adapter = ColumnAdapters.artistEntry2024Adapter,
         artistEntry2025Adapter = ColumnAdapters.artistEntry2025Adapter,
         artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
-        artistEntryAnimeExpo2026ChangelogAdapter = ColumnAdapters.artistEntryAnimeExpo2026ChangelogAdapter,
         artistEntryAnimeNyc2024Adapter = ColumnAdapters.artistEntryAnimeNyc2024Adapter,
         artistEntryAnimeNyc2025Adapter = ColumnAdapters.artistEntryAnimeNyc2025Adapter,
         artistEntryAnimeNyc2026Adapter = ColumnAdapters.artistEntryAnimeNyc2026Adapter,
         artistEntryAdapter = ColumnAdapters.artistEntryAdapter,
+        artistChangelogEntryAdapter = ColumnAdapters.artistChangelogEntryAdapter,
         artistEntryAnimeNyc2026ChangelogAdapter = ColumnAdapters.artistEntryAnimeNyc2026ChangelogAdapter,
         stampRallyEntry2023Adapter = ColumnAdapters.stampRallyEntry2023Adapter,
         stampRallyEntry2024Adapter = ColumnAdapters.stampRallyEntry2024Adapter,
@@ -44,7 +44,7 @@ object DaoUtils {
         stampRallySeriesConnectionAdapter = ColumnAdapters.stampRallySeriesConnectionAdapter,
         stampRallyMerchConnectionAdapter = ColumnAdapters.stampRallyMerchConnectionAdapter,
         stampRallyPrizeMerchConnectionAdapter = ColumnAdapters.stampRallyPrizeMerchConnectionAdapter,
-        stampRallyEntryAnimeExpo2026ChangelogAdapter = ColumnAdapters.stampRallyEntryAnimeExpo2026ChangelogAdapter,
+        stampRallyChangelogEntryAdapter = ColumnAdapters.stampRallyChangelogEntryAdapter,
         merchEntryChangelogAdapter = ColumnAdapters.merchEntryChangelogAdapter,
     )
 

@@ -156,22 +156,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeExpo2026_fts USING FTS5 (
 );
 
 CREATE TABLE
-    IF NOT EXISTS artistEntryAnimeExpo2026Changelog (
-        artistId TEXT AS Uuid NOT NULL,
-        date TEXT NOT NULL,
-        booth TEXT,
-        name TEXT NOT NULL,
-        seriesInferred TEXT AS Set<String>,
-        seriesConfirmed TEXT AS Set<String>,
-        merchInferred TEXT AS Set<String>,
-        merchConfirmed TEXT AS Set<String>,
-        isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
-        images TEXT AS List<DatabaseImage>,
-        isTempImages INTEGER AS Boolean NOT NULL DEFAULT 0,
-        PRIMARY KEY (artistId, date)
-    );
-
-CREATE TABLE
     IF NOT EXISTS artistEntryAnimeNyc2025 (
         id TEXT NOT NULL,
         booth TEXT COLLATE NOCASE,
@@ -439,15 +423,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026_fts USING FTS5 (
     content=stampRallyEntryAnimeExpo2026,
     tokenize="unicode61 remove_diacritics 2"
 );
-
-CREATE TABLE
-    IF NOT EXISTS stampRallyEntryAnimeExpo2026Changelog (
-        stampRallyId TEXT AS Uuid NOT NULL,
-        date TEXT NOT NULL,
-        images TEXT AS List<DatabaseImage>,
-        isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
-        PRIMARY KEY (stampRallyId, date)
-    );
 
 CREATE TABLE
     IF NOT EXISTS stampRallyArtistConnection (

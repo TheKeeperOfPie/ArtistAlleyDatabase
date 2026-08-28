@@ -3,12 +3,12 @@ import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.Transacter
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
@@ -16,12 +16,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntryChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyPrizeMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
@@ -259,14 +259,6 @@ internal object Utils {
                 embedsAdapter = embedsAdapter,
                 lastEditTimeAdapter = instantAdapter,
             ),
-            artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(
-                artistIdAdapter = uuidAdapter,
-                seriesInferredAdapter = setStringAdapter,
-                seriesConfirmedAdapter = setStringAdapter,
-                merchInferredAdapter = setStringAdapter,
-                merchConfirmedAdapter = setStringAdapter,
-                imagesAdapter = listDatabaseImageAdapter,
-            ),
             artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
                 linksAdapter = listStringAdapter,
                 storeLinksAdapter = listStringAdapter,
@@ -337,6 +329,15 @@ internal object Utils {
                 merchConfirmedAdapter = setStringAdapter,
                 imagesAdapter = listDatabaseImageAdapter,
             ),
+            artistChangelogEntryAdapter = ArtistChangelogEntry.Adapter(
+                artistIdAdapter = uuidAdapter,
+                dataYearAdapter = dataYearAdapter,
+                seriesInferredAdapter = setStringAdapter,
+                seriesConfirmedAdapter = setStringAdapter,
+                merchInferredAdapter = setStringAdapter,
+                merchConfirmedAdapter = setStringAdapter,
+                imagesAdapter = listDatabaseImageAdapter,
+            ),
             stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
                 tablesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
@@ -380,8 +381,9 @@ internal object Utils {
                 imagesAdapter = listDatabaseImageAdapter,
                 lastEditTimeAdapter = instantAdapter,
             ),
-            stampRallyEntryAnimeExpo2026ChangelogAdapter = StampRallyEntryAnimeExpo2026Changelog.Adapter(
+            stampRallyChangelogEntryAdapter = StampRallyChangelogEntry.Adapter(
                 stampRallyIdAdapter = uuidAdapter,
+                dataYearAdapter = dataYearAdapter,
                 imagesAdapter = listDatabaseImageAdapter,
             ),
             artistNotesAdapter = ArtistNotes.Adapter(

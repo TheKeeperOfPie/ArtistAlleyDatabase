@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo202
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
-import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.LegacyQueries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -210,7 +210,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                     artists = {
                         getAllArtistEntryAnimeExpo2026().executeAsList().map(::ArtistEntry)
                     },
-                    rallies = { getAllStampRallyEntryAnimeExpo2026().executeAsList() },
+                    rallies = { getStampRalliesAnimeExpo2026().executeAsList() },
                 )
             }
         if (latestSnapshot != null) {
@@ -231,7 +231,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
                             artists = {
                                 getAllArtistEntryAnimeExpo2026().executeAsList().map(::ArtistEntry)
                             },
-                            rallies = { getAllStampRallyEntryAnimeExpo2026().executeAsList() },
+                            rallies = { getStampRalliesAnimeExpo2026().executeAsList() },
                         )
                     }
                 }
@@ -398,17 +398,17 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
 
     private suspend fun readSnapshot(
         snapshotFile: SnapshotFile,
-        artists: MutationQueries.() -> List<ArtistEntry>,
-        rallies: MutationQueries.() -> List<StampRallyEntryAnimeExpo2026>,
+        artists: LegacyQueries.() -> List<ArtistEntry>,
+        rallies: LegacyQueries.() -> List<StampRallyEntryAnimeExpo2026>,
     ): DataYearSnapshotData? {
         val (driver, database) = readSqlFile(snapshotFile.file) ?: return null
         return driver.use {
-            val mutationQueries = database.mutationQueries
+            val legacyQueries = database.legacyQueries
             DataYearSnapshotData(
                 timestamp = snapshotFile.timestamp,
                 date = snapshotFile.date,
-                artists = mutationQueries.artists(),
-                rallies = mutationQueries.rallies(),
+                artists = legacyQueries.artists(),
+                rallies = legacyQueries.rallies(),
             )
         }
     }

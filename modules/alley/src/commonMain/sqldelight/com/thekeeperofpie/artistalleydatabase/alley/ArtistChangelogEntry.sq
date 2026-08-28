@@ -1,0 +1,7 @@
+getAllEntries:
+SELECT * FROM artistChangelogEntry
+WHERE dataYear = :dataYear AND :catalogsOnly IS FALSE OR images IS NOT NULL;
+
+getEntry:
+SELECT * FROM artistChangelogEntry
+WHERE dataYear = :dataYear AND artistId = :artistId AND date = :date;

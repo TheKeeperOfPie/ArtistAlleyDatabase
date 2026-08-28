@@ -23,3 +23,7 @@ SELECT stampRallyEntry.* FROM artistEntry
 JOIN stampRallyArtistConnection ON artistEntry.rowid = stampRallyArtistConnection.artistRowId
 JOIN stampRallyEntry ON stampRallyArtistConnection.stampRallyRowId = stampRallyEntry.rowid
 WHERE artistEntry.dataYear = :dataYear AND artistEntry.id = :id;
+
+getTables:
+SELECT booth, name FROM artistEntry
+WHERE dataYear = :dataYear;

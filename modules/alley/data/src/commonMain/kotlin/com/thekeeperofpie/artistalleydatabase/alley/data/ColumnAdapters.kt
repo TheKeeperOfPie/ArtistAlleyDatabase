@@ -131,14 +131,6 @@ object ColumnAdapters {
         embedsAdapter = embedsAdapter,
         lastEditTimeAdapter = instantAdapter,
     )
-    val artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(
-        artistIdAdapter = uuidAdapter,
-        seriesInferredAdapter = setStringAdapter,
-        seriesConfirmedAdapter = setStringAdapter,
-        merchInferredAdapter = setStringAdapter,
-        merchConfirmedAdapter = setStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-    )
     val artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
         linksAdapter = listStringAdapter,
         storeLinksAdapter = listStringAdapter,
@@ -200,6 +192,15 @@ object ColumnAdapters {
         fallbackImageYearAdapter = dataYearAdapter,
         embedsAdapter = embedsAdapter,
         lastEditTimeAdapter = instantAdapter,
+    )
+    val artistChangelogEntryAdapter = ArtistChangelogEntry.Adapter(
+        artistIdAdapter = uuidAdapter,
+        dataYearAdapter = dataYearAdapter,
+        seriesInferredAdapter = setStringAdapter,
+        seriesConfirmedAdapter = setStringAdapter,
+        merchInferredAdapter = setStringAdapter,
+        merchConfirmedAdapter = setStringAdapter,
+        imagesAdapter = listDatabaseImageAdapter,
     )
     val artistEntryAnimeNyc2026ChangelogAdapter = ArtistEntryAnimeNyc2026Changelog.Adapter(
         artistIdAdapter = uuidAdapter,
@@ -287,8 +288,9 @@ object ColumnAdapters {
         dataYearAdapter = dataYearAdapter,
     )
 
-    val stampRallyEntryAnimeExpo2026ChangelogAdapter = StampRallyEntryAnimeExpo2026Changelog.Adapter(
+    val stampRallyChangelogEntryAdapter = StampRallyChangelogEntry.Adapter(
         stampRallyIdAdapter = uuidAdapter,
+        dataYearAdapter = dataYearAdapter,
         imagesAdapter = listDatabaseImageAdapter,
     )
 

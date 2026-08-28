@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies
 import androidx.compose.runtime.Composable
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit_unknown
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import org.jetbrains.compose.resources.stringResource
@@ -15,7 +15,7 @@ fun StampRallyDatabaseEntry.prizeLimitText() = prizeLimit?.toString()
 val StampRallyDatabaseEntry.startTableOrDefault: String?
     get() = startTables.minByOrNull { tables.indexOf(it) } ?: tables.firstOrNull()
 
-val StampRallyEntryAnimeExpo2026.startTableOrDefault: String?
+val StampRallyEntry.startTableOrDefault: String?
     get() = startTables?.minByOrNull { tables.indexOf(it) } ?: tables.firstOrNull()
 
 internal object StampRallyUtils  {

@@ -9,14 +9,14 @@ import app.cash.sqldelight.coroutines.mapToOneOrDefault
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryAnimeExpo2026Queries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyChangelogEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
@@ -39,54 +39,12 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.uuid.Uuid
-import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntryAnimeExpo2026.GetEntry as GetEntryAnimeExpo2026
 
 @Serializable
 private data class BoothAndProfileImage(
     val booth: String? = null,
     val profileImage: String? = null,
 )
-
-fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
-    val stampRallyId = getString(0)!!
-    val tables: List<String> = getString(2)!!.let(Json::decodeFromString)
-    val links: List<String> = getString(5)!!.let(Json::decodeFromString)
-    return StampRallyWithUserData(
-        stampRally = StampRallyDatabaseEntry(
-            year = DataYear.ANIME_EXPO_2026,
-            id = stampRallyId,
-            fandom = getString(1)!!,
-            hostTable = tables.firstOrNull().orEmpty(),
-            tables = tables,
-            startTables = getString(3)?.let { Json.decodeFromString<Set<String>>(it) }.orEmpty(),
-            endTables = getString(4)?.let { Json.decodeFromString<Set<String>>(it) }.orEmpty(),
-            links = links,
-            tableMin = getLong(6)?.toInt()?.let(TableMin::parseFromValue),
-            totalCost = getLong(7),
-            prize = getString(8),
-            prizeLimit = getLong(9),
-            prizeMerch = getString(10)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty(),
-            series = getString(11)!!.let(Json::decodeFromString),
-            merch = getString(12)!!.let(Json::decodeFromString),
-            notes = getString(13),
-            images = getString(14)!!.let(Json::decodeFromString),
-            confirmed = links.isNotEmpty(),
-            editorNotes = null,
-            lastEditor = null,
-            lastEditTime = null,
-        ),
-        seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(15)!!),
-        artistBoothToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(getString(16)!!)
-            .associate {
-                it.booth.orEmpty() to it.profileImage?.let(ColumnAdapters.databaseImageAdapter::decode)
-            },
-        userEntry = StampRallyUserEntry(
-            stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(17),
-            ignored = getBooleanFixed(18),
-        )
-    )
-}
 
 fun SqlCursor.toStampRallyWithUserData(dataYear: DataYear): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
@@ -129,37 +87,6 @@ fun SqlCursor.toStampRallyWithUserData(dataYear: DataYear): StampRallyWithUserDa
     )
 }
 
-private fun GetEntryAnimeExpo2026.toStampRallyWithUserData() = StampRallyWithUserData(
-    stampRally = StampRallyDatabaseEntry(
-        year = DataYear.ANIME_EXPO_2026,
-        id = id,
-        fandom = fandom,
-        hostTable = tables.firstOrNull().orEmpty(),
-        tables = tables,
-        startTables = startTables.orEmpty(),
-        endTables = endTables.orEmpty(),
-        links = links,
-        tableMin = tableMin,
-        totalCost = totalCost,
-        prize = prize,
-        prizeLimit = prizeLimit,
-        prizeMerch = prizeMerch.orEmpty(),
-        series = series,
-        merch = merch,
-        notes = notes,
-        images = images,
-        confirmed = links.isNotEmpty() || images.isNotEmpty(),
-        editorNotes = null,
-        lastEditor = null,
-        lastEditTime = null,
-    ),
-    userEntry = StampRallyUserEntry(
-        stampRallyId = id,
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        ignored = DaoUtils.coerceBooleanForJs(ignored),
-    )
-)
-
 private fun GetEntry.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyDatabaseEntry(
         year = dataYear,
@@ -191,30 +118,6 @@ private fun GetEntry.toStampRallyWithUserData() = StampRallyWithUserData(
     )
 )
 
-fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyDatabaseEntry(
-    year = DataYear.ANIME_EXPO_2026,
-    id = id,
-    fandom = fandom,
-    hostTable = tables.firstOrNull().orEmpty(),
-    tables = tables,
-    startTables = emptySet(),
-    endTables = emptySet(),
-    links = links,
-    tableMin = tableMin,
-    totalCost = totalCost,
-    prize = prize,
-    prizeLimit = prizeLimit,
-    prizeMerch = prizeMerch.orEmpty(),
-    series = series,
-    merch = merch,
-    notes = notes,
-    images = images,
-    confirmed = links.isNotEmpty() || images.isNotEmpty(),
-    editorNotes = null,
-    lastEditor = null,
-    lastEditTime = null,
-)
-
 fun StampRallyEntry.toStampRallyEntry(dataYear: DataYear) = StampRallyDatabaseEntry(
     year = dataYear,
     id = id,
@@ -244,8 +147,7 @@ class StampRallyEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val dao: suspend () -> StampRallyEntryQueries = { database().stampRallyEntryQueries },
-    private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
-    private val daoAnimeExpo2026: suspend () -> StampRallyEntryAnimeExpo2026Queries = { database().stampRallyEntryAnimeExpo2026Queries },
+    private val daoChangelog: suspend () -> StampRallyChangelogEntryQueries = { database().stampRallyChangelogEntryQueries },
 ) {
     @Inject
     constructor(database: ArtistAlleyDatabase) : this(
@@ -254,37 +156,20 @@ class StampRallyEntryDao(
     )
 
     suspend fun getEntry(year: DataYear, stampRallyId: String) =
-        when (year) {
-            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026()
-                .getEntry(stampRallyId)
-                .awaitAsOneOrNull()
-                ?.toStampRallyWithUserData()
-            else -> dao()
-                .getEntry(stampRallyId)
-                .awaitAsOneOrNull()
-                ?.toStampRallyWithUserData()
-        }
+        dao().getEntry(stampRallyId)
+            .awaitAsOneOrNull()
+            ?.toStampRallyWithUserData()
 
     suspend fun getEntryWithArtists(
         year: DataYear,
         stampRallyId: String,
     ): StampRallyWithArtistsEntry? =
-        when (year) {
-            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().transactionWithResult {
-                val stampRally =
-                    getEntry(year, stampRallyId) ?: return@transactionWithResult null
-                val artists =
-                    daoAnimeExpo2026().getArtistEntries(stampRallyId).awaitAsList()
-                        .map { it.toArtistEntry() }
-                StampRallyWithArtistsEntry(stampRally, artists)
-            }
-            else -> dao().transactionWithResult {
-                val stampRally =
-                    getEntry(year, stampRallyId) ?: return@transactionWithResult null
-                val artists = dao().getArtistEntries(stampRallyId).awaitAsList()
-                    .map { it.toArtistEntry(year) }
-                StampRallyWithArtistsEntry(stampRally, artists)
-            }
+        dao().transactionWithResult {
+            val stampRally =
+                getEntry(year, stampRallyId) ?: return@transactionWithResult null
+            val artists = dao().getArtistEntries(stampRallyId).awaitAsList()
+                .map { it.toArtistEntry(year) }
+            StampRallyWithArtistsEntry(stampRally, artists)
         }
 
     fun search(
@@ -296,9 +181,7 @@ class StampRallyEntryDao(
         val tableName = year.stampRallyTableName ?: return null
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
-            if (tableName == "stampRallyEntry") {
-                this += "$tableName.dataYear = '${year.serializedName}'"
-            }
+            this += "$tableName.dataYear = '${year.serializedName}'"
             if (onlyFavorites) this += "stampRallyUserEntry.favorite = 1"
 
             val totalCost = filterParams.totalCost
@@ -406,11 +289,11 @@ class StampRallyEntryDao(
                 """(
                     SELECT
                         json_group_array (
-                            json_object ('booth', artistEntryAnimeExpo2026.booth, 'profileImage', artistEntryAnimeExpo2026.profileImage)
+                            json_object ('booth', artistEntry.booth, 'profileImage', artistEntry.profileImage)
                         )
                     FROM
-                        artistEntryAnimeExpo2026
-                        JOIN stampRallyArtistConnection ON stampRallyArtistConnection.artistRowId = artistEntryAnimeExpo2026.rowid
+                        artistEntry
+                        JOIN stampRallyArtistConnection ON stampRallyArtistConnection.artistRowId = artistEntry.rowid
                     WHERE
                         stampRallyArtistConnection.stampRallyRowId = $tableName.rowid
                  )""".trimMargin(),
@@ -531,62 +414,33 @@ class StampRallyEntryDao(
 
         val (countStatement, searchStatement) = statements
         val tableName = year.stampRallyTableNameOrThrow
-
-        val mapper: SqlCursor.(AlleySqlDatabase) -> StampRallyWithUserData = {
-            year.stampRallyTableNameOrThrow
-            when {
-                year == DataYear.ANIME_EXPO_2026 -> toStampRallyWithUserDataAnimeExpo2026()
-                else -> toStampRallyWithUserData(year)
-            }
-        }
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             countStatement = countStatement,
             statement = searchStatement,
             tableNames = listOf("${tableName}_fts", "stampRallyUserEntry"),
-            mapper = mapper,
+            mapper = { cursor, _ -> cursor.toStampRallyWithUserData(year) },
         )
     }
 
     suspend fun getAllEntries(year: DataYear) =
-        when (year) {
-            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
-                .map {
-                    StampRallySummary(
-                        id = it.id,
-                        fandom = it.fandom,
-                        hostTable = it.tables.firstOrNull().orEmpty(),
-                        tables = it.tables,
-                        series = it.series,
-                    )
-                }
-            else -> dao().getAllEntries(year).awaitAsList()
-                .map {
-                    StampRallySummary(
-                        id = it.id,
-                        fandom = it.fandom,
-                        hostTable = it.tables.firstOrNull().orEmpty(),
-                        tables = it.tables,
-                        series = it.series,
-                    )
-                }
-        }
+        dao().getAllEntries(year).awaitAsList()
+            .map {
+                StampRallySummary(
+                    id = it.id,
+                    fandom = it.fandom,
+                    hostTable = it.tables.firstOrNull().orEmpty(),
+                    tables = it.tables,
+                    series = it.series,
+                )
+            }
 
     suspend fun getAllEntriesForChangelog(year: DataYear) =
-        when (year) {
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_NYC_2026,
-                -> emptyMap()
-            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
-                .associateBy { Uuid.parse(it.id) }
-        }
+        dao().getAllEntries(year).awaitAsList()
+            .associateBy { Uuid.parse(it.id) }
 
     // TODO: Split by DataYear
-    suspend fun getChangelog(year: DataYear): List<StampRallyEntryAnimeExpo2026Changelog> =
-        daoAnimeExpo2026().getChangelog().awaitAsList()
+    suspend fun getChangelog(year: DataYear): List<StampRallyChangelogEntry> =
+        daoChangelog().getAllEntries(year).awaitAsList()
 }

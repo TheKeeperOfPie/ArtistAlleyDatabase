@@ -1,0 +1,3 @@
+getAllEntries:
+SELECT * FROM stampRallyChangelogEntry
+WHERE dataYear = :dataYear;

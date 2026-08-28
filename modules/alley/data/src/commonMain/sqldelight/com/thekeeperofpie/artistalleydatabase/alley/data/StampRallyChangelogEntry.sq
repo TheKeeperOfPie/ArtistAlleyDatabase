@@ -1,0 +1,17 @@
+import kotlin.Boolean;
+import kotlin.collections.List;
+import kotlin.uuid.Uuid;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
+
+CREATE TABLE
+    IF NOT EXISTS stampRallyChangelogEntry (
+        stampRallyId TEXT AS Uuid NOT NULL,
+        dataYear TEXT AS DataYear NOT NULL,
+        date TEXT NOT NULL,
+        images TEXT AS List<DatabaseImage>,
+        isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (stampRallyId, dataYear, date)
+    );
+
+CREATE INDEX IF NOT EXISTS index_stampRallyChangelogEntry_dataYear ON stampRallyChangelogEntry (dataYear);

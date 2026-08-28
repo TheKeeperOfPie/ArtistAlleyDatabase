@@ -1,0 +1,26 @@
+import kotlin.Boolean;
+import kotlin.String;
+import kotlin.collections.List;
+import kotlin.collections.Set;
+import kotlin.uuid.Uuid;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
+
+CREATE TABLE
+    IF NOT EXISTS artistChangelogEntry (
+        artistId TEXT AS Uuid NOT NULL,
+        dataYear TEXT AS DataYear NOT NULL,
+        date TEXT NOT NULL,
+        booth TEXT,
+        name TEXT NOT NULL,
+        seriesInferred TEXT AS Set<String>,
+        seriesConfirmed TEXT AS Set<String>,
+        merchInferred TEXT AS Set<String>,
+        merchConfirmed TEXT AS Set<String>,
+        isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
+        images TEXT AS List<DatabaseImage>,
+        isTempImages INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (artistId, dataYear, date)
+    );
+
+CREATE INDEX IF NOT EXISTS index_artistChangelogEntry_dataYear ON artistChangelogEntry (dataYear);

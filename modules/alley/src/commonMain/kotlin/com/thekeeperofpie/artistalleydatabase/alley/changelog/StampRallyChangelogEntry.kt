@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog
 
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026Changelog
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -13,7 +12,7 @@ data class StampRallyChangelogEntry(
     val stampRallyId: Uuid,
     val date: LocalDate,
     val images: List<CatalogImage>,
-    val rally: StampRallyEntryAnimeExpo2026,
+    val rally: StampRallyEntry,
     val isBrandNew: Boolean,
     val seriesHighlighted: List<String>,
     val seriesRemaining: List<String>,
@@ -21,9 +20,9 @@ data class StampRallyChangelogEntry(
     val merchRemaining: List<String>,
 )
 
-fun StampRallyEntryAnimeExpo2026Changelog.toChangelogEntry(
+fun com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyChangelogEntry.toChangelogEntry(
     dataYear: DataYear,
-    allRallies: Map<Uuid, StampRallyEntryAnimeExpo2026>,
+    allRallies: Map<Uuid, StampRallyEntry>,
     randomSeed: Int,
     seriesIdsToHighlight: Set<String> = emptySet(),
     merchIdsToHighlight: Set<String> = emptySet(),

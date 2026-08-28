@@ -32,12 +32,12 @@ insertStampRallyPrizeMerchConnection:
 INSERT OR REPLACE INTO stampRallyPrizeMerchConnection
 VALUES ?;
 
-insertArtistEntryAnimeExpo2026Changelog:
-INSERT OR REPLACE INTO artistEntryAnimeExpo2026Changelog
+insertArtistChangelogEntry:
+INSERT OR REPLACE INTO artistChangelogEntry
 VALUES ?;
 
-insertStampRallyEntryAnimeExpo2026Changelog:
-INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026Changelog
+insertStampRallyChangelogEntry:
+INSERT OR REPLACE INTO stampRallyChangelogEntry
 VALUES ?;
 
 insertArtistEntryAnimeNyc2026Changelog:
@@ -67,7 +67,7 @@ SELECT * FROM artistEntry
 WHERE dataYear = :dataYear;
 
 updateStampRallyEntry:
-INSERT INTO stampRallyEntry
+INSERT OR REPLACE INTO stampRallyEntry
 VALUES ?;
 
 updateStampRallyImages:
@@ -84,20 +84,6 @@ getArtistImages:
 SELECT images FROM artistEntry
 WHERE dataYear = :dataYear AND id = :id;
 
-getAllArtistEntryAnimeExpo2026:
-SELECT * FROM artistEntryAnimeExpo2026;
-
-getImagesAnimeExpo2026:
-SELECT images FROM artistEntryAnimeExpo2026
-WHERE id = :id;
-
-updateArtistEntryAnimeExpo2026:
-INSERT OR REPLACE INTO artistEntryAnimeExpo2026
-VALUES ?;
-
-getAllStampRallyEntryAnimeExpo2026:
-SELECT * FROM stampRallyEntryAnimeExpo2026;
-
 getAllArtistEntryAnimeNyc2026:
 SELECT * FROM artistEntryAnimeNyc2026;
 
@@ -108,18 +94,6 @@ WHERE id = :id;
 updateArtistEntryAnimeNyc2026:
 INSERT OR REPLACE INTO artistEntryAnimeNyc2026
 VALUES ?;
-
-updateStampRallyEntryAnimeExpo2026:
-INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026
-VALUES ?;
-
-getStampRalliesAnimeExpo2026:
-SELECT rowid AS rowid, tables, series, merch, prizeMerch FROM stampRallyEntryAnimeExpo2026;
-
-getRowIdsByBoothAnimeExpo2026:
-SELECT rowid AS rowid
-FROM artistEntryAnimeExpo2026
-WHERE booth = :booth;
 
 getRowIdsByBooth:
 SELECT rowid AS rowid
@@ -146,9 +120,11 @@ updateMerchYearFlags:
 UPDATE merchEntry SET yearFlags = :yearFlags WHERE name = :id;
 
 cleanUpForRelease {
-    UPDATE artistEntryAnimeExpo2026 SET status = '';
-    UPDATE artistEntryAnimeExpo2026 SET editorNotes = NULL;
-    UPDATE artistEntryAnimeExpo2026 SET lastEditor = NULL;
+    DROP TABLE artistEntry2023;
+    DROP TABLE artistEntry2024;
+    DROP TABLE artistEntry2025;
+    DROP TABLE artistEntryAnimeNyc2025;
+    DROP TABLE artistEntryAnimeExpo2026;
     UPDATE artistEntryAnimeNyc2026 SET status = '';
     UPDATE artistEntryAnimeNyc2026 SET editorNotes = NULL;
     UPDATE artistEntryAnimeNyc2026 SET lastEditor = NULL;

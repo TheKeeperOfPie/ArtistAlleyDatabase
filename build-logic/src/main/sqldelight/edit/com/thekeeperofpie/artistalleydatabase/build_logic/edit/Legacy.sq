@@ -21,3 +21,12 @@ SELECT * FROM stampRallyEntry2025;
 
 getAllArtistEntryAnimeNyc2025:
 SELECT * FROM artistEntryAnimeNyc2025;
+
+getAllArtistEntryAnimeExpo2026:
+SELECT * FROM artistEntryAnimeExpo2026;
+
+getStampRalliesAnimeExpo2026:
+SELECT * FROM stampRallyEntryAnimeExpo2026;
+
+getAllArtistEntryAnimeNyc2026:
+SELECT * FROM artistEntryAnimeNyc2026;
