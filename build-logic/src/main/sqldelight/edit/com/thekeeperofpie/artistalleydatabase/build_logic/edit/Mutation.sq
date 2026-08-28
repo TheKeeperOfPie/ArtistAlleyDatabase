@@ -52,9 +52,6 @@ insertMerchChangelog:
 INSERT OR REPLACE INTO merchEntryChangelog
 VALUES ?;
 
-updateArtistEntryAnimeNyc2025Images:
-UPDATE artistEntryAnimeNyc2025 SET images = :images WHERE id = :id;
-
 updateArtistEntry:
 INSERT OR REPLACE INTO artistEntry
 VALUES ?;
@@ -100,17 +97,6 @@ VALUES ?;
 
 getAllStampRallyEntryAnimeExpo2026:
 SELECT * FROM stampRallyEntryAnimeExpo2026;
-
-getAllArtistEntryAnimeNyc2025:
-SELECT * FROM artistEntryAnimeNyc2025;
-
-getImagesAnimeNyc2025:
-SELECT images FROM artistEntryAnimeNyc2025
-WHERE id = :id;
-
-updateArtistEntryAnimeNyc2025:
-INSERT OR REPLACE INTO artistEntryAnimeNyc2025
-VALUES ?;
 
 getAllArtistEntryAnimeNyc2026:
 SELECT * FROM artistEntryAnimeNyc2026;

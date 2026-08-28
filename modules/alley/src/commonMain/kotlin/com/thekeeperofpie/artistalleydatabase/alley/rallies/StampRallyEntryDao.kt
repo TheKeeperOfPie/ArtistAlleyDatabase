@@ -259,10 +259,6 @@ class StampRallyEntryDao(
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_NYC_2026,
-                -> throw IllegalStateException("ANYC shouldn't have rallies")
             else -> dao()
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
@@ -282,10 +278,6 @@ class StampRallyEntryDao(
                         .map { it.toArtistEntry() }
                 StampRallyWithArtistsEntry(stampRally, artists)
             }
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_NYC_2026,
-                -> throw IllegalStateException("ANYC shouldn't have rallies")
             else -> dao().transactionWithResult {
                 val stampRally =
                     getEntry(year, stampRallyId) ?: return@transactionWithResult null
@@ -392,8 +384,6 @@ class StampRallyEntryDao(
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
         val imageSubquery = StampRallyUtils.imageSubquery("$tableName.rowid", year)
         val selectFields = when (year) {
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
             DataYear.ANIME_NYC_2026,
                 -> throw IllegalStateException("Cannot load rallies for $year")
             else -> listOf(
@@ -543,12 +533,9 @@ class StampRallyEntryDao(
         val tableName = year.stampRallyTableNameOrThrow
 
         val mapper: SqlCursor.(AlleySqlDatabase) -> StampRallyWithUserData = {
-            when (year) {
-                DataYear.ANIME_EXPO_2026 -> toStampRallyWithUserDataAnimeExpo2026()
-                DataYear.ANIME_NYC_2024,
-                DataYear.ANIME_NYC_2025,
-                DataYear.ANIME_NYC_2026,
-                    -> throw IllegalStateException("ANYC shouldn't have rallies")
+            year.stampRallyTableNameOrThrow
+            when {
+                year == DataYear.ANIME_EXPO_2026 -> toStampRallyWithUserDataAnimeExpo2026()
                 else -> toStampRallyWithUserData(year)
             }
         }
@@ -574,10 +561,6 @@ class StampRallyEntryDao(
                         series = it.series,
                     )
                 }
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_NYC_2026,
-                -> emptyList()
             else -> dao().getAllEntries(year).awaitAsList()
                 .map {
                     StampRallySummary(

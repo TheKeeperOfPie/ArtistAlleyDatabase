@@ -179,7 +179,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 fixLegacyArtistImages(database, imageCacheDir)
                             }
                             trackStage("FinalizeFlags") { finalizeFlags(database) }
-                            trackStage("LegacyLinkFlags") { finalizeLegacyLinkFlags(database) }
 
                             val embedCache = trackStage("LoadEmbedCache") {
                                 EmbedCache(
@@ -719,6 +718,66 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 )
             }
         }
+
+        val artistEntriesAnimeNyc2025 =
+            database.legacyQueries.getAllArtistEntryAnimeNyc2025().executeAsList()
+        database.transaction {
+            artistEntriesAnimeNyc2025.forEach { artist ->
+                val links =
+                    artist.links.groupBy { Link.parse(it)?.type?.category }.toMutableMap()
+                val socialLinks = links.remove(LinkCategory.SOCIALS).orEmpty() +
+                        links.remove(LinkCategory.SUPPORT).orEmpty() +
+                        links.remove(LinkCategory.OTHER).orEmpty() +
+                        links.remove(null).orEmpty()
+                val storeLinks = links.remove(LinkCategory.STORES).orEmpty()
+                val portfolioLinks = links.remove(LinkCategory.PORTFOLIOS).orEmpty()
+                val commissionLinks = links.remove(LinkCategory.COMMISSIONS).orEmpty()
+                if (links.isNotEmpty()) {
+                    throw IllegalStateException("Failed to map all links: $links")
+                }
+                database.mutationQueries.updateArtistEntry(
+                    ArtistEntry(
+                        id = Uuid.parse(artist.id),
+                        dataYear = DataYear.ANIME_NYC_2025,
+                        status = ArtistStatus.UNKNOWN,
+                        booth = artist.booth,
+                        name = artist.name,
+                        summary = artist.summary,
+                        socialLinks = socialLinks,
+                        storeLinks = storeLinks,
+                        portfolioLinks = if (artist.images.isNotEmpty()) {
+                            portfolioLinks
+                        } else {
+                            portfolioLinks + artist.catalogLinks
+                        },
+                        catalogLinks = if (artist.images.isNotEmpty()) {
+                            artist.catalogLinks
+                        } else {
+                            emptyList()
+                        },
+                        linkFlags = -1,
+                        linkFlags2 = -1,
+                        notes = artist.notes,
+                        commissions = commissionLinks + artist.commissions,
+                        commissionFlags = -1,
+                        seriesInferred = artist.seriesInferred,
+                        seriesConfirmed = artist.seriesConfirmed,
+                        merchInferred = artist.merchInferred,
+                        merchConfirmed = artist.merchConfirmed,
+                        images = artist.images,
+                        fallbackImageYear = null,
+                        tempImages = null,
+                        profileImage = null,
+                        embeds = null,
+                        editorNotes = null,
+                        lastEditor = null,
+                        lastEditTime = null,
+                        verifiedArtist = false,
+                        newArtist = false,
+                    )
+                )
+            }
+        }
     }
 
     private fun verifySeries(database: BuildLogicEditDatabase) {
@@ -757,26 +816,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     ).await()
                 }
         }
-    }
-
-    private suspend fun finalizeLegacyLinkFlags(database: BuildLogicEditDatabase) {
-        database.mutationQueries.getAllArtistEntryAnimeNyc2025()
-            .executeAsList()
-            .forEach { artist ->
-                val (linkFlags, linkFlags2) = Link.parseFlags(
-                    socialLinks = artist.links,
-                    storeLinks = artist.storeLinks,
-                    portfolioLinks = emptyList(),
-                    catalogLinks = artist.catalogLinks,
-                )
-
-                database.mutationQueries.updateArtistEntryAnimeNyc2025(
-                    artist.copy(
-                        linkFlags = linkFlags,
-                        linkFlags2 = linkFlags2,
-                    )
-                ).await()
-            }
     }
 
     private suspend fun finalizeArtistsAnimeExpo2026(
@@ -1309,8 +1348,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val animeNyc2024 =
             mutationQueries.getArtistEntriesByYear(DataYear.ANIME_NYC_2024).executeAsList()
         val animeNyc2024Ids = animeNyc2024.mapTo(mutableSetOf()) { it.id.toString() }
-        val animeNyc2025 = mutationQueries.getAllArtistEntryAnimeNyc2025().executeAsList()
-        val animeNyc2025Ids = animeNyc2025.mapTo(mutableSetOf()) { it.id }
+        val animeNyc2025 = mutationQueries.getArtistEntriesByYear(DataYear.ANIME_NYC_2025).executeAsList()
+        val animeNyc2025Ids = animeNyc2025.mapTo(mutableSetOf()) { it.id.toString() }
         val animeNyc2026 = mutationQueries.getAllArtistEntryAnimeNyc2026().executeAsList()
 
         database.transaction {
@@ -1339,9 +1378,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
 
             animeNyc2025.forEach { artist ->
-                val isNewArtist = artist.id !in animeNyc2024Ids
+                val isNewArtist = artist.id.toString() !in animeNyc2024Ids
                 if (isNewArtist) {
-                    mutationQueries.updateArtistEntryAnimeNyc2025(artist.copy(newArtist = true))
+                    mutationQueries.updateArtistEntry(artist.copy(newArtist = true))
                 }
             }
 
@@ -1368,7 +1407,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             .firstNotNullOfOrNull { queryYear ->
                 when (queryYear) {
                     DataYear.ANIME_EXPO_2026 -> getImagesAnimeExpo2026(id).executeAsOneOrNull()
-                    DataYear.ANIME_NYC_2025 -> getImagesAnimeNyc2025(id).executeAsOneOrNull()
                     DataYear.ANIME_NYC_2026 -> getImagesAnimeNyc2026(id).executeAsOneOrNull()
                     else -> getArtistImages(queryYear, Uuid.parse(id)).executeAsOneOrNull()
                 }.orEmpty()
@@ -1511,7 +1549,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         imageCacheDir: File,
     ) {
         // TODO: Consolidate
-        listOf(DataYear.ANIME_EXPO_2023, DataYear.ANIME_EXPO_2024, DataYear.ANIME_EXPO_2025)
+        listOf(DataYear.ANIME_EXPO_2023, DataYear.ANIME_EXPO_2024, DataYear.ANIME_EXPO_2025, DataYear.ANIME_NYC_2025)
             .forEach { dataYear ->
                 fixLegacyArtistImages(
                     database = database,
@@ -1538,15 +1576,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     updateImages = MutationQueries::updateStampRallyImages,
                 )
             }
-
-        fixLegacyArtistImages(
-            database = database,
-            imageCacheDir = imageCacheDir,
-            dataYear = DataYear.ANIME_NYC_2025,
-            entries = database.artistEntryAnimeNyc2025Queries.getAllEntries(),
-            artistId = { it.id },
-            updateImages = MutationQueries::updateArtistEntryAnimeNyc2025Images,
-        )
     }
 
     // Coerces AniList series source to match their aniListType
@@ -1827,20 +1856,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             mutationQueries.getFallbackImages(year, artist.id)
                                 ?: return@forEach
                         mutationQueries.updateArtistEntryAnimeExpo2026(
-                            artist.copy(
-                                images = fallbackImages,
-                                fallbackImageYear = fallbackImagesYear,
-                            )
-                        )
-                    }
-                DataYear.ANIME_NYC_2025 -> mutationQueries.getAllArtistEntryAnimeNyc2025()
-                    .executeAsList()
-                    .forEach { artist ->
-                        if (artist.images.isNotEmpty()) return@forEach
-                        val (fallbackImagesYear, fallbackImages) =
-                            mutationQueries.getFallbackImages(year, artist.id)
-                                ?: return@forEach
-                        mutationQueries.updateArtistEntryAnimeNyc2025(
                             artist.copy(
                                 images = fallbackImages,
                                 fallbackImageYear = fallbackImagesYear,
@@ -2186,7 +2201,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .executeAsOneOrNull()
         }
         private val animeNyc2025 by lazy {
-            database.artistEntryAnimeNyc2025Queries.getEntry(artistId).executeAsOneOrNull()
+            database.artistEntryQueries.getEntry(DataYear.ANIME_NYC_2025, Uuid.parse(artistId))
+                .executeAsOneOrNull()
         }
 
         private fun List<String>?.ifNullOrEmpty(defaultValue: () -> List<String>?) =
@@ -2198,7 +2214,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             valueAnimeExpo2025: GetEntry.() -> List<String>,
             valueAnimeExpo2026: com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeExpo2026.GetEntry.() -> List<String>,
             valueAnimeNyc2024: GetEntry.() -> List<String>,
-            valueAnimeNyc2025: com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2025.GetEntry.() -> List<String>,
+            valueAnimeNyc2025: GetEntry.() -> List<String>,
         ): List<String> = animeExpo2026?.valueAnimeExpo2026()
             .ifNullOrEmpty { animeExpo2025?.valueAnimeExpo2025() }
             .ifNullOrEmpty { animeExpo2024?.valueAnimeExpo2024() }
@@ -2214,7 +2230,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 valueAnimeExpo2025 = { socialLinks },
                 valueAnimeExpo2026 = { socialLinks },
                 valueAnimeNyc2024 = { socialLinks },
-                valueAnimeNyc2025 = { links },
+                valueAnimeNyc2025 = { socialLinks },
             )
 
         val storeLinks
