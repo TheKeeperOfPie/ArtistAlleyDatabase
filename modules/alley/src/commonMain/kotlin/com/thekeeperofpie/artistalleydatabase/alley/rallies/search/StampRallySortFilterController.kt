@@ -27,7 +27,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_limit_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_merch_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_show_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
@@ -67,7 +66,6 @@ class StampRallySortFilterController(
     val settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
     private val allowHideFavorited: Boolean,
-    private val showUnconfirmedOption: Boolean,
 ) {
     val sortOption = settings.stampRalliesSortOption
     val sortAscending = settings.stampRalliesSortAscending
@@ -219,13 +217,6 @@ class StampRallySortFilterController(
         }
     }
 
-    private val showUnconfirmed = savedStateHandle.getMutableStateFlow("showUnconfirmed", false)
-    private val showUnconfirmedSection = SortFilterSectionState.Switch(
-        title = Res.string.alley_stamp_rally_filter_show_unconfirmed,
-        defaultEnabled = false,
-        enabled = showUnconfirmed,
-    )
-
     private val gridByDefaultSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_show_grid_by_default,
         property = settings.showGridByDefault,
@@ -286,7 +277,6 @@ class StampRallySortFilterController(
         prizeMerchSection,
         totalCostSection,
         prizeLimitSection,
-        showUnconfirmedSection.takeIf { showUnconfirmedOption },
         advancedSection,
     )
 
@@ -300,7 +290,6 @@ class StampRallySortFilterController(
         prizeMerchIdIn,
         totalCost,
         prizeLimit,
-        showUnconfirmed,
         hideFavorited,
         hideIgnored,
     ) {
@@ -313,9 +302,8 @@ class StampRallySortFilterController(
             prizeMerchIdIn = it[5] as Set<String>,
             totalCost = it[6] as RangeData,
             prizeLimit = it[7] as RangeData,
-            showUnconfirmed = it[8] as Boolean,
-            hideFavorited = it[9] as Boolean,
-            hideIgnored = it[10] as Boolean,
+            hideFavorited = it[8] as Boolean,
+            hideIgnored = it[9] as Boolean,
         )
     }
 
@@ -338,7 +326,6 @@ class StampRallySortFilterController(
         val prizeMerchIdIn: Set<String>,
         val totalCost: RangeData,
         val prizeLimit: RangeData,
-        val showUnconfirmed: Boolean,
         val hideFavorited: Boolean,
         val hideIgnored: Boolean,
     )

@@ -106,7 +106,6 @@ class FavoritesViewModel(
         settings = settings,
         savedStateHandle = savedStateHandle,
         allowHideFavorited = false,
-        showUnconfirmedOption = true,
     )
 
     val artistSearchState = SearchScreen.State(
@@ -203,7 +202,6 @@ class FavoritesViewModel(
                         prizeMerchIdIn = emptySet(),
                         totalCost = RangeData(100),
                         prizeLimit = RangeData(50),
-                        showUnconfirmed = false,
                         hideFavorited = false,
                         hideIgnored = false,
                     ),

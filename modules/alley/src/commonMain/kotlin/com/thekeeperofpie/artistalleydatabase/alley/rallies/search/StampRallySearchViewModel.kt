@@ -94,12 +94,6 @@ class StampRallySearchViewModel(
         settings = settings,
         savedStateHandle = savedStateHandle,
         allowHideFavorited = true,
-        showUnconfirmedOption = when (lockedYear) {
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025 -> true
-            else -> false
-        },
     )
 
     val unfilteredCount = combine(dataYear, query, ::Pair)
@@ -116,7 +110,6 @@ class StampRallySearchViewModel(
                         prizeMerchIdIn = emptySet(),
                         totalCost = RangeData(100),
                         prizeLimit = RangeData(50),
-                        showUnconfirmed = false,
                         hideFavorited = false,
                         hideIgnored = false,
                     ),
