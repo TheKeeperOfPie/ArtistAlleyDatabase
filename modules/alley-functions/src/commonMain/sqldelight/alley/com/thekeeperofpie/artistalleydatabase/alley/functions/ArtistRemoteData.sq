@@ -1,0 +1,55 @@
+getEntrySummaries:
+SELECT confirmedId, booth, name, timestamp
+FROM artistRemoteData
+WHERE dataYear = :dataYear;
+
+geHistoryEntrySummaries:
+SELECT confirmedId, booth, name, timestamp
+FROM artistRemoteDataHistory
+WHERE dataYear = :dataYear;
+
+getEntry:
+SELECT * FROM artistRemoteData
+WHERE dataYear = :dataYear AND booth = :booth AND name = :name;
+
+getHistoryEntry:
+SELECT * FROM artistRemoteDataHistory
+WHERE dataYear = :dataYear AND booth = :booth AND name = :name AND timestamp = :timestamp;
+
+getHistoryEntries:
+SELECT * FROM artistRemoteDataHistory
+WHERE dataYear = :dataYear AND booth = :booth AND name = :name;
+
+getEntries:
+SELECT * FROM artistRemoteData
+WHERE dataYear = :dataYear ;
+
+getMostRecentHistoryEntries:
+SELECT artistRemoteDataHistory.*
+FROM (
+  SELECT artistRemoteDataHistory.*, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
+  FROM artistRemoteDataHistory
+  WHERE dataYear = :dataYear
+) artistRemoteDataHistory
+WHERE rowNumber = 1;
+
+getMostRecentHistorySummaries:
+SELECT confirmedId, booth, name, timestamp
+FROM (
+  SELECT confirmedId, booth, name, timestamp, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
+  FROM artistRemoteDataHistory
+  WHERE dataYear = :dataYear
+) artistRemoteDataHistory
+WHERE rowNumber = 1;
+
+insertEntry:
+INSERT OR REPLACE INTO artistRemoteData
+VALUES ?;
+
+consumeEntry:
+DELETE FROM artistRemoteData
+WHERE dataYear = :dataYear AND booth = :booth AND name = :name AND timestamp = :timestamp;
+
+insertHistory:
+INSERT INTO artistRemoteDataHistory
+VALUES ?;

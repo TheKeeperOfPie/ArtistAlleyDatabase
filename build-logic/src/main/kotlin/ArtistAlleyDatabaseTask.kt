@@ -308,7 +308,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                                 val ftsTables = listOf(
                                     "artistEntry_fts",
-                                    "artistEntryAnimeNyc2026_fts",
                                     "stampRallyEntry_fts",
                                     "seriesEntry_fts",
                                     "merchEntry_fts",
@@ -1842,20 +1841,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             when (year) {
                 // 2023 is the earliest year and doesn't have any fallback data
                 DataYear.ANIME_EXPO_2023 -> Unit
-                DataYear.ANIME_NYC_2026 -> mutationQueries.getAllArtistEntryAnimeNyc2026()
-                    .executeAsList()
-                    .forEach { artist ->
-                        if (artist.images.isNotEmpty()) return@forEach
-                        val (fallbackImagesYear, fallbackImages) =
-                            mutationQueries.getFallbackImages(year, artist.id)
-                                ?: return@forEach
-                        mutationQueries.updateArtistEntryAnimeNyc2026(
-                            artist.copy(
-                                images = fallbackImages,
-                                fallbackImageYear = fallbackImagesYear,
-                            )
-                        )
-                    }
                 else -> mutationQueries.getArtistEntriesByYear(year)
                     .executeAsList()
                     .forEach { artist ->

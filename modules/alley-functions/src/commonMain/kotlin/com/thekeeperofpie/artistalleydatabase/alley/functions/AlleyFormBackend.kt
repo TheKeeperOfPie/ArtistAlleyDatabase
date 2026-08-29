@@ -158,9 +158,8 @@ internal object AlleyFormBackend {
             ?: return null
 
         val booth = artist.booth
-        val (cachedStampRalliesJson, cachedStampRallies) = BackendUtils.loadStampRallySummaries(
-            context
-        )
+        val (cachedStampRalliesJson, cachedStampRallies) =
+            BackendUtils.loadStampRallySummaries(context, request.dataYear)
         val stampRallies =
             (cachedStampRallies ?: Json.decodeFromString<List<StampRallySummary>>(
                 cachedStampRalliesJson
@@ -242,8 +241,9 @@ internal object AlleyFormBackend {
             )
         }
 
-        val existingStampRallyFormEntries = database.stampRallyFormEntryQueries.getFormEntriesByArtist(request.dataYear, artistId)
-            .awaitAsList()
+        val existingStampRallyFormEntries =
+            database.stampRallyFormEntryQueries.getFormEntriesByArtist(request.dataYear, artistId)
+                .awaitAsList()
         val finalizedStampRallies = request.afterStampRallies.map { after ->
             val before = request.beforeStampRallies.find { it.id == after.id }
                 ?: existingStampRallyFormEntries.find { it.stampRallyId == after.id }
@@ -351,8 +351,8 @@ internal object AlleyFormBackend {
             database.stampRallyFormEntryQueries.insertFormEntry(it)
         }
         Databases.editDatabase(context)
-            .artistEntryAnimeExpo2026Queries
-            .markArtistHasSubmittedForm(artistId.toString())
+            .artistEntryQueries
+            .markArtistHasSubmittedForm(request.dataYear, artistId)
         return BackendFormRequest.ArtistSave.Response.Success(finalizedStampRallies)
     }
 

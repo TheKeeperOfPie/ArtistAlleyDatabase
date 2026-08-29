@@ -84,17 +84,6 @@ getArtistImages:
 SELECT images FROM artistEntry
 WHERE dataYear = :dataYear AND id = :id;
 
-getAllArtistEntryAnimeNyc2026:
-SELECT * FROM artistEntryAnimeNyc2026;
-
-getImagesAnimeNyc2026:
-SELECT images FROM artistEntryAnimeNyc2026
-WHERE id = :id;
-
-updateArtistEntryAnimeNyc2026:
-INSERT OR REPLACE INTO artistEntryAnimeNyc2026
-VALUES ?;
-
 getRowIdsByBooth:
 SELECT rowid AS rowid
 FROM artistEntry
@@ -123,11 +112,17 @@ cleanUpForRelease {
     DROP TABLE artistEntry2023;
     DROP TABLE artistEntry2024;
     DROP TABLE artistEntry2025;
+    DROP TABLE artistEntryAnimeNyc2024;
     DROP TABLE artistEntryAnimeNyc2025;
     DROP TABLE artistEntryAnimeExpo2026;
-    UPDATE artistEntryAnimeNyc2026 SET status = '';
-    UPDATE artistEntryAnimeNyc2026 SET editorNotes = NULL;
-    UPDATE artistEntryAnimeNyc2026 SET lastEditor = NULL;
-    UPDATE stampRallyEntryAnimeExpo2026 SET editorNotes = NULL;
-    UPDATE stampRallyEntryAnimeExpo2026 SET lastEditor = NULL;
+    DROP TABLE artistEntryAnimeNyc2026;
+    DROP TABLE stampRallyEntry2023;
+    DROP TABLE stampRallyEntry2024;
+    DROP TABLE stampRallyEntry2025;
+    DROP TABLE stampRallyEntryAnimeExpo2026;
+    UPDATE artistEntry SET status = NULL;
+    UPDATE artistEntry SET editorNotes = NULL;
+    UPDATE artistEntry SET lastEditor = NULL;
+    UPDATE stampRallyEntry SET editorNotes = NULL;
+    UPDATE stampRallyEntry SET lastEditor = NULL;
 }

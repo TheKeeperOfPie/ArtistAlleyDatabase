@@ -92,8 +92,8 @@ private fun GetEntry.toArtistWithUserData(dataYear: DataYear) = ArtistWithUserDa
     )
 )
 
-fun com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry.toArtistEntry(dataYear: DataYear) =
-    ArtistEntry(toArtistDatabaseEntry(dataYear))
+fun com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry.toArtistEntry() =
+    ArtistEntry(toArtistDatabaseEntry())
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SingleIn(AppScope::class)
@@ -119,7 +119,7 @@ class ArtistEntryDao(
     suspend fun getEntriesByBooth(year: DataYear, booth: String) =
         dao().getEntriesByBooth(year, booth)
             .awaitAsList()
-            .map { it.toArtistEntry(year) }
+            .map { it.toArtistEntry() }
 
     fun getEntryFlow(id: String) = settings.dataYear
         .flatMapLatest { dataYear ->
@@ -151,10 +151,7 @@ class ArtistEntryDao(
         val tableName = "artistEntry"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
-            // TODO
-            if (tableName == "artistEntry") {
-                this += "$tableName.dataYear = '${year.serializedName}'"
-            }
+            this += "$tableName.dataYear = '${year.serializedName}'"
             if (onlyFavorites) this += "artistUserEntry.favorite = 1"
             if (lockedBooths.isNotEmpty()) {
                 this += "$tableName.booth IN " +
@@ -449,10 +446,7 @@ class ArtistEntryDao(
     ): Set<String> {
         val tableName = "artistEntry"
         val andClauses = mutableListOf<String>().apply {
-            // TODO
-            if (tableName == "artistEntry") {
-                this += "$tableName.dataYear = '${year.serializedName}'"
-            }
+            this += "$tableName.dataYear = '${year.serializedName}'"
             if (seriesIds.isNotEmpty()) {
                 val flag = TagYearFlag.getFlag(
                     year,

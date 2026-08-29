@@ -3,9 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.data
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
-fun StampRallyEntryAnimeExpo2026.toStampRallyDatabaseEntry() =
+fun StampRallyEntry.toStampRallyDatabaseEntry() =
     StampRallyDatabaseEntry(
-        year = DataYear.ANIME_EXPO_2026,
+        year = dataYear,
         id = id,
         fandom = fandom,
         hostTable = tables.firstOrNull().orEmpty(),
@@ -28,9 +28,10 @@ fun StampRallyEntryAnimeExpo2026.toStampRallyDatabaseEntry() =
         lastEditTime = lastEditTime,
     )
 
-fun StampRallyDatabaseEntry.toStampRallyEntryAnimeExpo2026() =
-    StampRallyEntryAnimeExpo2026(
+fun StampRallyDatabaseEntry.toStampRallyEntry(dataYear: DataYear) =
+    StampRallyEntry(
         id = id,
+        dataYear = dataYear,
         fandom = fandom,
         tables = tables,
         links = links,

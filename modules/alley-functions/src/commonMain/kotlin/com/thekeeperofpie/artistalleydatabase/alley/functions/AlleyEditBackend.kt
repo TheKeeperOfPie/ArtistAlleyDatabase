@@ -4,21 +4,15 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistEntryAnimeExpo2026History
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistEntryAnimeNyc2026History
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeExpo2026History
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeNyc2026
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataAnimeNyc2026History
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyEntryAnimeExpo2026History
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteData
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataHistory
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntryAnimeNyc2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntryHistory
@@ -45,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import kotlinx.coroutines.await
@@ -130,7 +125,7 @@ object AlleyEditBackend {
                     is BackendRequest.Series -> loadSeries(context)
                     is BackendRequest.SeriesDelete -> makeResponse(deleteSeries(context, this))
                     is BackendRequest.SeriesSave -> makeResponse(saveSeries(context, this))
-                    is BackendRequest.StampRallies -> loadStampRallies(context)
+                    is BackendRequest.StampRallies -> loadStampRallies(context, this)
                     is BackendRequest.StampRally -> makeResponse(loadStampRally(context, this))
                     is BackendRequest.StampRallySave ->
                         makeResponse(saveStampRally(context, this, null))
@@ -192,14 +187,14 @@ object AlleyEditBackend {
     private suspend fun loadArtists(
         context: EventContext,
         request: BackendRequest.Artists,
-    ): List<ArtistSummary> = when (request.dataYear) {
-        DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
-            .getArtists()
+    ): List<ArtistSummary> =
+        Databases.editDatabase(context).artistEntryQueries
+            .getArtistsByYear(request.dataYear)
             .awaitAsList()
             .map {
                 ArtistSummary(
-                    status = it.status,
-                    id = Uuid.parse(it.id),
+                    status = it.status ?: ArtistStatus.UNKNOWN,
+                    id = it.id,
                     booth = it.booth,
                     name = it.name,
                     socialLinks = it.socialLinks,
@@ -213,113 +208,43 @@ object AlleyEditBackend {
                     images = it.images,
                 )
             }
-        DataYear.ANIME_NYC_2026 -> Databases.editDatabase(context).artistEntryAnimeNyc2026Queries
-            .getArtists()
-            .awaitAsList()
-            .map {
-                ArtistSummary(
-                    status = it.status,
-                    id = Uuid.parse(it.id),
-                    booth = it.booth,
-                    name = it.name,
-                    socialLinks = it.socialLinks,
-                    storeLinks = it.storeLinks,
-                    portfolioLinks = it.portfolioLinks,
-                    catalogLinks = it.catalogLinks,
-                    seriesInferred = it.seriesInferred,
-                    seriesConfirmed = it.seriesConfirmed,
-                    merchInferred = it.merchInferred,
-                    merchConfirmed = it.merchConfirmed,
-                    images = it.images,
-                )
-            }
-        DataYear.ANIME_EXPO_2023,
-        DataYear.ANIME_EXPO_2024,
-        DataYear.ANIME_EXPO_2025,
-        DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025,
-            -> emptyList()
-    }
 
     private suspend fun loadArtist(
         context: EventContext,
         request: BackendRequest.Artist,
     ): ArtistDatabaseEntry.Impl? =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
-                .artistEntryAnimeExpo2026Queries
-                .getArtist(request.artistId.toString())
-                .awaitAsOneOrNull()
-                ?.toArtistDatabaseEntry()
-                ?.fixForJs()
-            DataYear.ANIME_NYC_2026 -> Databases.editDatabase(context)
-                .artistEntryAnimeNyc2026Queries
-                .getArtist(request.artistId.toString())
-                .awaitAsOneOrNull()
-                ?.toArtistDatabaseEntry()
-                ?.fixForJs()
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> null // TODO: Return legacy years?
-        }
+        Databases.editDatabase(context)
+            .artistEntryQueries
+            .getArtist(request.dataYear, request.artistId)
+            .awaitAsOneOrNull()
+            ?.toArtistDatabaseEntry()
+            ?.fixForJs()
 
     private suspend fun loadArtistWithFormMetadata(
         context: EventContext,
         request: BackendRequest.ArtistWithFormMetadata,
     ): BackendRequest.ArtistWithFormMetadata.Response? =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
-                .artistEntryAnimeExpo2026Queries
-                .getArtist(request.artistId.toString())
-                .awaitAsOneOrNull()
-                ?.toArtistDatabaseEntry()
-                ?.fixForJs()
-                ?.let {
-                    val formDatabase = Databases.formDatabase(context)
-                    val formEntry = formDatabase.artistFormEntryQueries
-                        .getFormEntry(request.dataYear, request.artistId)
-                        .awaitAsOneOrNull()
-                    BackendRequest.ArtistWithFormMetadata.Response(
-                        artist = it,
-                        hasPendingFormSubmission = formEntry != null,
-                        hasFormLink = coerceBooleanForJs(
-                            formDatabase.alleyFormPublicKeyQueries
-                                .hasPublicKey(request.artistId)
-                                .awaitAsOne()
-                        ),
-                    )
-                }
-            DataYear.ANIME_NYC_2026 -> Databases.editDatabase(context)
-                .artistEntryAnimeNyc2026Queries
-                .getArtist(request.artistId.toString())
-                .awaitAsOneOrNull()
-                ?.toArtistDatabaseEntry()
-                ?.fixForJs()
-                ?.let {
-                    val formDatabase = Databases.formDatabase(context)
-                    val formEntry = formDatabase.artistFormEntryQueries
-                        .getFormEntry(request.dataYear, request.artistId)
-                        .awaitAsOneOrNull()
-                    BackendRequest.ArtistWithFormMetadata.Response(
-                        artist = it,
-                        hasPendingFormSubmission = formEntry != null,
-                        hasFormLink = coerceBooleanForJs(
-                            formDatabase.alleyFormPublicKeyQueries
-                                .hasPublicKey(request.artistId)
-                                .awaitAsOne()
-                        ),
-                    )
-                }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> null // TODO: Return legacy years?
-        }
+        Databases.editDatabase(context)
+            .artistEntryQueries
+            .getArtist(request.dataYear, request.artistId)
+            .awaitAsOneOrNull()
+            ?.toArtistDatabaseEntry()
+            ?.fixForJs()
+            ?.let {
+                val formDatabase = Databases.formDatabase(context)
+                val formEntry = formDatabase.artistFormEntryQueries
+                    .getFormEntry(request.dataYear, request.artistId)
+                    .awaitAsOneOrNull()
+                BackendRequest.ArtistWithFormMetadata.Response(
+                    artist = it,
+                    hasPendingFormSubmission = formEntry != null,
+                    hasFormLink = coerceBooleanForJs(
+                        formDatabase.alleyFormPublicKeyQueries
+                            .hasPublicKey(request.artistId)
+                            .awaitAsOne()
+                    ),
+                )
+            }
 
     private suspend fun loadArtistFormQueue(
         context: EventContext,
@@ -469,157 +394,76 @@ object AlleyEditBackend {
     private suspend fun deleteArtist(
         context: EventContext,
         request: BackendRequest.ArtistDelete,
-    ): BackendRequest.ArtistDelete.Response =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                val database = Databases.editDatabase(context)
-                val currentArtist =
-                    database.artistEntryAnimeExpo2026Queries
-                        .getArtist(request.expected.id)
-                        .awaitAsOneOrNull()
-                        ?.toArtistDatabaseEntry()
-                        ?.fixForJs()
-                if (currentArtist == null || currentArtist != request.expected) {
-                    BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
-                } else {
-                    database.artistEntryAnimeExpo2026Queries
-                        .deleteArtist(request.expected.id)
-                    BackendRequest.ArtistDelete.Response.Success
-                }
-            }
-            DataYear.ANIME_NYC_2026 -> {
-                val database = Databases.editDatabase(context)
-                val currentArtist =
-                    database.artistEntryAnimeNyc2026Queries
-                        .getArtist(request.expected.id)
-                        .awaitAsOneOrNull()
-                        ?.toArtistDatabaseEntry()
-                        ?.fixForJs()
-                if (currentArtist == null || currentArtist != request.expected) {
-                    BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
-                } else {
-                    database.artistEntryAnimeNyc2026Queries
-                        .deleteArtist(request.expected.id)
-                    BackendRequest.ArtistDelete.Response.Success
-                }
-            }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> BackendRequest.ArtistDelete.Response.Failed("Cannot delete legacy years")
+    ): BackendRequest.ArtistDelete.Response {
+        val database = Databases.editDatabase(context)
+        val currentArtist =
+            database.artistEntryQueries
+                .getArtist(request.dataYear, Uuid.parse(request.expected.id))
+                .awaitAsOneOrNull()
+                ?.toArtistDatabaseEntry()
+                ?.fixForJs()
+        return if (currentArtist == null || currentArtist != request.expected) {
+            BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
+        } else {
+            database.artistEntryQueries.deleteArtist(
+                request.dataYear,
+                Uuid.parse(request.expected.id)
+            )
+            BackendRequest.ArtistDelete.Response.Success
         }
+    }
 
     private suspend fun loadArtistHistory(
         context: EventContext,
         request: BackendRequest.ArtistHistory,
     ): List<ArtistHistoryEntry> =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
-                .getHistory(request.artistId.toString())
-                .awaitAsList()
-                .map { it.toHistoryEntry() }
-            DataYear.ANIME_NYC_2026 -> Databases.editDatabase(context).artistEntryAnimeNyc2026Queries
-                .getHistory(request.artistId.toString())
-                .awaitAsList()
-                .map { it.toHistoryEntry() }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> emptyList() // TODO: Return legacy years?
-        }
+        Databases.editDatabase(context).artistEntryQueries
+            .getHistory(request.dataYear, request.artistId.toString())
+            .awaitAsList()
+            .map { it.toHistoryEntry() }
 
     private suspend fun saveArtist(
         context: EventContext,
         request: BackendRequest.ArtistSave,
         formTimestamp: Instant?,
         remoteTimestamp: Instant?,
-    ) = when (request.dataYear) {
-        DataYear.ANIME_EXPO_2026 -> {
-            val database = Databases.editDatabase(context)
-            val currentArtist =
-                database.artistEntryAnimeExpo2026Queries
-                    .getArtist(request.updated.id)
-                    .awaitAsOneOrNull()
-                    ?.toArtistDatabaseEntry()
-                    ?.fixForJs()
-            if (currentArtist != null && ArtistDatabaseEntry.hasChanged(
-                    before = currentArtist,
-                    after = request.initial,
-                )
-            ) {
-                BackendRequest.ArtistSave.Response.Outdated(currentArtist)
-            } else {
-                val updatedArtist = request.updated.copy(
-                    lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
-                    lastEditTime = Clock.System.now(),
-                )
-                val artistId = Uuid.parse(updatedArtist.id)
-                val historyEntry = ArtistHistoryEntry.create(
-                    before = currentArtist,
-                    after = updatedArtist,
-                    formTimestamp = formTimestamp,
-                    remoteTimestamp = remoteTimestamp,
-                ).toDatabaseEntryAnimExpo2026(artistId)
-                database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
-                database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
+    ): BackendRequest.ArtistSave.Response {
+        val database = Databases.editDatabase(context)
+        val currentArtist =
+            database.artistEntryQueries
+                .getArtist(request.dataYear, Uuid.parse(request.updated.id))
+                .awaitAsOneOrNull()
+                ?.toArtistDatabaseEntry()
+                ?.fixForJs()
+        return if (currentArtist != null && ArtistDatabaseEntry.hasChanged(
+                before = currentArtist,
+                after = request.initial,
+            )
+        ) {
+            BackendRequest.ArtistSave.Response.Outdated(currentArtist)
+        } else {
+            val updatedArtist = request.updated.copy(
+                lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
+                lastEditTime = Clock.System.now(),
+            )
+            val artistId = Uuid.parse(updatedArtist.id)
+            val historyEntry = ArtistHistoryEntry.create(
+                before = currentArtist,
+                after = updatedArtist,
+                formTimestamp = formTimestamp,
+                remoteTimestamp = remoteTimestamp,
+            ).toDatabaseEntry(request.dataYear, artistId)
+            database.artistEntryQueries.insertHistory(historyEntry)
+            database.artistEntryQueries.insertArtist(updatedArtist.toArtistEntry(request.dataYear))
 
-                consumeCatalogEntry(
-                    database = database,
-                    dataYear = request.dataYear,
-                    artistId = artistId,
-                    catalogLinks = updatedArtist.catalogLinks
-                )
-                BackendRequest.ArtistSave.Response.Success
-            }
+            consumeCatalogEntry(
+                database = database,
+                dataYear = request.dataYear,
+                artistId = artistId,
+                catalogLinks = updatedArtist.catalogLinks
+            )
+            BackendRequest.ArtistSave.Response.Success
         }
-        DataYear.ANIME_NYC_2026 -> {
-            val database = Databases.editDatabase(context)
-            val currentArtist =
-                database.artistEntryAnimeNyc2026Queries
-                    .getArtist(request.updated.id)
-                    .awaitAsOneOrNull()
-                    ?.toArtistDatabaseEntry()
-                    ?.fixForJs()
-            if (currentArtist != null && ArtistDatabaseEntry.hasChanged(
-                    before = currentArtist,
-                    after = request.initial,
-                )
-            ) {
-                BackendRequest.ArtistSave.Response.Outdated(currentArtist)
-            } else {
-                val updatedArtist = request.updated.copy(
-                    lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
-                    lastEditTime = Clock.System.now(),
-                )
-                val artistId = Uuid.parse(updatedArtist.id)
-                val historyEntry = ArtistHistoryEntry.create(
-                    before = currentArtist,
-                    after = updatedArtist,
-                    formTimestamp = formTimestamp,
-                    remoteTimestamp = remoteTimestamp,
-                ).toDatabaseEntryAnimeNyc2026(artistId)
-                database.artistEntryAnimeNyc2026Queries.insertHistory(historyEntry)
-                database.artistEntryAnimeNyc2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeNyc2026())
-
-                consumeCatalogEntry(
-                    database = database,
-                    dataYear = request.dataYear,
-                    artistId = artistId,
-                    catalogLinks = updatedArtist.catalogLinks
-                )
-                BackendRequest.ArtistSave.Response.Success
-            }
-        }
-        DataYear.ANIME_EXPO_2023,
-        DataYear.ANIME_EXPO_2024,
-        DataYear.ANIME_EXPO_2025,
-        DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025,
-            -> BackendRequest.ArtistSave.Response.Failed("Editing legacy years not supported")
     }
 
     private suspend fun consumeCatalogEntry(
@@ -803,8 +647,11 @@ object AlleyEditBackend {
         return BackendRequest.MerchDelete.Response.Success
     }
 
-    private suspend fun loadStampRallies(context: EventContext): Response =
-        literalJsonResponse(BackendUtils.loadStampRallySummaries(context).first)
+    private suspend fun loadStampRallies(
+        context: EventContext,
+        request: BackendRequest.StampRallies,
+    ): Response =
+        literalJsonResponse(BackendUtils.loadStampRallySummaries(context, request.dataYear).first)
 
     private suspend fun loadStampRally(
         context: EventContext,
@@ -815,136 +662,102 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.StampRallySave,
         formTimestamp: Instant?,
-    ) = when (request.dataYear) {
-        DataYear.ANIME_EXPO_2026 -> {
-            val database = Databases.editDatabase(context)
-            val currentStampRally =
-                database.stampRallyEntryAnimeExpo2026Queries
-                    .getStampRally(request.updated.id)
-                    .awaitAsOneOrNull()
-                    ?.toStampRallyDatabaseEntry()
-                    ?.fixForJs()
-            if (currentStampRally != null && currentStampRally != request.initial) {
-                BackendRequest.StampRallySave.Response.Outdated(currentStampRally)
-            } else {
-                val updatedStampRally = request.updated.copy(
-                    lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
-                    lastEditTime = Clock.System.now(),
+    ): BackendRequest.StampRallySave.Response {
+        val database = Databases.editDatabase(context)
+        val currentStampRally =
+            database.stampRallyEntryQueries
+                .getStampRally(request.dataYear, request.updated.id)
+                .awaitAsOneOrNull()
+                ?.toStampRallyDatabaseEntry()
+                ?.fixForJs()
+        return if (currentStampRally != null && currentStampRally != request.initial) {
+            BackendRequest.StampRallySave.Response.Outdated(currentStampRally)
+        } else {
+            val updatedStampRally = request.updated.copy(
+                lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
+                lastEditTime = Clock.System.now(),
+            )
+            val historyEntry = StampRallyHistoryEntry.create(
+                before = currentStampRally,
+                after = updatedStampRally,
+                formTimestamp = formTimestamp
+            ).toDatabaseEntry(request.dataYear, updatedStampRally.id)
+            database.stampRallyEntryQueries.insertHistory(historyEntry)
+            database.stampRallyEntryQueries.insertStampRally(
+                updatedStampRally.toStampRallyEntry(
+                    request.dataYear
                 )
-                val historyEntry = StampRallyHistoryEntry.create(
-                    before = currentStampRally,
-                    after = updatedStampRally,
-                    formTimestamp = formTimestamp
-                ).toDatabaseEntry(updatedStampRally.id)
-                database.stampRallyEntryAnimeExpo2026Queries.insertHistory(historyEntry)
-                database.stampRallyEntryAnimeExpo2026Queries.insertStampRally(updatedStampRally.toStampRallyEntryAnimeExpo2026())
-                KeyValueCacher(context).invalidateStampRallies()
+            )
+            KeyValueCacher(context).invalidateStampRallies()
 
-                updatedStampRally.links.forEach {
-                    database.stampRallyQueueEntryQueries
-                        .deleteStampRallyQueueEntry(request.dataYear, it)
-                }
-
-                BackendRequest.StampRallySave.Response.Success
+            updatedStampRally.links.forEach {
+                database.stampRallyQueueEntryQueries
+                    .deleteStampRallyQueueEntry(request.dataYear, it)
             }
+
+            BackendRequest.StampRallySave.Response.Success
         }
-        DataYear.ANIME_NYC_2026 -> BackendRequest.StampRallySave.Response.Failed("Rallies not supported for ${request.dataYear}")
-        DataYear.ANIME_EXPO_2023,
-        DataYear.ANIME_EXPO_2024,
-        DataYear.ANIME_EXPO_2025,
-        DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025,
-            -> BackendRequest.StampRallySave.Response.Failed("Editing legacy years not supported")
     }
 
     private suspend fun deleteStampRally(
         context: EventContext,
         request: BackendRequest.StampRallyDelete,
-    ): BackendRequest.StampRallyDelete.Response =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                val database = Databases.editDatabase(context)
-                val currentStampRally =
-                    database.stampRallyEntryAnimeExpo2026Queries
-                        .getStampRally(request.expected.id)
-                        .awaitAsOneOrNull()
-                        ?.toStampRallyDatabaseEntry()
-                        ?.fixForJs()
-                if (currentStampRally == null || currentStampRally != request.expected) {
-                    BackendRequest.StampRallyDelete.Response.Outdated(currentStampRally)
-                } else {
-                    database.stampRallyEntryAnimeExpo2026Queries
-                        .deleteStampRally(request.expected.id)
-                    KeyValueCacher(context).invalidateStampRallies()
-                    BackendRequest.StampRallyDelete.Response.Success
-                }
-            }
-            DataYear.ANIME_NYC_2026 -> BackendRequest.StampRallyDelete.Response.Failed("Rallies not supported for ${request.dataYear}")
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> BackendRequest.StampRallyDelete.Response.Failed("Cannot delete legacy years")
+    ): BackendRequest.StampRallyDelete.Response {
+        val database = Databases.editDatabase(context)
+        val currentStampRally =
+            database.stampRallyEntryQueries
+                .getStampRally(request.dataYear, request.expected.id)
+                .awaitAsOneOrNull()
+                ?.toStampRallyDatabaseEntry()
+                ?.fixForJs()
+        return if (currentStampRally == null || currentStampRally != request.expected) {
+            BackendRequest.StampRallyDelete.Response.Outdated(currentStampRally)
+        } else {
+            database.stampRallyEntryQueries
+                .deleteStampRally(request.dataYear, request.expected.id)
+            KeyValueCacher(context).invalidateStampRallies()
+            BackendRequest.StampRallyDelete.Response.Success
         }
+    }
 
     private suspend fun deleteStampRallyFromForm(
         context: EventContext,
         request: BackendRequest.StampRallyDeleteFromForm,
-    ): BackendRequest.StampRallyDeleteFromForm.Response =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                val database = Databases.editDatabase(context)
-                val currentStampRally =
-                    database.stampRallyEntryAnimeExpo2026Queries
-                        .getStampRally(request.expected.id)
-                        .awaitAsOneOrNull()
-                        ?.toStampRallyDatabaseEntry()
-                        ?.fixForJs()
-                if (currentStampRally == null || currentStampRally != request.expected) {
-                    BackendRequest.StampRallyDeleteFromForm.Response.Outdated(currentStampRally)
-                } else {
-                    database.stampRallyEntryAnimeExpo2026Queries
-                        .deleteStampRally(request.expected.id)
-                    KeyValueCacher(context).invalidateStampRallies()
+    ): BackendRequest.StampRallyDeleteFromForm.Response {
+        val database = Databases.editDatabase(context)
+        val currentStampRally =
+            database.stampRallyEntryQueries
+                .getStampRally(request.dataYear, request.expected.id)
+                .awaitAsOneOrNull()
+                ?.toStampRallyDatabaseEntry()
+                ?.fixForJs()
+        return if (currentStampRally == null || currentStampRally != request.expected) {
+            BackendRequest.StampRallyDeleteFromForm.Response.Outdated(currentStampRally)
+        } else {
+            database.stampRallyEntryQueries
+                .deleteStampRally(request.dataYear, request.expected.id)
+            KeyValueCacher(context).invalidateStampRallies()
 
-                    consumeStampRallyFormEntry(
-                        context = context,
-                        dataYear = request.dataYear,
-                        artistId = request.artistId,
-                        stampRallyId = request.expected.id,
-                        formEntryTimestamp = request.formEntryTimestamp,
-                    )
+            consumeStampRallyFormEntry(
+                context = context,
+                dataYear = request.dataYear,
+                artistId = request.artistId,
+                stampRallyId = request.expected.id,
+                formEntryTimestamp = request.formEntryTimestamp,
+            )
 
-                    BackendRequest.StampRallyDeleteFromForm.Response.Success
-                }
-            }
-            DataYear.ANIME_NYC_2026 -> BackendRequest.StampRallyDeleteFromForm.Response.Failed("Rallies not supported for ${request.dataYear}")
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> BackendRequest.StampRallyDeleteFromForm.Response.Failed("Cannot delete legacy years")
+            BackendRequest.StampRallyDeleteFromForm.Response.Success
         }
+    }
 
     private suspend fun loadStampRallyHistory(
         context: EventContext,
         request: BackendRequest.StampRallyHistory,
     ): List<StampRallyHistoryEntry> =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
-                .getHistory(request.stampRallyId)
-                .awaitAsList()
-                .map { it.toHistoryEntry() }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_NYC_2026,
-                -> emptyList() // TODO: Return legacy years?
-        }
+        Databases.editDatabase(context).stampRallyEntryQueries
+            .getHistory(request.dataYear, request.stampRallyId)
+            .awaitAsList()
+            .map { it.toHistoryEntry() }
 
     private suspend fun deleteStampRallyQueueEntry(
         context: EventContext,
@@ -1158,293 +971,133 @@ object AlleyEditBackend {
     private suspend fun loadRemoteArtistData(
         context: EventContext,
         request: BackendRequest.RemoteArtistData,
-    ): List<ArtistRemoteSummary> {
-        val database = Databases.editDatabase(context)
-        return when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 ->
-                database.artistRemoteDataAnimeExpo2026Queries
-                    .getEntrySummaries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteSummary(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            timestamp = it.timestamp,
-                        )
-                    }
-            DataYear.ANIME_NYC_2026 ->
-                database.artistRemoteDataAnimeNyc2026Queries
-                    .getEntrySummaries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteSummary(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            timestamp = it.timestamp,
-                        )
-                    }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> emptyList()
-        }
-    }
+    ): List<ArtistRemoteSummary> =
+        Databases.editDatabase(context).artistRemoteDataQueries
+            .getEntrySummaries(request.dataYear)
+            .awaitAsList()
+            .map {
+                ArtistRemoteSummary(
+                    confirmedId = it.confirmedId,
+                    booth = it.booth,
+                    name = it.name,
+                    timestamp = it.timestamp,
+                )
+            }
 
     private suspend fun loadRemoteArtistDataEntry(
         context: EventContext,
         request: BackendRequest.RemoteArtistDataEntry,
-    ): ArtistRemoteEntry? {
-        val database = Databases.editDatabase(context)
-        return when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 ->
-                database.artistRemoteDataAnimeExpo2026Queries
-                    .getEntry(booth = request.id.booth, name = request.id.name)
-                    .awaitAsOneOrNull()
-                    ?.let {
-                        ArtistRemoteEntry(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links.orEmpty(),
-                            timestamp = it.timestamp,
-                        )
-                    }
-            DataYear.ANIME_NYC_2026 ->
-                database.artistRemoteDataAnimeNyc2026Queries
-                    .getEntry(booth = request.id.booth, name = request.id.name)
-                    .awaitAsOneOrNull()
-                    ?.let {
-                        ArtistRemoteEntry(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links.orEmpty(),
-                            timestamp = it.timestamp,
-                        )
-                    }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> null
-        }
-    }
+    ): ArtistRemoteEntry? =
+        Databases.editDatabase(context).artistRemoteDataQueries
+            .getEntry(dataYear = request.dataYear, booth = request.id.booth, name = request.id.name)
+            .awaitAsOneOrNull()
+            ?.let {
+                ArtistRemoteEntry(
+                    confirmedId = it.confirmedId,
+                    booth = it.booth,
+                    name = it.name,
+                    summary = it.summary,
+                    links = it.links.orEmpty(),
+                    timestamp = it.timestamp,
+                )
+            }
 
     private suspend fun loadRemoteArtistDataForDiff(
         context: EventContext,
         request: BackendRequest.RemoteArtistDataForDiff,
     ): Map<ArtistRemoteEntry.Id, ArtistRemoteEntry> {
         val database = Databases.editDatabase(context)
-        return when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                val queries = database.artistRemoteDataAnimeExpo2026Queries
-                val history = queries.getMostRecentHistoryEntries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteEntry(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links.orEmpty(),
-                            timestamp = it.timestamp,
-                        )
-                    }
-                    .associateBy { it.id }
-
-                val entries = queries.getEntries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteEntry(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links.orEmpty(),
-                            timestamp = it.timestamp,
-                        )
-                    }
-                    .associateBy { it.id }
-                history + entries
+        val queries = database.artistRemoteDataQueries
+        val history = queries.getMostRecentHistoryEntries(request.dataYear)
+            .awaitAsList()
+            .map {
+                ArtistRemoteEntry(
+                    confirmedId = it.confirmedId,
+                    booth = it.booth,
+                    name = it.name,
+                    summary = it.summary,
+                    links = it.links.orEmpty(),
+                    timestamp = it.timestamp,
+                )
             }
-            DataYear.ANIME_NYC_2026 -> {
-                val queries = database.artistRemoteDataAnimeNyc2026Queries
-                val history = queries.getMostRecentHistoryEntries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteEntry(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links.orEmpty(),
-                            timestamp = it.timestamp,
-                        )
-                    }
-                    .associateBy { it.id }
+            .associateBy { it.id }
 
-                val entries = queries.getEntries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteEntry(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links.orEmpty(),
-                            timestamp = it.timestamp,
-                        )
-                    }
-                    .associateBy { it.id }
-                history + entries
+        val entries = queries.getEntries(request.dataYear)
+            .awaitAsList()
+            .map {
+                ArtistRemoteEntry(
+                    confirmedId = it.confirmedId,
+                    booth = it.booth,
+                    name = it.name,
+                    summary = it.summary,
+                    links = it.links.orEmpty(),
+                    timestamp = it.timestamp,
+                )
             }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> emptyMap()
-        }
+            .associateBy { it.id }
+        return history + entries
     }
 
     private suspend fun loadRemoteArtistDataHistory(
         context: EventContext,
         request: BackendRequest.RemoteArtistDataHistory,
-    ): List<ArtistRemoteSummary> {
-        val database = Databases.editDatabase(context)
-        return when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 ->
-                database.artistRemoteDataAnimeExpo2026Queries
-                    .getMostRecentHistorySummaries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteSummary(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            timestamp = it.timestamp,
-                        )
-                    }
-            DataYear.ANIME_NYC_2026 ->
-                database.artistRemoteDataAnimeNyc2026Queries
-                    .getMostRecentHistorySummaries()
-                    .awaitAsList()
-                    .map {
-                        ArtistRemoteSummary(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            timestamp = it.timestamp,
-                        )
-                    }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> emptyList()
-        }
-    }
+    ): List<ArtistRemoteSummary> =
+        Databases.editDatabase(context).artistRemoteDataQueries
+            .getMostRecentHistorySummaries(request.dataYear)
+            .awaitAsList()
+            .map {
+                ArtistRemoteSummary(
+                    confirmedId = it.confirmedId,
+                    booth = it.booth,
+                    name = it.name,
+                    timestamp = it.timestamp,
+                )
+            }
 
     private suspend fun loadRemoteArtistDataHistoryEntry(
         context: EventContext,
         request: BackendRequest.RemoteArtistDataHistoryEntry,
     ): ArtistRemoteEntry? {
         val database = Databases.editDatabase(context)
-        return when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                val timestamp = request.timestamp
-                if (timestamp == null) {
-                    database.artistRemoteDataAnimeExpo2026Queries
-                        .getHistoryEntries(
-                            booth = request.id.booth,
-                            name = request.id.name,
-                        )
-                        .awaitAsList()
-                        .maxByOrNull { it.timestamp }
-                        ?.let {
-                            ArtistRemoteEntry(
-                                confirmedId = it.confirmedId,
-                                booth = it.booth,
-                                name = it.name,
-                                summary = it.summary,
-                                links = it.links.orEmpty(),
-                                timestamp = it.timestamp,
-                            )
-                        }
-                } else {
-                    database.artistRemoteDataAnimeExpo2026Queries
-                        .getHistoryEntry(
-                            booth = request.id.booth,
-                            name = request.id.name,
-                            timestamp = timestamp,
-                        )
-                        .awaitAsOneOrNull()
-                        ?.let {
-                            ArtistRemoteEntry(
-                                confirmedId = it.confirmedId,
-                                booth = it.booth,
-                                name = it.name,
-                                summary = it.summary,
-                                links = it.links.orEmpty(),
-                                timestamp = it.timestamp,
-                            )
-                        }
+        val timestamp = request.timestamp
+        return if (timestamp == null) {
+            database.artistRemoteDataQueries
+                .getHistoryEntries(
+                    dataYear = request.dataYear,
+                    booth = request.id.booth,
+                    name = request.id.name,
+                )
+                .awaitAsList()
+                .maxByOrNull { it.timestamp }
+                ?.let {
+                    ArtistRemoteEntry(
+                        confirmedId = it.confirmedId,
+                        booth = it.booth,
+                        name = it.name,
+                        summary = it.summary,
+                        links = it.links.orEmpty(),
+                        timestamp = it.timestamp,
+                    )
                 }
-            }
-            DataYear.ANIME_NYC_2026 -> {
-                val timestamp = request.timestamp
-                if (timestamp == null) {
-                    database.artistRemoteDataAnimeNyc2026Queries
-                        .getHistoryEntries(
-                            booth = request.id.booth,
-                            name = request.id.name,
-                        )
-                        .awaitAsList()
-                        .maxByOrNull { it.timestamp }
-                        ?.let {
-                            ArtistRemoteEntry(
-                                confirmedId = it.confirmedId,
-                                booth = it.booth,
-                                name = it.name,
-                                summary = it.summary,
-                                links = it.links.orEmpty(),
-                                timestamp = it.timestamp,
-                            )
-                        }
-                } else {
-                    database.artistRemoteDataAnimeNyc2026Queries
-                        .getHistoryEntry(
-                            booth = request.id.booth,
-                            name = request.id.name,
-                            timestamp = timestamp,
-                        )
-                        .awaitAsOneOrNull()
-                        ?.let {
-                            ArtistRemoteEntry(
-                                confirmedId = it.confirmedId,
-                                booth = it.booth,
-                                name = it.name,
-                                summary = it.summary,
-                                links = it.links.orEmpty(),
-                                timestamp = it.timestamp,
-                            )
-                        }
+        } else {
+            database.artistRemoteDataQueries
+                .getHistoryEntry(
+                    dataYear = request.dataYear,
+                    booth = request.id.booth,
+                    name = request.id.name,
+                    timestamp = timestamp,
+                )
+                .awaitAsOneOrNull()
+                ?.let {
+                    ArtistRemoteEntry(
+                        confirmedId = it.confirmedId,
+                        booth = it.booth,
+                        name = it.name,
+                        summary = it.summary,
+                        links = it.links.orEmpty(),
+                        timestamp = it.timestamp,
+                    )
                 }
-            }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> null
         }
     }
 
@@ -1452,45 +1105,20 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.SubmitRemoteArtistData,
     ) {
-        val database = Databases.editDatabase(context)
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                val queries = database.artistRemoteDataAnimeExpo2026Queries
-                request.data
-                    .map {
-                        ArtistRemoteDataAnimeExpo2026(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links,
-                            timestamp = it.timestamp,
-                        )
-                    }
-                    .forEach { queries.insertEntry(it) }
+        val queries = Databases.editDatabase(context).artistRemoteDataQueries
+        request.data
+            .map {
+                ArtistRemoteData(
+                    confirmedId = it.confirmedId,
+                    dataYear = request.dataYear,
+                    booth = it.booth,
+                    name = it.name,
+                    summary = it.summary,
+                    links = it.links,
+                    timestamp = it.timestamp,
+                )
             }
-            DataYear.ANIME_NYC_2026 -> {
-                val queries = database.artistRemoteDataAnimeNyc2026Queries
-                request.data
-                    .map {
-                        ArtistRemoteDataAnimeNyc2026(
-                            confirmedId = it.confirmedId,
-                            booth = it.booth,
-                            name = it.name,
-                            summary = it.summary,
-                            links = it.links,
-                            timestamp = it.timestamp,
-                        )
-                    }
-                    .forEach { queries.insertEntry(it) }
-            }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> Unit
-        }
+            .forEach { queries.insertEntry(it) }
     }
 
     private suspend fun saveRemoteArtistData(
@@ -1521,85 +1149,41 @@ object AlleyEditBackend {
             return BackendRequest.SaveRemoteArtistData.Response.Success
         }
 
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                database.artistRemoteDataAnimeExpo2026Queries.run {
-                    val currentEntry =
-                        getEntry(request.entry.booth, request.entry.name).awaitAsOneOrNull()
-                    if (currentEntry?.let {
-                            ArtistRemoteEntry(
-                                confirmedId = it.confirmedId,
-                                booth = it.booth,
-                                name = it.name,
-                                summary = it.summary,
-                                links = it.links.orEmpty(),
-                                timestamp = it.timestamp,
-                            )
-                        } != request.entry
-                    ) {
-                        return BackendRequest.SaveRemoteArtistData.Response.Failed(
-                            "Remote entry mismatch"
-                        )
-                    }
-                    insertHistory(
-                        ArtistRemoteDataAnimeExpo2026History(
-                            confirmedId = Uuid.parse(request.updated.id),
-                            booth = currentEntry.booth,
-                            name = currentEntry.name,
-                            summary = currentEntry.summary,
-                            links = currentEntry.links,
-                            timestamp = currentEntry.timestamp,
-                        )
+        database.artistRemoteDataQueries.run {
+            val currentEntry =
+                getEntry(request.dataYear, request.entry.booth, request.entry.name).awaitAsOneOrNull()
+            if (currentEntry?.let {
+                    ArtistRemoteEntry(
+                        confirmedId = it.confirmedId,
+                        booth = it.booth,
+                        name = it.name,
+                        summary = it.summary,
+                        links = it.links.orEmpty(),
+                        timestamp = it.timestamp,
                     )
-                    consumeEntry(
-                        booth = request.entry.booth,
-                        name = request.entry.name,
-                        timestamp = request.entry.timestamp,
-                    )
-                }
+                } != request.entry
+            ) {
+                return BackendRequest.SaveRemoteArtistData.Response.Failed(
+                    "Remote entry mismatch"
+                )
             }
-            DataYear.ANIME_NYC_2026 -> {
-                database.artistRemoteDataAnimeNyc2026Queries.run {
-                    val currentEntry =
-                        getEntry(request.entry.booth, request.entry.name).awaitAsOneOrNull()
-                    if (currentEntry?.let {
-                            ArtistRemoteEntry(
-                                confirmedId = it.confirmedId,
-                                booth = it.booth,
-                                name = it.name,
-                                summary = it.summary,
-                                links = it.links.orEmpty(),
-                                timestamp = it.timestamp,
-                            )
-                        } != request.entry
-                    ) {
-                        return BackendRequest.SaveRemoteArtistData.Response.Failed(
-                            "Remote entry mismatch"
-                        )
-                    }
-                    insertHistory(
-                        ArtistRemoteDataAnimeNyc2026History(
-                            confirmedId = Uuid.parse(request.updated.id),
-                            booth = currentEntry.booth,
-                            name = currentEntry.name,
-                            summary = currentEntry.summary,
-                            links = currentEntry.links,
-                            timestamp = currentEntry.timestamp,
-                        )
-                    )
-                    consumeEntry(
-                        booth = request.entry.booth,
-                        name = request.entry.name,
-                        timestamp = request.entry.timestamp,
-                    )
-                }
-            }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> Unit
+            insertHistory(
+                ArtistRemoteDataHistory(
+                    confirmedId = Uuid.parse(request.updated.id),
+                    dataYear = currentEntry.dataYear,
+                    booth = currentEntry.booth,
+                    name = currentEntry.name,
+                    summary = currentEntry.summary,
+                    links = currentEntry.links,
+                    timestamp = currentEntry.timestamp,
+                )
+            )
+            consumeEntry(
+                dataYear = request.dataYear,
+                booth = request.entry.booth,
+                name = request.entry.name,
+                timestamp = request.entry.timestamp,
+            )
         }
         return BackendRequest.SaveRemoteArtistData.Response.Success
     }
@@ -1713,33 +1297,7 @@ object AlleyEditBackend {
         yearFlags = 0L,
     )
 
-    private fun ArtistHistoryEntry.toDatabaseEntryAnimExpo2026(id: Uuid) =
-        ArtistEntryAnimeExpo2026History(
-            id = id.toString(),
-            status = status,
-            booth = booth,
-            name = name,
-            summary = summary,
-            socialLinks = socialLinks,
-            storeLinks = storeLinks,
-            portfolioLinks = portfolioLinks,
-            catalogLinks = catalogLinks,
-            notes = notes,
-            commissions = commissions,
-            seriesInferred = seriesInferred,
-            seriesConfirmed = seriesConfirmed,
-            merchInferred = merchInferred,
-            merchConfirmed = merchConfirmed,
-            images = images,
-            profileImage = profileImage,
-            editorNotes = editorNotes,
-            lastEditor = lastEditor,
-            lastEditTime = timestamp,
-            formTimestamp = formTimestamp,
-            remoteTimestamp = remoteTimestamp,
-        )
-
-    private fun ArtistEntryAnimeExpo2026History.toHistoryEntry() =
+    private fun com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistHistoryEntry.toHistoryEntry() =
         ArtistHistoryEntry(
             status = status,
             booth = booth,
@@ -1764,9 +1322,10 @@ object AlleyEditBackend {
             remoteTimestamp = remoteTimestamp,
         )
 
-    private fun ArtistHistoryEntry.toDatabaseEntryAnimeNyc2026(id: Uuid) =
-        ArtistEntryAnimeNyc2026History(
+    private fun ArtistHistoryEntry.toDatabaseEntry(dataYear: DataYear, id: Uuid) =
+        com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistHistoryEntry(
             id = id.toString(),
+            dataYear = dataYear,
             status = status,
             booth = booth,
             name = name,
@@ -1790,34 +1349,10 @@ object AlleyEditBackend {
             remoteTimestamp = remoteTimestamp,
         )
 
-    private fun ArtistEntryAnimeNyc2026History.toHistoryEntry() =
-        ArtistHistoryEntry(
-            status = status,
-            booth = booth,
-            name = name,
-            summary = summary,
-            socialLinks = socialLinks,
-            storeLinks = storeLinks,
-            portfolioLinks = portfolioLinks,
-            catalogLinks = catalogLinks,
-            notes = notes,
-            commissions = commissions,
-            seriesInferred = seriesInferred,
-            seriesConfirmed = seriesConfirmed,
-            merchInferred = merchInferred,
-            merchConfirmed = merchConfirmed,
-            images = images,
-            profileImage = profileImage,
-            editorNotes = editorNotes,
-            lastEditor = lastEditor,
-            timestamp = lastEditTime,
-            formTimestamp = formTimestamp,
-            remoteTimestamp = remoteTimestamp,
-        )
-
-    private fun StampRallyHistoryEntry.toDatabaseEntry(id: String) =
-        StampRallyEntryAnimeExpo2026History(
+    private fun StampRallyHistoryEntry.toDatabaseEntry(dataYear: DataYear, id: String) =
+        com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyHistoryEntry(
             id = id,
+            dataYear = dataYear,
             fandom = fandom,
             tables = tables,
             startTables = startTables,
@@ -1838,7 +1373,7 @@ object AlleyEditBackend {
             formTimestamp = formTimestamp,
         )
 
-    private fun StampRallyEntryAnimeExpo2026History.toHistoryEntry() =
+    private fun com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyHistoryEntry.toHistoryEntry() =
         StampRallyHistoryEntry(
             fandom = fandom,
             tables = tables,

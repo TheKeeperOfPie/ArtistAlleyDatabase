@@ -202,14 +202,6 @@ object ColumnAdapters {
         merchConfirmedAdapter = setStringAdapter,
         imagesAdapter = listDatabaseImageAdapter,
     )
-    val artistEntryAnimeNyc2026ChangelogAdapter = ArtistEntryAnimeNyc2026Changelog.Adapter(
-        artistIdAdapter = uuidAdapter,
-        seriesInferredAdapter = setStringAdapter,
-        seriesConfirmedAdapter = setStringAdapter,
-        merchInferredAdapter = setStringAdapter,
-        merchConfirmedAdapter = setStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-    )
     val stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
         tablesAdapter = listStringAdapter,
         linksAdapter = listStringAdapter,

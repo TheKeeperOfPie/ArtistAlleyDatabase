@@ -22,8 +22,9 @@ DROP TABLE IF EXISTS stampRallyEntryAnimeExpo2026_fts;
 DROP TABLE IF EXISTS seriesEntry_fts;
 DROP TABLE IF EXISTS merchEntry_fts;
 
-CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
+CREATE TABLE IF NOT EXISTS artistHistoryEntry (
     id TEXT,
+    dataYear TEXT AS DataYear NOT NULL,
     status TEXT AS ArtistStatus,
     booth TEXT COLLATE NOCASE,
     name TEXT COLLATE NOCASE,
@@ -47,37 +48,11 @@ CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
     remoteTimestamp TEXT AS Instant
 );
 
-CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEntryAnimeExpo2026History (id);
+CREATE INDEX IF NOT EXISTS index_artistHistoryEntry_id ON artistHistoryEntry (id);
 
-CREATE TABLE IF NOT EXISTS artistEntryAnimeNyc2026History (
+CREATE TABLE IF NOT EXISTS stampRallyHistoryEntry (
     id TEXT,
-    status TEXT AS ArtistStatus,
-    booth TEXT COLLATE NOCASE,
-    name TEXT COLLATE NOCASE,
-    summary TEXT,
-    socialLinks TEXT AS List<String>,
-    storeLinks TEXT AS List<String>,
-    portfolioLinks TEXT AS List<String>,
-    catalogLinks TEXT AS List<String>,
-    notes TEXT,
-    commissions TEXT AS List<String>,
-    seriesInferred TEXT AS List<String>,
-    seriesConfirmed TEXT AS List<String>,
-    merchInferred TEXT AS List<String>,
-    merchConfirmed TEXT AS List<String>,
-    images TEXT AS List<DatabaseImage>,
-    profileImage TEXT AS DatabaseImage DEFAULT NULL,
-    editorNotes TEXT,
-    lastEditor TEXT,
-    lastEditTime TEXT AS Instant NOT NULL,
-    formTimestamp TEXT AS Instant,
-    remoteTimestamp TEXT AS Instant
-);
-
-CREATE INDEX IF NOT EXISTS index_artistEntryAnimeNyc2026History_id ON artistEntryAnimeNyc2026History (id);
-
-CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
-    id TEXT,
+    dataYear TEXT AS DataYear NOT NULL,
     fandom TEXT COLLATE NOCASE,
     tables TEXT AS List<String>,
     startTables TEXT AS Set<String> DEFAULT NULL,
@@ -96,47 +71,29 @@ CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     lastEditor TEXT,
     lastEditTime TEXT AS Instant NOT NULL,
     formTimestamp TEXT AS Instant,
-    PRIMARY KEY (id, formTimestamp)
+    PRIMARY KEY (dataYear, id, formTimestamp)
 );
 
-CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeExpo2026 (
+CREATE TABLE IF NOT EXISTS artistRemoteData (
     confirmedId TEXT AS Uuid,
+    dataYear TEXT AS DataYear NOT NULL,
     booth TEXT NOT NULL,
     name TEXT NOT NULL,
     summary TEXT,
     links TEXT AS List<String>,
     timestamp TEXT AS Instant NOT NULL,
-    PRIMARY KEY (booth, name)
+    PRIMARY KEY (dataYear, booth, name)
 );
 
-CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeExpo2026History (
+CREATE TABLE IF NOT EXISTS artistRemoteDataHistory (
     confirmedId TEXT AS Uuid,
+    dataYear TEXT AS DataYear NOT NULL,
     booth TEXT NOT NULL,
     name TEXT NOT NULL,
     summary TEXT,
     links TEXT AS List<String>,
     timestamp TEXT AS Instant NOT NULL,
-    PRIMARY KEY (booth, name, timestamp)
-);
-
-CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeNyc2026 (
-    confirmedId TEXT AS Uuid,
-    booth TEXT NOT NULL,
-    name TEXT NOT NULL,
-    summary TEXT,
-    links TEXT AS List<String>,
-    timestamp TEXT AS Instant NOT NULL,
-    PRIMARY KEY (booth, name)
-);
-
-CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeNyc2026History (
-    confirmedId TEXT AS Uuid,
-    booth TEXT NOT NULL,
-    name TEXT NOT NULL,
-    summary TEXT,
-    links TEXT AS List<String>,
-    timestamp TEXT AS Instant NOT NULL,
-    PRIMARY KEY (booth, name, timestamp)
+    PRIMARY KEY (dataYear, booth, name, timestamp)
 );
 
 CREATE TABLE IF NOT EXISTS artistCatalogQueueEntry (

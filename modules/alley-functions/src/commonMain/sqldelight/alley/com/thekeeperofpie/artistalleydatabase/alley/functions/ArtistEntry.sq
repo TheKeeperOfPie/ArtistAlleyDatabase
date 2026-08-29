@@ -1,0 +1,30 @@
+getArtistsByYear:
+SELECT *
+FROM artistEntry
+WHERE dataYear = :dataYear;
+
+insertArtist:
+INSERT OR REPLACE INTO artistEntry
+VALUES ?;
+
+getArtist:
+SELECT * FROM artistEntry
+WHERE dataYear = :dataYear AND id = :id;
+
+getHistory:
+SELECT * FROM artistHistoryEntry
+WHERE dataYear = :dataYear AND id = :id
+ORDER BY lastEditTime DESC;
+
+insertHistory:
+INSERT INTO artistHistoryEntry
+VALUES ?;
+
+markArtistHasSubmittedForm:
+UPDATE artistEntry
+SET verifiedArtist = 1
+WHERE dataYear = :dataYear AND id = :artistId;
+
+deleteArtist:
+DELETE FROM artistEntry
+WHERE dataYear = :dataYear AND id = :artistId;

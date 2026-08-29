@@ -385,7 +385,7 @@ actual class AlleyEditRemoteDatabase(
 
     actual suspend fun loadStampRallies(dataYear: DataYear): List<StampRallySummary> =
         withContext(dispatchers.io) {
-            sendRequest(BackendRequest.StampRallies).orEmpty()
+            sendRequest(BackendRequest.StampRallies(dataYear)).orEmpty()
         }
 
     actual suspend fun loadStampRally(

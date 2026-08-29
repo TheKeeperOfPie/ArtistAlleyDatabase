@@ -3,7 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.backend.data
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 
 object BackendColumnAdapters {
-    val artistEntryAnimeExpo2026HistoryAdapter = ArtistEntryAnimeExpo2026History.Adapter(
+    val artistHistoryEntryAdapter = ArtistHistoryEntry.Adapter(
+        dataYearAdapter = ColumnAdapters.dataYearAdapter,
         statusAdapter = ColumnAdapters.artistStatusAdapter,
         socialLinksAdapter = ColumnAdapters.listStringAdapter,
         storeLinksAdapter = ColumnAdapters.listStringAdapter,
@@ -21,49 +22,22 @@ object BackendColumnAdapters {
         remoteTimestampAdapter = ColumnAdapters.instantAdapter,
     )
 
-    val artistRemoteDataAnimeExpo2026Adapter = ArtistRemoteDataAnimeExpo2026.Adapter(
+    val artistRemoteDataAdapter = ArtistRemoteData.Adapter(
         confirmedIdAdapter = ColumnAdapters.uuidAdapter,
+        dataYearAdapter = ColumnAdapters.dataYearAdapter,
         linksAdapter = ColumnAdapters.listStringAdapter,
         timestampAdapter = ColumnAdapters.instantAdapter,
     )
 
-    val artistRemoteDataAnimeExpo2026HistoryAdapter = ArtistRemoteDataAnimeExpo2026History.Adapter(
+    val artistRemoteDataHistoryAdapter = ArtistRemoteDataHistory.Adapter(
         confirmedIdAdapter = ColumnAdapters.uuidAdapter,
+        dataYearAdapter = ColumnAdapters.dataYearAdapter,
         linksAdapter = ColumnAdapters.listStringAdapter,
         timestampAdapter = ColumnAdapters.instantAdapter,
     )
 
-    val artistEntryAnimeNyc2026HistoryAdapter = ArtistEntryAnimeNyc2026History.Adapter(
-        statusAdapter = ColumnAdapters.artistStatusAdapter,
-        socialLinksAdapter = ColumnAdapters.listStringAdapter,
-        storeLinksAdapter = ColumnAdapters.listStringAdapter,
-        portfolioLinksAdapter = ColumnAdapters.listStringAdapter,
-        catalogLinksAdapter = ColumnAdapters.listStringAdapter,
-        seriesInferredAdapter = ColumnAdapters.listStringAdapter,
-        seriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
-        merchInferredAdapter = ColumnAdapters.listStringAdapter,
-        merchConfirmedAdapter = ColumnAdapters.listStringAdapter,
-        commissionsAdapter = ColumnAdapters.listStringAdapter,
-        imagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-        profileImageAdapter = ColumnAdapters.databaseImageAdapter,
-        lastEditTimeAdapter = ColumnAdapters.instantAdapter,
-        formTimestampAdapter = ColumnAdapters.instantAdapter,
-        remoteTimestampAdapter = ColumnAdapters.instantAdapter,
-    )
-
-    val artistRemoteDataAnimeNyc2026Adapter = ArtistRemoteDataAnimeNyc2026.Adapter(
-        confirmedIdAdapter = ColumnAdapters.uuidAdapter,
-        linksAdapter = ColumnAdapters.listStringAdapter,
-        timestampAdapter = ColumnAdapters.instantAdapter,
-    )
-
-    val artistRemoteDataAnimeNyc2026HistoryAdapter = ArtistRemoteDataAnimeNyc2026History.Adapter(
-        confirmedIdAdapter = ColumnAdapters.uuidAdapter,
-        linksAdapter = ColumnAdapters.listStringAdapter,
-        timestampAdapter = ColumnAdapters.instantAdapter,
-    )
-
-    val stampRallyEntryAnimeExpo2026HistoryAdapter = StampRallyEntryAnimeExpo2026History.Adapter(
+    val stampRallyHistoryEntryAdapter = StampRallyHistoryEntry.Adapter(
+        dataYearAdapter = ColumnAdapters.dataYearAdapter,
         tablesAdapter = ColumnAdapters.listStringAdapter,
         startTablesAdapter = ColumnAdapters.setStringAdapter,
         endTablesAdapter = ColumnAdapters.setStringAdapter,

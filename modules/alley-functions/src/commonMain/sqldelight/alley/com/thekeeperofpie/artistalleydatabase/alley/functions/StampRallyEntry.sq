@@ -1,0 +1,25 @@
+getStampRallies:
+SELECT *
+FROM stampRallyEntry
+WHERE dataYear = :dataYear;
+
+getStampRally:
+SELECT * FROM stampRallyEntry
+WHERE dataYear = :dataYear AND stampRallyEntry.id = :id;
+
+insertStampRally:
+INSERT OR REPLACE INTO stampRallyEntry
+VALUES ?;
+
+insertHistory:
+INSERT INTO stampRallyHistoryEntry
+VALUES ?;
+
+deleteStampRally:
+DELETE FROM stampRallyEntry
+WHERE dataYear = :dataYear AND id = :stampRallyId;
+
+getHistory:
+SELECT * FROM stampRallyHistoryEntry
+WHERE dataYear = :dataYear AND id = :id
+ORDER BY lastEditTime DESC;

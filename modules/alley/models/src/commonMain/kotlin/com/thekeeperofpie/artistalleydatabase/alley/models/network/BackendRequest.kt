@@ -265,7 +265,7 @@ sealed interface BackendRequest {
 
     // TODO: Split by DataYear
     @Serializable
-    data object StampRallies : BackendRequest, WithResponse<List<StampRallySummary>>
+    data class StampRallies(val dataYear: DataYear) : BackendRequest, WithResponse<List<StampRallySummary>>
 
     @Serializable
     data class StampRallySave(

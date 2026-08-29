@@ -48,27 +48,12 @@ internal fun coerceBooleanForJs(value: Boolean?) = value == true || value.toStri
 internal object BackendUtils {
 
     suspend fun loadArtist(context: EventContext, dataYear: DataYear, artistId: Uuid) =
-        when (dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
-                .artistEntryAnimeExpo2026Queries
-                .getArtist(artistId.toString())
-                .awaitAsOneOrNull()
-                ?.toArtistDatabaseEntry()
-                ?.fixForJs()
-            DataYear.ANIME_NYC_2026 -> Databases.editDatabase(context)
-                .artistEntryAnimeNyc2026Queries
-                .getArtist(artistId.toString())
-                .awaitAsOneOrNull()
-                ?.toArtistDatabaseEntry()
-                ?.fixForJs()
-            // TODO: Support other conventions?
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> null
-        }
+        Databases.editDatabase(context)
+            .artistEntryQueries
+            .getArtist(dataYear, artistId)
+            .awaitAsOneOrNull()
+            ?.toArtistDatabaseEntry()
+            ?.fixForJs()
 
     suspend fun loadArtistFormDiff(
         context: EventContext,
@@ -209,21 +194,12 @@ internal object BackendUtils {
         context: EventContext,
         request: BackendRequest.StampRally,
     ): StampRallyDatabaseEntry? =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
-                .stampRallyEntryAnimeExpo2026Queries
-                .getStampRally(request.stampRallyId)
-                .awaitAsOneOrNull()
-                ?.toStampRallyDatabaseEntry()
-                ?.fixForJs()
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_NYC_2026,
-                -> null // TODO: Return legacy years?
-        }
+        Databases.editDatabase(context)
+            .stampRallyEntryQueries
+            .getStampRally(request.dataYear, request.stampRallyId)
+            .awaitAsOneOrNull()
+            ?.toStampRallyDatabaseEntry()
+            ?.fixForJs()
 
     suspend fun loadStampRallyFormDiffs(
         context: EventContext,
@@ -421,15 +397,18 @@ internal object BackendUtils {
         return client.sign(request, AwsParamsInit(AwsSignInit(signQuery = true))).await().url
     }
 
-    suspend fun loadStampRallySummaries(context: EventContext): Pair<String, List<StampRallySummary>?> {
+    suspend fun loadStampRallySummaries(
+        context: EventContext,
+        dataYear: DataYear,
+    ): Pair<String, List<StampRallySummary>?> {
         val cacher = KeyValueCacher(context)
         val cachedStampRalliesJson = cacher.getStampRalliesJson()
         if (cachedStampRalliesJson != null) {
             return cachedStampRalliesJson to null
         }
 
-        val stampRallies = Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
-            .getStampRallies()
+        val stampRallies = Databases.editDatabase(context).stampRallyEntryQueries
+            .getStampRallies(dataYear)
             .awaitAsList()
             .map {
                 StampRallySummary(

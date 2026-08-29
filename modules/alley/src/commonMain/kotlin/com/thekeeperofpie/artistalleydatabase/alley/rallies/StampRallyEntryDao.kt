@@ -166,7 +166,7 @@ class StampRallyEntryDao(
             val stampRally =
                 getEntry(year, stampRallyId) ?: return@transactionWithResult null
             val artists = dao().getArtistEntries(stampRallyId).awaitAsList()
-                .map { it.toArtistEntry(year) }
+                .map { it.toArtistEntry() }
             StampRallyWithArtistsEntry(stampRally, artists)
         }
 
