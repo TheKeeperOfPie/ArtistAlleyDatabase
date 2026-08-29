@@ -131,7 +131,7 @@ internal fun MetricsScreen(
                 )
                 HorizontalDivider()
 
-                if (dataYearHeaderState.year.stampRallyTableName != null) {
+                if (dataYearHeaderState.year.hasRallies) {
                     ArtistMetricsList(
                         title = Res.string.alley_metrics_artist_most_rallies,
                         artists = data.artistsByRallies,

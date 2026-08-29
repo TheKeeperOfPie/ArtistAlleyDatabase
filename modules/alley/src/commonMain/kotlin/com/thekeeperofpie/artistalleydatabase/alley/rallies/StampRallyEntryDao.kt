@@ -9,14 +9,12 @@ import app.cash.sqldelight.coroutines.mapToOneOrDefault
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyChangelogEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
@@ -178,7 +176,7 @@ class StampRallyEntryDao(
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
     ): Pair<String, String>? {
-        val tableName = year.stampRallyTableName ?: return null
+        val tableName = "stampRallyEntry"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             this += "$tableName.dataYear = '${year.serializedName}'"
@@ -266,27 +264,24 @@ class StampRallyEntryDao(
         }
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
         val imageSubquery = StampRallyUtils.imageSubquery("$tableName.rowid", year)
-        val selectFields = when (year) {
-            DataYear.ANIME_NYC_2026,
-                -> throw IllegalStateException("Cannot load rallies for $year")
-            else -> listOf(
-                "$tableName.id",
-                "$tableName.fandom",
-                "$tableName.tables",
-                "$tableName.startTables",
-                "$tableName.endTables",
-                "$tableName.links",
-                "$tableName.tableMin",
-                "$tableName.totalCost",
-                "$tableName.prize",
-                "$tableName.prizeLimit",
-                "$tableName.prizeMerch",
-                "$tableName.series",
-                "$tableName.merch",
-                "$tableName.notes",
-                "$tableName.images",
-                imageSubquery,
-                """(
+        val selectFields = listOf(
+            "$tableName.id",
+            "$tableName.fandom",
+            "$tableName.tables",
+            "$tableName.startTables",
+            "$tableName.endTables",
+            "$tableName.links",
+            "$tableName.tableMin",
+            "$tableName.totalCost",
+            "$tableName.prize",
+            "$tableName.prizeLimit",
+            "$tableName.prizeMerch",
+            "$tableName.series",
+            "$tableName.merch",
+            "$tableName.notes",
+            "$tableName.images",
+            imageSubquery,
+            """(
                     SELECT
                         json_group_array (
                             json_object ('booth', artistEntry.booth, 'profileImage', artistEntry.profileImage)
@@ -297,8 +292,7 @@ class StampRallyEntryDao(
                     WHERE
                         stampRallyArtistConnection.stampRallyRowId = $tableName.rowid
                  )""".trimMargin(),
-            )
-        }.joinToString()
+        ).joinToString()
 
         if (query.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
@@ -382,11 +376,10 @@ class StampRallyEntryDao(
     ): Flow<Int> {
         val statements = search(year, query, searchQuery, onlyFavorites)
             ?: return flowOf(0)
-        val tableName = year.stampRallyTableNameOrThrow
         return DaoUtils.makeQuery(
             driver(),
             statement = statements.first,
-            tableNames = listOf("${tableName}_fts", "stampRallyUserEntry"),
+            tableNames = listOf("stampRallyEntry_fts", "stampRallyUserEntry"),
             mapper = { it.getLong(0)!!.toInt() },
         ).asFlow()
             .mapToOneOrDefault(0, PlatformDispatchers.IO)
@@ -413,13 +406,12 @@ class StampRallyEntryDao(
             }
 
         val (countStatement, searchStatement) = statements
-        val tableName = year.stampRallyTableNameOrThrow
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             countStatement = countStatement,
             statement = searchStatement,
-            tableNames = listOf("${tableName}_fts", "stampRallyUserEntry"),
+            tableNames = listOf("stampRallyEntry_fts", "stampRallyUserEntry"),
             mapper = { cursor, _ -> cursor.toStampRallyWithUserData(year) },
         )
     }

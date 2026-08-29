@@ -203,7 +203,7 @@ object DebugTestData {
         dataYear: DataYear,
         database: AlleyEditRemoteDatabase,
     ): StampRallyDatabaseEntry? {
-        if (dataYear.stampRallyTableName == null) return null
+        if (!dataYear.hasRallies) return null
         val updates = listOf<(StampRallyDatabaseEntry) -> StampRallyDatabaseEntry>(
             {
                 it.copy(

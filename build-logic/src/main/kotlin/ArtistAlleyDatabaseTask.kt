@@ -1,8 +1,6 @@
 import ImageUtils.parseScaledImageWidthHeight
 import app.cash.sqldelight.Query
-import app.cash.sqldelight.db.QueryResult
-import app.cash.sqldelight.db.SqlCursor
-import app.cash.sqldelight.db.SqlDriver
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry
@@ -178,6 +176,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             trackStage("LegacyArtistImages") {
                                 fixLegacyArtistImages(database, imageCacheDir)
                             }
+                            trackStage("FinalizeLinks") { finalizeLinks(database) }
                             trackStage("FinalizeFlags") { finalizeFlags(database) }
 
                             val embedCache = trackStage("LoadEmbedCache") {
@@ -190,53 +189,23 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 )
                             }
 
-                            val retainedImageAnimeExpo2026 = mutableSetOf<File>()
+                            finalizeDataYear(
+                                database = database,
+                                dataYear = DataYear.ANIME_EXPO_2026,
+                                imageCacheDir = imageCacheDir,
+                                embedCache = embedCache,
+                                alleyChangelog = alleyChangelog,
+                                outputImagesFile = outputImagesAnimeExpo2026.get().asFile,
+                            )
 
-                            retainedImageAnimeExpo2026 += trackStage("FinalizeArtistsAnimeExpo2026") {
-                                finalizeArtists(
-                                    database = database,
-                                    dataYear = DataYear.ANIME_EXPO_2026,
-                                    imageCacheDir = imageCacheDir,
-                                    embedCache = embedCache,
-                                    artistLastEditTimes =
-                                        alleyChangelog?.artistLastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
-                                )
-                            }
-                            retainedImageAnimeExpo2026 += trackStage("FinalizeRalliesAnimeExpo2026") {
-                                finalizeRallies(
-                                    database = database,
-                                    dataYear = DataYear.ANIME_EXPO_2026,
-                                    imageCacheDir = imageCacheDir,
-                                    rallyLastEditTimes =
-                                        alleyChangelog?.rallyLastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
-                                )
-                            }
-
-                            outputImagesAnimeExpo2026.get().asFile
-                                .walkTopDown()
-                                .filter { it.isFile }
-                                .filterNot { it in retainedImageAnimeExpo2026 }
-                                .toList()
-                                .forEach { it.delete() }
-
-                            val retainedImageAnimeNyc2026 = mutableSetOf<File>()
-
-                            retainedImageAnimeNyc2026 += trackStage("FinalizeArtistsAnimeNyc2026") {
-                                finalizeArtistsAnimeNyc2026(
-                                    database = database,
-                                    imageCacheDir = imageCacheDir,
-                                    embedCache = embedCache,
-                                    artistLastEditTimes =
-                                        alleyChangelog?.artistLastEditTimes[DataYear.ANIME_EXPO_2026].orEmpty()
-                                )
-                            }
-
-                            outputImagesAnimeNyc2026.get().asFile
-                                .walkTopDown()
-                                .filter { it.isFile }
-                                .filterNot { it in retainedImageAnimeNyc2026 }
-                                .toList()
-                                .forEach { it.delete() }
+                            finalizeDataYear(
+                                database = database,
+                                dataYear = DataYear.ANIME_NYC_2026,
+                                imageCacheDir = imageCacheDir,
+                                embedCache = embedCache,
+                                alleyChangelog = alleyChangelog,
+                                outputImagesFile = outputImagesAnimeNyc2026.get().asFile,
+                            )
 
                             trackStage("NewArtists") { calculateNewArtists(database) }
 
@@ -259,7 +228,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             }
 
                             val artistTagConnections = trackStage("ArtistConnections") {
-                                buildArtistConnections(driver, database)
+                                buildArtistConnections(database)
                             }
                             trackStage("SeriesInferredConfirmedCounts") {
                                 updateSeriesInferredConfirmedCounts(
@@ -845,6 +814,46 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 )
             }
         }
+
+        val artistEntriesAnimeNyc2026 =
+            database.legacyQueries.getAllArtistEntryAnimeNyc2026().executeAsList()
+        database.transaction {
+            artistEntriesAnimeNyc2026.forEach { artist ->
+                database.mutationQueries.updateArtistEntry(
+                    ArtistEntry(
+                        id = Uuid.parse(artist.id),
+                        dataYear = DataYear.ANIME_NYC_2026,
+                        status = ArtistStatus.UNKNOWN,
+                        booth = artist.booth,
+                        name = artist.name,
+                        summary = artist.summary,
+                        socialLinks = artist.socialLinks,
+                        storeLinks = artist.storeLinks,
+                        portfolioLinks = artist.portfolioLinks,
+                        catalogLinks = artist.catalogLinks,
+                        linkFlags = -1,
+                        linkFlags2 = -1,
+                        notes = artist.notes,
+                        commissions = artist.commissions,
+                        commissionFlags = -1,
+                        seriesInferred = artist.seriesInferred,
+                        seriesConfirmed = artist.seriesConfirmed,
+                        merchInferred = artist.merchInferred,
+                        merchConfirmed = artist.merchConfirmed,
+                        images = artist.images,
+                        fallbackImageYear = null,
+                        tempImages = null,
+                        profileImage = null,
+                        embeds = null,
+                        editorNotes = null,
+                        lastEditor = null,
+                        lastEditTime = artist.lastEditTime,
+                        verifiedArtist = false,
+                        newArtist = false,
+                    )
+                )
+            }
+        }
     }
 
     private fun verifySeries(database: BuildLogicEditDatabase) {
@@ -859,6 +868,35 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             logger.error("Broken series missing titles: $brokenSeries")
             throw IllegalStateException("Broken series missing titles")
         }
+    }
+
+    private fun finalizeLinks(database: BuildLogicEditDatabase) {
+        DataYear.entries.forEach {
+            val artists = database.mutationQueries.getArtistEntriesByYear(it).executeAsList()
+            database.transaction {
+                artists.forEach {
+                    database.mutationQueries.updateArtistEntry(
+                        it.copy(
+                            socialLinks = fixLinks(it.socialLinks),
+                            storeLinks = fixLinks(it.storeLinks),
+                            portfolioLinks = fixLinks(it.portfolioLinks),
+                            catalogLinks = fixLinks(it.catalogLinks),
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /** Clear query for all known links, as they don't require it. */
+    private fun fixLinks(links: List<String>) = links.map { link ->
+        Link.parse(link)?.type
+            ?.let { Uri.parseOrNull(link) }
+            ?.buildUpon()
+            ?.clearQuery()
+            ?.build()
+            ?.toString()
+            ?: link
     }
 
     private suspend fun finalizeFlags(database: BuildLogicEditDatabase) {
@@ -885,6 +923,43 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
+    private suspend fun finalizeDataYear(
+        database: BuildLogicEditDatabase,
+        dataYear: DataYear,
+        imageCacheDir: File,
+        embedCache: EmbedCache,
+        alleyChangelog: AlleyChangelog?,
+        outputImagesFile: File,
+    ) {
+        val retainedImages = mutableSetOf<File>()
+        val artistLastEditTimes = alleyChangelog?.artistLastEditTimes[dataYear].orEmpty()
+        val rallyLastEditTimes = alleyChangelog?.rallyLastEditTimes[dataYear].orEmpty()
+
+        retainedImages += trackStage("FinalizeArtists${dataYear.serializedName}") {
+            finalizeArtists(
+                database = database,
+                dataYear = dataYear,
+                imageCacheDir = imageCacheDir,
+                embedCache = embedCache,
+                artistLastEditTimes = artistLastEditTimes,
+            )
+        }
+        retainedImages += trackStage("FinalizeRallies${dataYear.serializedName}") {
+            finalizeRallies(
+                database = database,
+                dataYear = dataYear,
+                imageCacheDir = imageCacheDir,
+                rallyLastEditTimes = rallyLastEditTimes,
+            )
+        }
+
+        outputImagesFile.walkTopDown()
+            .filter { it.isFile }
+            .filterNot { it in retainedImages }
+            .toList()
+            .forEach { it.delete() }
+    }
+
     private suspend fun finalizeArtists(
         database: BuildLogicEditDatabase,
         dataYear: DataYear,
@@ -894,6 +969,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) = coroutineScope {
         val verifiedArtistIds = when (dataYear) {
             DataYear.ANIME_EXPO_2026 -> inputsDirectory.dir("snapshots/animeExpo2026/form")
+            DataYear.ANIME_NYC_2026 -> inputsDirectory.dir("snapshots/animeNyc2026/form")
             else -> null
         }?.get()?.asFile?.listFiles()
             ?.maxByOrNull {
@@ -995,6 +1071,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 async {
                     val output = when (dataYear) {
                         DataYear.ANIME_EXPO_2026 -> outputImagesAnimeExpo2026
+                        DataYear.ANIME_NYC_2026 -> outputImagesAnimeNyc2026
                         else -> null
                     }?.get()?.asFile?.resolve(it.path) ?: return@async null
                     ImageUtils.compressAndRenameHashed(
@@ -1033,153 +1110,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         )
                     }
                     ?.forEach(mutationQueries::insertArtistChangelogEntry)
-            }
-        }
-        allRetainedImages
-    }
-
-    private suspend fun finalizeArtistsAnimeNyc2026(
-        database: BuildLogicEditDatabase,
-        imageCacheDir: File,
-        embedCache: EmbedCache,
-        artistLastEditTimes: Map<Uuid, Instant>,
-    ) = coroutineScope {
-        val verifiedArtistIds =
-            inputsDirectory.dir("snapshots/animeNyc2026/form").get().asFile.listFiles()
-                .orEmpty()
-                .maxByOrNull {
-                    Instant.parse(
-                        it.nameWithoutExtension
-                            .replace("_", ":")
-                            .replace(";", ":")
-                    )
-                }
-                ?.let { snapshotFile ->
-                    val (driver, database) = Utils.createFormDatabase()
-                    if (!Utils.readSqlFile(driver, database, snapshotFile)) {
-                        logger.error("Failed to apply before ${snapshotFile.absolutePath}")
-                        return@let emptyList()
-                    }
-                    driver.use {
-                        database.verifiedQueries.getVerifiedArtistIds(DataYear.ANIME_NYC_2026)
-                            .executeAsList()
-                    }
-                }
-                .orEmpty()
-
-        val mutationQueries = database.mutationQueries
-        val artistUpdates = mutationQueries.getAllArtistEntryAnimeNyc2026()
-            .executeAsList()
-            .map { artist ->
-                async {
-                    // TODO: Validate this somewhere else
-                    if (artist.seriesInferred.distinct().size != artist.seriesInferred.size ||
-                        artist.seriesConfirmed.distinct().size != artist.seriesConfirmed.size ||
-                        artist.merchInferred.distinct().size != artist.merchInferred.size ||
-                        artist.merchConfirmed.distinct().size != artist.merchConfirmed.size
-                    ) {
-                        logger.error("Duplicate failure for artist ${artist.booth} - ${artist.name}")
-                    }
-                    val inference = ArtistInferenceProvider(database, artist.id)
-                    val socialLinks = artist.socialLinks.ifEmpty { inference.socialLinks }
-                    val storeLinks = artist.storeLinks.ifEmpty { inference.storeLinks }
-                    val seriesInferred = artist.seriesInferred
-                        .ifEmpty { inference.seriesInferred } - artist.seriesConfirmed.toSet()
-                    val merchInferred = artist.merchInferred
-                        .ifEmpty { inference.merchInferred } - artist.merchConfirmed.toSet()
-
-                    val (linkFlags, linkFlags2) = Link.parseFlags(
-                        socialLinks = socialLinks,
-                        storeLinks = storeLinks,
-                        portfolioLinks = artist.portfolioLinks,
-                        catalogLinks = artist.catalogLinks,
-                    )
-                    val commissionFlags = CommissionType.parseFlags(artist.commissions)
-
-                    val artistId = Uuid.parse(artist.id)
-
-                    // Don't expose raw edit times from backend, just mirror the changelog dates
-                    val lastEditTime = artistLastEditTimes[artistId]
-                        ?.toLocalDateTime(TimeZone.UTC)
-                        ?.date
-                        ?.atStartOfDayIn(TimeZone.UTC)
-                    val embedLinks = (artist.portfolioLinks + socialLinks + storeLinks +
-                            artist.commissions.filter { it.startsWith("http") })
-                    val artistImages = calculateArtistImages(
-                        imageCacheDir = imageCacheDir,
-                        embedCache = embedCache,
-                        artistId = artist.id,
-                        year = DataYear.ANIME_NYC_2026,
-                        isFinalCatalog = artist.catalogLinks.isNotEmpty() ||
-                                artist.seriesConfirmed.isNotEmpty() ||
-                                artist.merchConfirmed.isNotEmpty(),
-                        profileImage = artist.profileImage,
-                        images = artist.images,
-                        embedLinks = embedLinks,
-                    )
-                    val newArtist = artist.copy(
-                        socialLinks = socialLinks,
-                        storeLinks = storeLinks,
-                        seriesInferred = seriesInferred.filter { !it.startsWith("Commission") },
-                        merchInferred = merchInferred.filter { !it.startsWith("Commission") },
-                        linkFlags = linkFlags,
-                        linkFlags2 = linkFlags2,
-                        commissionFlags = commissionFlags,
-                        images = artistImages.catalogImages.map { it.final },
-                        tempImages = artistImages.tempImages.map { it.final },
-                        profileImage = artistImages.customProfileImage?.final
-                            ?: artistImages.embedProfileImage,
-                        embeds = artistImages.largeEmbeds,
-                        lastEditTime = lastEditTime,
-                        verifiedArtist = verifiedArtistIds.contains(artistId),
-                    )
-                    val imagesToCompress =
-                        listOfNotNull(artistImages.customProfileImage?.imageToCompress) +
-                                artistImages.catalogImages.map { it.imageToCompress } +
-                                artistImages.tempImages.map { it.imageToCompress }
-                    Triple(newArtist, imagesToCompress, artistImages)
-                }
-            }
-            .awaitAll()
-
-        val allRetainedImages = artistUpdates.flatMap { it.second }
-            .map {
-                async {
-                    val output =
-                        outputImagesAnimeNyc2026.get().asFile.resolve(it.path)
-                    ImageUtils.compressAndRenameHashed(
-                        logger = logger,
-                        input = it.imageFile,
-                        resized = it.resized,
-                        width = it.width,
-                        height = it.height,
-                        target = output,
-                    )
-                    output
-                }
-            }
-            .awaitAll()
-
-        val changelog = database.artistEntryAnimeNyc2026Queries.getChangelog(1L).executeAsList()
-            .groupBy { it.artistId }
-        database.transaction {
-            artistUpdates.forEach { (artist, _, artistImages) ->
-                mutationQueries.updateArtistEntryAnimeNyc2026(artist)
-                val isTempImages = artistImages.tempImages.isNotEmpty()
-                changelog[Uuid.parse(artist.id)]
-                    ?.map {
-                        it.copy(
-                            images = it.images?.mapNotNull { changelogImage ->
-                                if (isTempImages) {
-                                    artistImages.tempImages.find { it.original.name == changelogImage.name }
-                                } else {
-                                    artistImages.catalogImages.find { it.original.name == changelogImage.name }
-                                }?.final
-                            }?.ifEmpty { null },
-                            isTempImages = isTempImages,
-                        )
-                    }
-                    ?.forEach(mutationQueries::insertArtistEntryAnimeNyc2026Changelog)
             }
         }
         allRetainedImages
@@ -1224,6 +1154,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 async {
                     val output = when (dataYear) {
                         DataYear.ANIME_EXPO_2026 -> outputImagesAnimeExpo2026
+                        DataYear.ANIME_NYC_2026 -> outputImagesAnimeNyc2026
                         else -> null
                     }?.get()?.asFile?.resolve(it.path) ?: return@async null
                     ImageUtils.compressAndRenameHashed(
@@ -1414,51 +1345,52 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val mutationQueries = database.mutationQueries
         val animeExpo2023 =
             mutationQueries.getArtistEntriesByYear(DataYear.ANIME_EXPO_2023).executeAsList()
-        val animeExpo2023Ids = animeExpo2023.mapTo(mutableSetOf()) { it.id.toString() }
+        val animeExpo2023Ids = animeExpo2023.mapTo(mutableSetOf()) { it.id }
         val animeExpo2024 =
             mutationQueries.getArtistEntriesByYear(DataYear.ANIME_EXPO_2024).executeAsList()
-        val animeExpo2024Ids = animeExpo2024.mapTo(mutableSetOf()) { it.id.toString() }
+        val animeExpo2024Ids = animeExpo2024.mapTo(mutableSetOf()) { it.id }
         val animeExpo2025 =
             mutationQueries.getArtistEntriesByYear(DataYear.ANIME_EXPO_2025).executeAsList()
-        val animeExpo2025Ids = animeExpo2025.mapTo(mutableSetOf()) { it.id.toString() }
+        val animeExpo2025Ids = animeExpo2025.mapTo(mutableSetOf()) { it.id }
         val animeExpo2026 =
             mutationQueries.getArtistEntriesByYear(DataYear.ANIME_EXPO_2026).executeAsList()
 
         val animeNyc2024 =
             mutationQueries.getArtistEntriesByYear(DataYear.ANIME_NYC_2024).executeAsList()
-        val animeNyc2024Ids = animeNyc2024.mapTo(mutableSetOf()) { it.id.toString() }
+        val animeNyc2024Ids = animeNyc2024.mapTo(mutableSetOf()) { it.id }
         val animeNyc2025 =
             mutationQueries.getArtistEntriesByYear(DataYear.ANIME_NYC_2025).executeAsList()
-        val animeNyc2025Ids = animeNyc2025.mapTo(mutableSetOf()) { it.id.toString() }
-        val animeNyc2026 = mutationQueries.getAllArtistEntryAnimeNyc2026().executeAsList()
+        val animeNyc2025Ids = animeNyc2025.mapTo(mutableSetOf()) { it.id }
+        val animeNyc2026 =
+            mutationQueries.getArtistEntriesByYear(DataYear.ANIME_NYC_2026).executeAsList()
 
         database.transaction {
             animeExpo2024.forEach { artist ->
-                val isNewArtist = artist.id.toString() !in animeExpo2023Ids
+                val isNewArtist = artist.id !in animeExpo2023Ids
                 if (isNewArtist) {
                     mutationQueries.updateArtistEntry(artist.copy(newArtist = true))
                 }
             }
 
             animeExpo2025.forEach { artist ->
-                val isNewArtist = artist.id.toString() !in animeExpo2023Ids &&
-                        artist.id.toString() !in animeExpo2024Ids
+                val isNewArtist = artist.id !in animeExpo2023Ids &&
+                        artist.id !in animeExpo2024Ids
                 if (isNewArtist) {
                     mutationQueries.updateArtistEntry(artist.copy(newArtist = true))
                 }
             }
 
             animeExpo2026.forEach { artist ->
-                val isNewArtist = artist.id.toString() !in animeExpo2023Ids &&
-                        artist.id.toString() !in animeExpo2024Ids &&
-                        artist.id.toString() !in animeExpo2025Ids
+                val isNewArtist = artist.id !in animeExpo2023Ids &&
+                        artist.id !in animeExpo2024Ids &&
+                        artist.id !in animeExpo2025Ids
                 if (isNewArtist) {
                     mutationQueries.updateArtistEntry(artist.copy(newArtist = true))
                 }
             }
 
             animeNyc2025.forEach { artist ->
-                val isNewArtist = artist.id.toString() !in animeNyc2024Ids
+                val isNewArtist = artist.id !in animeNyc2024Ids
                 if (isNewArtist) {
                     mutationQueries.updateArtistEntry(artist.copy(newArtist = true))
                 }
@@ -1468,7 +1400,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 val isNewArtist = artist.id !in animeNyc2024Ids &&
                         artist.id !in animeNyc2025Ids
                 if (isNewArtist) {
-                    mutationQueries.updateArtistEntryAnimeNyc2026(artist.copy(newArtist = true))
+                    mutationQueries.updateArtistEntry(artist.copy(newArtist = true))
                 }
             }
         }
@@ -1485,10 +1417,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             .filter { it.dates.start < year.dates.start }
             .sortedByDescending { it.dates.start }
             .firstNotNullOfOrNull { queryYear ->
-                when (queryYear) {
-                    DataYear.ANIME_NYC_2026 -> getImagesAnimeNyc2026(id).executeAsOneOrNull()
-                    else -> getArtistImages(queryYear, Uuid.parse(id)).executeAsOneOrNull()
-                }.orEmpty()
+                getArtistImages(queryYear, Uuid.parse(id))
+                    .executeAsOneOrNull()
+                    .orEmpty()
                     .ifEmpty { null }
                     ?.let { queryYear to it }
             }
@@ -1824,33 +1755,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private suspend fun buildArtistConnections(
-        driver: SqlDriver,
-        database: BuildLogicEditDatabase,
-    ): ArtistTagConnections {
+    private fun buildArtistConnections(database: BuildLogicEditDatabase): ArtistTagConnections {
         val connections = ArtistTagConnections()
-
         val seriesIdsToRowIds = database.mutationQueries.getSeries().executeAsList()
             .associate { it.id to it.rowid }
-
-        suspend fun executeQuery(tableName: String) = driver.executeQuery(
-            identifier = null,
-            sql = """
-                SELECT rowid, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed
-                FROM $tableName;
-            """.trimIndent(),
-            mapper = { it.toArtistConnectionDataList(seriesIdsToRowIds) },
-            parameters = 0,
-        ).await()
-
-        DataYear.entries.forEach { dataYear ->
-            if (dataYear != DataYear.ANIME_NYC_2026) {
-                return@forEach
-            }
-            executeQuery(dataYear.artistTableName).forEach {
-                connections.addArtistConnections(dataYear, it)
-            }
-        }
 
         database.mutationQueries.getArtistEntries().executeAsList().forEach {
             connections.addArtistConnections(
@@ -2131,10 +2039,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun checkLinks(database: BuildLogicEditDatabase) {
-        database.artistEntryAnimeNyc2026Queries.getAllEntries()
+        // TODO: Check other years and fix them
+        database.mutationQueries.getArtistEntriesByYear(DataYear.ANIME_NYC_2026)
             .executeAsList()
             .forEach { artist ->
-                val badLinkPrefix = "Bad link for ${artist.booth} ${artist.name}"
+                val badLinkPrefix =
+                    "Bad link for ${artist.dataYear.serializedName} ${artist.booth} ${artist.name}"
                 val allLinks =
                     artist.socialLinks + artist.storeLinks + artist.portfolioLinks + artist.catalogLinks
                 allLinks.filter { it.contains("?") }.forEach {
@@ -2184,33 +2094,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
             }
     }
-
-    private fun SqlCursor.toArtistConnectionDataList(seriesIdsToRowIds: Map<String, Long>) =
-        QueryResult.Value(
-            buildList {
-                while (next().value) {
-                    add(
-                        ArtistConnectionData(
-                            artistRowId = getLong(0)!!,
-                            seriesInferred = getString(1)
-                                ?.let { Json.decodeFromString<List<String>>(it) }
-                                ?.mapNotNull { seriesIdsToRowIds[it] }
-                                .orEmpty(),
-                            seriesConfirmed = getString(2)
-                                ?.let { Json.decodeFromString<List<String>>(it) }
-                                ?.mapNotNull { seriesIdsToRowIds[it] }
-                                .orEmpty(),
-                            merchInferred = getString(3)
-                                ?.let { Json.decodeFromString<List<String>>(it) }
-                                .orEmpty(),
-                            merchConfirmed = getString(4)
-                                ?.let { Json.decodeFromString<List<String>>(it) }
-                                .orEmpty(),
-                        )
-                    )
-                }
-            }
-        )
 
     // Copied from ArtistInference since it isn't accessible here
     private class ArtistInferenceProvider(

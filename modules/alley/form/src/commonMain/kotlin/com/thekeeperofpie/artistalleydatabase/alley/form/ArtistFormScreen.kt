@@ -457,7 +457,7 @@ object ArtistFormScreen {
                                 Spacer(Modifier.height(16.dp))
                                 HorizontalDivider()
 
-                                if (dataYear.stampRallyTableName != null) {
+                                if (dataYear.hasRallies) {
                                     StampRallySection(
                                         dataYear = dataYear,
                                         state = state,

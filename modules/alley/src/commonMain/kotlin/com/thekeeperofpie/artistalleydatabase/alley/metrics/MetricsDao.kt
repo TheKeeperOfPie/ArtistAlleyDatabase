@@ -31,11 +31,10 @@ class MetricsDao(
         includeInferred: Boolean,
     ): List<ArtistData> {
         val flags = tagFlags(year, includeInferred)
-        val tableName = year.artistTableName
         val statement = """
-            SELECT $tableName.id, $tableName.booth, $tableName.name, COUNT(*) AS count
+            SELECT artistEntry.id, artistEntry.booth, artistEntry.name, COUNT(*) AS count
             FROM artistSeriesConnection
-            INNER JOIN $tableName ON artistSeriesConnection.artistRowId = $tableName.rowid
+            INNER JOIN artistEntry ON artistSeriesConnection.artistRowId = artistEntry.rowid
             WHERE (yearFlags & $flags) != 0
             GROUP BY artistRowId
             ORDER BY count DESC
@@ -45,7 +44,7 @@ class MetricsDao(
         return DaoUtils.makeQuery(
             driver = driver(),
             statement = statement,
-            tableNames = listOf("artistSeriesConnection", tableName),
+            tableNames = listOf("artistSeriesConnection", "artistEntry"),
             mapper = { it.toArtistData(year) },
         ).awaitAsList()
     }
@@ -55,11 +54,10 @@ class MetricsDao(
         includeInferred: Boolean,
     ): List<ArtistData> {
         val flags = tagFlags(year, includeInferred)
-        val tableName = year.artistTableName
         val statement = """
-            SELECT $tableName.id, $tableName.booth, $tableName.name, COUNT(*) AS count
+            SELECT artistEntry.id, artistEntry.booth, artistEntry.name, COUNT(*) AS count
             FROM artistMerchConnection
-            INNER JOIN $tableName ON artistMerchConnection.artistRowId = $tableName.rowid
+            INNER JOIN artistEntry ON artistMerchConnection.artistRowId = artistEntry.rowid
             WHERE (yearFlags & $flags) != 0
             GROUP BY artistRowId
             ORDER BY count DESC
@@ -69,19 +67,17 @@ class MetricsDao(
         return DaoUtils.makeQuery(
             driver = driver(),
             statement = statement,
-            tableNames = listOf("artistMerchConnection", tableName),
+            tableNames = listOf("artistMerchConnection", "artistEntry"),
             mapper = { it.toArtistData(year) },
         ).awaitAsList()
     }
 
     suspend fun getArtistsWithMostRallies(year: DataYear): List<ArtistData> {
-        val rallyTable = year.stampRallyTableName ?: return emptyList()
-        val artistTable = year.artistTableName
         val statement = """
-            SELECT $artistTable.id, $artistTable.booth, $artistTable.name, COUNT(*) AS count
+            SELECT artistEntry.id, artistEntry.booth, artistEntry.name, COUNT(*) AS count
             FROM stampRallyArtistConnection
-            INNER JOIN $rallyTable ON stampRallyArtistConnection.stampRallyRowId = $rallyTable.rowid
-            INNER JOIN $artistTable ON stampRallyArtistConnection.artistRowId = $artistTable.rowid
+            INNER JOIN stampRallyEntry ON stampRallyArtistConnection.stampRallyRowId = stampRallyEntry.rowid
+            INNER JOIN artistEntry ON stampRallyArtistConnection.artistRowId = artistEntry.rowid
             GROUP BY artistRowId
             ORDER BY count DESC
             LIMIT 10
@@ -90,7 +86,7 @@ class MetricsDao(
         return DaoUtils.makeQuery(
             driver = driver(),
             statement = statement,
-            tableNames = listOf("stampRallyArtistConnection", rallyTable, artistTable),
+            tableNames = listOf("stampRallyArtistConnection", "stampRallyEntry", "artistEntry"),
             mapper = { it.toArtistData(year) }
         ).awaitAsList()
     }

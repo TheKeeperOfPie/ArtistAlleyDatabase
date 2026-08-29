@@ -290,7 +290,7 @@ private fun TopLevelStackKey.shouldShow(dataYear: DataYear) = when (this) {
     TopLevelStackKey.RALLIES,
     TopLevelStackKey.RALLY_FORMS,
     TopLevelStackKey.STAMP_RALLY_LINKS,
-        -> dataYear.stampRallyTableName != null
+        -> dataYear.hasRallies
 }
 
 @Composable

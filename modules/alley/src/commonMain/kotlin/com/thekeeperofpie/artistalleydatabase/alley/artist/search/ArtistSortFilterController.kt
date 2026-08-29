@@ -306,6 +306,7 @@ class ArtistSortFilterController(
         serialize = Json::encodeToString,
         deserialize = Json::decodeFromString,
     )
+    @Suppress("unused") // TODO: Re-add exhibitor tags
     private val exhibitorTagsSection = SortFilterSectionState.Filter(
         id = Res.string.alley_exhibitor_tags_filter_label.key,
         title = { expanded ->
@@ -445,7 +446,7 @@ class ArtistSortFilterController(
             seriesAutocompleteSection.section,
             merchSection,
             commissionsSection,
-            exhibitorTagsSection.takeIf { year == DataYear.ANIME_NYC_2025 },
+//            exhibitorTagsSection, TODO: Re-add exhibitor tags
             artistTagSection,
             linkTypeSection,
             advancedSection,

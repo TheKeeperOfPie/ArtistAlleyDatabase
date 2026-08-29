@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.scrimage.webp)
     implementation(libs.shared)
     implementation(libs.sqldelight.sqlite.driver)
+    implementation(libs.uri.kmp)
     implementation(libs.webp.imageio)
 }
 

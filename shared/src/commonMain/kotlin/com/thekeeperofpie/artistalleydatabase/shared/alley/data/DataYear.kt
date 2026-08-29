@@ -14,17 +14,14 @@ import kotlinx.serialization.encoding.Encoder
 enum class DataYear(
     val serializedName: String,
     val convention: Convention,
-    val artistTableName: String,
-    val stampRallyTableName: String?,
     val folderName: String,
     val dates: Dates,
+    val hasRallies: Boolean = false,
 ) {
     @SerialName("AX2023")
     ANIME_EXPO_2023(
         serializedName = "AX2023",
         convention = Convention.ANIME_EXPO,
-        artistTableName = "artistEntry",
-        stampRallyTableName = "stampRallyEntry",
         folderName = "2023",
         dates = Dates(
             year = 2023,
@@ -33,14 +30,13 @@ enum class DataYear(
             endDay = 4,
             timeZoneOffsetHours = -7,
         ),
+        hasRallies = true,
     ),
 
     @SerialName("AX2024")
     ANIME_EXPO_2024(
         serializedName = "AX2024",
         convention = Convention.ANIME_EXPO,
-        artistTableName = "artistEntry",
-        stampRallyTableName = "stampRallyEntry",
         folderName = "2024",
         dates = Dates(
             year = 2024,
@@ -49,14 +45,13 @@ enum class DataYear(
             endDay = 7,
             timeZoneOffsetHours = -7,
         ),
+        hasRallies = true,
     ),
 
     @SerialName("AX2025")
     ANIME_EXPO_2025(
         serializedName = "AX2025",
         convention = Convention.ANIME_EXPO,
-        artistTableName = "artistEntry",
-        stampRallyTableName = "stampRallyEntry",
         folderName = "2025",
         dates = Dates(
             year = 2025,
@@ -65,14 +60,13 @@ enum class DataYear(
             endDay = 6,
             timeZoneOffsetHours = -7,
         ),
+        hasRallies = true,
     ),
 
     @SerialName("AX2026")
     ANIME_EXPO_2026(
         serializedName = "AX2026",
         convention = Convention.ANIME_EXPO,
-        artistTableName = "artistEntry",
-        stampRallyTableName = "stampRallyEntry",
         folderName = "AX2026",
         dates = Dates(
             year = 2026,
@@ -81,14 +75,13 @@ enum class DataYear(
             endDay = 5,
             timeZoneOffsetHours = -7,
         ),
+        hasRallies = true,
     ),
 
     @SerialName("ANYC2024")
     ANIME_NYC_2024(
         serializedName = "ANYC2024",
         convention = Convention.ANIME_NYC,
-        artistTableName = "artistEntry",
-        stampRallyTableName = null,
         folderName = "animeNyc2024",
         dates = Dates(
             year = 2024,
@@ -103,8 +96,6 @@ enum class DataYear(
     ANIME_NYC_2025(
         serializedName = "ANYC2025",
         convention = Convention.ANIME_NYC,
-        artistTableName = "artistEntry",
-        stampRallyTableName = null,
         folderName = "animeNyc2025",
         dates = Dates(
             year = 2025,
@@ -119,8 +110,6 @@ enum class DataYear(
     ANIME_NYC_2026(
         serializedName = "ANYC2026",
         convention = Convention.ANIME_NYC,
-        artistTableName = "artistEntryAnimeNyc2026",
-        stampRallyTableName = null,
         folderName = "ANYC2026",
         dates = Dates(
             year = 2026,
@@ -131,10 +120,6 @@ enum class DataYear(
         ),
     ),
     ;
-
-    val stampRallyTableNameOrThrow: String
-        get() = this.stampRallyTableName
-            ?: throw IllegalStateException("$serializedName shouldn't have rallies")
 
     enum class Convention(val firstRecordedYear: Int) {
         ANIME_EXPO(2023),
