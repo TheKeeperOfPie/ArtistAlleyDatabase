@@ -97,13 +97,9 @@ class MerchEntryDao(
             LEFT OUTER JOIN merchUserEntry
             ON merchEntry.uuid = merchUserEntry.merchId
         """.trimIndent()
-        val yearFilter = when (year) {
-            DataYear.ANIME_EXPO_2023 -> ""
-            else -> {
-                val flag = TagYearFlag.getFlag(year, false)
-                "(yearFlags & $flag) != 0"
-            }
-        }
+
+        val flag = TagYearFlag.getFlag(year, false)
+        val yearFilter = "(yearFlags & $flag) != 0"
         val countStatement = """
             SELECT COUNT(*) FROM merchEntry
             $joinStatement
@@ -125,18 +121,10 @@ class MerchEntryDao(
         )
     }
 
-    suspend fun getMerchEntries(year: DataYear): List<MerchEntry> {
-        val merchDao = merchDao()
-        return when (year) {
-            DataYear.ANIME_EXPO_2023 -> emptyList()
-            DataYear.ANIME_EXPO_2024 -> merchDao.getMerchEntries2024().awaitAsList()
-            DataYear.ANIME_EXPO_2025 -> merchDao.getMerchEntries2025().awaitAsList()
-            DataYear.ANIME_EXPO_2026 -> merchDao.getMerchEntriesAnimeExpo2026().awaitAsList()
-            DataYear.ANIME_NYC_2024 -> merchDao.getMerchEntriesAnimeNyc2024().awaitAsList()
-            DataYear.ANIME_NYC_2025 -> merchDao.getMerchEntriesAnimeNyc2025().awaitAsList()
-            DataYear.ANIME_NYC_2026 -> merchDao.getMerchEntriesAnimeNyc2026().awaitAsList()
-        }.filterNot { it.name.contains("Commissions") }
-    }
+    suspend fun getMerchEntries(year: DataYear): List<MerchEntry> =
+        merchDao().getMerchEntries(TagYearFlag.getFlag(year, confirmed = false))
+            .awaitAsList()
+            .filterNot { it.name.contains("Commissions") }
 
     suspend fun getFandomMerchEntries(year: DataYear) =
         merchDao().getFandomMerchEntries(year).awaitAsList()
@@ -165,13 +153,8 @@ class MerchEntryDao(
                 add("WHERE merchUserEntry.favorite = 1")
             }
 
-            when (year) {
-                DataYear.ANIME_EXPO_2023 -> ""
-                else -> {
-                    val flag = TagYearFlag.getFlag(year, false)
-                    add("(yearFlags & $flag) != 0")
-                }
-            }
+            val flag = TagYearFlag.getFlag(year, false)
+            add("(yearFlags & $flag) != 0")
         }
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()

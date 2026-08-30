@@ -1,18 +1,3 @@
 getArtistInferenceData:
 SELECT id, name, socialLinks, storeLinks, portfolioLinks, catalogLinks FROM artistEntry
 WHERE dataYear = :dataYear;
-
-getArtistInferenceDataAnimeExpo2025:
-SELECT id, name, links, storeLinks, catalogLinks FROM artistEntry2025;
-
-getArtistInferenceDataAnimeExpo2026:
-SELECT id, name, socialLinks, storeLinks, portfolioLinks, catalogLinks FROM artistEntryAnimeExpo2026;
-
-getArtistInferenceDataAnimeNyc2024:
-SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeNyc2024;
-
-getArtistInferenceDataAnimeNyc2025:
-SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeNyc2025;
-
-getArtistInferenceDataAnimeNyc2026:
-SELECT id, name, socialLinks, storeLinks, portfolioLinks, catalogLinks FROM artistEntryAnimeNyc2026;

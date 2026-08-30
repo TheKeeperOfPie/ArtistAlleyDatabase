@@ -7,13 +7,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2024
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2025
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2026
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -35,94 +29,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlin.time.Duration.Companion.milliseconds
 
-private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
+private fun GetBoothsWithFavorites.toBoothWithFavorite() =
     BoothWithFavorite(
-        year = DataYear.ANIME_EXPO_2023,
-        id = id,
-        booth = booth,
-        name = name,
-        images = images,
-        fallbackImageYear = null,
-        tempImages = emptyList(),
-        embeds = emptyMap(),
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        hasNotes = !notes.isNullOrBlank(),
-    )
-
-private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
-    BoothWithFavorite(
-        year = DataYear.ANIME_EXPO_2024,
-        id = id,
-        booth = booth,
-        name = name,
-        images = images,
-        fallbackImageYear = fallbackImageYear,
-        tempImages = emptyList(),
-        embeds = emptyMap(),
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        hasNotes = !notes.isNullOrBlank(),
-    )
-
-private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
-    BoothWithFavorite(
-        year = DataYear.ANIME_EXPO_2025,
-        id = id,
-        booth = booth,
-        name = name,
-        images = images,
-        fallbackImageYear = fallbackImageYear,
-        tempImages = emptyList(),
-        embeds = emptyMap(),
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        hasNotes = !notes.isNullOrBlank(),
-    )
-
-private fun GetBoothsWithFavoritesAnimeExpo2026.toBoothWithFavorite() =
-    BoothWithFavorite(
-        year = DataYear.ANIME_EXPO_2026,
-        id = id,
-        booth = booth,
-        name = name,
-        images = images,
-        fallbackImageYear = fallbackImageYear,
-        tempImages = tempImages.orEmpty(),
-        embeds = embeds.orEmpty(),
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        hasNotes = !notes.isNullOrBlank(),
-    )
-
-private fun GetBoothsWithFavoritesAnimeNyc2024.toBoothWithFavorite() =
-    BoothWithFavorite(
-        year = DataYear.ANIME_NYC_2024,
-        id = id,
-        booth = booth,
-        name = name,
-        images = images,
-        fallbackImageYear = fallbackImageYear,
-        tempImages = emptyList(),
-        embeds = emptyMap(),
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        hasNotes = !notes.isNullOrBlank(),
-    )
-
-private fun GetBoothsWithFavoritesAnimeNyc2025.toBoothWithFavorite() =
-    BoothWithFavorite(
-        year = DataYear.ANIME_NYC_2025,
-        id = id,
-        booth = booth,
-        name = name,
-        images = images,
-        fallbackImageYear = fallbackImageYear,
-        tempImages = emptyList(),
-        embeds = emptyMap(),
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        hasNotes = !notes.isNullOrBlank(),
-    )
-
-private fun GetBoothsWithFavoritesAnimeNyc2026.toBoothWithFavorite() =
-    BoothWithFavorite(
-        year = DataYear.ANIME_NYC_2026,
-        id = id,
+        year = dataYear,
+        id = id.toString(),
         booth = booth,
         name = name,
         images = images,
@@ -161,38 +71,10 @@ class UserEntryDao(
 
     fun getBoothsWithFavorites() = settings.dataYear
         .flatMapLatest { dataYear ->
-            dao().run {
-                when (dataYear) {
-                    DataYear.ANIME_EXPO_2023 -> getBoothsWithFavorites2023()
-                        .asFlow()
-                        .mapToList(PlatformDispatchers.IO)
-                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_EXPO_2024 -> getBoothsWithFavorites2024()
-                        .asFlow()
-                        .mapToList(PlatformDispatchers.IO)
-                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_EXPO_2025 -> getBoothsWithFavorites2025()
-                        .asFlow()
-                        .mapToList(PlatformDispatchers.IO)
-                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_EXPO_2026 -> getBoothsWithFavoritesAnimeExpo2026()
-                        .asFlow()
-                        .mapToList(PlatformDispatchers.IO)
-                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_NYC_2024 -> getBoothsWithFavoritesAnimeNyc2024()
-                        .asFlow()
-                        .mapToList(PlatformDispatchers.IO)
-                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_NYC_2025 -> getBoothsWithFavoritesAnimeNyc2025()
-                        .asFlow()
-                        .mapToList(PlatformDispatchers.IO)
-                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_NYC_2026 -> getBoothsWithFavoritesAnimeNyc2026()
-                        .asFlow()
-                        .mapToList(PlatformDispatchers.IO)
-                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                }
-            }
+            dao().getBoothsWithFavorites(dataYear)
+                .asFlow()
+                .mapToList(PlatformDispatchers.IO)
+                .map { dataYear to it.map { it.toBoothWithFavorite() } }
         }
 
     suspend fun insertArtistUserEntry(entry: ArtistUserEntry) {
