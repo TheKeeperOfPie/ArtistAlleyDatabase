@@ -638,7 +638,7 @@ internal fun ConventionCountdownHeader(year: DataYear, onOpenExport: (DataYear) 
 internal fun FeedbackHeader(year: DataYear) {
     val isAlmostOver = remember(year) {
         val dates = year.dates
-        (dates.end.atStartOfDayIn(dates.timeZone) - 1.days) < Clock.System.now()
+        dates.end.atStartOfDayIn(dates.timeZone) < Clock.System.now()
     }
     if (isAlmostOver) {
         val link = when (year) {
