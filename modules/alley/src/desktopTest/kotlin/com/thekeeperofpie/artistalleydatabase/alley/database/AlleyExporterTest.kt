@@ -1,26 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
-import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitCreate
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.TestQueries
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
-import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.Buffer
@@ -32,18 +23,16 @@ import kotlinx.io.buffered
 import kotlinx.io.readString
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-private const val TEST_COUNT_ARTISTS = 600
-private const val TEST_COUNT_RALLIES = 150
+private const val DEBUG = false
+private val TEST_COUNT_ARTISTS = if (DEBUG) 6 else 600
+private val TEST_COUNT_RALLIES = if (DEBUG) 3 else 150
 
-@OptIn(ExperimentalUuidApi::class, ExperimentalEncodingApi::class)
 class AlleyExporterTest {
 
     @get:Rule
@@ -51,8 +40,9 @@ class AlleyExporterTest {
 
     @Test
     fun exportPartial() = runTest {
+        val dataYear = DataYear.entries.last { it.hasRallies }
         val buffer = Buffer()
-        exportPartial(buffer, DataYear.ANIME_EXPO_2025)
+        exportPartial(buffer, dataYear)
 
         val output = buffer.copy().readString()
         println("Export length ${output.length}: $output")
@@ -63,7 +53,7 @@ class AlleyExporterTest {
         assertTrue(importResult.success, importResult.error?.message?.leftOrNull())
 
         val database = importResult.result!!
-        assertDataPartial(database)
+        assertDataPartial(database, dataYear)
     }
 
     @Test
@@ -85,91 +75,49 @@ class AlleyExporterTest {
         assertNotes(database)
     }
 
-    private suspend fun assertDataPartial(database: AlleySqlDatabase) {
+    private suspend fun assertDataPartial(database: AlleySqlDatabase, dataYear: DataYear) {
         assertData(
             database = database,
-            values = artists2025().take(TEST_COUNT_ARTISTS).toList(),
-            id = { it.id },
-            resultQuery = { getArtistUserData2025().awaitAsList() },
+            values = artists(dataYear).take(TEST_COUNT_ARTISTS).toList(),
+            id = { it.id.toString() },
+            resultQuery = { getArtistUserData(dataYear).awaitAsList() },
             testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
+            testId = { it.id.toString() },
         )
         assertData(
             database = database,
-            values = rallies2025().take(TEST_COUNT_RALLIES).toList(),
+            values = rallies(dataYear).take(TEST_COUNT_RALLIES).toList(),
             id = { it.id },
-            resultQuery = { getStampRallyUserData2025().awaitAsList() },
+            resultQuery = { getStampRallyUserData(dataYear).awaitAsList() },
             testFavoriteAndIgnored = { it.favorite to it.ignored },
             testId = { it.id },
         )
     }
 
     private suspend fun assertAllDataYears(database: AlleySqlDatabase) {
-        assertData(
-            database = database,
-            values = artists2023().take(TEST_COUNT_ARTISTS).toList(),
-            id = { it.id },
-            resultQuery = { getArtistUserData2023().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
-        assertData(
-            database = database,
-            values = artists2024().take(TEST_COUNT_ARTISTS).toList(),
-            id = { it.id },
-            resultQuery = { getArtistUserData2024().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
-        assertData(
-            database = database,
-            values = artists2025().take(TEST_COUNT_ARTISTS).toList(),
-            id = { it.id },
-            resultQuery = { getArtistUserData2025().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
-        assertData(
-            database = database,
-            values = artistsAnimeNyc2024().take(TEST_COUNT_ARTISTS).toList(),
-            id = { it.id },
-            resultQuery = { getArtistUserDataAnimeNyc2024().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
-        assertData(
-            database = database,
-            values = artistsAnimeNyc2025().take(TEST_COUNT_ARTISTS).toList(),
-            id = { it.id },
-            resultQuery = { getArtistUserDataAnimeNyc2025().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
+        DataYear.entries.forEach { dataYear ->
+            assertData(
+                database = database,
+                values = artists(dataYear).take(TEST_COUNT_ARTISTS).toList(),
+                id = { it.id.toString() },
+                resultQuery = { getArtistUserData(dataYear).awaitAsList() },
+                testFavoriteAndIgnored = { it.favorite to it.ignored },
+                testId = { it.id.toString() },
+            )
+        }
 
-        assertData(
-            database = database,
-            values = rallies2023().take(TEST_COUNT_RALLIES).toList(),
-            id = { it.id },
-            resultQuery = { getStampRallyUserData2023().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
-        assertData(
-            database = database,
-            values = rallies2024().take(TEST_COUNT_RALLIES).toList(),
-            id = { it.id },
-            resultQuery = { getStampRallyUserData2024().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
-        assertData(
-            database = database,
-            values = rallies2025().take(TEST_COUNT_RALLIES).toList(),
-            id = { it.id },
-            resultQuery = { getStampRallyUserData2025().awaitAsList() },
-            testFavoriteAndIgnored = { it.favorite to it.ignored },
-            testId = { it.id },
-        )
+        DataYear.entries
+            .filter { it.hasRallies }
+            .forEach { dataYear ->
+                assertData(
+                    database = database,
+                    values = rallies(dataYear).take(TEST_COUNT_RALLIES).toList(),
+                    id = { it.id },
+                    resultQuery = { getStampRallyUserData(dataYear).awaitAsList() },
+                    testFavoriteAndIgnored = { it.favorite to it.ignored },
+                    testId = { it.id },
+                )
+            }
     }
 
     private suspend fun <Entry, TestEntry> assertData(
@@ -210,28 +158,19 @@ class AlleyExporterTest {
     }
 
     private suspend fun assertArtistNotes(database: AlleySqlDatabase) {
-        val artists2023 = artists2023()
-            .take(TEST_COUNT_ARTISTS)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.ANIME_EXPO_2023, "notes${it.id.hashCode()}") }
-        val artists2024 = artists2024()
-            .take(TEST_COUNT_ARTISTS)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.ANIME_EXPO_2024, "notes${it.id.hashCode()}") }
-        val artists2025 = artists2025()
-            .take(TEST_COUNT_ARTISTS)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.ANIME_EXPO_2025, "notes${it.id.hashCode()}") }
-        val artistsAnimeNyc2024 = artistsAnimeNyc2024()
-            .take(TEST_COUNT_ARTISTS)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.ANIME_NYC_2024, "notes${it.id.hashCode()}") }
-        val artistsAnimeNyc2025 = artistsAnimeNyc2025()
-            .take(TEST_COUNT_ARTISTS)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.ANIME_NYC_2025, "notes${it.id.hashCode()}") }
-
-        val expected = (artists2023 + artists2024 + artists2025 + artistsAnimeNyc2024 + artistsAnimeNyc2025)
+        val expected = DataYear.entries
+            .flatMap { dataYear ->
+                artists(dataYear)
+                    .take(TEST_COUNT_ARTISTS)
+                    .filterIndexed { index, _ -> index % 3 == 2 }
+                    .map {
+                        Triple(
+                            it.id.toString(),
+                            dataYear,
+                            "notes${it.id.toString().hashCode()}"
+                        )
+                    }
+            }
             .sortedWith(compareBy({ it.first }, { it.second }))
             .toList()
 
@@ -244,19 +183,14 @@ class AlleyExporterTest {
     }
 
     private suspend fun assertStampRallyNotes(database: AlleySqlDatabase) {
-        val rallies2023 = rallies2023()
-            .take(TEST_COUNT_RALLIES)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { it.id to "notes${it.id.hashCode()}" }
-        val rallies2024 = rallies2024()
-            .take(TEST_COUNT_RALLIES)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { it.id to "notes${it.id.hashCode()}" }
-        val rallies2025 = rallies2025()
-            .take(TEST_COUNT_RALLIES)
-            .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { it.id to "notes${it.id.hashCode()}" }
-        val expected = (rallies2023 + rallies2024 + rallies2025)
+        val expected = DataYear.entries
+            .filter { it.hasRallies }
+            .flatMap {
+                rallies(it)
+                    .take(TEST_COUNT_RALLIES)
+                    .filterIndexed { index, _ -> index % 3 == 2 }
+                    .map { it.id to "notes${it.id.hashCode()}" }
+            }
             .sortedBy { it.first }
             .toList()
 
@@ -285,7 +219,8 @@ class AlleyExporterTest {
 
         val importExportDao = ImportExportDao(driver = { driver }, database = { database })
         val exporter = AlleyExporter(importExportDao)
-        exporter.exportFull(sink)
+        // TODO: Test export metadata
+        exporter.exportFull(false, sink)
     }
 
     private suspend fun import(source: Source): LoadingResult<AlleySqlDatabase> {
@@ -301,151 +236,31 @@ class AlleyExporterTest {
     private suspend fun makeDriver() = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         .also { AlleySqlDatabase.Schema.awaitCreate(it) }
 
-    private fun makeDatabase(driver: SqlDriver): AlleySqlDatabase = AlleySqlDatabase(
-        driver = driver,
-        artistEntry2023Adapter = ArtistEntry2023.Adapter(
-            artistNamesAdapter = DaoUtils.listStringAdapter,
-            linksAdapter = DaoUtils.listStringAdapter,
-            catalogLinksAdapter = DaoUtils.listStringAdapter,
-        ),
-        artistEntry2024Adapter = ArtistEntry2024.Adapter(
-            linksAdapter = DaoUtils.listStringAdapter,
-            storeLinksAdapter = DaoUtils.listStringAdapter,
-            catalogLinksAdapter = DaoUtils.listStringAdapter,
-            seriesInferredAdapter = DaoUtils.listStringAdapter,
-            seriesConfirmedAdapter = DaoUtils.listStringAdapter,
-            merchInferredAdapter = DaoUtils.listStringAdapter,
-            merchConfirmedAdapter = DaoUtils.listStringAdapter,
-        ),
-        artistEntry2025Adapter = ArtistEntry2025.Adapter(
-            linksAdapter = DaoUtils.listStringAdapter,
-            storeLinksAdapter = DaoUtils.listStringAdapter,
-            catalogLinksAdapter = DaoUtils.listStringAdapter,
-            seriesInferredAdapter = DaoUtils.listStringAdapter,
-            seriesConfirmedAdapter = DaoUtils.listStringAdapter,
-            merchInferredAdapter = DaoUtils.listStringAdapter,
-            merchConfirmedAdapter = DaoUtils.listStringAdapter,
-            commissionsAdapter = DaoUtils.listStringAdapter,
-        ),
-        artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
-            linksAdapter = DaoUtils.listStringAdapter,
-            storeLinksAdapter = DaoUtils.listStringAdapter,
-            catalogLinksAdapter = DaoUtils.listStringAdapter,
-            seriesInferredAdapter = DaoUtils.listStringAdapter,
-            seriesConfirmedAdapter = DaoUtils.listStringAdapter,
-            merchInferredAdapter = DaoUtils.listStringAdapter,
-            merchConfirmedAdapter = DaoUtils.listStringAdapter,
-            commissionsAdapter = DaoUtils.listStringAdapter,
-        ),
-        artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
-            linksAdapter = DaoUtils.listStringAdapter,
-            storeLinksAdapter = DaoUtils.listStringAdapter,
-            catalogLinksAdapter = DaoUtils.listStringAdapter,
-            seriesInferredAdapter = DaoUtils.listStringAdapter,
-            seriesConfirmedAdapter = DaoUtils.listStringAdapter,
-            merchInferredAdapter = DaoUtils.listStringAdapter,
-            merchConfirmedAdapter = DaoUtils.listStringAdapter,
-            commissionsAdapter = DaoUtils.listStringAdapter,
-        ),
-        stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
-            tablesAdapter = DaoUtils.listStringAdapter,
-            linksAdapter = DaoUtils.listStringAdapter,
-        ),
-        stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
-            tablesAdapter = DaoUtils.listStringAdapter,
-            linksAdapter = DaoUtils.listStringAdapter,
-        ),
-        stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
-            tablesAdapter = DaoUtils.listStringAdapter,
-            linksAdapter = DaoUtils.listStringAdapter,
-            seriesAdapter = DaoUtils.listStringAdapter,
-        ),
-        artistNotesAdapter = ArtistNotes.Adapter(
-            dataYearAdapter = DaoUtils.dataYearAdapter,
-        ),
-        artistUserEntryAdapter = ArtistUserEntry.Adapter(
-            dataYearAdapter = DaoUtils.dataYearAdapter,
-        ),
-        seriesEntryAdapter = SeriesEntry.Adapter(
-            sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
-                override fun decode(databaseValue: String) =
-                    SeriesSource.entries.find { it.name == databaseValue }
-                        ?: SeriesSource.NONE
-
-                override fun encode(value: SeriesSource) = value.name
-            },
-        )
-    )
+    private fun makeDatabase(driver: SqlDriver): AlleySqlDatabase =
+        DaoUtils.createAlleySqlDatabase(driver)
 
     private suspend fun addData(database: AlleySqlDatabase, insertUserData: Boolean = false) {
-        insertArtists(
-            database = database,
-            source = artists2023(),
-            dataYear = DataYear.ANIME_EXPO_2023,
-            id = { it.id },
-            insert = TestQueries::insertArtist2023,
-            insertUserData = insertUserData,
-        )
-
-        insertArtists(
-            database = database,
-            source = artists2024(),
-            dataYear = DataYear.ANIME_EXPO_2024,
-            id = { it.id },
-            insert = TestQueries::insertArtist2024,
-            insertUserData = insertUserData,
-        )
-
-        insertArtists(
-            database = database,
-            source = artists2025(),
-            dataYear = DataYear.ANIME_EXPO_2025,
-            id = { it.id },
-            insert = TestQueries::insertArtist2025,
-            insertUserData = insertUserData,
-        )
-
-        insertArtists(
-            database = database,
-            source = artistsAnimeNyc2024(),
-            dataYear = DataYear.ANIME_NYC_2024,
-            id = { it.id },
-            insert = TestQueries::insertArtistAnimeNyc2024,
-            insertUserData = insertUserData,
-        )
-
-        insertArtists(
-            database = database,
-            source = artistsAnimeNyc2025(),
-            dataYear = DataYear.ANIME_NYC_2025,
-            id = { it.id },
-            insert = TestQueries::insertArtistAnimeNyc2025,
-            insertUserData = insertUserData,
-        )
-
-        insertRallies(
-            database = database,
-            source = rallies2023(),
-            id = { it.id },
-            insert = TestQueries::insertStampRally2023,
-            insertUserData = insertUserData,
-        )
-
-        insertRallies(
-            database = database,
-            source = rallies2024(),
-            id = { it.id },
-            insert = TestQueries::insertStampRally2024,
-            insertUserData = insertUserData,
-        )
-
-        insertRallies(
-            database = database,
-            source = rallies2025(),
-            id = { it.id },
-            insert = TestQueries::insertStampRally2025,
-            insertUserData = insertUserData,
-        )
+        DataYear.entries.forEach { dataYear ->
+            insertArtists(
+                database = database,
+                source = artists(dataYear),
+                dataYear = dataYear,
+                id = { it.id.toString() },
+                insert = { insertArtist(it) },
+                insertUserData = insertUserData,
+            )
+        }
+        DataYear.entries
+            .filter { it.hasRallies }
+            .forEach { dataYear ->
+                insertRallies(
+                    database = database,
+                    source = rallies(dataYear),
+                    id = { it.id },
+                    insert = { insertStampRally(it) },
+                    insertUserData = insertUserData,
+                )
+            }
     }
 
     private suspend fun <T> insertArtists(
@@ -515,177 +330,68 @@ class AlleyExporterTest {
         }
     }
 
-    private fun artists2023() = sequence {
+    private fun artists(dataYear: DataYear) = sequence {
         yieldAll(
-            ids("artists2023").mapIndexed { index, uuid ->
+            ids(dataYear.serializedName).mapIndexed { index, uuid ->
                 val name = uuid.toString().take(10)
-                ArtistEntry2023(
-                    id = uuid.toString(),
-                    booth = "",
+                ArtistEntry(
+                    id = uuid,
+                    dataYear = dataYear,
+                    status = null,
+                    booth = "$index",
                     name = name,
-                    artistNames = listOf(name),
-                    summary = null,
-                    links = emptyList(),
-                    catalogLinks = emptyList(),
-                    driveLink = null,
-                )
-            }
-        )
-    }
-
-    private fun artists2024() = sequence {
-        yieldAll(
-            ids("artists2024").mapIndexed { index, uuid ->
-                val name = uuid.toString().take(10)
-                ArtistEntry2024(
-                    id = uuid.toString(),
-                    booth = "",
-                    name = name,
-                    summary = null,
-                    links = emptyList(),
-                    storeLinks = emptyList(),
-                    catalogLinks = emptyList(),
-                    driveLink = null,
-                    notes = null,
-                    seriesInferred = emptyList(),
-                    seriesConfirmed = emptyList(),
-                    merchInferred = emptyList(),
-                    merchConfirmed = emptyList(),
-                )
-            }
-        )
-    }
-
-    private fun artists2025() = sequence {
-        yieldAll(
-            ids("artists2025").mapIndexed { index, uuid ->
-                val name = uuid.toString().take(10)
-                ArtistEntry2025(
-                    id = uuid.toString(),
-                    booth = "",
-                    name = name,
-                    summary = null,
-                    links = emptyList(),
+                    summary = "summary$index",
+                    socialLinks = listOf("https://example.com/social/$index"),
+                    storeLinks = listOf("https://example.com/store/$index"),
+                    portfolioLinks = listOf("https://example.com/portfolio/$index"),
+                    catalogLinks = listOf("https://example.com/catalog/$index"),
                     linkFlags = 0L,
                     linkFlags2 = 0L,
-                    storeLinks = emptyList(),
-                    catalogLinks = emptyList(),
-                    driveLink = null,
                     notes = null,
-                    commissions = emptyList(),
+                    commissions = listOf("https://example.com/commissions/$index"),
                     commissionFlags = 0L,
-                    seriesInferred = emptyList(),
-                    seriesConfirmed = emptyList(),
-                    merchInferred = emptyList(),
-                    merchConfirmed = emptyList(),
+                    seriesInferred = listOf("Original", "Original Characters"),
+                    seriesConfirmed = listOf("Original", "Vocaloid"),
+                    merchInferred = listOf("Charms", "Stickers"),
+                    merchConfirmed = listOf("Charms", "Prints"),
+                    images = emptyList(),
+                    fallbackImageYear = null,
+                    tempImages = null,
+                    profileImage = null,
+                    embeds = null,
+                    editorNotes = null,
+                    lastEditor = null,
+                    lastEditTime = null,
+                    verifiedArtist = false,
+                    newArtist = false,
                 )
             }
         )
     }
 
-    private fun artistsAnimeNyc2024() = sequence {
+    private fun rallies(dataYear: DataYear) = sequence {
         yieldAll(
-            ids("artistsAnimeNyc2024").mapIndexed { index, uuid ->
-                val name = uuid.toString().take(10)
-                ArtistEntryAnimeNyc2024(
+            ids(dataYear.serializedName).mapIndexed { index, uuid ->
+                StampRallyEntry(
                     id = uuid.toString(),
-                    booth = "",
-                    name = name,
-                    summary = null,
-                    links = emptyList(),
-                    linkFlags = 0L,
-                    linkFlags2 = 0L,
-                    storeLinks = emptyList(),
-                    catalogLinks = emptyList(),
-                    driveLink = null,
-                    notes = null,
-                    commissions = emptyList(),
-                    commissionFlags = 0L,
-                    seriesInferred = emptyList(),
-                    seriesConfirmed = emptyList(),
-                    merchInferred = emptyList(),
-                    merchConfirmed = emptyList(),
-                )
-            }
-        )
-    }
-
-    private fun artistsAnimeNyc2025() = sequence {
-        yieldAll(
-            ids("artistsAnimeNyc2025").mapIndexed { index, uuid ->
-                val name = uuid.toString().take(10)
-                ArtistEntryAnimeNyc2025(
-                    id = uuid.toString(),
-                    booth = "",
-                    name = name,
-                    summary = null,
-                    links = emptyList(),
-                    linkFlags = 0L,
-                    linkFlags2 = 0L,
-                    storeLinks = emptyList(),
-                    catalogLinks = emptyList(),
-                    driveLink = null,
-                    notes = null,
-                    commissions = emptyList(),
-                    commissionFlags = 0L,
-                    seriesInferred = emptyList(),
-                    seriesConfirmed = emptyList(),
-                    merchInferred = emptyList(),
-                    merchConfirmed = emptyList(),
-                    exhibitorTagFlags = 0L,
-                )
-            }
-        )
-    }
-
-    private fun rallies2023() = sequence {
-        yieldAll(
-            ids("rallies2023").mapIndexed { index, uuid ->
-                StampRallyEntry2023(
-                    id = uuid.toString(),
-                    fandom = "",
-                    hostTable = "",
-                    tables = emptyList(),
-                    links = emptyList(),
-                )
-            }
-        )
-    }
-
-    private fun rallies2024() = sequence {
-        yieldAll(
-            ids("rallies2024").mapIndexed { index, uuid ->
-                StampRallyEntry2024(
-                    id = uuid.toString(),
-                    fandom = "",
-                    hostTable = "",
-                    tables = emptyList(),
-                    links = emptyList(),
-                    tableMin = null,
-                    totalCost = null,
-                    prizeLimit = null,
-                    notes = null,
-                )
-            }
-        )
-    }
-
-    private fun rallies2025() = sequence {
-        yieldAll(
-            ids("rallies2025").mapIndexed { index, uuid ->
-                StampRallyEntry2025(
-                    id = uuid.toString(),
-                    fandom = "",
-                    hostTable = "",
-                    tables = emptyList(),
-                    links = emptyList(),
-                    tableMin = null,
-                    totalCost = null,
-                    prize = null,
-                    prizeLimit = null,
-                    series = emptyList(),
-                    notes = null,
-                    confirmed = false,
+                    dataYear = dataYear,
+                    fandom = "fandom$index",
+                    tables = listOf(index.toString(), (index + 1).toString()),
+                    startTables = setOf(index.toString()),
+                    endTables = setOf((index + 1).toString()),
+                    links = listOf("https://example.com"),
+                    tableMin = TableMin.Price(index),
+                    totalCost = index * 2L,
+                    prize = "prize$index",
+                    prizeLimit = index.toLong(),
+                    prizeMerch = listOf("Stickers"),
+                    series = listOf("Original", "Original Characters"),
+                    merch = listOf("Charms", "Stickers"),
+                    notes = "notes$index",
+                    images = emptyList(),
+                    editorNotes = null,
+                    lastEditor = null,
+                    lastEditTime = null,
                 )
             }
         )

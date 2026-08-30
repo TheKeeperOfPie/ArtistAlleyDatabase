@@ -14,159 +14,37 @@ importStampRallyNotes:
 INSERT OR REPLACE INTO stampRallyNotes(stampRallyId, notes)
 VALUES(:stampRallyId, :notes);
 
-getExportPartialArtists2023:
-SELECT artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2023
+getExportPartialArtists:
+SELECT artistEntry.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry
 LEFT OUTER JOIN artistUserEntry
-ON (artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear)
-ORDER BY artistEntry2023.id ASC;
+ON (artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear)
+WHERE artistEntry.dataYear = :dataYear
+ORDER BY artistEntry.id ASC;
 
-getExportPartialArtists2024:
-SELECT artistEntry2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2024
+getExportFullArtists:
+SELECT artistEntry.booth, artistEntry.name, artistEntry.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry
 LEFT OUTER JOIN artistUserEntry
-ON (artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear)
-ORDER BY artistEntry2024.id ASC;
-
-getExportPartialArtists2025:
-SELECT artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2025
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear)
-ORDER BY artistEntry2025.id ASC;
-
-getExportPartialArtistsAnimeExpo2026:
-SELECT artistEntryAnimeExpo2026.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeExpo2026
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeExpo2026.id = artistUserEntry.artistId AND 'AX2026' = artistUserEntry.dataYear)
-ORDER BY artistEntryAnimeExpo2026.id ASC;
-
-getExportPartialArtistsAnimeNyc2024:
-SELECT artistEntryAnimeNyc2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2024
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear)
-ORDER BY artistEntryAnimeNyc2024.id ASC;
-
-getExportPartialArtistsAnimeNyc2025:
-SELECT artistEntryAnimeNyc2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2025
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeNyc2025.id = artistUserEntry.artistId AND 'ANYC2025' = artistUserEntry.dataYear)
-ORDER BY artistEntryAnimeNyc2025.id ASC;
-
-getExportPartialArtistsAnimeNyc2026:
-SELECT artistEntryAnimeNyc2026.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2026
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeNyc2026.id = artistUserEntry.artistId AND 'ANYC2026' = artistUserEntry.dataYear)
-ORDER BY artistEntryAnimeNyc2026.id ASC;
-
-getExportFullArtists2023:
-SELECT artistEntry2023.booth, artistEntry2023.name, artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry2023
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear)
+ON (artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear)
 LEFT OUTER JOIN artistNotes
-ON (artistEntry2023.id = artistNotes.artistId AND 'AX2023' = artistNotes.dataYear)
-WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
+ON (artistEntry.id = artistNotes.artistId AND artistNotes.dataYear = :dataYear)
+WHERE artistEntry.dataYear = :dataYear
+AND (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
 
-getExportFullArtists2024:
-SELECT artistEntry2024.booth, artistEntry2024.name, artistEntry2024.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry2024
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear)
-LEFT OUTER JOIN artistNotes
-ON (artistEntry2024.id = artistNotes.artistId AND 'AX2024' = artistNotes.dataYear)
-WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
-
-getExportFullArtists2025:
-SELECT artistEntry2025.booth, artistEntry2025.name, artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry2025
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear)
-LEFT OUTER JOIN artistNotes
-ON (artistEntry2025.id = artistNotes.artistId AND 'AX2025' = artistNotes.dataYear)
-WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
-
-getExportFullArtistsAnimeExpo2026:
-SELECT artistEntryAnimeExpo2026.booth, artistEntryAnimeExpo2026.name, artistEntryAnimeExpo2026.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeExpo2026
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeExpo2026.id = artistUserEntry.artistId AND 'AX2026' = artistUserEntry.dataYear)
-LEFT OUTER JOIN artistNotes
-ON (artistEntryAnimeExpo2026.id = artistNotes.artistId AND 'AX2026' = artistNotes.dataYear)
-WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
-
-getExportFullArtistsAnimeNyc2024:
-SELECT artistEntryAnimeNyc2024.booth, artistEntryAnimeNyc2024.name, artistEntryAnimeNyc2024.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeNyc2024
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear)
-LEFT OUTER JOIN artistNotes
-ON (artistEntryAnimeNyc2024.id = artistNotes.artistId AND 'ANYC2024' = artistNotes.dataYear)
-WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
-
-getExportFullArtistsAnimeNyc2025:
-SELECT artistEntryAnimeNyc2025.booth, artistEntryAnimeNyc2025.name, artistEntryAnimeNyc2025.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeNyc2025
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeNyc2025.id = artistUserEntry.artistId AND 'ANYC2025' = artistUserEntry.dataYear)
-LEFT OUTER JOIN artistNotes
-ON (artistEntryAnimeNyc2025.id = artistNotes.artistId AND 'ANYC2025' = artistNotes.dataYear)
-WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
-
-getExportFullArtistsAnimeNyc2026:
-SELECT artistEntryAnimeNyc2026.booth, artistEntryAnimeNyc2026.name, artistEntryAnimeNyc2026.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeNyc2026
-LEFT OUTER JOIN artistUserEntry
-ON (artistEntryAnimeNyc2026.id = artistUserEntry.artistId AND 'ANYC2026' = artistUserEntry.dataYear)
-LEFT OUTER JOIN artistNotes
-ON (artistEntryAnimeNyc2026.id = artistNotes.artistId AND 'ANYC2026' = artistNotes.dataYear)
-WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
-
-getExportPartialStampRallies2023:
-SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2023
+getExportPartialStampRallies:
+SELECT stampRallyEntry.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry
 LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId
-ORDER BY stampRallyEntry2023.id ASC;
+ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
+WHERE stampRallyEntry.dataYear = :dataYear
+ORDER BY stampRallyEntry.id ASC;
 
-getExportPartialStampRallies2024:
-SELECT stampRallyEntry2024.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2024
+getExportFullStampRallies:
+SELECT stampRallyEntry.fandom, stampRallyEntry.tables, stampRallyEntry.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry
 LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId
-ORDER BY stampRallyEntry2024.id ASC;
-
-getExportPartialStampRallies2025:
-SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2025
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId
-ORDER BY stampRallyEntry2025.id ASC;
-
-getExportPartialStampRalliesAnimeExpo2026:
-SELECT stampRallyEntryAnimeExpo2026.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntryAnimeExpo2026
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntryAnimeExpo2026.id = stampRallyUserEntry.stampRallyId
-ORDER BY stampRallyEntryAnimeExpo2026.id ASC;
-
-getExportFullStampRallies2023:
-SELECT stampRallyEntry2023.fandom, stampRallyEntry2023.tables, stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry2023
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId
+ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
 LEFT OUTER JOIN stampRallyNotes
-ON stampRallyEntry2023.id = stampRallyNotes.stampRallyId
-WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
-
-getExportFullStampRallies2024:
-SELECT stampRallyEntry2024.fandom, stampRallyEntry2024.tables, stampRallyEntry2024.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry2024
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId
-LEFT OUTER JOIN stampRallyNotes
-ON stampRallyEntry2024.id = stampRallyNotes.stampRallyId
-WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
-
-getExportFullStampRallies2025:
-SELECT stampRallyEntry2025.fandom, stampRallyEntry2025.tables, stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry2025
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId
-LEFT OUTER JOIN stampRallyNotes
-ON stampRallyEntry2025.id = stampRallyNotes.stampRallyId
-WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
-
-getExportFullStampRalliesAnimeExpo2026:
-SELECT stampRallyEntryAnimeExpo2026.fandom, stampRallyEntryAnimeExpo2026.tables, stampRallyEntryAnimeExpo2026.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntryAnimeExpo2026
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntryAnimeExpo2026.id = stampRallyUserEntry.stampRallyId
-LEFT OUTER JOIN stampRallyNotes
-ON stampRallyEntryAnimeExpo2026.id = stampRallyNotes.stampRallyId
-WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
+ON stampRallyEntry.id = stampRallyNotes.stampRallyId
+WHERE stampRallyEntry.dataYear = :dataYear
+AND (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
 
 getExportFullSeries:
 SELECT * FROM seriesUserEntry

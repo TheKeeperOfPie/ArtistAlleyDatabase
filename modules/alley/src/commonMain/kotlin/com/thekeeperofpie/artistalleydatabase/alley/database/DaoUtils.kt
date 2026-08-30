@@ -19,17 +19,8 @@ object DaoUtils {
 
     fun createAlleySqlDatabase(driver: SqlDriver) = AlleySqlDatabase(
         driver = driver,
-        artistEntry2023Adapter = ColumnAdapters.artistEntry2023Adapter,
-        artistEntry2024Adapter = ColumnAdapters.artistEntry2024Adapter,
-        artistEntry2025Adapter = ColumnAdapters.artistEntry2025Adapter,
-        artistEntryAnimeNyc2024Adapter = ColumnAdapters.artistEntryAnimeNyc2024Adapter,
-        artistEntryAnimeNyc2025Adapter = ColumnAdapters.artistEntryAnimeNyc2025Adapter,
         artistEntryAdapter = ColumnAdapters.artistEntryAdapter,
         artistChangelogEntryAdapter = ColumnAdapters.artistChangelogEntryAdapter,
-        stampRallyEntry2023Adapter = ColumnAdapters.stampRallyEntry2023Adapter,
-        stampRallyEntry2024Adapter = ColumnAdapters.stampRallyEntry2024Adapter,
-        stampRallyEntry2025Adapter = ColumnAdapters.stampRallyEntry2025Adapter,
-        stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
         stampRallyEntryAdapter = ColumnAdapters.stampRallyEntryAdapter,
         artistNotesAdapter = ArtistNotes.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,

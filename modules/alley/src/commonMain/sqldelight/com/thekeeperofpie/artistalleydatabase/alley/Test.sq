@@ -1,74 +1,21 @@
-insertArtist2023:
-INSERT OR REPLACE INTO artistEntry2023
+insertArtist:
+INSERT OR REPLACE INTO artistEntry
 VALUES ?;
 
-insertArtist2024:
-INSERT OR REPLACE INTO artistEntry2024
+insertStampRally:
+INSERT OR REPLACE INTO stampRallyEntry
 VALUES ?;
 
-insertArtist2025:
-INSERT OR REPLACE INTO artistEntry2025
-VALUES ?;
-
-insertArtistAnimeNyc2024:
-INSERT OR REPLACE INTO artistEntryAnimeNyc2024
-VALUES ?;
-
-insertArtistAnimeNyc2025:
-INSERT OR REPLACE INTO artistEntryAnimeNyc2025
-VALUES ?;
-
-insertStampRally2023:
-INSERT OR REPLACE INTO stampRallyEntry2023
-VALUES ?;
-
-insertStampRally2024:
-INSERT OR REPLACE INTO stampRallyEntry2024
-VALUES ?;
-
-insertStampRally2025:
-INSERT OR REPLACE INTO stampRallyEntry2025
-VALUES ?;
-
-getArtistUserData2023:
-SELECT artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2023
+getArtistUserData:
+SELECT artistEntry.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear;
+ON artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear;
 
-getArtistUserData2024:
-SELECT artistEntry2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2024
-LEFT OUTER JOIN artistUserEntry
-ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear;
-
-getArtistUserData2025:
-SELECT artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2025
-LEFT OUTER JOIN artistUserEntry
-ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
-
-getArtistUserDataAnimeNyc2024:
-SELECT artistEntryAnimeNyc2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2024
-LEFT OUTER JOIN artistUserEntry
-ON artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear;
-
-getArtistUserDataAnimeNyc2025:
-SELECT artistEntryAnimeNyc2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2025
-LEFT OUTER JOIN artistUserEntry
-ON artistEntryAnimeNyc2025.id = artistUserEntry.artistId AND 'ANYC2025' = artistUserEntry.dataYear;
-
-getStampRallyUserData2023:
-SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2023
+getStampRallyUserData:
+SELECT stampRallyEntry.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry
 LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId;
-
-getStampRallyUserData2024:
-SELECT stampRallyEntry2024.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2024
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId;
-
-getStampRallyUserData2025:
-SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2025
-LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId;
+ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
+WHERE stampRallyEntry.dataYear = :dataYear;
 
 getArtistNotes:
 SELECT artistNotes.* FROM artistNotes

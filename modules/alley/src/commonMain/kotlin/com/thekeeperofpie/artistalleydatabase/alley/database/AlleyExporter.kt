@@ -10,7 +10,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_import_failed
 import artistalleydatabase.modules.alley.generated.resources.alley_import_schema_version_mismatch
 import artistalleydatabase.modules.alley.generated.resources.alley_import_unknown_data_year
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.CHARACTERS
-import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.SEPARATOR
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import dev.zacsweers.metro.Inject
@@ -91,81 +90,19 @@ class AlleyExporter(
         sink.writeString(year.serializedName)
         sink.writeString(SEPARATOR)
 
-        when (year) {
-            DataYear.ANIME_EXPO_2023 -> sink.writeData(
-                source = importExportDao.getExportPartialArtists2023(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_EXPO_2024 -> sink.writeData(
-                source = importExportDao.getExportPartialArtists2024(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_EXPO_2025 -> sink.writeData(
-                source = importExportDao.getExportPartialArtists2025(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_EXPO_2026 -> sink.writeData(
-                source = importExportDao.getExportPartialArtistsAnimeExpo2026(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_NYC_2024 -> sink.writeData(
-                source = importExportDao.getExportPartialArtistsAnimeNyc2024(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_NYC_2025 -> sink.writeData(
-                source = importExportDao.getExportPartialArtistsAnimeNyc2025(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_NYC_2026 -> sink.writeData(
-                source = importExportDao.getExportPartialArtistsAnimeNyc2026(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-        }
+        sink.writeData(
+            source = importExportDao.getExportPartialArtists(year),
+            id = { it.id.toString() },
+            favorite = { it.favorite },
+            ignored = { it.ignored },
+        )
 
-        when (year) {
-            DataYear.ANIME_EXPO_2023 -> sink.writeData(
-                source = importExportDao.getExportPartialStampRallies2023(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_EXPO_2024 -> sink.writeData(
-                source = importExportDao.getExportPartialStampRallies2024(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_EXPO_2025 -> sink.writeData(
-                source = importExportDao.getExportPartialStampRallies2025(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_EXPO_2026 -> sink.writeData(
-                source = importExportDao.getExportPartialStampRalliesAnimeExpo2026(),
-                id = { it.id },
-                favorite = { it.favorite },
-                ignored = { it.ignored },
-            )
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_NYC_2026,
-                -> Unit // Doesn't have stamp rallies
-        }
+        sink.writeData(
+            source = importExportDao.getExportPartialStampRallies(year),
+            id = { it.id },
+            favorite = { it.favorite },
+            ignored = { it.ignored },
+        )
     }
 
     // TODO: Remove usages of indexOf(ByteString) as it doesn't have a maximum read length
@@ -217,139 +154,33 @@ class AlleyExporter(
         val dataYearSize = source.indexOf('='.code.toByte())
         val dataYearName = source.readString(dataYearSize)
         val dataYear = DataYear.deserialize(dataYearName)
-        if (dataYear == null) {
-            return LoadingResult.error<Unit>(
+            ?: return LoadingResult.error<Unit>(
                 Res.string.alley_import_unknown_data_year,
                 dataYearName,
             )
-        }
         source.skip(1)
 
         importExportDao.database().transaction {
-            when (dataYear) {
-                DataYear.ANIME_EXPO_2023 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialArtists2023(),
-                    id = { it.id },
-                    insert = { artistId, favorite, ignored ->
-                        importExportDao.importArtist(
-                            artistId = artistId,
-                            dataYear = DataYear.ANIME_EXPO_2023,
-                            favorite = favorite,
-                            ignored = ignored,
-                        )
-                    },
-                )
-                DataYear.ANIME_EXPO_2024 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialArtists2024(),
-                    id = { it.id },
-                    insert = { artistId, favorite, ignored ->
-                        importExportDao.importArtist(
-                            artistId = artistId,
-                            dataYear = DataYear.ANIME_EXPO_2024,
-                            favorite = favorite,
-                            ignored = ignored,
-                        )
-                    },
-                )
-                DataYear.ANIME_EXPO_2025 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialArtists2025(),
-                    id = { it.id },
-                    insert = { artistId, favorite, ignored ->
-                        importExportDao.importArtist(
-                            artistId = artistId,
-                            dataYear = DataYear.ANIME_EXPO_2025,
-                            favorite = favorite,
-                            ignored = ignored,
-                        )
-                    },
-                )
-                DataYear.ANIME_EXPO_2026 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialArtistsAnimeExpo2026(),
-                    id = { it.id },
-                    insert = { artistId, favorite, ignored ->
-                        importExportDao.importArtist(
-                            artistId = artistId,
-                            dataYear = DataYear.ANIME_EXPO_2026,
-                            favorite = favorite,
-                            ignored = ignored,
-                        )
-                    },
-                )
-                DataYear.ANIME_NYC_2024 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2024(),
-                    id = { it.id },
-                    insert = { artistId, favorite, ignored ->
-                        importExportDao.importArtist(
-                            artistId = artistId,
-                            dataYear = DataYear.ANIME_NYC_2024,
-                            favorite = favorite,
-                            ignored = ignored,
-                        )
-                    },
-                )
-                DataYear.ANIME_NYC_2025 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2025(),
-                    id = { it.id },
-                    insert = { artistId, favorite, ignored ->
-                        importExportDao.importArtist(
-                            artistId = artistId,
-                            dataYear = DataYear.ANIME_NYC_2025,
-                            favorite = favorite,
-                            ignored = ignored,
-                        )
-                    },
-                )
-                DataYear.ANIME_NYC_2026 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2026(),
-                    id = { it.id },
-                    insert = { artistId, favorite, ignored ->
-                        importExportDao.importArtist(
-                            artistId = artistId,
-                            dataYear = DataYear.ANIME_NYC_2026,
-                            favorite = favorite,
-                            ignored = ignored,
-                        )
-                    },
-                )
-            }
+            readData(
+                source = source,
+                databaseValues = importExportDao.getExportPartialArtists(dataYear),
+                id = { it.id.toString() },
+                insert = { artistId, favorite, ignored ->
+                    importExportDao.importArtist(
+                        artistId = artistId,
+                        dataYear = dataYear,
+                        favorite = favorite,
+                        ignored = ignored,
+                    )
+                },
+            )
 
-            when (dataYear) {
-                DataYear.ANIME_EXPO_2023 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialStampRallies2023(),
-                    id = { it.id },
-                    insert = importExportDao::importStampRally,
-                )
-                DataYear.ANIME_EXPO_2024 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialStampRallies2024(),
-                    id = { it.id },
-                    insert = importExportDao::importStampRally,
-                )
-                DataYear.ANIME_EXPO_2025 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialStampRallies2025(),
-                    id = { it.id },
-                    insert = importExportDao::importStampRally,
-                )
-                DataYear.ANIME_EXPO_2026 -> readData(
-                    source = source,
-                    databaseValues = importExportDao.getExportPartialStampRalliesAnimeExpo2026(),
-                    id = { it.id },
-                    insert = importExportDao::importStampRally,
-                )
-                DataYear.ANIME_NYC_2024,
-                DataYear.ANIME_NYC_2025,
-                DataYear.ANIME_NYC_2026,
-                    -> Unit // Doesn't have stamp rallies
-            }
+            readData(
+                source = source,
+                databaseValues = importExportDao.getExportPartialStampRallies(dataYear),
+                id = { it.id },
+                insert = importExportDao::importStampRally,
+            )
 
             delay(1.seconds)
             importExportDao.notifyChange()
@@ -453,114 +284,33 @@ class AlleyExporter(
     suspend fun exportFull(includeMetadata: Boolean, sink: Sink) {
         val artists: Map<String?, Map<String, FullExport.ArtistData>> =
             DataYear.entries.associate {
-                val data = when (it) {
-                    DataYear.ANIME_EXPO_2023 -> importExportDao.getExportFullArtists2023()
-                        .associate {
-                            it.id to FullExport.ArtistData(
-                                booth = it.booth.takeIf { includeMetadata },
-                                name = it.name.takeIf { includeMetadata },
-                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                                notes = it.notes,
-                            )
-                        }
-                    DataYear.ANIME_EXPO_2024 -> importExportDao.getExportFullArtists2024()
-                        .associate {
-                            it.id to FullExport.ArtistData(
-                                booth = it.booth.takeIf { includeMetadata },
-                                name = it.name.takeIf { includeMetadata },
-                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                                notes = it.notes,
-                            )
-                        }
-                    DataYear.ANIME_EXPO_2025 -> importExportDao.getExportFullArtists2025()
-                        .associate {
-                            it.id to FullExport.ArtistData(
-                                booth = it.booth.takeIf { includeMetadata },
-                                name = it.name.takeIf { includeMetadata },
-                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                                notes = it.notes,
-                            )
-                        }
-                    DataYear.ANIME_EXPO_2026 -> importExportDao.getExportFullArtistsAnimeExpo2026()
-                        .associate {
-                            it.id to FullExport.ArtistData(
-                                booth = it.booth.takeIf { includeMetadata },
-                                name = it.name.takeIf { includeMetadata },
-                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                                notes = it.notes,
-                            )
-                        }
-                    DataYear.ANIME_NYC_2024 -> importExportDao.getExportFullArtistsAnimeNyc2024()
-                        .associate {
-                            it.id to FullExport.ArtistData(
-                                booth = it.booth.takeIf { includeMetadata },
-                                name = it.name.takeIf { includeMetadata },
-                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                                notes = it.notes,
-                            )
-                        }
-                    DataYear.ANIME_NYC_2025 -> importExportDao.getExportFullArtistsAnimeNyc2025()
-                        .associate {
-                            it.id to FullExport.ArtistData(
-                                booth = it.booth.takeIf { includeMetadata },
-                                name = it.name.takeIf { includeMetadata },
-                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                                notes = it.notes,
-                            )
-                        }
-                    DataYear.ANIME_NYC_2026 -> importExportDao.getExportFullArtistsAnimeNyc2026()
-                        .associate {
-                            it.id to FullExport.ArtistData(
-                                booth = it.booth.takeIf { includeMetadata },
-                                name = it.name.takeIf { includeMetadata },
-                                favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                                ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                                notes = it.notes,
-                            )
-                        }
-                }
+                val data = importExportDao.getExportFullArtists(it)
+                    .associate {
+                        it.id.toString() to FullExport.ArtistData(
+                            booth = it.booth.takeIf { includeMetadata },
+                            name = it.name.takeIf { includeMetadata },
+                            favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                            ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                            notes = it.notes,
+                        )
+                    }
                 it.serializedName to data
             }
 
         val rallies = mutableMapOf<String, FullExport.RallyData>()
-        rallies += importExportDao.getExportFullStampRallies2023()
-            .associate {
-                it.id to FullExport.RallyData(
-                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                    notes = it.notes,
-                )
-            }
-        rallies += importExportDao.getExportFullStampRallies2024()
+        rallies += DataYear.entries
+            .filter { it.hasRallies }
             .map {
-                it.id to FullExport.RallyData(
-                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                    notes = it.notes,
-                )
+                importExportDao.getExportFullStampRallies(it)
+                    .associate {
+                        it.id to FullExport.RallyData(
+                            favorite = DaoUtils.coerceBooleanForJs(it.favorite),
+                            ignored = DaoUtils.coerceBooleanForJs(it.ignored),
+                            notes = it.notes,
+                        )
+                    }
             }
-        rallies += importExportDao.getExportFullStampRallies2025()
-            .map {
-                it.id to FullExport.RallyData(
-                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                    notes = it.notes,
-                )
-            }
-        rallies += importExportDao.getExportFullStampRalliesAnimeExpo2026()
-            .map {
-                it.id to FullExport.RallyData(
-                    favorite = DaoUtils.coerceBooleanForJs(it.favorite),
-                    ignored = DaoUtils.coerceBooleanForJs(it.ignored),
-                    notes = it.notes,
-                )
-            }
+            .fold(emptyMap()) { acc, data -> acc + data }
 
         val series = mutableMapOf<String, FullExport.SeriesData>()
         series += importExportDao.getExportFullSeries()
