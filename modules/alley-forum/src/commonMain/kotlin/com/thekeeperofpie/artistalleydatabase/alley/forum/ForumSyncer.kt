@@ -11,9 +11,11 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.kmpalette.color
 import com.kmpalette.from
 import com.kmpalette.palette.graphics.Palette
+import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.forum.alley_forum.generated.resources.Res
 import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
@@ -64,11 +66,7 @@ internal class ForumSyncer(private val environment: Environment) {
 
     @OptIn(DelicateCoroutinesApi::class)
     private val database = flowFromSuspend {
-        AlleySqlDatabase(
-            driver = createDriver(),
-            artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
-            seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
-        )
+        DaoUtils.createAlleySqlDatabase(createDriver())
     }.stateIn(GlobalScope, SharingStarted.Eagerly, null)
 
     suspend fun verifyChannel() {

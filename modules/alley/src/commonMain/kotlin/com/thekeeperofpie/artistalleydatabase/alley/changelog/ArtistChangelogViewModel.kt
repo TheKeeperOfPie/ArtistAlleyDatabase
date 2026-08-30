@@ -42,8 +42,7 @@ class ArtistChangelogViewModel(
                 .asSequence()
                 .map {
                     it.toChangelogEntry(
-                        // TODO: Split by year
-                        dataYear = DataYear.ANIME_EXPO_2026,
+                        dataYear = dataYear,
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = catalogsOnly,
                         seriesIdsToHighlight = tagFavorites.seriesIds,

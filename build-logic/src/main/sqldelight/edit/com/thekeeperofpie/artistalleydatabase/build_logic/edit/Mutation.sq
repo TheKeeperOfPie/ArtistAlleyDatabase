@@ -40,10 +40,6 @@ insertStampRallyChangelogEntry:
 INSERT OR REPLACE INTO stampRallyChangelogEntry
 VALUES ?;
 
-insertArtistEntryAnimeNyc2026Changelog:
-INSERT OR REPLACE INTO artistEntryAnimeNyc2026Changelog
-VALUES ?;
-
 insertSeriesChangelog:
 INSERT OR REPLACE INTO seriesEntryChangelog
 VALUES ?;

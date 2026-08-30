@@ -1,9 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
-import com.thekeeperofpie.artistalleydatabase.alley.discord.form.AlleyFormDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
+import com.thekeeperofpie.artistalleydatabase.alley.backend.data.AlleySqlDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.cloudflare.WorkerSqlDriver
 
 internal object Databases {
@@ -16,17 +14,9 @@ internal object Databases {
 
     fun backendDatabase(env: Env) = AlleySqlDatabase(
         driver = editSqlDriver(env),
-        artistCatalogQueueEntryAdapter = ArtistCatalogQueueEntry.Adapter(
-            dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-        ),
-        artistEntryAnimeNyc2026Adapter = ColumnAdapters.artistEntryAnimeNyc2026Adapter,
     )
 
     fun formDatabase(env: Env) = AlleyFormDatabase(
         driver = formSqlDriver(env),
-        artistFormPublicKeyAdapter = ArtistFormPublicKey.Adapter(
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-        ),
     )
 }

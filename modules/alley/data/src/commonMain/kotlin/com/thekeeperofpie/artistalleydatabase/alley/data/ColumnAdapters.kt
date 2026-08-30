@@ -84,95 +84,6 @@ object ColumnAdapters {
         override fun encode(value: Map<String, DatabaseImage>) = Json.encodeToString(value)
     }
 
-    val artistEntry2023Adapter = ArtistEntry2023.Adapter(
-        artistNamesAdapter = listStringAdapter,
-        linksAdapter = listStringAdapter,
-        catalogLinksAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-    )
-    val artistEntry2024Adapter = ArtistEntry2024.Adapter(
-        linksAdapter = listStringAdapter,
-        storeLinksAdapter = listStringAdapter,
-        catalogLinksAdapter = listStringAdapter,
-        seriesInferredAdapter = listStringAdapter,
-        seriesConfirmedAdapter = listStringAdapter,
-        merchInferredAdapter = listStringAdapter,
-        merchConfirmedAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        fallbackImageYearAdapter = dataYearAdapter,
-    )
-    val artistEntry2025Adapter = ArtistEntry2025.Adapter(
-        linksAdapter = listStringAdapter,
-        storeLinksAdapter = listStringAdapter,
-        catalogLinksAdapter = listStringAdapter,
-        seriesInferredAdapter = listStringAdapter,
-        seriesConfirmedAdapter = listStringAdapter,
-        merchInferredAdapter = listStringAdapter,
-        merchConfirmedAdapter = listStringAdapter,
-        commissionsAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        fallbackImageYearAdapter = dataYearAdapter,
-    )
-    val artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
-        statusAdapter = artistStatusAdapter,
-        socialLinksAdapter = listStringAdapter,
-        storeLinksAdapter = listStringAdapter,
-        portfolioLinksAdapter = listStringAdapter,
-        catalogLinksAdapter = listStringAdapter,
-        seriesInferredAdapter = listStringAdapter,
-        seriesConfirmedAdapter = listStringAdapter,
-        merchInferredAdapter = listStringAdapter,
-        merchConfirmedAdapter = listStringAdapter,
-        commissionsAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        tempImagesAdapter = listDatabaseImageAdapter,
-        profileImageAdapter = databaseImageAdapter,
-        fallbackImageYearAdapter = dataYearAdapter,
-        embedsAdapter = embedsAdapter,
-        lastEditTimeAdapter = instantAdapter,
-    )
-    val artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
-        linksAdapter = listStringAdapter,
-        storeLinksAdapter = listStringAdapter,
-        catalogLinksAdapter = listStringAdapter,
-        seriesInferredAdapter = listStringAdapter,
-        seriesConfirmedAdapter = listStringAdapter,
-        merchInferredAdapter = listStringAdapter,
-        merchConfirmedAdapter = listStringAdapter,
-        commissionsAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        fallbackImageYearAdapter = dataYearAdapter,
-    )
-    val artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
-        linksAdapter = listStringAdapter,
-        storeLinksAdapter = listStringAdapter,
-        catalogLinksAdapter = listStringAdapter,
-        seriesInferredAdapter = listStringAdapter,
-        seriesConfirmedAdapter = listStringAdapter,
-        merchInferredAdapter = listStringAdapter,
-        merchConfirmedAdapter = listStringAdapter,
-        commissionsAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        fallbackImageYearAdapter = dataYearAdapter,
-    )
-    val artistEntryAnimeNyc2026Adapter = ArtistEntryAnimeNyc2026.Adapter(
-        statusAdapter = artistStatusAdapter,
-        socialLinksAdapter = listStringAdapter,
-        storeLinksAdapter = listStringAdapter,
-        portfolioLinksAdapter = listStringAdapter,
-        catalogLinksAdapter = listStringAdapter,
-        seriesInferredAdapter = listStringAdapter,
-        seriesConfirmedAdapter = listStringAdapter,
-        merchInferredAdapter = listStringAdapter,
-        merchConfirmedAdapter = listStringAdapter,
-        commissionsAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        tempImagesAdapter = listDatabaseImageAdapter,
-        profileImageAdapter = databaseImageAdapter,
-        fallbackImageYearAdapter = dataYearAdapter,
-        embedsAdapter = embedsAdapter,
-        lastEditTimeAdapter = instantAdapter,
-    )
     val artistEntryAdapter = ArtistEntry.Adapter(
         idAdapter = uuidAdapter,
         dataYearAdapter = dataYearAdapter,
@@ -201,36 +112,6 @@ object ColumnAdapters {
         merchInferredAdapter = setStringAdapter,
         merchConfirmedAdapter = setStringAdapter,
         imagesAdapter = listDatabaseImageAdapter,
-    )
-    val stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
-        tablesAdapter = listStringAdapter,
-        linksAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-    )
-    val stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
-        tablesAdapter = listStringAdapter,
-        linksAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        tableMinAdapter = tableMinAdapter,
-    )
-    val stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
-        tablesAdapter = listStringAdapter,
-        linksAdapter = listStringAdapter,
-        seriesAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        tableMinAdapter = tableMinAdapter,
-    )
-    val stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
-        tablesAdapter = listStringAdapter,
-        startTablesAdapter = setStringAdapter,
-        endTablesAdapter = setStringAdapter,
-        linksAdapter = listStringAdapter,
-        tableMinAdapter = tableMinAdapter,
-        prizeMerchAdapter = listStringAdapter,
-        seriesAdapter = listStringAdapter,
-        merchAdapter = listStringAdapter,
-        imagesAdapter = listDatabaseImageAdapter,
-        lastEditTimeAdapter = instantAdapter,
     )
     val stampRallyEntryAdapter = StampRallyEntry.Adapter(
         dataYearAdapter = dataYearAdapter,

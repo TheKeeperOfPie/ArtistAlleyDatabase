@@ -4,7 +4,6 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
@@ -1476,59 +1475,47 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val alleyChangelog = file.inputStream().use {
             Json.decodeFromStream<AlleyChangelog>(it)
         }
-        database.transaction {
-            alleyChangelog.artistDiffs[DataYear.ANIME_EXPO_2026]?.forEach {
-                database.mutationQueries.insertArtistChangelogEntry(
-                    ArtistChangelogEntry(
-                        artistId = it.artistId,
-                        dataYear = DataYear.ANIME_EXPO_2026,
-                        date = it.date.toString(),
-                        booth = it.booth,
-                        name = it.name,
-                        seriesInferred = it.seriesInferred,
-                        seriesConfirmed = it.seriesConfirmed,
-                        merchInferred = it.merchInferred,
-                        merchConfirmed = it.merchConfirmed,
-                        isBrandNew = it.isBrandNew,
-                        images = it.images,
-                        isTempImages = false, // Will be set during database processing
+
+        DataYear.entries.forEach { dataYear ->
+            database.transaction {
+                alleyChangelog.artistDiffs[dataYear]?.forEach {
+                    database.mutationQueries.insertArtistChangelogEntry(
+                        ArtistChangelogEntry(
+                            artistId = it.artistId,
+                            dataYear = dataYear,
+                            date = it.date.toString(),
+                            booth = it.booth,
+                            name = it.name,
+                            seriesInferred = it.seriesInferred,
+                            seriesConfirmed = it.seriesConfirmed,
+                            merchInferred = it.merchInferred,
+                            merchConfirmed = it.merchConfirmed,
+                            isBrandNew = it.isBrandNew,
+                            images = it.images,
+                            isTempImages = false, // Will be set during database processing
+                        )
                     )
-                )
-            }
-        }
-        database.transaction {
-            alleyChangelog.artistDiffs[DataYear.ANIME_NYC_2026]?.forEach {
-                database.mutationQueries.insertArtistEntryAnimeNyc2026Changelog(
-                    ArtistEntryAnimeNyc2026Changelog(
-                        artistId = it.artistId,
-                        date = it.date.toString(),
-                        booth = it.booth,
-                        name = it.name,
-                        seriesInferred = it.seriesInferred,
-                        seriesConfirmed = it.seriesConfirmed,
-                        merchInferred = it.merchInferred,
-                        merchConfirmed = it.merchConfirmed,
-                        isBrandNew = it.isBrandNew,
-                        images = it.images,
-                        isTempImages = false, // Will be set during database processing
-                    )
-                )
+                }
             }
         }
 
-        database.transaction {
-            alleyChangelog.rallyDiffs[DataYear.ANIME_EXPO_2026]?.forEach {
-                database.mutationQueries.insertStampRallyChangelogEntry(
-                    StampRallyChangelogEntry(
-                        stampRallyId = it.stampRallyId,
-                        dataYear = DataYear.ANIME_EXPO_2026,
-                        date = it.date.toString(),
-                        images = it.images,
-                        isBrandNew = it.isBrandNew,
-                    )
-                )
+        DataYear.entries
+            .filter { it.hasRallies }
+            .forEach { dataYear ->
+                database.transaction {
+                    alleyChangelog.rallyDiffs[dataYear]?.forEach {
+                        database.mutationQueries.insertStampRallyChangelogEntry(
+                            StampRallyChangelogEntry(
+                                stampRallyId = it.stampRallyId,
+                                dataYear = dataYear,
+                                date = it.date.toString(),
+                                images = it.images,
+                                isBrandNew = it.isBrandNew,
+                            )
+                        )
+                    }
+                }
             }
-        }
 
         database.transaction {
             alleyChangelog.seriesDiffs.forEach {

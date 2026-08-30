@@ -1,11 +1,11 @@
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntryAnimeNyc2026
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.LegacyQueries
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.coroutines.asCoroutineDispatcher

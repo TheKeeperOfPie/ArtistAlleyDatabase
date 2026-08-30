@@ -5,23 +5,11 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntryChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyPrizeMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
@@ -30,6 +18,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.build_logic.form.BuildLogicFormDatabase
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntry2023
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntry2024
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntryAnimeNyc2024
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntryAnimeNyc2025
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntryAnimeNyc2026
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.StampRallyEntry2023
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.StampRallyEntry2024
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.StampRallyEntry2025
+import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
@@ -320,14 +319,6 @@ internal object Utils {
                 fallbackImageYearAdapter = dataYearAdapter,
                 embedsAdapter = embedsAdapter,
                 lastEditTimeAdapter = instantAdapter,
-            ),
-            artistEntryAnimeNyc2026ChangelogAdapter = ArtistEntryAnimeNyc2026Changelog.Adapter(
-                artistIdAdapter = uuidAdapter,
-                seriesInferredAdapter = setStringAdapter,
-                seriesConfirmedAdapter = setStringAdapter,
-                merchInferredAdapter = setStringAdapter,
-                merchConfirmedAdapter = setStringAdapter,
-                imagesAdapter = listDatabaseImageAdapter,
             ),
             artistChangelogEntryAdapter = ArtistChangelogEntry.Adapter(
                 artistIdAdapter = uuidAdapter,
