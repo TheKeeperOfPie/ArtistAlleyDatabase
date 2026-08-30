@@ -52,9 +52,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     @get:OutputDirectory
     abstract val outputImagesAnimeNyc2025: DirectoryProperty
 
-    @get:OutputDirectory
-    abstract val outputSource: DirectoryProperty
-
     init {
         val projectDirectory = layout.projectDirectory
         imagesAnimeExpo2023Folder.convention(projectDirectory.dir("images/2023"))
@@ -67,7 +64,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         outputImagesAnimeExpo2024.convention(buildDirectory.dir("generated/composeResources/files/images/2024"))
         outputImagesAnimeExpo2025.convention(buildDirectory.dir("generated/composeResources/files/images/2025"))
         outputImagesAnimeNyc2025.convention(buildDirectory.dir("generated/composeResources/files/images/animeNyc2025"))
-        outputSource.convention(buildDirectory.dir("generated/source"))
     }
 
     @Suppress("NewApi")
@@ -77,26 +73,28 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
             val dispatcher = it.asCoroutineDispatcher()
             runBlocking(dispatcher) {
-                // Copy over preserved pre-processed images
-                listOf(
-                    imagesAnimeExpo2023Folder to outputImagesAnimeExpo2023,
-                    imagesAnimeExpo2024Folder to outputImagesAnimeExpo2024,
-                    imagesAnimeExpo2025Folder to outputImagesAnimeExpo2025,
-                    imagesAnimeNyc2025Folder to outputImagesAnimeNyc2025,
-                ).forEach { (input, output) ->
-                    val processed = input.dir("processed").get().asFile
-                    if (processed.exists()) {
-                        processed.copyRecursively(
-                            output.get().asFile,
-                            overwrite = false,
-                            onError = { _, exception ->
-                                if (exception is FileAlreadyExistsException) {
-                                    OnErrorAction.SKIP
-                                } else {
-                                    OnErrorAction.TERMINATE
-                                }
-                            },
-                        )
+                trackStage("CopyPreprocessedImages") {
+                    // Copy over preserved pre-processed images
+                    listOf(
+                        imagesAnimeExpo2023Folder to outputImagesAnimeExpo2023,
+                        imagesAnimeExpo2024Folder to outputImagesAnimeExpo2024,
+                        imagesAnimeExpo2025Folder to outputImagesAnimeExpo2025,
+                        imagesAnimeNyc2025Folder to outputImagesAnimeNyc2025,
+                    ).forEach { (input, output) ->
+                        val processed = input.dir("processed").get().asFile
+                        if (processed.exists()) {
+                            processed.copyRecursively(
+                                output.get().asFile,
+                                overwrite = false,
+                                onError = { _, exception ->
+                                    if (exception is FileAlreadyExistsException) {
+                                        OnErrorAction.SKIP
+                                    } else {
+                                        OnErrorAction.TERMINATE
+                                    }
+                                },
+                            )
+                        }
                     }
                 }
 
@@ -190,16 +188,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         transformImageName: (index: Int, hash: String, name: String) -> String = { index, hash, _ ->
             "${index.toString().padStart(2, '0')}-$hash.webp"
         },
-    ): List<CatalogFolder> {
-        return processFolders(
-            imageCacheDir = imageCacheDir,
-            inputFolder = inputFolder,
-            outputFolder = outputFolder,
-            transformName = transformName,
-            transformId = transformId,
-            transformImageName = transformImageName,
-        )
-    }
+    ): List<CatalogFolder> = processFolders(
+        imageCacheDir = imageCacheDir,
+        inputFolder = inputFolder,
+        outputFolder = outputFolder,
+        transformName = transformName,
+        transformId = transformId,
+        transformImageName = transformImageName,
+    )
 
     private suspend fun processFolders(
         imageCacheDir: File,
