@@ -132,7 +132,6 @@ import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
@@ -317,38 +316,13 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                             .sharedElement("booth", sharedElementId, zIndexInOverlay = 1f)
                     )
                 }
-
-                var unfavoriteDialogEntry by remember {
-                    mutableStateOf<SearchEntryModel?>(null)
-                }
-                val favorite = entry.favorite
-                IconButton(
-                    onClick = {
-                        if (favorite) {
-                            unfavoriteDialogEntry = entry
-                        } else {
-                            onFavoriteToggle(true)
-                        }
-                    },
+                
+                FavoriteIconButton(
+                    entryText = { entry.title },
+                    favorite = {  entry.favorite },
+                    onFavoriteToggle = onFavoriteToggle,
                     modifier = Modifier
                         .sharedElement("favorite", sharedElementId, zIndexInOverlay = 1f)
-                ) {
-                    Icon(
-                        imageVector = if (entry.favorite) {
-                            Icons.Filled.Favorite
-                        } else {
-                            Icons.Filled.FavoriteBorder
-                        },
-                        contentDescription = stringResource(
-                            Res.string.alley_favorite_icon_content_description
-                        ),
-                    )
-                }
-
-                UnfavoriteDialog(
-                    entry = { unfavoriteDialogEntry },
-                    onClearEntry = { unfavoriteDialogEntry = null },
-                    onRemoveFavorite = { onFavoriteToggle(false) },
                 )
             }
         }
@@ -404,13 +378,6 @@ internal fun ImageFallbackBanner(
             style = MaterialTheme.typography.labelSmallEmphasized,
         )
     }
-}
-
-internal class WrappedViewConfiguration(
-    viewConfiguration: ViewConfiguration,
-    val overrideTouchSlop: Float,
-) : ViewConfiguration by viewConfiguration {
-    override val touchSlop = overrideTouchSlop
 }
 
 @Composable

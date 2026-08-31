@@ -43,6 +43,7 @@ class ArtistEntryGridModel(
     override var ignored by mutableStateOf(userEntry.ignored)
 
     override val booth get() = artist.booth
+    override val title get() = artist.name
 
     val showingFallback = !hasCatalog && fallbackImages.isNotEmpty()
     val displayImages get() = if (showingFallback) fallbackImages else images

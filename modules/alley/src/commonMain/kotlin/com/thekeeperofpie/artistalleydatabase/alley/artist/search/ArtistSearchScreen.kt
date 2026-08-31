@@ -61,7 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
@@ -70,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
@@ -227,14 +228,20 @@ object ArtistSearchScreen {
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(
                         entry = entry,
-                        series = series,
                         onFavoriteToggle = onFavoriteToggle,
-                        onSeriesClick = { eventSink(Event.OpenSeries(it)) },
-                        onMoreClick = {
-                            eventSink(
-                                Event.SearchEvent(
-                                    SearchScreen.Event.OpenEntry(entry, 1)
-                                )
+                        tagRow = {
+                            SeriesRow(
+                                series = entry.series.mapNotNull { series()[it] },
+                                hasMoreSeries = entry.hasMoreSeries,
+                                onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                                onMoreClick = {
+                                    eventSink(
+                                        Event.SearchEvent(
+                                            SearchScreen.Event.OpenEntry(entry, 1)
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.padding(start = 12.dp)
                             )
                         },
                         modifier = modifier

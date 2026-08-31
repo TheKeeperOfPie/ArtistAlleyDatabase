@@ -46,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -598,6 +597,7 @@ object SearchScreen {
         val fallbackYear: DataYear?
         var favorite: Boolean
         var ignored: Boolean
+        val title: String
     }
 
     enum class DisplayType(val label: StringResource, val icon: ImageVector) {

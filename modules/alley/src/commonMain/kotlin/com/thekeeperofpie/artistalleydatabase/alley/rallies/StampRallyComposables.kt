@@ -20,15 +20,10 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -41,7 +36,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_free
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_other
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_paid
-import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_cost
 import coil3.compose.AsyncImage
@@ -52,15 +46,11 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistProfileImage
-import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
-import com.thekeeperofpie.artistalleydatabase.icons.Icons
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
-import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
@@ -251,39 +241,13 @@ fun StampRallyListRow(
                     }
                 }
 
-                var unfavoriteDialogEntry by remember {
-                    mutableStateOf<SearchScreen.SearchEntryModel?>(null)
-                }
-
-                val favorite = entry.favorite
-                IconButton(
-                    onClick = {
-                        if (favorite) {
-                            unfavoriteDialogEntry = entry
-                        } else {
-                            onFavoriteToggle(true)
-                        }
-                    },
+                FavoriteIconButton(
+                    entryText = { entry.title },
+                    favorite = { entry.favorite },
+                    onFavoriteToggle = onFavoriteToggle,
                     modifier = Modifier
                         .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
                         .align(Alignment.Top)
-                ) {
-                    Icon(
-                        imageVector = if (favorite) {
-                            Icons.Filled.Favorite
-                        } else {
-                            Icons.Filled.FavoriteBorder
-                        },
-                        contentDescription = stringResource(
-                            Res.string.alley_stamp_rally_favorite_icon_content_description
-                        ),
-                    )
-                }
-
-                UnfavoriteDialog(
-                    entry = { unfavoriteDialogEntry },
-                    onClearEntry = { unfavoriteDialogEntry = null },
-                    onRemoveFavorite = { onFavoriteToggle(false) },
                 )
             }
 
@@ -318,7 +282,8 @@ fun StampRallyListRow(
                             }
 
                             // Other tables, may include other halls like KH-1000
-                            (tables - artistBoothsToProfileImages.map { it.first }.toSet()).forEach {
+                            (tables - artistBoothsToProfileImages.map { it.first }
+                                .toSet()).forEach {
                                 ArtistProfileImage(
                                     booth = it,
                                     image = null,

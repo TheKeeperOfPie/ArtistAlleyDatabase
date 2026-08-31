@@ -36,6 +36,7 @@ class StampRallyEntryGridModel(
     override val hasCatalog get() = images.isNotEmpty()
     override val fallbackImages get() = emptyList<CatalogImage>()
     override val fallbackYear: DataYear? get() = null
+    override val title get() = "${stampRally.hostTable}-${stampRally.fandom}"
 
     companion object {
         fun buildFromEntry(entry: StampRallyWithUserData): StampRallyEntryGridModel {

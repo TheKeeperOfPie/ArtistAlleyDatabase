@@ -42,7 +42,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons

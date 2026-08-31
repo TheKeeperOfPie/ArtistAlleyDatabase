@@ -63,7 +63,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -393,11 +393,7 @@ fun SingleTablePopup(
 
         ArtistListRow(
             entry = entry,
-            series = { emptyMap() },
             onFavoriteToggle = { onFavoriteToggle(entry, it) },
-            onSeriesClick = {},
-            onMoreClick = {},
-            showSeries = false,
             useSharedElements = false,
         )
     }

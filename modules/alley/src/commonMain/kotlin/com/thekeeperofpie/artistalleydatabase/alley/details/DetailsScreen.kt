@@ -55,7 +55,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text_generic
-import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
@@ -64,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerSta
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ImageFallbackBanner
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
+import com.thekeeperofpie.artistalleydatabase.alley.ui.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement

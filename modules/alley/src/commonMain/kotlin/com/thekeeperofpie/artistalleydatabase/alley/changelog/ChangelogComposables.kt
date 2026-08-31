@@ -57,10 +57,10 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.artist.MerchRow
-import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
