@@ -169,6 +169,7 @@ include(
     ":modules:utils-compose",
     ":modules:utils-inject",
     ":modules:utils-network",
+    ":modules:utils-preview",
     ":modules:utils-room",
     ":modules:vgmdb",
 )
