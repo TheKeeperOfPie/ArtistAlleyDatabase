@@ -53,7 +53,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm.AddUniqueErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2

@@ -1,6 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import gradle.kotlin.dsl.accessors._90bd174187cd08138b72b189c4e3a8fa.android
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -10,7 +9,7 @@ plugins {
 
 kotlin {
     android {
-        val subpackage = project.path.split(":").joinToString(".")
+        val subpackage = project.path.split(":").joinToString(".").removePrefix(".")
         namespace = "com.thekeeperofpie.artistalleydatabase.$subpackage"
 
         compileSdk = 37

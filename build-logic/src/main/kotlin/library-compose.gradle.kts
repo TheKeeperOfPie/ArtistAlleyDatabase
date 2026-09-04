@@ -1,5 +1,5 @@
 plugins {
-    id("library-android")
+//    id("library-android")
     id("library-desktop")
     id("library-kotlin")
     id("com.google.devtools.ksp")
@@ -23,11 +23,11 @@ kotlin {
             resolveLibraries("libs.jetBrainsCompose.ui.test")
                 .forEach(::implementation)
         }
-        getByName("androidMain").dependencies {
-            resolveLibraries(
-                "libs.jetBrainsCompose.ui.tooling",
-            ).forEach(::implementation)
-        }
+//        getByName("androidMain").dependencies {
+//            resolveLibraries(
+//                "libs.jetBrainsCompose.ui.tooling",
+//            ).forEach(::implementation)
+//        }
         getByName("desktopMain").dependencies {
             implementation(compose.desktop.currentOs)
             resolveLibraries(
