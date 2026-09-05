@@ -88,6 +88,7 @@ rootProject.name = "ArtistAlleyDatabase"
 includeBuild("build-logic")
 includeBuild("shared")
 include(
+    ":alley-desktop",
     ":android-app",
     ":app",
     ":modules:alley",

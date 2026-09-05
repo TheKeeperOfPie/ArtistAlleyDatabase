@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.app
+package com.thekeeperofpie.artistalleydatabase.alley.desktop
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold

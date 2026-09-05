@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.app
+package com.thekeeperofpie.artistalleydatabase.alley.desktop
 
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption

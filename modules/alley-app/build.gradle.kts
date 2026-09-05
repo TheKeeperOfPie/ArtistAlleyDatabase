@@ -1,7 +1,6 @@
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 import dev.zacsweers.metro.gradle.ExperimentalMetroGradleApi
 import dev.zacsweers.metro.gradle.RequiresIdeSupport
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import java.nio.file.Files
@@ -18,18 +17,6 @@ plugins {
     alias(libs.plugins.dev.zacsweers.metro)
 }
 
-compose.desktop {
-    application {
-        mainClass = "com.thekeeperofpie.artistalleydatabase.alley.app.MainKt"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Exe)
-            packageName = "com.thekeeperofpie.artistalley"
-            packageVersion = "0.0.1"
-        }
-    }
-}
-
 @OptIn(DelicateMetroGradleApi::class, RequiresIdeSupport::class, ExperimentalMetroGradleApi::class)
 metro {
     enableTopLevelFunctionInjection.set(false)
@@ -38,8 +25,6 @@ metro {
 }
 
 kotlin {
-    jvm("desktop")
-
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("ArtistAlleyWasm")
@@ -104,11 +89,6 @@ kotlin {
                 implementation(libs.jetBrainsAndroidX.navigationevent.compose)
                 implementation(libs.kermit)
             }
-        }
-        getByName("desktopMain").dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
-            implementation(libs.ktor.client.java)
         }
         webMain {
             dependsOn(nonServiceWorkerCommonMain)
