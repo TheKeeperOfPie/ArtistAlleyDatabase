@@ -1,3 +1,6 @@
+
+import org.jetbrains.compose.resources.ResourcesExtension.ResourceClassGeneration
+
 plugins {
     id("library-android")
     id("library-compose")
@@ -61,11 +64,37 @@ val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyD
 
 compose.resources {
     publicResClass = true
-    customDirectory(
-        sourceSetName = "commonMain",
-        // zip to force databaseTask to run
-        directoryProvider = inputsTask.zip(databaseTask) { _, _ ->
-            layout.buildDirectory.dir("generated/composeResources").get()
-        },
-    )
+    generateResClass = ResourceClassGeneration.Always
+}
+
+val syncAlleyResources = tasks.register<Sync>("syncAlleyResources") {
+    dependsOn(inputsTask, databaseTask)
+    from(databaseTask.flatMap { it.outputDatabaseFile })
+    from(databaseTask.flatMap { it.outputDatabaseHashFile })
+    from(databaseTask.flatMap { it.outputEmbedImages }) {
+        into("embeds")
+    }
+    from(inputsTask.flatMap { it.outputImagesAnimeExpo2023 }) {
+        into("images/2023")
+    }
+    from(inputsTask.flatMap { it.outputImagesAnimeExpo2024 }) {
+        into("images/2024")
+    }
+    from(inputsTask.flatMap { it.outputImagesAnimeExpo2025 }) {
+        into("images/2025")
+    }
+    from(inputsTask.flatMap { it.outputImagesAnimeNyc2025 }) {
+        into("images/animeNyc2025")
+    }
+    from(databaseTask.flatMap { it.outputImagesAnimeExpo2026 }) {
+        into("images/AX2026")
+    }
+    from(databaseTask.flatMap { it.outputImagesAnimeNyc2026 }) {
+        into("images/ANYC2026")
+    }
+    into(layout.buildDirectory.dir("alleyResources/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files"))
+}
+
+tasks.withType<Jar>().configureEach {
+    from(syncAlleyResources.map { it.destinationDir.parentFile.parentFile.parentFile })
 }

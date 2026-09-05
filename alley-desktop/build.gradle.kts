@@ -57,3 +57,11 @@ kotlin {
         implementation(libs.ktor.client.java)
     }
 }
+
+tasks.withType<JavaExec>().configureEach {
+    if (name == "run") {
+        val prepareTask = project(":modules:alley:data").tasks.named<Sync>("syncAlleyResources")
+        dependsOn(prepareTask)
+        classpath(prepareTask.map { it.destinationDir.parentFile.parentFile.parentFile })
+    }
+}
