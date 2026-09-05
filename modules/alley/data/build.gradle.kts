@@ -98,3 +98,12 @@ val syncAlleyResources = tasks.register<Sync>("syncAlleyResources") {
 tasks.withType<Jar>().configureEach {
     from(syncAlleyResources.map { it.destinationDir.parentFile.parentFile.parentFile })
 }
+
+val distribution = configurations.create("distribution") {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+
+artifacts {
+    add(distribution.name, syncAlleyResources)
+}

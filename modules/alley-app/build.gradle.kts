@@ -130,6 +130,11 @@ val alleyFunctionsMiddlewareOutput = configurations.create("alleyFunctionsMiddle
     isCanBeResolved = true
 }
 
+val alleyDataOutput = configurations.create("alleyDataOutput") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     serviceWorkerOutput(project(":modules:alley-app:service-worker")) {
         targetConfiguration = "distribution"
@@ -144,6 +149,9 @@ dependencies {
         targetConfiguration = "distribution"
     }
     alleyFunctionsMiddlewareOutput(project(":modules:alley-functions:middleware")) {
+        targetConfiguration = "distribution"
+    }
+    alleyDataOutput(project(":modules:alley:data")) {
         targetConfiguration = "distribution"
     }
 }
@@ -261,6 +269,17 @@ val copyAlleyForm = tasks.register<Copy>("copyAlleyForm") {
     }
 }
 
+val syncAlleyDataResources = tasks.register<Sync>("syncAlleyDataResources") {
+    outputs.upToDateWhen { false }
+    mustRunAfter(buildBothWebVariants)
+
+    val syncTask = project(":modules:alley:data").tasks.named<Sync>("syncAlleyResources").get()
+    dependsOn(syncTask)
+    from(alleyDataOutput)
+    val destDir = layout.buildDirectory.dir("$outputDir/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files")
+    into(destDir)
+}
+
 val copyAlleyFunctions = tasks.register<Copy>("copyAlleyFunctions") {
     outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
@@ -335,6 +354,7 @@ tasks.register("webRelease") {
         copyServiceWorkerOutput,
         copyAlleyEdit,
         copyAlleyForm,
+        syncAlleyDataResources,
         copyAlleyFunctions,
         copyAlleyFunctionsMiddleware,
     )
