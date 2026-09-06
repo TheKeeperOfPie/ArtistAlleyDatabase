@@ -200,7 +200,10 @@ fi
 
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+# Ensure Gradle uses a project-local user home to avoid accessing C: drive
+GRADLE_USER_HOME="$APP_HOME/gradle-home"
+export GRADLE_USER_HOME
+DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m" "-Dgradle.user.home='"$GRADLE_USER_HOME"'"'
 
 # Collect all arguments for the java command:
 #   * DEFAULT_JVM_OPTS, JAVA_OPTS, and optsEnvironmentVar are not allowed to contain shell fragments,

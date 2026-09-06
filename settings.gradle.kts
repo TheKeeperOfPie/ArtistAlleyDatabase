@@ -89,6 +89,7 @@ includeBuild("build-logic")
 includeBuild("shared")
 include(
     ":alley-desktop",
+    ":alley-web",
     ":android-app",
     ":app",
     ":modules:alley",
@@ -98,9 +99,8 @@ include(
     ":modules:alley:form",
     ":modules:alley:form:data",
     ":modules:alley:models",
+    ":modules:alley:service-worker",
     ":modules:alley:user",
-    ":modules:alley-app",
-    ":modules:alley-app:service-worker",
     ":modules:alley-discord",
     ":modules:alley-durableobject",
     ":modules:alley-edit",
