@@ -44,7 +44,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -162,10 +161,11 @@ fun ImagePager(
     forceMinHeight: Boolean = true,
     imageContentScale: ContentScale = ContentScale.FillWidth,
     multiZoomableState: MultiZoomableState = rememberMultiZoomableState(images.size),
+    blockCrossAxisScrolling: () -> Boolean = { false },
 ) {
     val scope = rememberCoroutineScope()
     Box(modifier = modifier) {
-        val userScrollEnabled by remember(pagerState, images, multiZoomableState) {
+        val unzoomed by remember(pagerState, images, multiZoomableState) {
             derivedStateOf {
                 if (images.size <= 1) return@derivedStateOf false
                 val zoomableState = multiZoomableState.getOrNull(pagerState.currentPage - 1)
@@ -175,128 +175,129 @@ fun ImagePager(
             }
         }
 
+        val userScrollEnabled by remember(blockCrossAxisScrolling) {
+            derivedStateOf { unzoomed && !blockCrossAxisScrolling() }
+        }
+
         var anySuccess by remember { mutableStateOf(false) }
-
-        CompositionLocalProvider {
-            var minPagerHeight by remember { mutableIntStateOf(0) }
-            val density = LocalDensity.current
-            HorizontalPager(
-                state = pagerState,
-                pageSpacing = 16.dp,
-                userScrollEnabled = userScrollEnabled,
-                modifier = Modifier
-                    .conditionally(forceMinHeight) {
-                        heightIn(min = density.run { minPagerHeight.toDp() })
-                            .onSizeChanged {
-                                if (it.height > minPagerHeight) {
-                                    minPagerHeight = it.height
-                                }
+        var minPagerHeight by remember { mutableIntStateOf(0) }
+        val density = LocalDensity.current
+        HorizontalPager(
+            state = pagerState,
+            pageSpacing = 16.dp,
+            userScrollEnabled = userScrollEnabled,
+            modifier = Modifier
+                .conditionally(forceMinHeight) {
+                    heightIn(min = density.run { minPagerHeight.toDp() })
+                        .onSizeChanged {
+                            if (it.height > minPagerHeight) {
+                                minPagerHeight = it.height
                             }
-                    }
-                    .conditionally(clipCorners) {
-                        clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                    }
-            ) {
-                if (it == 0 && images.size > 1) {
-                    SmallImageGrid(
-                        targetHeight = if (forceMinHeight) {
-                            minPagerHeight.coerceAtLeast(
-                                density.run { 320.dp.roundToPx() }
-                            )
-                        } else {
-                            null
-                        },
-                        images = images,
-                        onImageClick = { index, _ ->
-                            scope.launch {
-                                pagerState.animateScrollToPage(index + 1)
-                            }
-                        },
-                        modifier = Modifier.fillMaxSize()
+                        }
+                }
+                .conditionally(clipCorners) {
+                    clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                }
+        ) {
+            if (it == 0 && images.size > 1) {
+                SmallImageGrid(
+                    targetHeight = if (forceMinHeight) {
+                        minPagerHeight.coerceAtLeast(
+                            density.run { 320.dp.roundToPx() }
+                        )
+                    } else {
+                        null
+                    },
+                    images = images,
+                    onImageClick = { index, _ ->
+                        scope.launch {
+                            pagerState.animateScrollToPage(index + 1)
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                val imageIndex = (it - 1).coerceAtLeast(0)
+                val image = images[imageIndex]
+                val zoomableState = multiZoomableState[imageIndex].apply {
+                    val width = image.width?.toFloat() ?: return@apply
+                    val height = image.height?.toFloat() ?: return@apply
+                    setContentLocation(
+                        @Suppress("DEPRECATION")
+                        ZoomableContentLocation.scaledToFitAndCenterAligned(
+                            Size(width = width, height = height)
+                        )
                     )
-                } else {
-                    val imageIndex = (it - 1).coerceAtLeast(0)
-                    val image = images[imageIndex]
-                    val zoomableState = multiZoomableState[imageIndex].apply {
-                        val width = image.width?.toFloat() ?: return@apply
-                        val height = image.height?.toFloat() ?: return@apply
-                        setContentLocation(
-                            @Suppress("DEPRECATION")
-                            ZoomableContentLocation.scaledToFitAndCenterAligned(
-                                Size(width = width, height = height)
-                            )
-                        )
-                    }
-                    val isFillWidth = imageContentScale == ContentScale.FillWidth
+                }
+                val isFillWidth = imageContentScale == ContentScale.FillWidth
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .zoomable(
-                                state = zoomableState,
-                                onClick = if (onClickPage == null) null else {
-                                    {
-                                        if (!pagerState.isScrollInProgress) {
-                                            onClickPage(pagerState.settledPage)
-                                        }
-                                    }
-                                },
-                                onDoubleClick = CycleDoubleClickListener,
-                            )
-                    ) {
-                        val zoomed = zoomableState.zoomFraction != 0f
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalPlatformContext.current)
-                                .data(image)
-                                .placeholderMemoryCacheKey(image.coilImageModel.toString())
-                                .apply {
-                                    if (zoomed) {
-                                        size(SizeResolver.ORIGINAL)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zoomable(
+                            state = zoomableState,
+                            onClick = if (onClickPage == null) null else {
+                                {
+                                    if (!pagerState.isScrollInProgress) {
+                                        onClickPage(pagerState.settledPage)
                                     }
                                 }
-                                .build(),
-                            contentScale = imageContentScale,
-                            onSuccess = { anySuccess = true },
-                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                            contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                            modifier = Modifier
-                                .sharedElement("image", image.coilImageModel)
-                                .heightIn(min = with(LocalDensity.current) { minPagerHeight.toDp() })
-                                .layout { measurable, constraints ->
-                                    val newConstraints = when {
-                                        isFillWidth && constraints.hasBoundedWidth -> {
-                                            val maxWidth = constraints.maxWidth
-                                            val width = image.width
-                                            val height = image.height
-                                            if (width != null && height != null) {
-                                                Constraints.fixed(
-                                                    width = maxWidth,
-                                                    height = (height.toFloat() / width * maxWidth).fastRoundToInt(),
-                                                )
-                                            } else {
-                                                constraints.copy(minWidth = maxWidth)
-                                            }
-                                        }
-                                        !isFillWidth && constraints.hasBoundedHeight ->
-                                            constraints.copy(minHeight = constraints.maxHeight)
-                                        else -> constraints
-                                    }
-                                    val placeable = measurable.measure(newConstraints)
-                                    layout(placeable.width, placeable.height) {
-                                        placeable.place(0, 0)
-                                    }
-                                }
-                                .conditionally(clipCorners && !LocalInspectionMode.current && LocalSharedTransitionScope.current.isTransitionActive) {
-                                    clip(
-                                        RoundedCornerShape(
-                                            topStart = 12.dp,
-                                            topEnd = 12.dp
-                                        )
-                                    )
-                                }
-                                .align(Alignment.Center)
+                            },
+                            onDoubleClick = CycleDoubleClickListener,
                         )
-                    }
+                ) {
+                    val zoomed = zoomableState.zoomFraction != 0f
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalPlatformContext.current)
+                            .data(image)
+                            .placeholderMemoryCacheKey(image.coilImageModel.toString())
+                            .apply {
+                                if (zoomed) {
+                                    size(SizeResolver.ORIGINAL)
+                                }
+                            }
+                            .build(),
+                        contentScale = imageContentScale,
+                        onSuccess = { anySuccess = true },
+                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                        contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                        modifier = Modifier
+                            .sharedElement("image", image.coilImageModel)
+                            .heightIn(min = with(LocalDensity.current) { minPagerHeight.toDp() })
+                            .layout { measurable, constraints ->
+                                val newConstraints = when {
+                                    isFillWidth && constraints.hasBoundedWidth -> {
+                                        val maxWidth = constraints.maxWidth
+                                        val width = image.width
+                                        val height = image.height
+                                        if (width != null && height != null) {
+                                            Constraints.fixed(
+                                                width = maxWidth,
+                                                height = (height.toFloat() / width * maxWidth).fastRoundToInt(),
+                                            )
+                                        } else {
+                                            constraints.copy(minWidth = maxWidth)
+                                        }
+                                    }
+                                    !isFillWidth && constraints.hasBoundedHeight ->
+                                        constraints.copy(minHeight = constraints.maxHeight)
+                                    else -> constraints
+                                }
+                                val placeable = measurable.measure(newConstraints)
+                                layout(placeable.width, placeable.height) {
+                                    placeable.place(0, 0)
+                                }
+                            }
+                            .conditionally(clipCorners && !LocalInspectionMode.current && LocalSharedTransitionScope.current.isTransitionActive) {
+                                clip(
+                                    RoundedCornerShape(
+                                        topStart = 12.dp,
+                                        topEnd = 12.dp
+                                    )
+                                )
+                            }
+                            .align(Alignment.Center)
+                    )
                 }
             }
         }
@@ -305,7 +306,7 @@ fun ImagePager(
             sharedElementId = sharedElementId,
             images = images,
             pagerState = pagerState,
-            userScrollEnabled = { userScrollEnabled },
+            visible = { unzoomed },
             onClickFullscreen = onClickFullscreen,
         )
 
@@ -378,11 +379,11 @@ private fun BoxScope.ImagePagerActions(
     sharedElementId: Any,
     images: List<ImageWithDimensions>,
     pagerState: PagerState,
-    userScrollEnabled: () -> Boolean,
+    visible: () -> Boolean,
     onClickFullscreen: ((index: Int) -> Unit)?,
 ) {
     AnimatedVisibility(
-        visible = userScrollEnabled(),
+        visible = visible(),
         enter = fadeIn(),
         exit = fadeOut(),
         modifier = Modifier.align(Alignment.BottomCenter)

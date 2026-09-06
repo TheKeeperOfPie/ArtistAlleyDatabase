@@ -539,6 +539,7 @@ object SearchScreen {
                                     sharedElementId = itemToSharedElementId(entry),
                                     showGridByDefault = showGridByDefault,
                                     showRandomCatalogImage = showRandomCatalogImage,
+                                    blockCrossAxisScrolling = { gridState.isScrollInProgress },
                                     onFavoriteToggle = onFavoriteToggle,
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = { entry, imageIndex ->
@@ -558,6 +559,7 @@ object SearchScreen {
                                     sharedElementId = itemToSharedElementId(entry),
                                     showGridByDefault = showGridByDefault,
                                     showRandomCatalogImage = showRandomCatalogImage,
+                                    blockCrossAxisScrolling = { gridState.isScrollInProgress },
                                     onFavoriteToggle = onFavoriteToggle,
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = { entry, imageIndex ->

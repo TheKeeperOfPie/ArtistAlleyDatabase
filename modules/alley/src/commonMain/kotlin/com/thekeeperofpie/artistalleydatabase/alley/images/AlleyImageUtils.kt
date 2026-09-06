@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
+import kotlin.uuid.Uuid
 
 object AlleyImageUtils {
 
@@ -196,7 +197,10 @@ object AlleyImageUtils {
 
         val dataYear = DataYear.entries.find { it.folderName == yearFolderName } ?: return false
 
-        return artistEntryDao.getImagesById(dataYear, name.substringAfter("-").trim())
+        val artistId = Uuid.parseOrNull(name)
+            ?: Uuid.parseOrNull(name.substringAfter("-").trim())
+            ?: return false
+        return artistEntryDao.getImagesById(dataYear, artistId)
             ?.any { it.name.contains(imageName) }
             ?: false
     }

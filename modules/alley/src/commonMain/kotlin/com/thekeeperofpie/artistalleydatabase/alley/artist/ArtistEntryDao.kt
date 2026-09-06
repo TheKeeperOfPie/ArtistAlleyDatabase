@@ -501,8 +501,8 @@ class ArtistEntryDao(
             .toSet()
     }
 
-    suspend fun getImagesById(year: DataYear, artistId: String) =
-        dao().getImagesById(year, Uuid.parse(artistId)).awaitAsOneOrNull()
+    suspend fun getImagesById(year: DataYear, artistId: Uuid) =
+        dao().getImagesById(year, artistId).awaitAsOneOrNull()
 
     suspend fun getAllEntries(year: DataYear) =
         dao().getAllEntries(year).awaitAsList()
