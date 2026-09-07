@@ -41,6 +41,7 @@ kotlin {
             ).forEach(::implementation)
         }
         getByName("desktopTest").dependencies {
+            implementation(project(":modules:utils-roborazzi"))
             resolveLibraries(
                 "libs.roborazzi.compose.desktop.preview.scanner.support",
                 "libs.composable.preview.scanner",
@@ -58,6 +59,8 @@ roborazzi {
         enable = true
         packages = listOf("*")
         includePrivatePreviews = true
+        useScanOptionParametersInTester = true
+        testerQualifiedClassName = "com.thekeeperofpie.artistalleydatabase.utils_roborazzi.WebpDesktopPreviewTester"
     }
 }
 

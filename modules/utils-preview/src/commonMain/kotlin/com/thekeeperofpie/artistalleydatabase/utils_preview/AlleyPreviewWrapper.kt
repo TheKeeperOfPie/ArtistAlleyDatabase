@@ -4,8 +4,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
@@ -13,12 +11,9 @@ import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
 private class AlleyPreviewWrapper : PreviewWrapperProvider {
     @Composable
     override fun Wrap(content: @Composable () -> Unit) {
-        // Roborazzi doesn't support automatically setting this
-        CompositionLocalProvider(LocalInspectionMode provides true) {
-            MaterialTheme {
-                Surface {
-                    content()
-                }
+        MaterialTheme {
+            Surface {
+                content()
             }
         }
     }

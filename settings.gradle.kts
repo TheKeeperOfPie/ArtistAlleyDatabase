@@ -171,6 +171,7 @@ include(
     ":modules:utils-inject",
     ":modules:utils-network",
     ":modules:utils-preview",
+    ":modules:utils-roborazzi",
     ":modules:utils-room",
     ":modules:vgmdb",
 )
