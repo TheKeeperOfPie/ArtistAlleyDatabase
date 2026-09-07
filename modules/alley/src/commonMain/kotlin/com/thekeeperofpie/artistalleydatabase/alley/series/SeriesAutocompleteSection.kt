@@ -41,6 +41,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia

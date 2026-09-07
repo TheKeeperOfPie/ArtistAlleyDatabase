@@ -34,7 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow

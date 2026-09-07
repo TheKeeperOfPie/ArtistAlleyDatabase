@@ -60,7 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement

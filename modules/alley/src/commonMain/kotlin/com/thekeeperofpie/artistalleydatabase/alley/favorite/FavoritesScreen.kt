@@ -84,7 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow

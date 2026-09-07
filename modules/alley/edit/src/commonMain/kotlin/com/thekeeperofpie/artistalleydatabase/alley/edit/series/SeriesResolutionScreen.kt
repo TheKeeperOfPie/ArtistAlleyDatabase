@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 
 object SeriesResolutionScreen {
 

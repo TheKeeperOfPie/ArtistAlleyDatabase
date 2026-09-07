@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.series
+package com.thekeeperofpie.artistalleydatabase.alley.series.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +35,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.UnrecognizedTagIcon
@@ -133,7 +135,7 @@ internal fun SeriesRow(
 
 @Composable
 fun SeriesRow(
-    data: SeriesWithUserData?,
+    data: com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData?,
     image: () -> String?,
     onFavoriteToggle: (Boolean) -> Unit,
     onClick: (() -> Unit)? = null,

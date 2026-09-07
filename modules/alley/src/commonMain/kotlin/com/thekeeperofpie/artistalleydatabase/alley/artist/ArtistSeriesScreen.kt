@@ -26,7 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchVi
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.icons.Icons

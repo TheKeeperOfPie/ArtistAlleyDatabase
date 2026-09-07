@@ -70,7 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
