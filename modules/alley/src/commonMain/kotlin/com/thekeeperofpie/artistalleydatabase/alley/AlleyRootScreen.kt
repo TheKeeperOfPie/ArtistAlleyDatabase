@@ -55,7 +55,7 @@ object AlleyRootScreen {
     operator fun invoke(
         graph: ArtistAlleyGraph,
         onOpenArtist: (ArtistEntry, Int?) -> Unit,
-        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int?) -> Unit,
+        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int?, showOutdatedCatalogs: Boolean) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,

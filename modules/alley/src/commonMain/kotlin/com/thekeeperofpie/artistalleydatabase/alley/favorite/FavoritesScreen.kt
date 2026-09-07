@@ -74,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -81,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridM
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
@@ -129,7 +131,11 @@ object FavoritesScreen {
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
         onOpenArtist: (ArtistEntry, Int) -> Unit,
-        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int) -> Unit,
+        onOpenArtistImageFullscreen: (
+            ArtistEntryGridModel,
+            imageIndex: Int,
+            showOutdatedCatalogs: Boolean,
+        ) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
@@ -145,6 +151,8 @@ object FavoritesScreen {
         },
     ) {
         val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
+        val showOutdatedCatalogs by viewModel.artistSortFilterController.showOutdatedCatalogs
+            .collectAsStateWithLifecycle()
         FavoritesScreen(
             state = remember(viewModel) {
                 State(
@@ -183,7 +191,9 @@ object FavoritesScreen {
                     onNavigateToSeries = onNavigateToSeries,
                     onNavigateToMerch = onNavigateToMerch,
                     onOpenArtist = onOpenArtist,
-                    onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
+                    onOpenArtistImageFullscreen = { entry, imageIndex ->
+                        onOpenArtistImageFullscreen(entry, imageIndex, showOutdatedCatalogs)
+                    },
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenStampRally = onOpenStampRally,
@@ -203,8 +213,8 @@ object FavoritesScreen {
     operator fun invoke(
         state: State,
         series: () -> Map<String, GetSeriesTitles>,
-        artistSortFilterState: SortFilterState<*>,
-        stampRallySortFilterState: SortFilterState<*>,
+        artistSortFilterState: SortFilterState<ArtistSortFilterController.FilterParams>,
+        stampRallySortFilterState: SortFilterState<StampRallySortFilterController.FilterParams>,
         artistsScrollStateSaver: ScrollStateSaver,
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,
@@ -271,70 +281,75 @@ object FavoritesScreen {
                 ) {
                     val dataYearHeaderState = rememberDataYearHeaderState(state.year, null)
                     when (tab) {
-                        EntryTab.ARTISTS -> ArtistContent(
-                            state = state,
-                            gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
-                            searchState = state.artistsSearchState,
-                            horizontalScrollState = horizontalScrollState,
-                            entries = artistsEntries,
-                            series = series,
-                            eventSink = eventSink,
-                            scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
-                            onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                            onUnfavorite = {
-                                if (it != null) {
-                                    eventSink(
-                                        Event.SearchEvent(
-                                            SearchScreen.Event.FavoriteToggle(
-                                                entry = it,
-                                                favorite = false
+                        EntryTab.ARTISTS -> {
+                            val filterParams by artistSortFilterState.filterParams.collectAsStateWithLifecycle()
+                            ArtistContent(
+                                state = state,
+                                gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
+                                searchState = state.artistsSearchState,
+                                horizontalScrollState = horizontalScrollState,
+                                showOutdatedCatalogs = { filterParams.showOutdatedCatalogs },
+                                entries = artistsEntries,
+                                series = series,
+                                eventSink = eventSink,
+                                scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
+                                onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
+                                onUnfavorite = {
+                                    if (it != null) {
+                                        eventSink(
+                                            Event.SearchEvent(
+                                                SearchScreen.Event.FavoriteToggle(
+                                                    entry = it,
+                                                    favorite = false
+                                                )
                                             )
                                         )
+                                    }
+                                },
+                                header = {
+                                    Header(
+                                        tab = { tab },
+                                        onTabChange = { tab = it },
+                                        dataYearHeaderState = dataYearHeaderState,
+                                        eventSink = eventSink,
                                     )
-                                }
-                            },
-                            header = {
-                                Header(
-                                    tab = { tab },
-                                    onTabChange = { tab = it },
-                                    dataYearHeaderState = dataYearHeaderState,
-                                    eventSink = eventSink,
-                                )
-                            },
-                            noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
-                        )
-                        EntryTab.RALLIES -> RallyContent(
-                            state = state,
-                            gridState = ralliesScrollStateSaver.lazyStaggeredGridState(),
-                            searchState = state.ralliesSearchState,
-                            horizontalScrollState = horizontalScrollState,
-                            entries = ralliesEntries,
-                            eventSink = eventSink,
-                            scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
-                            onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                            onUnfavorite = {
-                                if (it != null) {
-                                    eventSink(
-                                        Event.SearchEvent(
-                                            SearchScreen.Event.FavoriteToggle(
-                                                entry = it,
-                                                favorite = false
+                                },
+                                noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
+                            )
+                        }
+                        EntryTab.RALLIES ->
+                            RallyContent(
+                                state = state,
+                                gridState = ralliesScrollStateSaver.lazyStaggeredGridState(),
+                                searchState = state.ralliesSearchState,
+                                horizontalScrollState = horizontalScrollState,
+                                entries = ralliesEntries,
+                                eventSink = eventSink,
+                                scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
+                                onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
+                                onUnfavorite = {
+                                    if (it != null) {
+                                        eventSink(
+                                            Event.SearchEvent(
+                                                SearchScreen.Event.FavoriteToggle(
+                                                    entry = it,
+                                                    favorite = false
+                                                )
                                             )
                                         )
+                                    }
+                                },
+                                header = {
+                                    Header(
+                                        tab = { tab },
+                                        onTabChange = { tab = it },
+                                        dataYearHeaderState = dataYearHeaderState,
+                                        eventSink = eventSink,
                                     )
-                                }
-                            },
-                            header = {
-                                Header(
-                                    tab = { tab },
-                                    onTabChange = { tab = it },
-                                    dataYearHeaderState = dataYearHeaderState,
-                                    eventSink = eventSink,
-                                )
-                            },
-                            seriesImage = seriesImage,
-                            noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
-                        )
+                                },
+                                seriesImage = seriesImage,
+                                noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
+                            )
                         EntryTab.SERIES -> SeriesContent(
                             listState = seriesScrollStateSaver.lazyListState(),
                             series = seriesEntries,
@@ -386,6 +401,7 @@ object FavoritesScreen {
         horizontalScrollState: ScrollState,
         entries: LazyPagingItems<ArtistEntryGridModel>,
         series: () -> Map<String, GetSeriesTitles>,
+        showOutdatedCatalogs: () -> Boolean,
         eventSink: (Event) -> Unit,
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
@@ -404,6 +420,7 @@ object FavoritesScreen {
             scaffoldPadding = scaffoldPadding,
             onHorizontalScrollBarWidth = onHorizontalScrollBarWidth,
             itemToSharedElementId = { it.id.scopedId },
+            showOutdatedCatalogs = showOutdatedCatalogs,
             header = header,
             noResultsItem = noResultsItem,
             itemRow = { entry, onFavoriteToggle, modifier ->
@@ -488,6 +505,7 @@ object FavoritesScreen {
             scaffoldPadding = scaffoldPadding,
             onHorizontalScrollBarWidth = onHorizontalScrollBarWidth,
             itemToSharedElementId = { it.id.scopedId },
+            showOutdatedCatalogs = { false },
             header = header,
             noResultsItem = noResultsItem,
             itemRow = { entry, onFavoriteToggle, modifier ->

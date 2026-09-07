@@ -37,8 +37,8 @@ class ArtistMapViewModel(
 ) : ViewModel() {
     val id = route.id
 
-    val artist = combine(settings.showOnlyConfirmedTags, settings.showOutdatedCatalogs, ::Pair)
-        .flatMapLatest { (showOnlyConfirmedTags, showOutdatedCatalogs) ->
+    val artist = settings.showOnlyConfirmedTags
+        .flatMapLatest { showOnlyConfirmedTags ->
             // Need to observe updates since it's possible to
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
@@ -47,7 +47,6 @@ class ArtistMapViewModel(
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
-                        showOutdatedCatalogs = showOutdatedCatalogs,
                     )
                 }
         }

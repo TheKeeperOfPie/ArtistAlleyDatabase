@@ -180,7 +180,6 @@ class FavoritesViewModel(
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
-                        showOutdatedCatalogs = filterParams.showOutdatedCatalogs,
                     )
                 }
             }
@@ -322,7 +321,7 @@ class FavoritesViewModel(
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
         onOpenArtist: (ArtistEntry, Int) -> Unit,
-        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int) -> Unit,
+        onOpenArtistImageFullscreen: (ArtistEntryGridModel, imageIndex: Int) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,

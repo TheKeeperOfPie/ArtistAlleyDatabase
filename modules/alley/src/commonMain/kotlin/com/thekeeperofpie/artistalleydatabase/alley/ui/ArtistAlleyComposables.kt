@@ -173,6 +173,7 @@ fun <EntryModel : SearchEntryModel> ItemCard(
     showGridByDefault: Boolean,
     showRandomCatalogImage: Boolean,
     blockCrossAxisScrolling: () -> Boolean,
+    showOutdatedCatalogs: () -> Boolean,
     onFavoriteToggle: (Boolean) -> Unit,
     onIgnoredToggle: (Boolean) -> Unit,
     onClick: (EntryModel, Int) -> Unit,
@@ -184,7 +185,7 @@ fun <EntryModel : SearchEntryModel> ItemCard(
         modifier: Modifier,
     ) -> Unit,
 ) {
-    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty()
+    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty() && showOutdatedCatalogs()
     val images = if (showingFallback) entry.fallbackImages else entry.images
     val pagerState = rememberPagerState(
         entry = entry,
@@ -235,6 +236,7 @@ fun <EntryModel : SearchEntryModel> ItemImage(
     showGridByDefault: Boolean,
     showRandomCatalogImage: Boolean,
     blockCrossAxisScrolling: () -> Boolean,
+    showOutdatedCatalogs: () -> Boolean,
     onFavoriteToggle: (Boolean) -> Unit,
     onIgnoredToggle: (Boolean) -> Unit,
     onClick: (EntryModel, Int) -> Unit,
@@ -246,7 +248,7 @@ fun <EntryModel : SearchEntryModel> ItemImage(
         modifier: Modifier,
     ) -> Unit,
 ) {
-    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty()
+    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty() && showOutdatedCatalogs()
     val images = if (showingFallback) entry.fallbackImages else entry.images
     val pagerState = rememberPagerState(
         entry = entry,

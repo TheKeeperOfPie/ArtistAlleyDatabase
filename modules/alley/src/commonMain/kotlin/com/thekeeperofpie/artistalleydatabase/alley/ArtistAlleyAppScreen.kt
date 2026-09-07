@@ -118,12 +118,13 @@ object ArtistAlleyAppScreen {
                 AlleyDestination.ArtistDetails(entry, imageIndex)
             )
         }
-        val onOpenArtistImageFullscreen = { entry: ArtistEntryGridModel, imageIndex: Int? ->
+        val onOpenArtistImageFullscreen = { entry: ArtistEntryGridModel, imageIndex: Int?, showOutdatedCatalogs: Boolean ->
             val artist = entry.artist
-            val images = entry.displayImages
+            val images = entry.displayImages(showOutdatedCatalogs)
+            val showingFallback = entry.showingFallback(showOutdatedCatalogs)
             navStack.navigate(
                 AlleyDestination.Images(
-                    year = if (entry.showingFallback) {
+                    year = if (showingFallback) {
                         artist.fallbackImageYear ?: artist.year
                     } else {
                         artist.year
@@ -134,7 +135,7 @@ object ArtistAlleyAppScreen {
                         booth = artist.booth,
                         profileImage = entry.data.profileImage,
                         name = artist.name,
-                        showingFallback = entry.showingFallback,
+                        showingFallback = showingFallback,
                     ),
                     images = images,
                     initialImageIndex = imageIndex,

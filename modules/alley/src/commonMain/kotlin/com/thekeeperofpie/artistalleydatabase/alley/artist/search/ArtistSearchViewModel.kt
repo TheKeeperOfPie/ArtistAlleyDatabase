@@ -183,7 +183,6 @@ class ArtistSearchViewModel(
                             randomSeed = randomSeed,
                             showOnlyConfirmedTags = searchQuery.filterParams.showOnlyConfirmedTags,
                             entry = it,
-                            showOutdatedCatalogs = searchQuery.filterParams.showOutdatedCatalogs,
                         )
                     }
                 }

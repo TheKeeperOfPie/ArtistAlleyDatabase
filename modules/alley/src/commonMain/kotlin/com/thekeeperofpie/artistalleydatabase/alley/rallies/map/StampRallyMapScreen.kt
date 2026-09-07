@@ -5,9 +5,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -57,6 +59,7 @@ object StampRallyMapScreen {
             val transformState = MapScreen.rememberTransformState(initialScale = 0.5f)
             val startTables = stampRally.startTables
             val endTables = stampRally.endTables
+            val showOutdatedCatalogs by mapViewModel.showOutdatedCatalogs.collectAsStateWithLifecycle()
             MapScreen(
                 viewModel = mapViewModel,
                 transformState = transformState,
@@ -70,6 +73,7 @@ object StampRallyMapScreen {
                     showImages = { transformState.showImages },
                     showText = { transformState.showText },
                     showCatalogHighlight = false,
+                    showOutdatedCatalogs = { showOutdatedCatalogs },
                     onArtistClick = onArtistClick,
                 ) {
                     if (it.booth in endTables) {

@@ -101,6 +101,7 @@ object ArtistMapScreen {
             val gridData = mapViewModel.gridData.result ?: return@Scaffold
             val targetTable = gridData.tables.find { it.booth == artist.booth }
             val transformState = MapScreen.rememberTransformState()
+            val showOutdatedCatalogs by mapViewModel.showOutdatedCatalogs.collectAsStateWithLifecycle()
             MapScreen(
                 viewModel = mapViewModel,
                 transformState = transformState,
@@ -116,6 +117,7 @@ object ArtistMapScreen {
                     },
                     showImages = { transformState.showImages },
                     showText = { transformState.showText },
+                    showOutdatedCatalogs = { showOutdatedCatalogs },
                     showCatalogHighlight = false,
                     onArtistClick = onArtistClick,
                 )

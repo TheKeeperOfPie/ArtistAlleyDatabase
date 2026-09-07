@@ -117,6 +117,7 @@ object SearchScreen {
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
         itemToSharedElementId: (EntryModel) -> Any,
+        showOutdatedCatalogs: () -> Boolean,
         actions: (@Composable RowScope.() -> Unit)? = null,
         header: @Composable () -> Unit,
         itemRow: @Composable (
@@ -160,6 +161,7 @@ object SearchScreen {
             topBarScrollBehavior = scrollBehavior,
             header = header,
             itemToSharedElementId = itemToSharedElementId,
+            showOutdatedCatalogs = showOutdatedCatalogs,
             itemRow = itemRow,
             columnHeader = columnHeader,
             tableCell = tableCell,
@@ -180,6 +182,7 @@ object SearchScreen {
         topBarScrollBehavior: TopAppBarScrollBehavior,
         header: @Composable () -> Unit,
         itemToSharedElementId: (EntryModel) -> Any,
+        showOutdatedCatalogs: () -> Boolean,
         itemRow: @Composable (
             entry: EntryModel,
             onFavoriteToggle: (Boolean) -> Unit,
@@ -216,6 +219,7 @@ object SearchScreen {
                     scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
                     onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
                     itemToSharedElementId = itemToSharedElementId,
+                    showOutdatedCatalogs = showOutdatedCatalogs,
                     header = header,
                     itemRow = itemRow,
                     columnHeader = columnHeader,
@@ -246,6 +250,7 @@ object SearchScreen {
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
         itemToSharedElementId: (EntryModel) -> Any,
+        showOutdatedCatalogs: () -> Boolean,
         header: @Composable () -> Unit,
         itemRow: @Composable (
             entry: EntryModel,
@@ -306,6 +311,7 @@ object SearchScreen {
                 unfilteredCount = unfilteredCount,
                 gridState = gridState,
                 itemToSharedElementId = itemToSharedElementId,
+                showOutdatedCatalogs = showOutdatedCatalogs,
                 itemRow = itemRow,
                 noResultsItem = noResultsItem,
                 moreResultsItem = moreResultsItem,
@@ -368,6 +374,7 @@ object SearchScreen {
         unfilteredCount: () -> Int,
         gridState: LazyStaggeredGridState,
         itemToSharedElementId: (EntryModel) -> Any,
+        showOutdatedCatalogs: () -> Boolean,
         noResultsItem: (@Composable () -> Unit)? = null,
         moreResultsItem: (@Composable () -> Unit)? = null,
         itemRow: @Composable (
@@ -539,6 +546,7 @@ object SearchScreen {
                                     showGridByDefault = showGridByDefault,
                                     showRandomCatalogImage = showRandomCatalogImage,
                                     blockCrossAxisScrolling = { gridState.isScrollInProgress },
+                                    showOutdatedCatalogs = showOutdatedCatalogs,
                                     onFavoriteToggle = onFavoriteToggle,
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = { entry, imageIndex ->
@@ -559,6 +567,7 @@ object SearchScreen {
                                     showGridByDefault = showGridByDefault,
                                     showRandomCatalogImage = showRandomCatalogImage,
                                     blockCrossAxisScrolling = { gridState.isScrollInProgress },
+                                    showOutdatedCatalogs = showOutdatedCatalogs,
                                     onFavoriteToggle = onFavoriteToggle,
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = { entry, imageIndex ->

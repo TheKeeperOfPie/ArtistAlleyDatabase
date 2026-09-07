@@ -43,6 +43,8 @@ class MapViewModel(
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
+    val showOutdatedCatalogs = settings.showOutdatedCatalogs
+
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
             // TODO: This is very inefficient to respond to favorites updates
@@ -453,7 +455,6 @@ class MapViewModel(
                 randomSeed = randomSeed,
                 showOnlyConfirmedTags = false, // This shouldn't matter here
                 entry = it,
-                showOutdatedCatalogs = settings.showOutdatedCatalogs.value,
             )
         }
 

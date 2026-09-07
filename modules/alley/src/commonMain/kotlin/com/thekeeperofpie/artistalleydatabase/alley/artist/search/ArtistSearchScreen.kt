@@ -112,7 +112,11 @@ object ArtistSearchScreen {
         lockedSerializedBooths: String?,
         onClickBack: (() -> Unit)?,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
-        onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
+        onOpenArtistImageFullscreen: (
+            artist: ArtistEntryGridModel,
+            imageIndex: Int?,
+            showOutdatedCatalogs: Boolean,
+        ) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenExport: (DataYear) -> Unit,
@@ -135,10 +139,12 @@ object ArtistSearchScreen {
         }
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
+        val showOutdatedCatalogs by sortFilterController.showOutdatedCatalogs.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
             sortFilterState = sortFilterController.state,
             series = { series },
+            showOutdatedCatalogs = { showOutdatedCatalogs },
             eventSink = {
                 when (it) {
                     is Event.SearchEvent -> when (val searchEvent = it.event) {
@@ -149,7 +155,7 @@ object ArtistSearchScreen {
                         is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
                             onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
                         is SearchScreen.Event.OpenImageFullscreen<ArtistEntryGridModel> ->
-                            onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex)
+                            onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex, showOutdatedCatalogs)
                         is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
                     }
                     is Event.OpenMerch -> onOpenMerch(viewModel.year.value, it.merch)
@@ -179,6 +185,7 @@ object ArtistSearchScreen {
         state: State,
         sortFilterState: SortFilterState<*>,
         series: () -> Map<String, GetSeriesTitles>,
+        showOutdatedCatalogs: () -> Boolean,
         eventSink: (Event) -> Unit,
         onClickBack: (() -> Unit)?,
         header: @Composable () -> Unit,
@@ -225,6 +232,7 @@ object ArtistSearchScreen {
                 title = { title },
                 header = header,
                 itemToSharedElementId = { it.artist.id },
+                showOutdatedCatalogs = showOutdatedCatalogs,
                 actions = actions,
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(
@@ -546,7 +554,6 @@ object ArtistSearchScreen {
                     randomSeed = 1,
                     showOnlyConfirmedTags = false,
                     entry = it,
-                    showOutdatedCatalogs = true,
                 )
             }
         val state = State(
@@ -579,6 +586,7 @@ object ArtistSearchScreen {
                 MutableStateFlow(false)
             ),
             series = { emptyMap() },
+            showOutdatedCatalogs = { true },
             eventSink = {},
             onClickBack = {},
             header = {

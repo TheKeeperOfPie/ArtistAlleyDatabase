@@ -48,7 +48,11 @@ object ArtistSeriesScreen {
         onClickRallies: (DataYear) -> Unit,
         onClickMap: (DataYear?) -> Unit,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
-        onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
+        onOpenArtistImageFullscreen: (
+            artist: ArtistEntryGridModel,
+            imageIndex: Int?,
+            showOutdatedCatalogs: Boolean,
+        ) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
@@ -103,7 +107,11 @@ object ArtistSeriesScreen {
         onClickRallies: () -> Unit,
         onClickMap: () -> Unit,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
-        onOpenArtistImageFullscreen: (artist: ArtistEntryGridModel, imageIndex: Int?) -> Unit,
+        onOpenArtistImageFullscreen: (
+            artist: ArtistEntryGridModel,
+            imageIndex: Int?,
+            showOutdatedCatalogs: Boolean,
+        ) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
@@ -116,10 +124,12 @@ object ArtistSeriesScreen {
         val seriesEntry by artistSeriesViewModel.seriesEntry.collectAsStateWithLifecycle()
         val seriesImage by artistSeriesViewModel.seriesImage.collectAsStateWithLifecycle()
         val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
+        val showOutdatedCatalogs by sortFilterController.showOutdatedCatalogs.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
             series = { series },
             sortFilterState = sortFilterController.state,
+            showOutdatedCatalogs = { showOutdatedCatalogs },
             eventSink = {
                 when (it) {
                     is Event.SearchEvent -> when (val searchEvent = it.event) {
@@ -136,7 +146,7 @@ object ArtistSeriesScreen {
                         is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
                             onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
                         is SearchScreen.Event.OpenImageFullscreen<ArtistEntryGridModel> ->
-                            onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex)
+                            onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex, showOutdatedCatalogs)
                         is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
                     }
                     is Event.OpenMerch -> onOpenMerch(artistSearchViewModel.year.value, it.merch)

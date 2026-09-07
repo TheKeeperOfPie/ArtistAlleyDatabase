@@ -163,7 +163,6 @@ private fun ArtistListRowPreview() {
             randomSeed = 0,
             showOnlyConfirmedTags = false,
             entry = artist,
-            showOutdatedCatalogs = false,
         ),
         onFavoriteToggle = {},
     )

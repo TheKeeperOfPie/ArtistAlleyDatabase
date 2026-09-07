@@ -100,6 +100,7 @@ object StampRallySearchScreen {
                 title = { lockedSeriesEntry?.name(languageOptionMedia) },
                 onClickBack = onClickBack,
                 itemToSharedElementId = { it.stampRally.id },
+                showOutdatedCatalogs = { false }, // TODO: Remove from shared infra
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     StampRallyListRow(
                         entry = entry,

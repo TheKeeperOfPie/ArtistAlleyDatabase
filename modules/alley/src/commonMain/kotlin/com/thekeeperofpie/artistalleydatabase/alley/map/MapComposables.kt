@@ -83,6 +83,7 @@ fun TableCell(
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
     showImages: () -> Boolean = { true },
     showText: () -> Boolean = { true },
+    showOutdatedCatalogs: () -> Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
@@ -145,6 +146,7 @@ fun TableCell(
                 TablePopup(
                     table = table,
                     entries = tableEntries,
+                    showOutdatedCatalogs = showOutdatedCatalogs,
                     onFavoriteToggle = { entry, favorite ->
                         entry.favorite = favorite
                         mapViewModel.onFavoriteToggle(entry, favorite)
@@ -214,6 +216,7 @@ fun HighlightedTableCell(
     showImages: () -> Boolean,
     showText: () -> Boolean,
     showCatalogHighlight: Boolean,
+    showOutdatedCatalogs: () -> Boolean,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
@@ -242,6 +245,7 @@ fun HighlightedTableCell(
         textColor = textColor,
         showImages = showImages,
         showText = showText,
+        showOutdatedCatalogs = showOutdatedCatalogs,
         onArtistClick = onArtistClick,
         content = {
             CompositionLocalProvider(LocalContentColor provides textColor) {
@@ -255,6 +259,7 @@ fun HighlightedTableCell(
 fun TablePopup(
     table: Table,
     entries: List<ArtistEntryGridModel>?,
+    showOutdatedCatalogs: () -> Boolean,
     onFavoriteToggle: (ArtistEntryGridModel, Boolean) -> Unit,
     onIgnoredToggle: (ArtistEntryGridModel, Boolean) -> Unit,
     onClick: (ArtistEntryGridModel, Int) -> Unit,
@@ -273,6 +278,7 @@ fun TablePopup(
                     is Table.Single -> SingleTablePopup(
                         entry = entries.single(),
                         imageIndex = table.imageIndex,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
                         onFavoriteToggle = onFavoriteToggle,
                         onIgnoredToggle = onIgnoredToggle,
                         onClick = onClick,
@@ -282,6 +288,7 @@ fun TablePopup(
                             SingleTablePopup(
                                 entry = it,
                                 imageIndex = null,
+                                showOutdatedCatalogs = showOutdatedCatalogs,
                                 onFavoriteToggle = onFavoriteToggle,
                                 onIgnoredToggle = onIgnoredToggle,
                                 onClick = onClick,
@@ -297,13 +304,14 @@ fun TablePopup(
 fun SingleTablePopup(
     entry: ArtistEntryGridModel,
     imageIndex: Int?,
+    showOutdatedCatalogs: () -> Boolean,
     onFavoriteToggle: (ArtistEntryGridModel, Boolean) -> Unit,
     onIgnoredToggle: (ArtistEntryGridModel, Boolean) -> Unit,
     onClick: (ArtistEntryGridModel, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val ignored = entry.ignored
-    val images = entry.displayImages
+    val images = entry.displayImages(showOutdatedCatalogs())
     val imagesSize = images.size
     val pagerState = rememberPagerState(
         initialPage = imageIndex?.coerceAtMost(imagesSize) ?: 0,
@@ -372,7 +380,7 @@ fun SingleTablePopup(
             }
         }
 
-        if (entry.showingFallback) {
+        if (entry.showingFallback(showOutdatedCatalogs())) {
             Box(
                 contentAlignment = Alignment.BottomCenter,
                 modifier = modifier
