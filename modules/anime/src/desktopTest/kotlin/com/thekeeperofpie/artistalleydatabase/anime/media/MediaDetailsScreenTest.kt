@@ -1,15 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.test.ExperimentalTestApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen.SectionIndexInfo
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
-@OptIn(ExperimentalTestApi::class, ExperimentalMaterial3Api::class)
 class MediaDetailsScreenTest {
 
     // TODO: Actually add tests, all existing ones were obsoleted by activity section refactor

@@ -11,9 +11,7 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.kmpalette.color
 import com.kmpalette.from
 import com.kmpalette.palette.graphics.Palette
-import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.forum.alley_forum.generated.resources.Res
@@ -47,7 +45,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
 import java.nio.file.Files
@@ -55,7 +52,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
 
-@OptIn(ExperimentalSerializationApi::class)
 internal class ForumSyncer(private val environment: Environment) {
 
     var error by mutableStateOf<String?>(null)

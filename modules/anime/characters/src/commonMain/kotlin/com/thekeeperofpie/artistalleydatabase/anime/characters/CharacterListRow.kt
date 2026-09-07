@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.characters
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -75,7 +73,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 object CharacterListRow {
 
     private val MIN_HEIGHT = 156.dp

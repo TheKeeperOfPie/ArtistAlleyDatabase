@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalWasmJsInterop::class, ExperimentalJsCollectionsApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.CloudflareAccessPlugin

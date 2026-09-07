@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art.details
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
@@ -43,7 +42,6 @@ import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 object ArtEntryDetailsScreen {
 
     @Composable

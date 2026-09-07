@@ -2,13 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.search
 
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -101,8 +99,8 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
 
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
-    ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class
+    ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class
 )
 object SearchScreen {
 

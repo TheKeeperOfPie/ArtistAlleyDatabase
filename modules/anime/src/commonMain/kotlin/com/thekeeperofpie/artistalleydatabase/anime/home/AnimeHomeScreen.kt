@@ -1,8 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,7 +34,6 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -185,10 +182,6 @@ import artistalleydatabase.modules.anime.schedule.generated.resources.Res as Sch
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Suppress("NAME_SHADOWING")
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalSharedTransitionApi::class
-)
 object AnimeHomeScreen {
 
     private val CURRENT_ROW_IMAGE_HEIGHT = 144.dp

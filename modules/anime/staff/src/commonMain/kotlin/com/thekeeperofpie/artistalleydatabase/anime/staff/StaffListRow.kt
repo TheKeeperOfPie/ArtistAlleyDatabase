@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -36,7 +34,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.staff.generated.resources.Res
 import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_image_long_press_preview
-import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.StaffSearchQuery
 import com.anilist.data.UserFavoritesStaffQuery
 import com.anilist.data.fragment.CharacterNavigationData
@@ -58,10 +55,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
-    ExperimentalCoilApi::class
-)
 object StaffListRow {
 
     private val MIN_HEIGHT = 156.dp

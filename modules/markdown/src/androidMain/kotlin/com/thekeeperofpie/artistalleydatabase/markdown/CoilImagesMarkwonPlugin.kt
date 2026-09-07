@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoilApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.markdown
 
 import android.graphics.drawable.Drawable
@@ -8,7 +6,6 @@ import android.widget.TextView
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
-import coil3.annotation.ExperimentalCoilApi
 import coil3.asDrawable
 import coil3.request.Disposable
 import coil3.request.ImageRequest

@@ -30,7 +30,6 @@ import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalStdlibApi::class)
 internal object BotBackend {
 
     suspend fun handleInteraction(

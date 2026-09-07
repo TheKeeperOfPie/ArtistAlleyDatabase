@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.eygraber.uri.Uri
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 data class EntryImage(
     // TODO: Remove this; the entry ID should not be held by the image
     val entryId: EntryId?,

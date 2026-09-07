@@ -4,7 +4,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,7 +20,6 @@ import org.jetbrains.compose.resources.stringResource
 
 object CdBrowseSelectionScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption,

@@ -1,11 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -83,9 +81,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class
-)
 object AnimeMediaLargeCard {
 
     private val HEIGHT = 200.dp

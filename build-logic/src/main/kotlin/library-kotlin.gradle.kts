@@ -1,7 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     id("app.cash.burst")
     id("org.jetbrains.kotlin.multiplatform")
@@ -10,7 +8,6 @@ plugins {
 
 kotlin {
     applyDefaultHierarchyTemplate()
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.addAll(
             listOf(

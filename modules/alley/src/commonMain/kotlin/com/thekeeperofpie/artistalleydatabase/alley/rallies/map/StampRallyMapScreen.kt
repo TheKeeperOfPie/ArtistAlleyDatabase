@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.map
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 object StampRallyMapScreen {
 
     @Composable

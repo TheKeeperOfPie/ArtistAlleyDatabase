@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
@@ -44,7 +43,6 @@ import org.jetbrains.compose.resources.stringResource
 
 object BrowseScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,

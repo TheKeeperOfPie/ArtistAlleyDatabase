@@ -1,11 +1,8 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.serialization.Serializable
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Serializable

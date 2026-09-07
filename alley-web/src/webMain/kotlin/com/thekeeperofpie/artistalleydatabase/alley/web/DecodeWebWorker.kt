@@ -11,7 +11,6 @@ import org.jetbrains.skia.Data
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.impl.NativePointer
-import org.jetbrains.skiko.ExperimentalSkikoApi
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.toInt8Array
@@ -22,13 +21,6 @@ import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.js.ExperimentalWasmJsInterop
-import kotlin.js.JsAny
-import kotlin.js.JsArray
-import kotlin.js.js
-import kotlin.js.set
-import kotlin.js.unsafeCast
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 private const val WebWorkerJs = """
@@ -87,7 +79,6 @@ private fun startWorker(code: String): Worker {
 
 private val worker by lazy { startWorker(WebWorkerJs) }
 
-@OptIn(ExperimentalSkikoApi::class)
 internal suspend fun decodeImageAsync(
     bytes: ByteArray,
     width: Int,
@@ -135,7 +126,6 @@ private fun ArrayBuffer.set(data: ArrayBuffer, offset: NativePointer) {
     Int8Array(this).set(Int8Array(data), offset)
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private suspend fun decodeBytesToBitmap(
     bytes: ByteArray,
     width: Int,

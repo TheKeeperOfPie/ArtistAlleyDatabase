@@ -7,7 +7,6 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -107,7 +106,6 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 class MainActivity : ComponentActivity() {
 
     companion object {

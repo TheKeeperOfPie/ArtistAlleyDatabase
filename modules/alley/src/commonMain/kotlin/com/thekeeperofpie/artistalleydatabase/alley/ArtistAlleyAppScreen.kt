@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -64,7 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedEle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 object ArtistAlleyAppScreen {
 
     private val transitionSpec = fadeIn() togetherWith fadeOut()

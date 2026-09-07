@@ -1,12 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -98,8 +96,8 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.Res as M
 import artistalleydatabase.modules.anime.search.generated.resources.Res as SearchRes
 
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
-    ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class,
 )
 object AnimeUserListScreen {
 

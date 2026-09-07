@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
@@ -26,7 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.test_utils.ComposeTestRoot
 import kotlin.test.Test
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTestApi::class)
+@OptIn(ExperimentalTestApi::class)
 class MediaEditBottomSheetTest {
 
     @Test

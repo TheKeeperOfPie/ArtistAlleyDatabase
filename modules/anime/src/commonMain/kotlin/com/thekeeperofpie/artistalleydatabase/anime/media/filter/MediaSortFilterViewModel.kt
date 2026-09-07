@@ -58,7 +58,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -66,7 +65,6 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.KClass
 
-@OptIn(ExperimentalCoroutinesApi::class)
 abstract class MediaSortFilterViewModel<SortType>(
     aniListApi: AuthedAniListApi,
     featureOverrideProvider: FeatureOverrideProvider,
@@ -475,7 +473,6 @@ abstract class MediaSortFilterViewModel<SortType>(
 
     open val filterParams = mediaFilterParams
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun <Entry : Any> filterMedia(
         result: PagingData<Entry>,
         transform: (Entry) -> MediaPreview,

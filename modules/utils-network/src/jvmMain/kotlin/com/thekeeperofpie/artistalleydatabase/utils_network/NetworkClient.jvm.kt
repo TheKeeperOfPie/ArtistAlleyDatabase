@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.utils_network
 
-import com.apollographql.apollo.annotations.ApolloExperimental
 import com.apollographql.apollo.network.http.HttpEngine
 import com.apollographql.ktor.http.KtorHttpEngine
 import io.ktor.client.HttpClient
@@ -16,7 +15,6 @@ import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ApolloExperimental::class)
 actual class NetworkClient(
     cache: Cache?,
     authProviders: @JvmSuppressWildcards Map<String, NetworkAuthProvider>,

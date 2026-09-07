@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoilApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.animation.AnimatedVisibility
@@ -34,7 +32,6 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_more_actions_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_open_external
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_open_external_icon_content_description
-import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils

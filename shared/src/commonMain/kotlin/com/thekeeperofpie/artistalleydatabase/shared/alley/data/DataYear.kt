@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.shared.alley.data
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -148,7 +147,6 @@ enum class DataYear(
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 class DataYearSerializer : KSerializer<DataYear> {
     override val descriptor = PrimitiveSerialDescriptor(
         serialName = "com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear",

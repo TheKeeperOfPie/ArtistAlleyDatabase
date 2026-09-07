@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import com.apollographql.apollo.ApolloClient
-import com.apollographql.apollo.annotations.ApolloExperimental
 import com.apollographql.apollo.cache.normalized.api.MemoryCacheFactory
 import com.apollographql.apollo.cache.normalized.normalizedCache
 import com.apollographql.apollo.network.http.HttpInterceptor
@@ -16,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApiWrap
 import com.thekeeperofpie.artistalleydatabase.apollo.utils.ApolloCache
 import com.thekeeperofpie.artistalleydatabase.inject.Named
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
@@ -38,7 +38,6 @@ interface AniListComponent : AniListSqlCacheComponent {
     @IntoSet
     fun provideEmptyApolloHttpInterceptorsSet(): Set<HttpInterceptor> = emptySet()
 
-    @OptIn(ApolloExperimental::class)
     @Named("AniList")
     @SingleIn(AppScope::class)
     @Provides

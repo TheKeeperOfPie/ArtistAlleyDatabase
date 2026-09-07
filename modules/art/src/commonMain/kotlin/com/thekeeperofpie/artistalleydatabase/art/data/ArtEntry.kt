@@ -18,7 +18,6 @@ import kotlinx.serialization.json.Json
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
-@kotlin.OptIn(kotlin.uuid.ExperimentalUuidApi::class)
 @Serializable
 @Entity(tableName = "art_entries")
 data class ArtEntry(

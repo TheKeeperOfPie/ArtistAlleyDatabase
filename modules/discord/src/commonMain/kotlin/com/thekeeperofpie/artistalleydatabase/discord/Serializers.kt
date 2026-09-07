@@ -9,7 +9,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.enums.EnumEntries
 
-@OptIn(ExperimentalSerializationApi::class)
 abstract class IntEnumSerializer<T : Enum<T>>(
     private val entries: EnumEntries<T>,
     serialName: String,

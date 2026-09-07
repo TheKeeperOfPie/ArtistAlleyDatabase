@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activities
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -36,7 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 object AnimeActivityScreen {
 
     @Composable

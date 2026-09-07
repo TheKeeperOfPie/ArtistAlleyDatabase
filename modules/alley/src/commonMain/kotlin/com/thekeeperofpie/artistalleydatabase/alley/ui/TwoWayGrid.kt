@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -35,7 +34,6 @@ import androidx.paging.compose.LazyPagingItems
 import org.jetbrains.compose.resources.StringResource
 import kotlin.enums.EnumEntries
 
-@OptIn(ExperimentalFoundationApi::class)
 object TwoWayGrid {
 
     val modifierDefaultCellPadding = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalWasmJsInterop::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.compose.runtime.Composable

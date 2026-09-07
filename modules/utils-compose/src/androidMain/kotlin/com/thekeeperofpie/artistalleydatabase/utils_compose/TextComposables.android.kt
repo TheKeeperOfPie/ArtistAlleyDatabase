@@ -51,7 +51,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.os.BuildCompat
 import androidx.core.text.HtmlCompat
 import coil3.SingletonImageLoader
-import coil3.annotation.ExperimentalCoilApi
 import coil3.asDrawable
 import coil3.request.ImageRequest
 import de.charlex.compose.material3.toAnnotatedString
@@ -181,7 +180,6 @@ private class CoilImageGetter(
 
     private val brokenDrawable = context.getDrawable(R.drawable.baseline_broken_image_24)
 
-    @OptIn(ExperimentalCoilApi::class)
     override fun getDrawable(source: String?): Drawable {
         if (source == null) return CustomDrawableWrapper.EMPTY
         val drawable = sourceToDrawable[source]
@@ -378,7 +376,6 @@ private class LinkMovementMethodWithOnClick(private val onClickFallback: () -> U
     }
 
     @BuildCompat.PrereleaseSdkCheck
-    @OptIn(BuildCompat.PrereleaseSdkCheck::class)
     @SuppressLint("UnsafeOptInUsageError")
     override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
         if (!BuildCompat.isAtLeastV()) {

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, FlowPreview::class, ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalCoroutinesApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.entry.form
 
@@ -113,7 +113,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKeyDownOrTyped
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow

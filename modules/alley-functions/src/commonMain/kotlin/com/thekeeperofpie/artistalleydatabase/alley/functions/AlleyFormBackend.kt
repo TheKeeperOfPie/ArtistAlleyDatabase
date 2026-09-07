@@ -26,12 +26,11 @@ import org.khronos.webgl.get
 import org.w3c.fetch.Response
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
+@OptIn(ExperimentalUuidApi::class)
 internal object AlleyFormBackend {
 
     suspend fun handleRequest(context: EventContext, path: String): Response {

@@ -55,7 +55,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.WebResourcesConfiguration
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
@@ -110,7 +109,6 @@ fun main() {
     }
 }
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun Content(graph: ArtistAlleyFormGraph) {
     AlleyTheme(appTheme = { AppThemeSetting.AUTO }, graph) {

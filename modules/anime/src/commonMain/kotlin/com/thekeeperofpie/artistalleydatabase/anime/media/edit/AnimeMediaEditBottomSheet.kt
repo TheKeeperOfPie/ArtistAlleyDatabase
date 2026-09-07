@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -93,7 +92,6 @@ import artistalleydatabase.modules.utils_compose.generated.resources.delete
 import artistalleydatabase.modules.utils_compose.generated.resources.no
 import artistalleydatabase.modules.utils_compose.generated.resources.save
 import artistalleydatabase.modules.utils_compose.generated.resources.yes
-import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.fragment.MediaDetailsListEntry
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
@@ -128,7 +126,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 @Suppress("NAME_SHADOWING")
 object AnimeMediaEditBottomSheet {
 

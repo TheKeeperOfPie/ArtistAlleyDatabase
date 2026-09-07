@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags.map
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -16,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 
-@OptIn(ExperimentalMaterial3Api::class)
 object TagMapScreen {
 
     @Composable

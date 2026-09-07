@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import org.jetbrains.compose.resources.StringResource
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class EntryImageController(
@@ -147,7 +146,6 @@ class EntryImageController(
             images.mapIndexed { index, entryImage ->
                 async {
                     // Generate a new ID for new entries
-                    @OptIn(ExperimentalUuidApi::class)
                     val entryId =
                         entryImage.entryId ?: EntryId(scopedIdType, Uuid.random().toString())
                     val originalPath = EntryUtils.getImagePath(

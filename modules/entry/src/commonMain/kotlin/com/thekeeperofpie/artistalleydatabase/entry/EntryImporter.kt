@@ -5,11 +5,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import kotlinx.io.Source
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemPathSeparator
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalSerializationApi::class, ExperimentalUuidApi::class)
 abstract class EntryImporter(
     private val appFileSystem: AppFileSystem,
 ) : Importer {

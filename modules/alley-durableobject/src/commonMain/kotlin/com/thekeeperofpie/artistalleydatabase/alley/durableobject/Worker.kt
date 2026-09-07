@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalJsExport::class, ExperimentalJsStatic::class, ExperimentalStdlibApi::class)
+@file:OptIn(ExperimentalJsExport::class)
 
 package com.thekeeperofpie.artistalleydatabase.alley.durableobject
 

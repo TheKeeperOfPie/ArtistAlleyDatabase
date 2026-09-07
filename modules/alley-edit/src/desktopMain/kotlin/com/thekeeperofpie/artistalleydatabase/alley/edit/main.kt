@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -40,7 +39,6 @@ import okio.FileSystem
 import okio.buffer
 import okio.source
 
-@OptIn(ExperimentalFoundationApi::class)
 fun main() {
     ComposeInit.init()
     application {

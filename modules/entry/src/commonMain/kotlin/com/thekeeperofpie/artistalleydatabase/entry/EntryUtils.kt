@@ -14,7 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemPathSeparator
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 object EntryUtils {
@@ -49,7 +48,6 @@ object EntryUtils {
                 emptyList()
             } else if (appFileSystem.metadataOrNull(it)?.isRegularFile == true) {
                 listOf(
-                    @OptIn(ExperimentalUuidApi::class)
                     EntryImage(
                         entryId = entryId,
                         imageId = Uuid.random().toString(),

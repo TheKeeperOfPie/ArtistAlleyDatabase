@@ -16,10 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.time.Instant
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 @Serializable
 @Entity(tableName = "cd_entries")
 data class CdEntry(

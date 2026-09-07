@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -32,7 +31,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
-import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaWithListStatus
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -56,7 +54,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 object MediaGridCard {
 
     @Composable

@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
@@ -30,8 +28,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
-    ExperimentalComposeUiApi::class, ExperimentalSharedTransitionApi::class
+@OptIn(ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class
 )
 object MediaEditBottomSheetScaffold {
 

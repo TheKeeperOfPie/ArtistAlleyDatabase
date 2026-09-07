@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -61,7 +59,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 object AnimeMediaCompactListRow {
 
     private val DEFAULT_IMAGE_HEIGHT = 100.dp

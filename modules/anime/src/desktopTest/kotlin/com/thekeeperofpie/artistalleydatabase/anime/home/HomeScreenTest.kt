@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,8 +51,8 @@ import kotlin.test.Test
 
 @Suppress("JUnitMalformedDeclaration")
 @OptIn(
-    ExperimentalTestApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalSharedTransitionApi::class, ExperimentalCoroutinesApi::class
+    ExperimentalTestApi::class,
+    ExperimentalCoroutinesApi::class
 )
 @Burst
 class HomeScreenTest {

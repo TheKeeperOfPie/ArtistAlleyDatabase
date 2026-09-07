@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -80,7 +79,6 @@ fun NewsRow(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AnimeNewsSmallCard(entry: AnimeNewsEntry<*>?, onOpenImage: (url: String) -> Unit) {
     val uriHandler = LocalUriHandler.current

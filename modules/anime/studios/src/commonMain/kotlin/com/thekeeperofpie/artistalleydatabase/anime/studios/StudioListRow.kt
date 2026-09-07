@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.studios
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfigura
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 object StudioListRow {
 
     @Composable

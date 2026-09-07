@@ -32,7 +32,6 @@ import artistalleydatabase.modules.anime.users.generated.resources.Res
 import artistalleydatabase.modules.anime.users.generated.resources.anime_user_social_followers
 import artistalleydatabase.modules.anime.users.generated.resources.anime_user_social_following
 import artistalleydatabase.modules.anime.users.generated.resources.anime_user_social_not_following_anyone
-import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.UserSocialFollowersQuery
 import com.anilist.data.UserSocialFollowingQuery
 import com.anilist.data.fragment.UserNavigationData
@@ -53,7 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalCoilApi::class)
 object UserSocialScreen {
 
     private val USER_IMAGE_SIZE = 120.dp

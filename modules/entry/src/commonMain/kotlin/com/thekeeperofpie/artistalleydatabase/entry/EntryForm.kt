@@ -1,14 +1,13 @@
 @file:Suppress("NAME_SHADOWING")
 @file:OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class
+    ExperimentalComposeUiApi::class
 )
 
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -288,7 +287,6 @@ private fun SectionHeader(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MultiTextSection(
     section: EntrySection.MultiText,

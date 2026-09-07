@@ -142,7 +142,6 @@ fun SortFilterHeaderText(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 object SortAndFilterComposables {
 
     @Composable

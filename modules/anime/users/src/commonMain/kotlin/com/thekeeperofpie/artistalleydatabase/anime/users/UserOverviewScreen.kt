@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.users
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,7 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestin
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalLayoutApi::class)
 object UserOverviewScreen {
 
     @Composable

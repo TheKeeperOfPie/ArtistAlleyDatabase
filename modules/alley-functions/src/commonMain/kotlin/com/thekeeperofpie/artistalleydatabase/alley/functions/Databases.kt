@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitCreate
@@ -14,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntr
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.cloudflare.WorkerSqlDriver
-import kotlin.uuid.ExperimentalUuidApi
 
 internal object Databases {
 

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.art.grid
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalLayoutApi::class)
 class ArtEntryGridModel(
     val value: ArtEntry,
     override val imageUri: Uri?,

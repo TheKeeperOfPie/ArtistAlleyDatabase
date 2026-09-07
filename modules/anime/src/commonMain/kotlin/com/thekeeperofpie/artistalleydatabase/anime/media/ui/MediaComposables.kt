@@ -1,8 +1,7 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalFoundationApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

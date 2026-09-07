@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -72,7 +71,7 @@ import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsRes
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+@OptIn(ExperimentalMaterial3Api::class,
     ExperimentalComposeUiApi::class
 )
 object AnimeSearchScreen {

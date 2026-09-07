@@ -23,7 +23,6 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,7 +87,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.OpenInNe
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomOutlinedTextField(
     value: String,
@@ -119,7 +117,6 @@ fun CustomOutlinedTextField(
     val mergedTextStyle = textStyle.merge(TextStyle(color = textColor))
 
     CompositionLocalProvider(LocalTextSelectionColors provides LocalTextSelectionColors.current) {
-        @OptIn(ExperimentalMaterial3Api::class)
         (BasicTextField(
             value = value,
             modifier = if (label != null) {
@@ -840,7 +837,6 @@ fun <T> expandableListInfoText(
     return true
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MinWidthTextField(
     value: String,

@@ -4,7 +4,6 @@ import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 import dev.zacsweers.metro.gradle.ExperimentalMetroGradleApi
 import dev.zacsweers.metro.gradle.RequiresIdeSupport
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     id("com.android.kotlin.multiplatform.library")
@@ -54,7 +53,6 @@ kotlin {
         optIn.add("kotlin.time.ExperimentalTime")
     }
 
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.anime)

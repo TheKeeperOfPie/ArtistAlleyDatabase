@@ -1,8 +1,7 @@
-@file:OptIn(ExperimentalJsExport::class, ExperimentalJsStatic::class, ExperimentalStdlibApi::class)
+@file:OptIn(ExperimentalJsExport::class, ExperimentalJsStatic::class)
 
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
-import com.thekeeperofpie.artistalleydatabase.alley.discord.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.cloudflare.promise
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json

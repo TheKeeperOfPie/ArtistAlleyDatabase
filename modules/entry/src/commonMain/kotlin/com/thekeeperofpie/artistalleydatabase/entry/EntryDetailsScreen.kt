@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -104,8 +102,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.topBorder
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalComposeUiApi::class, ExperimentalSharedTransitionApi::class
+@OptIn(ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class
 )
 object EntryDetailsScreen {
 
