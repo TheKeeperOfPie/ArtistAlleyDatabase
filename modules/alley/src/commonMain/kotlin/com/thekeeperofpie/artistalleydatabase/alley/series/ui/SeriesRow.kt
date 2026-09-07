@@ -57,14 +57,12 @@ private val ChipHeightModifier = Modifier.height(24.dp)
 internal fun SeriesRow(
     series: List<GetSeriesTitles>,
     onSeriesClick: (String) -> Unit,
-    hasMoreSeries: Boolean,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) = SeriesRow(
     seriesHighlighted = emptyList(),
     seriesRemaining = series,
     onSeriesClick = onSeriesClick,
-    hasMoreSeries = hasMoreSeries,
     onMoreClick = onMoreClick,
     modifier = modifier,
 )
@@ -74,7 +72,6 @@ internal fun SeriesRow(
     seriesHighlighted: List<GetSeriesTitles>,
     seriesRemaining: List<GetSeriesTitles>,
     onSeriesClick: (String) -> Unit,
-    hasMoreSeries: Boolean,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -102,7 +99,8 @@ internal fun SeriesRow(
         )
         val highlightedBorder = AssistChipDefaults.assistChipBorder(enabled = true)
         val remainingBorder = AssistChipDefaults.assistChipBorder(enabled = false)
-        seriesHighlighted.take(TagUtils.TAGS_TO_SHOW).forEach {
+        val highlighted = seriesHighlighted.take(TagUtils.TAGS_TO_SHOW)
+        highlighted.forEach {
             AssistChip(
                 colors = highlightedColors,
                 border = highlightedBorder,
@@ -111,7 +109,7 @@ internal fun SeriesRow(
                 modifier = ChipHeightModifier
             )
         }
-        seriesRemaining.take((TagUtils.TAGS_TO_SHOW - seriesHighlighted.size).coerceAtLeast(0))
+        seriesRemaining.take((TagUtils.TAGS_TO_SHOW - highlighted.size).coerceAtLeast(0))
             .forEach {
                 AssistChip(
                     colors = remainingColors,
@@ -121,7 +119,7 @@ internal fun SeriesRow(
                     modifier = ChipHeightModifier
                 )
             }
-        if (hasMoreSeries) {
+        if ((seriesHighlighted.size + seriesRemaining.size) > TagUtils.TAGS_TO_SHOW) {
             AssistChip(
                 colors = remainingColors,
                 border = remainingBorder,

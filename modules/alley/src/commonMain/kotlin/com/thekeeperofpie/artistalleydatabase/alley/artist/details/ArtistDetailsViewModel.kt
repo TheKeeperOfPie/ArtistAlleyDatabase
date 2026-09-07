@@ -14,8 +14,8 @@ import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -93,8 +92,10 @@ class ArtistDetailsViewModel(
         val artist = artistWithUserData.artist
 
         Entry(
-            artist = artist,
-            userEntry = artistWithUserData.userEntry,
+            data = ArtistWithUserData(
+                artist = artist,
+                userEntry = artistWithUserData.userEntry,
+            ),
             stampRallies = entryWithStampRallies.stampRallies,
         )
     }.flowOn(dispatchers.io)
@@ -250,10 +251,11 @@ class ArtistDetailsViewModel(
 
     @Stable
     class Entry(
-        val artist: ArtistEntry,
-        val userEntry: ArtistUserEntry,
+        val data: ArtistWithUserData,
         val stampRallies: List<StampRallyDatabaseEntry>,
     ) {
+        val artist get() = data.artist
+        val userEntry get() = data.userEntry
         var favorite by mutableStateOf(userEntry.favorite)
     }
 

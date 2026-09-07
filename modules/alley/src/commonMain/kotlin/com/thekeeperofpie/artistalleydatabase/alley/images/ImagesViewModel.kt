@@ -19,27 +19,17 @@ class ImagesViewModel(
     ): Pair<AlleyDestination.Images.Type, List<CatalogImage>>? =
         when (val type = route.type) {
             is AlleyDestination.Images.Type.Artist -> {
-                val artist = artistEntryDao.getEntry(route.year, route.id)?.artist ?: return null
-                if (route.changelogDate != null) {
+                val entry = artistEntryDao.getEntry(route.year, route.id)
+                val artist = entry?.artist ?: return null
+                val artistImages = if (route.changelogDate != null) {
                     val changelog =
                         artistEntryDao.getChangelogEntry(route.year, Uuid.parse(route.id), route.changelogDate)
                             ?: return null
-                    val images = changelog.catalogImages(route.year) ?: return null
-                    type.copy(
-                        booth = type.booth ?: artist.booth,
-                        name = type.name ?: artist.name,
-                        profileImage = type.profileImage
-                            ?: AlleyImageUtils.getProfileImage(artist.year, artist.profileImage),
-                    ) to images
+                    changelog.catalogImages(route.year) ?: return null
                 } else {
                     val fallbackImageYear = artist.fallbackImageYear
                     val showingFallback = type.showingFallback && fallbackImageYear != null
-                    type.copy(
-                        booth = type.booth ?: artist.booth,
-                        name = type.name ?: artist.name,
-                        profileImage = type.profileImage
-                            ?: AlleyImageUtils.getProfileImage(artist.year, artist.profileImage),
-                    ) to AlleyImageUtils.getArtistImagesWithEmbedFallback(
+                    AlleyImageUtils.getArtistImagesWithEmbedFallback(
                         if (showingFallback) {
                             fallbackImageYear
                         } else {
@@ -54,6 +44,11 @@ class ImagesViewModel(
                         embeds = artist.embeds,
                     )
                 }
+                type.copy(
+                    booth = type.booth ?: artist.booth,
+                    name = type.name ?: artist.name,
+                    profileImage = type.profileImage ?: entry.profileImage,
+                ) to artistImages
             }
             is AlleyDestination.Images.Type.StampRally -> {
                 val stampRally = stampRallyEntryDao.getEntry(route.year, route.id)

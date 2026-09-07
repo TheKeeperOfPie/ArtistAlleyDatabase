@@ -3,40 +3,25 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
-import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 class ArtistEntryGridModel(
-    val artist: ArtistEntry,
-    val userEntry: ArtistUserEntry,
+    val data: ArtistWithUserData,
     val series: List<String>,
-    val hasMoreSeries: Boolean,
     val merch: List<String>,
-    val hasMoreMerch: Boolean,
     val showOutdatedCatalogs: Boolean,
-    override val hasCatalog: Boolean,
-    override val images: List<CatalogImage>,
-    val profileImage: CatalogImage?,
-    override val placeholderText: String,
 ) : SearchScreen.SearchEntryModel {
 
-    override val id = EntryId("artist_entry", artist.id)
-    override val imageUri: Uri? = null
-    override val imageWidth get() = 0
-    override val imageHeight get() = 0
-    override val imageWidthToHeightRatio get() = 1f
+    val artist get() = data.artist
+    val userEntry get() = data.userEntry
+    override val images get() = data.images
 
-    override val fallbackImages: List<CatalogImage> = artist.fallbackImageYear
-        ?.takeIf { showOutdatedCatalogs }
-        ?.let {
-            AlleyImageUtils.getArtistImages(year = it, images = artist.fallbackImages)
-        }.orEmpty()
+    override val id = EntryId("artist_entry", artist.id)
+
+    override val fallbackImages = data.fallbackImages.takeIf { showOutdatedCatalogs }.orEmpty()
     override val fallbackYear: DataYear?
         get() = artist.fallbackImageYear?.takeIf { showOutdatedCatalogs }
     override var favorite by mutableStateOf(userEntry.favorite)
@@ -45,6 +30,7 @@ class ArtistEntryGridModel(
     override val booth get() = artist.booth
     override val title get() = artist.name
 
+    override val hasCatalog = artist.images.isNotEmpty()
     val showingFallback = !hasCatalog && fallbackImages.isNotEmpty()
     val displayImages get() = if (showingFallback) fallbackImages else images
 
@@ -55,7 +41,6 @@ class ArtistEntryGridModel(
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
             showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
-            showEmbeds: Boolean = true,
         ): ArtistEntryGridModel {
             val artist = entry.artist
             val merch = TagUtils.combineForDisplay(
@@ -72,27 +57,11 @@ class ArtistEntryGridModel(
                 showOnlyConfirmedTags = showOnlyConfirmedTags,
             )
 
-            val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
-                year = artist.year,
-                images = artist.images,
-                tempImages = artist.tempImages,
-                embeds = artist.embeds.takeIf { showEmbeds }.orEmpty(),
-            )
-
-            val profileImage = AlleyImageUtils.getProfileImage(artist.year, artist.profileImage)
-
             return ArtistEntryGridModel(
-                artist = artist,
-                userEntry = entry.userEntry,
-                series = series.take(TagUtils.TAGS_TO_SHOW),
-                hasMoreSeries = series.size > TagUtils.TAGS_TO_SHOW,
-                merch = merch.take(TagUtils.TAGS_TO_SHOW),
-                hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
+                data = ArtistWithUserData(artist, entry.userEntry),
+                series = series,
+                merch = merch,
                 showOutdatedCatalogs = showOutdatedCatalogs,
-                hasCatalog = artist.images.isNotEmpty(),
-                images = images,
-                profileImage = profileImage,
-                placeholderText = artist.booth ?: artist.name,
             )
         }
     }

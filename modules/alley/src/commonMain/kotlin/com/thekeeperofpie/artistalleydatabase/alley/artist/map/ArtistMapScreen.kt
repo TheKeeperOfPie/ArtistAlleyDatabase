@@ -58,14 +58,11 @@ object ArtistMapScreen {
                 TopAppBar(
                     title = {
                         artist?.artist?.let {
-                            val profileImage = remember(it) {
-                                AlleyImageUtils.getProfileImage(it.year, it.profileImage)
-                            }
                             ArtistTitle(
                                 year = it.year,
                                 id = it.id,
                                 booth = it.booth,
-                                profileImage = profileImage,
+                                profileImage = artist?.data?.profileImage,
                                 name = it.name,
                             )
                         }

@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -17,16 +16,11 @@ class StampRallyEntryGridModel(
     val stampRally: StampRallyDatabaseEntry,
     val userEntry: StampRallyUserEntry,
     override val images: List<CatalogImage>,
-    override val placeholderText: String,
     val artistBoothsToProfileImages: List<Pair<String, CatalogImage?>>,
     val seriesImageInfo: List<SeriesImageInfo>,
 ) : SearchScreen.SearchEntryModel {
 
     override val id = EntryId("artist_entry", stampRally.id)
-    override val imageUri: Uri? = null
-    override val imageWidth get() = 0
-    override val imageHeight get() = 0
-    override val imageWidthToHeightRatio get() = 1f
 
     override var favorite by mutableStateOf(userEntry.favorite)
     override var ignored by mutableStateOf(userEntry.ignored)
@@ -53,7 +47,6 @@ class StampRallyEntryGridModel(
                     year = stampRally.year,
                     images = stampRally.images,
                 ),
-                placeholderText = stampRally.fandom,
             )
         }
     }

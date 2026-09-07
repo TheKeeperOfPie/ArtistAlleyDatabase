@@ -233,7 +233,6 @@ object ArtistSearchScreen {
                         tagRow = {
                             SeriesRow(
                                 series = entry.series.mapNotNull { series()[it] },
-                                hasMoreSeries = entry.hasMoreSeries,
                                 onSeriesClick = { eventSink(Event.OpenSeries(it)) },
                                 onMoreClick = {
                                     eventSink(
@@ -346,13 +345,12 @@ object ArtistSearchScreen {
                 val shuffledSeries = row?.series
                 val languageOption = LocalLanguageOptionMedia.current
                 val series = series()
-                val seriesNames = remember(row?.series, series, languageOption) {
+                val seriesNames = remember(shuffledSeries, series, languageOption) {
                     shuffledSeries?.map { series[it]?.name(languageOption) ?: it }
                 }
                 TagsCell(
                     column = column,
                     tags = seriesNames,
-                    hasMoreTags = row?.hasMoreSeries == true,
                     moreContentDescription = Res.string.alley_expand_series,
                     onTagClick = onSeriesClick,
                     onMoreClick = { if (row != null) onEntryClick(row, 1) },
@@ -361,7 +359,6 @@ object ArtistSearchScreen {
             ArtistColumn.MERCH -> TagsCell(
                 column = column,
                 tags = row?.merch,
-                hasMoreTags = row?.hasMoreMerch == true,
                 moreContentDescription = Res.string.alley_expand_merch,
                 onTagClick = onMerchClick,
                 onMoreClick = { if (row != null) onEntryClick(row, 1) },
@@ -428,7 +425,6 @@ object ArtistSearchScreen {
     private fun TagsCell(
         column: ArtistColumn,
         tags: List<String>?,
-        hasMoreTags: Boolean,
         moreContentDescription: StringResource,
         onTagClick: (String) -> Unit,
         onMoreClick: () -> Unit,
@@ -443,7 +439,7 @@ object ArtistSearchScreen {
                         modifier = Modifier.widthIn(max = column.size - 16.dp)
                     )
                 }
-            if (hasMoreTags) {
+            if (tags.size > TagUtils.TAGS_TO_SHOW) {
                 IconButton(onClick = onMoreClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Default.OpenInNew,

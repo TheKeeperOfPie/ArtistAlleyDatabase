@@ -84,9 +84,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
-import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
@@ -419,7 +419,6 @@ object FavoritesScreen {
                     tagRow = {
                         SeriesRow(
                             series = entry.series.mapNotNull { series()[it] },
-                            hasMoreSeries = entry.hasMoreSeries,
                             onSeriesClick = { eventSink(Event.OpenSeries(it)) },
                             onMoreClick = {
                                 eventSink(

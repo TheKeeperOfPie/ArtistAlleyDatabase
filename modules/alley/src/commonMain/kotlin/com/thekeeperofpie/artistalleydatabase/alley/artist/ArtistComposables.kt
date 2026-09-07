@@ -180,7 +180,6 @@ fun ArtistProfileImage(
 internal fun MerchRow(
     merchHighlighted: List<String>,
     merchRemaining: List<String>,
-    hasMoreMerch: Boolean,
     onMerchClick: (String) -> Unit,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -225,7 +224,7 @@ internal fun MerchRow(
                     modifier = Modifier.height(24.dp)
                 )
             }
-        if (hasMoreMerch) {
+        if ((merchHighlighted.size + merchRemaining.size) > TagUtils.TAGS_TO_SHOW) {
             AssistChip(
                 colors = remainingColors,
                 border = remainingBorder,

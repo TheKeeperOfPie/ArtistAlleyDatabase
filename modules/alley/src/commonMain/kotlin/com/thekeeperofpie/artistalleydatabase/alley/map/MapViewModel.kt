@@ -454,7 +454,6 @@ class MapViewModel(
                 showOnlyConfirmedTags = false, // This shouldn't matter here
                 entry = it,
                 showOutdatedCatalogs = settings.showOutdatedCatalogs.value,
-                showEmbeds = true,
             )
         }
 

@@ -61,7 +61,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -217,7 +216,6 @@ private fun SeriesAndMerchRows(
             SeriesRow(
                 seriesHighlighted = seriesHighlighted.mapNotNull { seriesTitles()[it] },
                 seriesRemaining = seriesRemaining.mapNotNull { seriesTitles()[it] },
-                hasMoreSeries = (seriesHighlighted.size + seriesRemaining.size) > TagUtils.TAGS_TO_SHOW,
                 onSeriesClick = onClickSeries,
                 onMoreClick = onMoreClick,
             )
@@ -227,7 +225,6 @@ private fun SeriesAndMerchRows(
             MerchRow(
                 merchHighlighted = merchHighlighted,
                 merchRemaining = merchRemaining,
-                hasMoreMerch = (merchHighlighted.size + merchRemaining.size) > TagUtils.TAGS_TO_SHOW,
                 onMerchClick = onClickMerch,
                 onMoreClick = onMoreClick,
                 modifier = Modifier.padding(start = 16.dp)

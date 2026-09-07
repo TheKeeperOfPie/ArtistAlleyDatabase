@@ -40,8 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -84,11 +82,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
-import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
@@ -208,11 +206,6 @@ object ArtistDetailsScreen {
                                     val year = catalog.result?.fallbackYear
                                         ?.takeIf { showingOutdatedCatalogs }
                                         ?: route.year
-                                    val profileImage =
-                                        AlleyImageUtils.getProfileImage(
-                                            artist.year,
-                                            artist.profileImage
-                                        )
                                     onOpenImages(
                                         year,
                                         artist.id,
@@ -223,7 +216,7 @@ object ArtistDetailsScreen {
                                         showingOutdatedCatalogs,
                                         catalog.result?.images.orEmpty(),
                                         event.imageIndex,
-                                        profileImage,
+                                        viewModel.entry.value?.data?.profileImage,
                                     )
                                 }
                             }
@@ -287,20 +280,16 @@ object ArtistDetailsScreen {
 
         DetailsScreen(
             title = {
-                val artist = entry()?.artist
+                val entry = entry()
+                val artist = entry?.artist
                 val id = artist?.id ?: route.id
                 val booth = artist?.booth ?: route.booth
                 val name = artist?.name ?: route.name
-                val profileImage = remember(artist) {
-                    artist?.let {
-                        AlleyImageUtils.getProfileImage(artist.year, artist.profileImage)
-                    }
-                }
                 ArtistTitle(
                     year = route.year,
                     id = id,
                     booth = booth,
-                    profileImage = profileImage,
+                    profileImage = entry?.data?.profileImage,
                     name = name,
                 )
             },
@@ -860,8 +849,10 @@ private fun PhoneLayout() = PreviewDark {
     val artist = ArtistWithUserDataProvider.values.first()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     val entry = ArtistDetailsViewModel.Entry(
-        artist = artist.artist,
-        userEntry = artist.userEntry,
+        data = ArtistWithUserData(
+            artist = artist.artist,
+            userEntry = artist.userEntry,
+        ),
         stampRallies = emptyList(),
     )
     val seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed.toSet())

@@ -64,6 +64,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_search_no_res
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
@@ -600,6 +601,12 @@ object SearchScreen {
         var favorite: Boolean
         var ignored: Boolean
         val title: String
+
+        override val imageUri: Uri? get() = null
+        override val placeholderText: String get() = ""
+        override val imageWidth: Int? get() = null
+        override val imageHeight: Int? get() = null
+        override val imageWidthToHeightRatio: Float get() = 1f
     }
 
     enum class DisplayType(val label: StringResource, val icon: ImageVector) {

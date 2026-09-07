@@ -57,7 +57,7 @@ fun ArtistListRow(
                 .height(IntrinsicSize.Min)
                 .conditionally(useSharedElements, Modifier.sharedBounds("container", artist.id))
         ) {
-            val profileImage = entry.profileImage
+            val profileImage = entry.data.profileImage
             Spacer(Modifier.width(10.dp))
             ArtistProfileImage(
                 artistId = artist.id,
