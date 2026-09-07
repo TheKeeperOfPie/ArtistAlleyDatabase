@@ -20,8 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResult
-import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
-import com.thekeeperofpie.artistalleydatabase.utils.isDebug
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUiDispatcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -49,6 +48,7 @@ import kotlin.time.Clock
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class GameVariant<Options>(
     val api: AuthedAniListApi,
+    private val buildConfig: BuildConfig,
     private val mediaListStatusController: MediaListStatusController,
     protected val userMediaListController: UserMediaListController,
     private val ignoreController: IgnoreController,
@@ -346,7 +346,7 @@ abstract class GameVariant<Options>(
         val nextMediaConnections = api.anime2AnimeConnections(aniListMedia.id.toString())
             .media
 
-        if (BuildVariant.isDebug()) {
+        if (buildConfig.isDebug) {
             val voiceActors = nextMediaConnections?.characters?.edges
                 ?.flatMap { it?.voiceActors.orEmpty() }
                 ?.mapNotNull {

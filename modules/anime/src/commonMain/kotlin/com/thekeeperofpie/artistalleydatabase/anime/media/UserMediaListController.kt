@@ -29,10 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
-import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
@@ -78,6 +76,7 @@ import kotlin.time.Clock
 @Inject
 class UserMediaListController(
     private val appFileSystem: AppFileSystem,
+    private val buildConfig: BuildConfig,
     private val scope: ApplicationScope,
     private val aniListApi: AuthedAniListApi,
     private val ignoreController: IgnoreController,
@@ -228,7 +227,7 @@ class UserMediaListController(
                         .use { json.encodeToSink(lists, it) }
                 }
             } catch (t: Throwable) {
-                if (BuildVariant.isDebug()) {
+                if (buildConfig.isDebug) {
                     throw IllegalStateException("Error serializing cache", t)
                 }
             }

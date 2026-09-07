@@ -29,8 +29,6 @@ import artistalleydatabase.modules.art.generated.resources.print_size_8_5x11_inc
 import artistalleydatabase.modules.utils_compose.generated.resources.custom
 import artistalleydatabase.modules.utils_compose.generated.resources.unknown
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
-import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -44,28 +42,17 @@ sealed class PrintSize(
 
     companion object {
 
-        val PORTRAITS = listOf(
-            Unknown,
-            Portrait8HalfBy11,
-            Portrait11x17,
-            Portrait12x18,
-            Portrait13x19,
+        private val SIZES = listOf(
+            Unknown to Unknown,
+            Portrait8HalfBy11 to Landscape11x8Half,
+            Portrait11x17 to Landscape17x11,
+            Portrait12x18 to Landscape18x12,
+            Portrait13x19 to Landscape19x13,
         )
 
-        val LANDSCAPES = listOf(
-            Unknown,
-            Landscape11x8Half,
-            Landscape17x11,
-            Landscape18x12,
-            Landscape19x13,
-        )
+        val PORTRAITS = SIZES.map { it.first }
 
-        init {
-            if (BuildVariant.isDebug()) {
-                // NOTE: These two arrays must always be the same size
-                assert(PORTRAITS.size == LANDSCAPES.size)
-            }
-        }
+        val LANDSCAPES = SIZES.map { it.second }
     }
 
     object Unknown : PrintSize(null, null, UtilsStrings.unknown)

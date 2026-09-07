@@ -16,6 +16,7 @@ kotlin {
             implementation(projects.modules.anime.recommendations)
             implementation(projects.modules.icons)
             implementation(projects.modules.utils)
+            implementation(projects.modules.utilsBuildConfig)
             implementation(projects.modules.utilsCompose)
 
             implementation(libs.coil3.coil.compose)

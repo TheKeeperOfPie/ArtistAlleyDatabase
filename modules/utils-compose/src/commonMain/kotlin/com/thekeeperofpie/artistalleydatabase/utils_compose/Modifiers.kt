@@ -28,13 +28,10 @@ import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
-import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import kotlinx.coroutines.delay
 import kotlin.math.min
 
-@Suppress("MayBeConstant")
-private val FORCE_ENABLE = false
+private const val ENABLE = false
 
 /**
  * A [Modifier] that draws a border around elements that are recomposing. The border increases in
@@ -42,7 +39,7 @@ private val FORCE_ENABLE = false
  */
 @Stable
 fun Modifier.recomposeHighlighter(trackTimeout: Boolean = false) =
-    if (!BuildVariant.isDebug() && !FORCE_ENABLE) this else this.then(
+    if (!ENABLE) this else this.then(
         Modifier.composed(
             inspectorInfo = debugInspectorInfo { name = "recomposeHighlighter" },
         ) {

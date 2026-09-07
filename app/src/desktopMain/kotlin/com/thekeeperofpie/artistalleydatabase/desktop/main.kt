@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogC
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
-import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
@@ -71,9 +70,7 @@ fun main() {
             // TODO
 //            settings.writeLastCrash(throwable)
         } catch (t: Throwable) {
-            if (BuildVariant.isDebug()) {
-                Logger.e("AnichiveDesktop", t) { "Error writing last crash" }
-            }
+            Logger.e("AnichiveDesktop", t) { "Error writing last crash" }
         } finally {
             existingExceptionHandler?.uncaughtException(thread, throwable)
             exitEvents.value = true

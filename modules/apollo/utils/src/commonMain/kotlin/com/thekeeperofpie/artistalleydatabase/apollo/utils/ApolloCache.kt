@@ -7,7 +7,6 @@ import com.apollographql.apollo.api.Query
 import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
 import com.thekeeperofpie.artistalleydatabase.inject.Named
-import com.thekeeperofpie.artistalleydatabase.utils.debug
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
@@ -69,7 +68,7 @@ class ApolloCache(
                     appFileSystem.deleteRecursively(it)
                 }
             } catch (t: Throwable) {
-                Logger.debug(TAG, t) { "Failed to prune cache" }
+                Logger.d(TAG, t) { "Failed to prune cache" }
             }
         }
     }
@@ -154,7 +153,7 @@ class ApolloCache(
                 return true
             }
         } catch (t: Throwable) {
-            Logger.debug(TAG, t) { "Failed to read cache" }
+            Logger.d(TAG, t) { "Failed to read cache" }
         }
         return false
     }
@@ -162,7 +161,7 @@ class ApolloCache(
     private fun <DataType : Query.Data> cachedEntry(dataType: KClass<DataType>, path: Path) =
         appFileSystem.source(path).buffered()
             .use { json.decodeFromSource(CacheEntry.serializer(dataType.serializer()), it) }
-            .also { Logger.debug(TAG) { "Cached value: $it" } }
+            .also { Logger.d(TAG) { "Cached value: $it" } }
 
     private suspend fun <DataType : Query.Data, QueryType : Query<DataType>> queryInternal(
         query: QueryType,
@@ -186,13 +185,13 @@ class ApolloCache(
                 }
             }
         } catch (t: Throwable) {
-            Logger.debug(TAG, t) { "Failed to read cache" }
+            Logger.d(TAG, t) { "Failed to read cache" }
         }
 
         if (skipCache) {
-            Logger.debug(TAG) { "Cached skipped: $cacheFileName, $query" }
+            Logger.d(TAG) { "Cached skipped: $cacheFileName, $query" }
         } else {
-            Logger.debug(TAG) { "Cached missed: $cacheFileName, $query" }
+            Logger.d(TAG) { "Cached missed: $cacheFileName, $query" }
         }
         return apolloClient.query(query)
             .fetchPolicy(if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
@@ -211,9 +210,9 @@ class ApolloCache(
                             sink = it,
                         )
                     }
-                    Logger.debug(TAG) { "Cache written: $cacheFileName, $newEntry" }
+                    Logger.d(TAG) { "Cache written: $cacheFileName, $newEntry" }
                 } catch (t: Throwable) {
-                    Logger.debug(TAG, t) { "Failed to write cache" }
+                    Logger.d(TAG, t) { "Failed to write cache" }
                 }
             }
     }

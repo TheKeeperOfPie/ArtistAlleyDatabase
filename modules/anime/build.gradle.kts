@@ -40,6 +40,7 @@ kotlin {
             implementation(projects.modules.media)
             implementation(projects.modules.monetization)
             implementation(projects.modules.utils)
+            implementation(projects.modules.utilsBuildConfig)
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsNetwork)
 

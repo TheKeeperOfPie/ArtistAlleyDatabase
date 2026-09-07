@@ -43,6 +43,7 @@ interface AniListComponent : AniListSqlCacheComponent {
     @SingleIn(AppScope::class)
     @Provides
     fun provideAniListApolloClient(
+        buildConfig: BuildConfig,
         networkSettings: NetworkSettings,
         networkClient: NetworkClient,
         apolloHttpInterceptors: Set<HttpInterceptor> = emptySet(),

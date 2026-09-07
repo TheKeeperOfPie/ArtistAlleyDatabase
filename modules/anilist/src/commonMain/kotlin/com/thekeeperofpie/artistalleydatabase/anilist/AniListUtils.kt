@@ -14,8 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
-import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
-import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
@@ -160,10 +158,11 @@ object AniListUtils {
 }
 
 fun ApolloClient.Builder.addLoggingInterceptors(
+    isDebug: Boolean,
     tag: String,
     networkSettings: NetworkSettings,
 ) = apply {
-    if (BuildVariant.isDebug()) {
+    if (isDebug) {
         val level = when (networkSettings.networkLoggingLevel.value) {
             NetworkSettings.NetworkLoggingLevel.NONE -> LoggingInterceptor.Level.NONE
             NetworkSettings.NetworkLoggingLevel.BASIC -> LoggingInterceptor.Level.BASIC
