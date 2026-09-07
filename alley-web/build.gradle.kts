@@ -1,3 +1,4 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 import dev.zacsweers.metro.gradle.ExperimentalMetroGradleApi
 import dev.zacsweers.metro.gradle.RequiresIdeSupport
@@ -14,6 +15,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.multiplatform")
+    alias(libs.plugins.com.codingfeline.buildkonfig)
     alias(libs.plugins.dev.zacsweers.metro)
 }
 
@@ -61,6 +63,7 @@ kotlin {
         implementation(projects.modules.alley)
         implementation(projects.modules.alley.data)
         implementation(projects.modules.utils)
+        implementation(projects.modules.utilsBuildConfig)
         implementation(projects.modules.utilsCompose)
         implementation(projects.modules.utilsInject)
 
@@ -136,16 +139,29 @@ tasks.named("copyNonXmlValueResourcesForCommonMain").configure {
     dependsOn("exportLibraryDefinitions")
 }
 
-val isWasmDebug = project.hasProperty("wasmDebug")
-val outputDir = if (isWasmDebug) {
+val isDebug = project.hasProperty("debug")
+val outputDir = if (isDebug) {
     "dist/web/developmentExecutable"
 } else {
     "dist/web/productionExecutable"
 }
 
+buildkonfig {
+    packageName = "com.thekeeperofpie.artistalleydatabase.alley.web.secrets"
+
+    defaultConfigs {
+        buildConfigField(
+            type = FieldSpec.Type.BOOLEAN,
+            name = "debug",
+            value = isDebug.toString(),
+            const = true,
+        )
+    }
+}
+
 val buildBothWebVariants = tasks.register<Sync>("buildBothWebVariants") {
     outputs.upToDateWhen { false }
-    val alleyAppTask = if (isWasmDebug) {
+    val alleyAppTask = if (isDebug) {
         "wasmJsBrowserDevelopmentExecutableDistribution"
     } else {
         "composeCompatibilityBrowserDistribution"
@@ -321,7 +337,7 @@ configurations.all {
 }
 
 // Replicates Workbox InjectManifest since configuring that doesn't seem to work
-tasks.register("buildRelease") {
+tasks.register("buildSite") {
     outputs.upToDateWhen { false }
     dependsOn("exportLibraryDefinitions")
     dependsOn(":modules:alley:user:verifySqlDelightMigration")

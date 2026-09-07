@@ -32,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewMo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
@@ -44,6 +45,7 @@ interface ArtistAlleyGraph {
     val artistSearchViewModelFactory: ArtistSearchViewModel.Factory
     val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
     val artistChangelogViewModelFactory: ArtistChangelogViewModel.Factory
+    val buildConfig: BuildConfig
     val favoritesChangelogViewModelFactory: FavoritesChangelogViewModel.Factory
     val favoriteArtistsChangelogViewModelFactory: FavoriteArtistsChangelogViewModel.Factory
     val favoriteSeriesChangelogViewModelFactory: FavoriteSeriesChangelogViewModel.Factory

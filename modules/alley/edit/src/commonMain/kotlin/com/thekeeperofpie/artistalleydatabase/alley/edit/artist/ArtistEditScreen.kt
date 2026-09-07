@@ -110,7 +110,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.lastviewed.ActiveUserData
-import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.DeleteButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHistoryButton
@@ -140,6 +139,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedPage
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
@@ -902,7 +902,7 @@ object ArtistEditScreen {
         var loading by remember(formLink()) { mutableStateOf(false) }
 
         @Suppress("SimplifyBooleanWithConstants")
-        val isDebug = PlatformSpecificConfig.type == PlatformType.DESKTOP || BuildKonfig.isWasmDebug
+        val isDebug = PlatformSpecificConfig.type == PlatformType.DESKTOP || LocalBuildConfig.current.isDebug
         AlertDialog(
             onDismissRequest = onDismiss,
             icon = if (formMetadata?.hasFormLink == true) {

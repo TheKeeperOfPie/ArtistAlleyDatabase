@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography.generateOneTimeEncryptionKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -26,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -57,6 +57,7 @@ import kotlin.uuid.Uuid
 @SingleIn(AppScope::class)
 @Inject
 actual class AlleyEditRemoteDatabase(
+    private val buildConfig: BuildConfig,
     private val dispatchers: CustomDispatchers,
     private val ktorClient: HttpClient,
 ) {
@@ -102,8 +103,8 @@ actual class AlleyEditRemoteDatabase(
                 }
                 launch {
                     // TODO: Only send ping 60 seconds after any last event
-                    val initialDelay = if (BuildKonfig.isWasmDebug) 5.seconds else 60.seconds
-                    val period = if (BuildKonfig.isWasmDebug) 15.seconds else 60.seconds
+                    val initialDelay = if (buildConfig.isDebug) 5.seconds else 60.seconds
+                    val period = if (buildConfig.isDebug) 15.seconds else 60.seconds
                     interval(initialDelay = initialDelay, period = period)
                         .collectLatest {
                             outgoing.send(Frame.Ping(byteArrayOf()))
@@ -696,7 +697,7 @@ actual class AlleyEditRemoteDatabase(
         }
 
     private fun formLink(accessKey: String): String = AlleyDataUtils.formLink(
-        if (BuildKonfig.isWasmDebug) window.location.origin else AlleyUtils.formUrl,
+        if (buildConfig.isDebug) window.location.origin else AlleyUtils.formUrl,
         accessKey
     )
 

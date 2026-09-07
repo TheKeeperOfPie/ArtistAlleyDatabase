@@ -31,7 +31,6 @@ import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
-import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfigProxy
 import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.runBlocking
@@ -62,12 +61,13 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
     override fun onCreate() {
         super.onCreate()
 
+        val settingsProvider = applicationComponent.settingsProvider
         val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
-                applicationComponent.settingsProvider.writeLastCrash(throwable)
+                settingsProvider.writeLastCrash(throwable)
             } catch (t: Throwable) {
-                if (BuildConfigProxy.DEBUG) {
+                if (BuildConfig.DEBUG) {
                     Log.e(TAG, "Error writing last crash", t)
                 }
             }
@@ -80,11 +80,11 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
         // Clear any old cropped images
         try {
             filesDir.resolve("art_entry_images/crop").deleteRecursively()
-        } catch (ignored: Throwable) {
+        } catch (_: Throwable) {
         }
         try {
             filesDir.resolve("cd_entry_images/crop").deleteRecursively()
-        } catch (ignored: Throwable) {
+        } catch (_: Throwable) {
         }
 
         // TODO: Figure out a real StrictMode policy
@@ -152,7 +152,7 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
         .crossfade(true)
         .run {
             if (!DEBUG_COIL) return@run this
-            @Suppress("KotlinConstantConditions")
+            @Suppress("RedundantSuppression", "KotlinConstantConditions")
             when (BuildConfig.BUILD_TYPE) {
                 "debug", "internal" -> logger(DebugLogger())
                 else -> this
@@ -166,7 +166,7 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
             if (!::audioManager.isInitialized) {
                 audioManager = try {
                     AudioManagerIgnoreFocus(service)
-                } catch (ignored: Throwable) {
+                } catch (_: Throwable) {
                     service
                 }
             }

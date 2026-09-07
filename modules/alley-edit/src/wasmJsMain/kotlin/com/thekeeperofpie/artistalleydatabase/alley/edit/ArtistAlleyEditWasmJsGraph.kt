@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Binds
@@ -12,6 +13,9 @@ import dev.zacsweers.metro.SingleIn
 @SingleIn(AppScope::class)
 @DependencyGraph
 internal interface ArtistAlleyEditWasmJsGraph : ArtistAlleyEditGraph {
+
+    @Binds
+    val AlleyEditBuildConfig.bindBuildConfig: BuildConfig
 
     @Binds
     val EditImageUploader.bindImageUploader: ImageUploader

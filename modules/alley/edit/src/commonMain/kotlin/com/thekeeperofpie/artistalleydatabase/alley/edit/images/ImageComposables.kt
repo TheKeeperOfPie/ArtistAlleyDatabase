@@ -43,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Error
 import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreHoriz
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
@@ -213,7 +214,7 @@ fun EditableImage(
             val size = remember(image.key) {
                 PlatformImageCache[image.key]?.size()?.asBytes()
             }
-            if (size != null && size > ImageUtils.MAX_UPLOAD_SIZE) {
+            if (size != null && size > ImageUtils.maxUploadSize(LocalBuildConfig.current.isDebug)) {
                 Text(
                     text = stringResource(
                         Res.string.alley_edit_artist_images_size_megabytes,

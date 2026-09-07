@@ -113,7 +113,7 @@ fun main() {
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun Content(graph: ArtistAlleyFormGraph) {
-    AlleyTheme(appTheme = { AppThemeSetting.AUTO }) {
+    AlleyTheme(appTheme = { AppThemeSetting.AUTO }, graph) {
         val windowSize = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current
         val windowConfiguration = remember(windowSize, density) {

@@ -61,7 +61,6 @@ import org.jetbrains.compose.resources.WebResourcesConfiguration
 import org.jetbrains.compose.resources.getString
 import org.w3c.dom.HTMLMetaElement
 import org.w3c.dom.get
-import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.time.Duration.Companion.seconds
 
 private lateinit var artistImageCache: ArtistImageCache
@@ -148,7 +147,7 @@ private fun Content(graph: ArtistAlleyWebGraph) {
         }
     }
 
-    AlleyTheme(appTheme = { appTheme }) {
+    AlleyTheme(appTheme = { appTheme }, graph) {
         val windowSize = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current
         val windowConfiguration = remember(windowSize, density) {

@@ -12,6 +12,9 @@ import dev.zacsweers.metro.SingleIn
 @DependencyGraph
 internal interface ArtistAlleyEditDesktopGraph : ArtistAlleyEditGraph {
 
+    @Binds
+    val AlleyEditBuildConfig.bindBuildConfig: BuildConfig
+
     @Provides
     @SingleIn(AppScope::class)
     fun provideNetworkClient(): NetworkClient = buildNetworkClient()

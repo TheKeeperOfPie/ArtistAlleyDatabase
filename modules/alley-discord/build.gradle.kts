@@ -1,5 +1,3 @@
-
-import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import java.util.Properties
 
@@ -7,7 +5,6 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("app.cash.sqldelight")
-    alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
 group = "com.thekeeperofpie.artistalleydatabase.alley.discord"
@@ -84,8 +81,8 @@ artifacts {
     add(distribution.name, tasks.named("jsProductionExecutableCompileSync"))
 }
 
-val isWasmDebug = project.hasProperty("wasmDebug")
-val outputDir = if (isWasmDebug) {
+val isDebug = project.hasProperty("debug")
+val outputDir = if (isDebug) {
     "dist/web/development"
 } else {
     "dist/web/production"
@@ -117,26 +114,13 @@ val syncOutput = tasks.register<Sync>("syncOutput") {
     }
 }
 
-buildkonfig {
-    packageName = "com.thekeeperofpie.artistalleydatabase.alley.discord.secrets"
-
-    defaultConfigs {
-        buildConfigField(
-            type = FieldSpec.Type.BOOLEAN,
-            name = "isWasmDebug",
-            value = isWasmDebug.toString(),
-            const = true,
-        )
-    }
-}
-
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
     dependsOn(syncOutput)
 
     val outputDir = layout.buildDirectory.dir(outputDir)
     val propertiesFile = project.layout.projectDirectory.file(
-        if (isWasmDebug) "dev.secrets.properties" else "secrets.properties"
+        if (isDebug) "dev.secrets.properties" else "secrets.properties"
     )
     doLast {
         val folder = outputDir.get().asFile

@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.WebImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.ktor.client.HttpClient
@@ -12,9 +13,10 @@ import kotlin.uuid.Uuid
 
 @ContributesBinding(AppScope::class)
 class FormImageUploader(
+    buildConfig: BuildConfig,
     private val formDatabase: AlleyFormDatabase,
     httpClient: HttpClient,
-) : WebImageUploader(httpClient) {
+) : WebImageUploader(buildConfig, httpClient) {
 
     override suspend fun fetchUploadImageUrls(
         dataYear: DataYear,

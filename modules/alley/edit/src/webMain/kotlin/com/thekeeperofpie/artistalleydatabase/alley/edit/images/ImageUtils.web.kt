@@ -1,20 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.megabytes
 import kotlinx.browser.window
 
 actual object ImageUtils {
-    actual val MAX_UPLOAD_SIZE = if (BuildKonfig.isWasmDebug) 5.megabytes else 10.megabytes
+    actual fun maxUploadSize(isDebug: Boolean) = if (isDebug) 5.megabytes else 10.megabytes
 
-    actual fun toEditImage(catalogImage: DatabaseImage): EditImage {
+    actual fun toEditImage(isDebug: Boolean, catalogImage: DatabaseImage): EditImage {
         val key = catalogImage.name
         return EditImage.NetworkImage(
             uri = Uri.parse(
-                if (BuildKonfig.isWasmDebug) {
+                if (isDebug) {
                     "${window.origin}/edit/api/image"
                 } else {
                     AlleyUtils.prodImagesUrl

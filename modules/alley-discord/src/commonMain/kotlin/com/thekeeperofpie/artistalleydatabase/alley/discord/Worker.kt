@@ -20,7 +20,7 @@ class Worker {
             isLenient = true
         }
 
-        private const val DEBUG = BuildKonfig.isWasmDebug
+        private const val DEBUG = false
 
         @JsStatic
         fun request(request: Request, env: Env): Promise<Response> = promise {

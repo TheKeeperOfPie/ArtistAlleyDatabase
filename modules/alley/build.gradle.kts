@@ -31,6 +31,7 @@ kotlin {
             implementation(projects.modules.icons)
             implementation(projects.modules.settings.ui)
             implementation(projects.modules.utils)
+            implementation(projects.modules.utilsBuildConfig)
             implementation(projects.modules.utilsCompose)
 
             implementation(libs.aboutlibraries.compose.m3)

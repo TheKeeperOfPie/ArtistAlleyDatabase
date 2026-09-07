@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
@@ -361,11 +362,12 @@ internal object AlleyFormBackend {
         request: BackendFormRequest.UploadImageUrls,
     ): BackendFormRequest.UploadImageUrls.Response {
         val errorMessage = when {
-            request.artistImageData.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT ->
+            request.artistImageData.size > ImageUploadUtils.maxArtistUploadCount(BuildKonfig.debug) ->
                 "Too many artist images"
             request.stampRallyIdsToImageData.size > StampRallyDatabaseEntry.MAX_STAMP_RALLIES ->
                 "Too many stamp rallies"
-            request.stampRallyIdsToImageData.any { it.value.size > ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT } ->
+            request.stampRallyIdsToImageData
+                .any { it.value.size > ImageUploadUtils.maxStampRallyUploadCount(BuildKonfig.debug) } ->
                 "Too many stamp rally images"
             else -> null
         }

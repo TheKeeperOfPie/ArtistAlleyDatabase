@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOptio
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
@@ -27,6 +28,9 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
 
     @Provides
     fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient
+
+    @Binds
+    val AlleyFormBuildConfig.bindBuildConfig: BuildConfig
 
     @Binds
     val FormImageUploader.bindImageUploader: ImageUploader

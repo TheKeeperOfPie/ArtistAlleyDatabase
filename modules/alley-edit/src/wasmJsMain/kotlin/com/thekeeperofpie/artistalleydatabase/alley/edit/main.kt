@@ -48,7 +48,6 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.WebResourcesConfiguration
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
@@ -112,10 +111,9 @@ fun main() {
     }
 }
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun Content(graph: ArtistAlleyEditGraph) {
-    AlleyTheme(appTheme = { AppThemeSetting.AUTO }) {
+    AlleyTheme(appTheme = { AppThemeSetting.AUTO }, graph) {
         val windowSize = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current
         val windowConfiguration = remember(windowSize, density) {

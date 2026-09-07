@@ -95,7 +95,7 @@ fun main() {
             title = "Artist Alley Edit",
             state = windowState,
         ) {
-            AlleyTheme(appTheme = { AppThemeSetting.AUTO }) {
+            AlleyTheme(appTheme = { AppThemeSetting.AUTO }, graph) {
                 val windowSize = windowState.size
                 val windowConfiguration = remember(windowSize) {
                     WindowConfiguration(

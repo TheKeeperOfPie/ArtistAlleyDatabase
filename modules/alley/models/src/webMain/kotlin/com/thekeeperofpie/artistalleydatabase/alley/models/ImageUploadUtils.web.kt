@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 actual object ImageUploadUtils {
-    actual val MAX_ARTIST_UPLOAD_COUNT: Int = if (BuildKonfig.isWasmDebug) 5 else 20
-    actual val MAX_STAMP_RALLY_UPLOAD_COUNT: Int = if (BuildKonfig.isWasmDebug) 2 else 20
+    actual fun maxArtistUploadCount(isDebug: Boolean): Int = if (isDebug) 5 else 20
+    actual fun maxStampRallyUploadCount(isDebug: Boolean): Int = if (isDebug) 2 else 20
 }

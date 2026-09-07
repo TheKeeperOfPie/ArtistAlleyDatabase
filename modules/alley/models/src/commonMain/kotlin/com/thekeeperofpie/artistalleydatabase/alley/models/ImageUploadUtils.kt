@@ -4,8 +4,8 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlin.uuid.Uuid
 
 expect object ImageUploadUtils {
-    val MAX_ARTIST_UPLOAD_COUNT: Int
-    val MAX_STAMP_RALLY_UPLOAD_COUNT: Int
+    fun maxArtistUploadCount(isDebug: Boolean): Int
+    fun maxStampRallyUploadCount(isDebug: Boolean): Int
 }
 
 @Suppress("UnusedReceiverParameter")

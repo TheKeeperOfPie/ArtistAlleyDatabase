@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHis
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
+import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -1151,7 +1152,11 @@ object AlleyEditBackend {
 
         database.artistRemoteDataQueries.run {
             val currentEntry =
-                getEntry(request.dataYear, request.entry.booth, request.entry.name).awaitAsOneOrNull()
+                getEntry(
+                    request.dataYear,
+                    request.entry.booth,
+                    request.entry.name
+                ).awaitAsOneOrNull()
             if (currentEntry?.let {
                     ArtistRemoteEntry(
                         confirmedId = it.confirmedId,
@@ -1193,11 +1198,12 @@ object AlleyEditBackend {
         request: BackendRequest.UploadImageUrls,
     ): BackendRequest.UploadImageUrls.Response {
         val errorMessage = when {
-            request.artistImageData.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT ->
+            request.artistImageData.size > ImageUploadUtils.maxArtistUploadCount(BuildKonfig.debug) ->
                 "Too many artist images"
             request.stampRallyIdsToImageData.size > StampRallyDatabaseEntry.MAX_STAMP_RALLIES ->
                 "Too many stamp rallies"
-            request.stampRallyIdsToImageData.any { it.value.size > ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT } ->
+            request.stampRallyIdsToImageData
+                .any { it.value.size > ImageUploadUtils.maxStampRallyUploadCount(BuildKonfig.debug) } ->
                 "Too many stamp rally images"
             else -> null
         }

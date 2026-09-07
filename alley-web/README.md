@@ -65,7 +65,7 @@ linked in each spreadsheet to `catalogs` and `rallies` folders under
 testing. Note that you may need hit a SQLite driver error, which can only be fixed by re-running
 until it succeeds. Restarting the Gradle daemon by running `./gradlew --stop` first may help.
 
-For developing the site, use `./gradlew -PwasmDebug=true :modules:alley-app:webRelease`, which will
+For developing the site, use `./gradlew -Pdebug=true :modules:alley-app:webRelease`, which will
 generate a dev build `/modules/alley-app/build/dist/web/developmentExecutable`. You'll need
 Cloudflare's Wrangler installed, and then you can invoke `wrangler pages dev --local ./` from that
 folder to host the site locally.

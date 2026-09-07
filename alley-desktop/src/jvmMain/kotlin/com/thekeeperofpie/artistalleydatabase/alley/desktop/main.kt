@@ -102,7 +102,7 @@ fun main() {
             state = windowState,
         ) {
             val appTheme by graph.settings.appTheme.collectAsStateWithLifecycle()
-            AlleyTheme(appTheme = { appTheme }) {
+            AlleyTheme(appTheme = { appTheme }, graph) {
                 val windowSize = windowState.size
                 val windowConfiguration = remember(windowSize) {
                     WindowConfiguration(

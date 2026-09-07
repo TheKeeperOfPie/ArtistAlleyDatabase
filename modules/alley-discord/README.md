@@ -1,6 +1,6 @@
 ### Starting the dev server
 
-- `./gradlew -PwasmDebug=true :modules:alley-discord:webRelease` to build the Worker code
+- `./gradlew -Pdebug=true :modules:alley-discord:webRelease` to build the Worker code
 - Navigate to `build/dist/web/development`
 - Launch the Worker using `bunx wrangler dev`
 - Use https://ngrok.com with `ngrok http 8787` to proxy to the local server

@@ -1,3 +1,4 @@
+
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 
@@ -77,7 +78,7 @@ artifacts {
     add(distribution.name, tasks.named("jsProductionExecutableCompileSync"))
 }
 
-val isWasmDebug = project.hasProperty("wasmDebug")
+val isDebug = project.hasProperty("debug")
 
 buildkonfig {
     packageName = "com.thekeeperofpie.artistalleydatabase.alley.functions.secrets"
@@ -86,7 +87,7 @@ buildkonfig {
         buildConfigField(
             type = FieldSpec.Type.BOOLEAN,
             name = "debug",
-            value = isWasmDebug.toString(),
+            value = isDebug.toString(),
             const = true
         )
     }

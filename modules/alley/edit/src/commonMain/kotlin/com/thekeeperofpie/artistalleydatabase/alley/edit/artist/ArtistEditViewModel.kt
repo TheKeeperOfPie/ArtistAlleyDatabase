@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
@@ -45,6 +46,7 @@ import kotlin.uuid.Uuid
 @AssistedInject
 class ArtistEditViewModel(
     private val artistInference: ArtistInference,
+    private val buildConfig: BuildConfig,
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val imageUploader: ImageUploader,
@@ -131,9 +133,9 @@ class ArtistEditViewModel(
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 )
                 state.artistFormState.images
-                    .replaceAll(artist.images.map(ImageUtils::toEditImage))
+                    .replaceAll(artist.images.map { ImageUtils.toEditImage(buildConfig.isDebug, it) })
                 state.artistFormState.profileImage =
-                    artist.profileImage?.let(ImageUtils::toEditImage)
+                    artist.profileImage?.let { ImageUtils.toEditImage(buildConfig.isDebug, it) }
                 formMetadata.value = ArtistEditScreen.State.FormMetadata(
                     hasPendingFormSubmission = response.hasPendingFormSubmission,
                     hasFormLink = response.hasFormLink,

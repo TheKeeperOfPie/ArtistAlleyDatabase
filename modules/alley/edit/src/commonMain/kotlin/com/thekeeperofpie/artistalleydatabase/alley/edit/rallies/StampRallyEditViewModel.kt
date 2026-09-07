@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
@@ -34,6 +35,7 @@ import kotlinx.serialization.json.Json
 
 @AssistedInject
 class StampRallyEditViewModel(
+    private val buildConfig: BuildConfig,
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val imageUploader: ImageUploader,
@@ -92,7 +94,7 @@ class StampRallyEditViewModel(
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 )
                 state.stampRallyFormState.images
-                    .replaceAll(stampRally.images.map(ImageUtils::toEditImage))
+                    .replaceAll(stampRally.images.map { ImageUtils.toEditImage(buildConfig.isDebug, it) })
             }
         }
         hasLoaded = true

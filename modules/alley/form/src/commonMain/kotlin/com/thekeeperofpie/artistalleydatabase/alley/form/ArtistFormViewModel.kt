@@ -29,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.utils.launch
@@ -52,6 +53,7 @@ import kotlin.uuid.Uuid
 @AssistedInject
 class ArtistFormViewModel(
     artistInference: ArtistInference,
+    private val buildConfig: BuildConfig,
     private val formDatabase: AlleyFormDatabase,
     private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: FormTagAutocomplete,
@@ -187,8 +189,8 @@ class ArtistFormViewModel(
                 merchById = merchById,
                 mergeBehavior = FormMergeBehavior.REPLACE,
             )
-            state.artistFormState.images.replaceAll(artist.images.map(ImageUtils::toEditImage))
-            state.artistFormState.profileImage = artist.profileImage?.let(ImageUtils::toEditImage)
+            state.artistFormState.images.replaceAll(artist.images.map { ImageUtils.toEditImage(buildConfig.isDebug, it) })
+            state.artistFormState.profileImage = artist.profileImage?.let { ImageUtils.toEditImage(buildConfig.isDebug, it) }
 
             val existingStampRallyStates = state.stampRallyStates.toList()
             val emptyStampRallyDatabaseEntry by lazy {
@@ -247,7 +249,7 @@ class ArtistFormViewModel(
                             tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear).first(),
                             mergeBehavior = FormMergeBehavior.REPLACE,
                         )
-                        baseState.images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))
+                        baseState.images.replaceAll(stampRally.images.map { ImageUtils.toEditImage(buildConfig.isDebug, it) })
                         baseState.editorState.deleted = stampRallyFormDiff?.deleted == true
                         baseState
                     }

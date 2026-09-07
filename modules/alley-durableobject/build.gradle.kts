@@ -54,8 +54,8 @@ artifacts {
     add(distribution.name, tasks.named("jsProductionExecutableCompileSync"))
 }
 
-val isWasmDebug = project.hasProperty("wasmDebug")
-val outputDir = if (isWasmDebug) {
+val isDebug = project.hasProperty("debug")
+val outputDir = if (isDebug) {
     "dist/web/development"
 } else {
     "dist/web/production"
@@ -84,19 +84,6 @@ val syncOutput = tasks.register<Sync>("syncOutput") {
                 }
             """.trimIndent()
             )
-    }
-}
-
-buildkonfig {
-    packageName = "com.thekeeperofpie.artistalleydatabase.alley.durableobject.secrets"
-
-    defaultConfigs {
-        buildConfigField(
-            type = FieldSpec.Type.BOOLEAN,
-            name = "isWasmDebug",
-            value = isWasmDebug.toString(),
-            const = true,
-        )
     }
 }
 

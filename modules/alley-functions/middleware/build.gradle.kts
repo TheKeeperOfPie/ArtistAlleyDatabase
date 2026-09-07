@@ -1,3 +1,4 @@
+
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import java.util.Properties
@@ -29,7 +30,7 @@ tasks.withType<KotlinJsCompile>().configureEach {
     }
 }
 
-val isWasmDebug = project.hasProperty("wasmDebug")
+val isDebug = project.hasProperty("debug")
 val properties = Properties().apply {
     val secretsFile = projectDir.resolve("secrets.properties")
     if (secretsFile.exists()) {
@@ -52,7 +53,7 @@ buildkonfig {
         buildConfigField(
             type = FieldSpec.Type.BOOLEAN,
             name = "debug",
-            value = isWasmDebug.toString(),
+            value = isDebug.toString(),
             const = true
         )
     }

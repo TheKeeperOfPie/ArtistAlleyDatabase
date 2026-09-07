@@ -1,12 +1,9 @@
-import com.codingfeline.buildkonfig.compiler.FieldSpec
-
 plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
     id("library-kotlin")
     id("library-web")
-    alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
 kotlin {
@@ -23,22 +20,8 @@ kotlin {
             implementation(projects.modules.alley.edit)
             implementation(projects.modules.icons)
             implementation(projects.modules.utils)
+            implementation(projects.modules.utilsBuildConfig)
             implementation(projects.modules.utilsCompose)
         }
-    }
-}
-
-val isWasmDebug = project.hasProperty("wasmDebug")
-
-buildkonfig {
-    packageName = "com.thekeeperofpie.artistalleydatabase.alley.form.secrets"
-
-    defaultConfigs {
-        buildConfigField(
-            type = FieldSpec.Type.BOOLEAN,
-            name = "isWasmDebug",
-            value = isWasmDebug.toString(),
-            const = true,
-        )
     }
 }

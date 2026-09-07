@@ -87,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Save
 import com.thekeeperofpie.artistalleydatabase.icons.filled.SaveAs
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
@@ -234,6 +235,7 @@ internal object StampRallyFormMergeScreen {
         onClickSaveAndEdit: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
         onConfirmDelete: (() -> Unit)?,
     ) {
+        val buildConfig = LocalBuildConfig.current
         val entry = entry()
         val initialStampRally = entry()?.first
         val formDiff = entry()?.second
@@ -241,10 +243,11 @@ internal object StampRallyFormMergeScreen {
         val seriesByIdMap = seriesById()
         val merchByIdMap = merchById()
         val tablesByBoothMap = tablesByBooth()
-        val stampRallyFormState by remember(entry, fieldState, seriesByIdMap, merchByIdMap) {
+        val stampRallyFormState by remember(buildConfig, entry, fieldState, seriesByIdMap, merchByIdMap) {
             derivedStateOf {
                 formDiff ?: return@derivedStateOf null
                 fieldState.applyChanges(
+                    isDebug = buildConfig.isDebug,
                     base = initialStampRally ?: StampRallyDatabaseEntry.empty(
                         dataYear,
                         stampRallyId
@@ -517,6 +520,7 @@ internal object StampRallyFormMergeScreen {
         operator fun set(field: StampRallyField, checked: Boolean) = map.set(field, checked)
 
         fun applyChanges(
+            isDebug: Boolean,
             base: StampRallyDatabaseEntry,
             seriesById: Map<String, SeriesInfo>,
             merchById: Map<String, MerchInfo>,
@@ -634,7 +638,7 @@ internal object StampRallyFormMergeScreen {
                 tablesByBooth = tablesByBooth,
                 mergeBehavior = FormMergeBehavior.REPLACE,
             ).apply {
-                images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))
+                images.replaceAll(stampRally.images.map { ImageUtils.toEditImage(isDebug, it) })
             }
         }
     }

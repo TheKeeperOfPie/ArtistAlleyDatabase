@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsComponent
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes

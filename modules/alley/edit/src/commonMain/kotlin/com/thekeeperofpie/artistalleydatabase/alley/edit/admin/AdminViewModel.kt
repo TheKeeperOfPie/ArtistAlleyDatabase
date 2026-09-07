@@ -8,10 +8,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditRemoteDat
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormRemoteDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.DebugTestData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteDataDiffer
-import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 
 @Inject
 class AdminViewModel(
+    private val buildConfig: BuildConfig,
     private val database: AlleyEditDatabase,
     private val editRemoteDatabase: AlleyEditRemoteDatabase,
     private val formRemoteDatabase: AlleyFormRemoteDatabase,
@@ -67,7 +68,7 @@ class AdminViewModel(
 
     private suspend fun createDatabases() {
         database.databaseCreate()
-        if (BuildKonfig.isWasmDebug) {
+        if (buildConfig.isDebug) {
             DebugTestData.initialize(
                 editRemoteDatabase = editRemoteDatabase,
                 formRemoteDatabase = formRemoteDatabase,

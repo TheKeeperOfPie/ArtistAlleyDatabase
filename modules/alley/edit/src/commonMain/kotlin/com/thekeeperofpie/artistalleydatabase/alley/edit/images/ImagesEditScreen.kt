@@ -47,8 +47,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -72,14 +70,13 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sav
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_title
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.DragHandle
 import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Save
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DraggableItem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -255,13 +252,15 @@ object ImagesEditScreen {
                                         if (image is EditImage.LocalImage) {
                                             val key = image.coilImageModel
                                             val size = PlatformImageCache[key]?.size()?.asBytes()
-                                            if (size != null && size > ImageUtils.MAX_UPLOAD_SIZE) {
+                                            val maxUploadSize =
+                                                ImageUtils.maxUploadSize(LocalBuildConfig.current.isDebug)
+                                            if (size != null && size > maxUploadSize) {
                                                 OutlinedCard {
                                                     Text(
                                                         text = stringResource(
                                                             Res.string.alley_edit_image_size_megabytes_warning,
                                                             size.inWholeMegabytes,
-                                                            ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes,
+                                                            maxUploadSize.inWholeMegabytes,
                                                         ),
                                                         color = MaterialTheme.colorScheme.error,
                                                         modifier = Modifier.padding(8.dp)

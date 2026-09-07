@@ -8,8 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
@@ -130,7 +133,7 @@ object AlleyTheme {
 
 
 @Composable
-fun AlleyTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit) {
+fun AlleyTheme(appTheme: () -> AppThemeSetting, graph: ArtistAlleyGraph, content: @Composable () -> Unit) {
     val systemInDarkTheme = isSystemInDarkTheme()
     val appTheme = appTheme()
     val colorScheme = when (appTheme) {
@@ -149,10 +152,12 @@ fun AlleyTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit)
         AppThemeSetting.MIKU -> alleyDarkScheme
     }
 
+    val buildConfig = remember(graph) { graph.buildConfig }
     val imageColorsState = rememberImageColorsState()
 
     CompositionLocalProvider(
         LocalAppTheme provides appTheme,
+        LocalBuildConfig provides buildConfig,
         LocalAlleyColorScheme provides alleyColorScheme,
         LocalImageColorsState provides imageColorsState,
     ) {

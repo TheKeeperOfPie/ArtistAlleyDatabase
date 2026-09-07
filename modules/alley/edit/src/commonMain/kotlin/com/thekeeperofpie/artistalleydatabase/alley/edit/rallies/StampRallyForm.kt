@@ -94,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.ShoppingBag
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.icons.filled.TableRestaurant
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
@@ -264,12 +265,13 @@ abstract class StampRallyFormScope(
                         text = stringResource(Res.string.alley_edit_stamp_rally_edit_images),
                         style = MaterialTheme.typography.titleMediumEmphasized,
                     )
-                    val showError by remember {
+                    val buildConfig = LocalBuildConfig.current
+                    val showError by remember(buildConfig) {
                         derivedStateOf {
                             val images = images.toList()
-                            images.size > ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT || images.any {
+                            images.size > ImageUploadUtils.maxStampRallyUploadCount(buildConfig.isDebug) || images.any {
                                 it is EditImage.LocalImage && PlatformImageCache[it.key]?.size()
-                                    ?.asBytes()?.let { it > ImageUtils.MAX_UPLOAD_SIZE } == true
+                                    ?.asBytes()?.let { it > ImageUtils.maxUploadSize(buildConfig.isDebug) } == true
                             }
                         }
                     }
@@ -277,8 +279,8 @@ abstract class StampRallyFormScope(
                         Text(
                             text = stringResource(
                                 Res.string.alley_edit_stamp_rally_edit_images_subtitle_megabytes,
-                                ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT,
-                                ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes
+                                ImageUploadUtils.maxStampRallyUploadCount(buildConfig.isDebug),
+                                ImageUtils.maxUploadSize(buildConfig.isDebug).inWholeMegabytes,
                             ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = AlleyTheme.colorScheme.negative,

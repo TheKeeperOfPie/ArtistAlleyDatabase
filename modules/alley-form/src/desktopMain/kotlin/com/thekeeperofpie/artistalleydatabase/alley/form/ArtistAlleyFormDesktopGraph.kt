@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditRemoteDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormRemoteDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
@@ -23,6 +24,9 @@ internal interface ArtistAlleyFormDesktopGraph : ArtistAlleyFormGraph, ArtistAll
     @Provides
     @SingleIn(AppScope::class)
     fun provideNetworkClient(): NetworkClient = buildNetworkClient()
+
+    @Binds
+    val AlleyFormBuildConfig.bindBuildConfig: BuildConfig
 
     @Binds
     val FormImageUploader.bindImageUploader: ImageUploader

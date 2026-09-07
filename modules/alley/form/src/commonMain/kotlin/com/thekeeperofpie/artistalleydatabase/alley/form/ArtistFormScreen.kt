@@ -158,6 +158,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Warning
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
@@ -1180,12 +1181,13 @@ object ArtistFormScreen {
                         }
                     }
 
+                    val buildConfig = LocalBuildConfig.current
                     val showError by remember {
                         derivedStateOf {
                             val images = state.images.toList()
-                            images.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT || images.any {
+                            images.size > ImageUploadUtils.maxArtistUploadCount(buildConfig.isDebug) || images.any {
                                 it is EditImage.LocalImage && PlatformImageCache[it.key]?.size()
-                                    ?.asBytes()?.let { it > ImageUtils.MAX_UPLOAD_SIZE } == true
+                                    ?.asBytes()?.let { it > ImageUtils.maxUploadSize(buildConfig.isDebug) } == true
                             }
                         }
                     }
@@ -1193,8 +1195,8 @@ object ArtistFormScreen {
                         Text(
                             text = stringResource(
                                 Res.string.alley_form_catalog_error_megabytes,
-                                ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT,
-                                ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes
+                                ImageUploadUtils.maxArtistUploadCount(buildConfig.isDebug),
+                                ImageUtils.maxUploadSize(buildConfig.isDebug).inWholeMegabytes,
                             ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error,

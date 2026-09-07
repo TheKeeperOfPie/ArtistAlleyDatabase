@@ -81,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Save
 import com.thekeeperofpie.artistalleydatabase.icons.filled.SaveAs
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
@@ -186,13 +187,15 @@ internal object ArtistFormMergeScreen {
         onClickSave: (ArtistFormState.CapturedState) -> Unit,
         onClickSaveAndEdit: (ArtistFormState.CapturedState) -> Unit?,
     ) {
+        val buildConfig = LocalBuildConfig.current
         val entry = entry()
         val fieldState = rememberFieldState(entry()?.second)
-        val artistFormState by remember(entry, fieldState, seriesById, merchById) {
+        val artistFormState by remember(buildConfig, entry, fieldState, seriesById, merchById) {
             derivedStateOf {
                 val entry = entry() ?: return@derivedStateOf null
                 val (initialArtist, formDiff) = entry
                 fieldState.applyChanges(
+                    isDebug = buildConfig.isDebug,
                     base = initialArtist,
                     seriesById = seriesById(),
                     merchById = merchById(),
@@ -453,6 +456,7 @@ internal object ArtistFormMergeScreen {
         operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
 
         fun applyChanges(
+            isDebug: Boolean,
             base: ArtistDatabaseEntry.Impl,
             seriesById: Map<String, SeriesInfo>,
             merchById: Map<String, MerchInfo>,
@@ -487,7 +491,11 @@ internal object ArtistFormMergeScreen {
                     ArtistField.IMAGES_ADDED,
                     ArtistField.IMAGES_REMOVED,
                 ),
-                profileImage = applyDiff(base.profileImage, diff.profileImage, ArtistField.PROFILE_IMAGE),
+                profileImage = applyDiff(
+                    base.profileImage,
+                    diff.profileImage,
+                    ArtistField.PROFILE_IMAGE
+                ),
                 booth = applyDiff(base.booth, diff.booth, ArtistField.BOOTH),
                 name = applyDiff(base.name, diff.name, ArtistField.NAME),
                 summary = applyDiff(base.summary, diff.summary, ArtistField.SUMMARY),
@@ -554,8 +562,8 @@ internal object ArtistFormMergeScreen {
                     merchById = merchById,
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 ).apply {
-                    profileImage = artist.profileImage?.let(ImageUtils::toEditImage)
-                    images.replaceAll(artist.images.map(ImageUtils::toEditImage))
+                    profileImage = artist.profileImage?.let { ImageUtils.toEditImage(isDebug, it) }
+                    images.replaceAll(artist.images.map { ImageUtils.toEditImage(isDebug, it) })
                 }
         }
     }

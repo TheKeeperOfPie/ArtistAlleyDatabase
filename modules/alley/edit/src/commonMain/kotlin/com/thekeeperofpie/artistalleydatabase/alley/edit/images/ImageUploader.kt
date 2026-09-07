@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
@@ -22,7 +23,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlin.uuid.Uuid
 
-abstract class ImageUploader(private val httpClient: HttpClient) {
+abstract class ImageUploader(
+    protected val buildConfig: BuildConfig,
+    private val httpClient: HttpClient,
+) {
     suspend fun uploadImages(
         dataYear: DataYear,
         artistId: Uuid?,
@@ -68,7 +72,8 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                         localImage.width,
                         localImage.height
                     )
-                    uploadedImages[localImage] = ImageUtils.toEditImage(databaseImage)
+                    uploadedImages[localImage] =
+                        ImageUtils.toEditImage(buildConfig.isDebug, databaseImage)
                     databaseImage
                 }
             }
@@ -91,7 +96,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                             localImage.width,
                             localImage.height
                         )
-                        uploadedImages[localImage] = ImageUtils.toEditImage(catalogImage)
+                        uploadedImages[localImage] = ImageUtils.toEditImage(buildConfig.isDebug, catalogImage)
                         catalogImage
                     }
                 }
@@ -113,14 +118,19 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                             localImage.width,
                             localImage.height
                         )
-                        uploadedImages[localImage] = ImageUtils.toEditImage(catalogImage)
+                        uploadedImages[localImage] = ImageUtils.toEditImage(buildConfig.isDebug, catalogImage)
                         catalogImage
                     }
                 }
             }
         }
 
-        return UploadResult.Success(profileDatabaseImage, artistDatabaseImages, stampRallyDatabaseImages, uploadedImages)
+        return UploadResult.Success(
+            profileDatabaseImage,
+            artistDatabaseImages,
+            stampRallyDatabaseImages,
+            uploadedImages
+        )
     }
 
     protected abstract suspend fun getPresignedImageUrls(
@@ -139,13 +149,21 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
     ): ValidateResult {
         return if (profileImage == null && artistImages.isEmpty() && stampRallyImages.isEmpty()) {
             ValidateResult.Empty
-        } else if (artistImages.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT) {
-            ValidateResult.Error("Only ${ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT} images are allowed")
-        } else if (stampRallyImages.any { it.value.size > ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT }) {
-            // TODO: Specify the stamp rally
-            ValidateResult.Error("Only ${ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT} images are allowed")
         } else {
-            ValidateResult.Success
+            val maxArtistUploadCount =
+                ImageUploadUtils.maxArtistUploadCount(buildConfig.isDebug)
+            if (artistImages.size > maxArtistUploadCount) {
+                ValidateResult.Error("Only $maxArtistUploadCount images are allowed")
+            } else {
+                val maxStampRallyUploadCount =
+                    ImageUploadUtils.maxStampRallyUploadCount(buildConfig.isDebug)
+                if (stampRallyImages.any { it.value.size > maxStampRallyUploadCount }) {
+                    // TODO: Specify the stamp rally
+                    ValidateResult.Error("Only $maxStampRallyUploadCount images are allowed")
+                } else {
+                    ValidateResult.Success
+                }
+            }
         }
     }
 
@@ -192,7 +210,11 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
             }
         }
 
-        return PrepareResult.Success(preparedProfileImage, preparedArtistImages, preparedStampRallyImages)
+        return PrepareResult.Success(
+            preparedProfileImage,
+            preparedArtistImages,
+            preparedStampRallyImages
+        )
     }
 
     private suspend fun compressToBytes(
@@ -200,12 +222,13 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         platformFile: PlatformFile,
     ): PrepareImageResult.Success? {
         var size = platformFile.size().asBytes()
-        return if (size < ImageUtils.MAX_UPLOAD_SIZE) {
+        val maxUploadSize = ImageUtils.maxUploadSize(buildConfig.isDebug)
+        return if (size < maxUploadSize) {
             PrepareImageResult.Success.ImageFile(editImage, platformFile)
         } else {
             var count = 0
             var imageBytes = platformFile.readBytes()
-            while (size > ImageUtils.MAX_UPLOAD_SIZE && count < 3) {
+            while (size > maxUploadSize && count < 3) {
                 imageBytes = compressImage(imageBytes)
                 if (imageBytes.size.asBytes() == size) {
                     ConsoleLogger.log("Failed to compress ${platformFile.name}")

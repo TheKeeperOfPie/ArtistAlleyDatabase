@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
@@ -8,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.await
 import io.ktor.client.HttpClient
 import kotlinx.browser.window
@@ -20,26 +20,13 @@ import org.w3c.dom.HIGH
 import org.w3c.dom.ImageBitmapOptions
 import org.w3c.dom.ResizeQuality
 import org.w3c.files.Blob
-import kotlin.collections.List
-import kotlin.collections.Map
-import kotlin.collections.associate
-import kotlin.collections.associateWith
-import kotlin.collections.emptyMap
-import kotlin.collections.flatMap
-import kotlin.collections.forEachIndexed
-import kotlin.collections.map
-import kotlin.collections.mapValues
-import kotlin.collections.plus
-import kotlin.collections.toByteArray
-import kotlin.js.JsAny
-import kotlin.js.JsArray
 import kotlin.js.Promise
-import kotlin.js.js
-import kotlin.js.set
-import kotlin.js.unsafeCast
 import kotlin.uuid.Uuid
 
-abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClient) {
+abstract class WebImageUploader(
+    buildConfig: BuildConfig,
+    httpClient: HttpClient,
+) : ImageUploader(buildConfig, httpClient) {
     private val canvas by lazy {
         OffscreenCanvas(width = 1, height = 1)
     }
@@ -68,8 +55,7 @@ abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClie
         return when (response) {
             is Response.Failed -> emptyMap()
             is Response.Success -> {
-                @Suppress("SimplifyBooleanWithConstants")
-                val artistUrls = if (BuildKonfig.isWasmDebug && artistId != null) {
+                val artistUrls = if (buildConfig.isDebug && artistId != null) {
                     localImages.associateWith {
                         val key = ImageUploadUtils.makeArtistKey(
                             dataYear = dataYear,
@@ -85,7 +71,7 @@ abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClie
                     localImages.associateWith { response.artistUrls[it.original.id]!! }
                 }
 
-                val stampRallyUrls = if (BuildKonfig.isWasmDebug) {
+                val stampRallyUrls = if (buildConfig.isDebug) {
                     stampRallyIdsToLocalImages.mapValues {
                         val stampRallyId = it.key
                         it.value.associateWith {

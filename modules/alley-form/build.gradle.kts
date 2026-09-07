@@ -1,3 +1,4 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -8,6 +9,7 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.com.codingfeline.buildkonfig)
     alias(libs.plugins.dev.zacsweers.metro)
 }
 
@@ -69,6 +71,7 @@ kotlin {
             implementation(projects.modules.alley.form)
             implementation(projects.modules.icons)
             implementation(projects.modules.utils)
+            implementation(projects.modules.utilsBuildConfig)
             implementation(projects.modules.utilsCompose)
         }
         getByName("desktopMain").dependencies {
@@ -85,6 +88,20 @@ metro {
     generateContributionHintsInFir.set(false)
     supportedHintContributionPlatforms.set(emptySet())
     generateAssistedFactories.set(true)
+}
+
+val isDebug = project.hasProperty("debug")
+buildkonfig {
+    packageName = "com.thekeeperofpie.artistalleydatabase.alley.form.secrets"
+
+    defaultConfigs {
+        buildConfigField(
+            type = FieldSpec.Type.BOOLEAN,
+            name = "debug",
+            value = isDebug.toString(),
+            const = true,
+        )
+    }
 }
 
 configurations.all {
@@ -104,7 +121,7 @@ artifacts {
     add(
         distribution.name,
         tasks.named(
-            if (project.hasProperty("wasmDebug")) {
+            if (project.hasProperty("debug")) {
                 "wasmJsBrowserDevelopmentExecutableDistribution"
             } else {
                 "composeCompatibilityBrowserDistribution"

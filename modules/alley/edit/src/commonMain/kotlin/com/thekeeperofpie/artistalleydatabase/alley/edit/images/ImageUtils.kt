@@ -4,7 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.Bits
 
 expect object ImageUtils {
-    val MAX_UPLOAD_SIZE: Bits
+    fun maxUploadSize(isDebug: Boolean): Bits
 
-    fun toEditImage(catalogImage: DatabaseImage): EditImage
+    fun toEditImage(isDebug: Boolean, catalogImage: DatabaseImage): EditImage
 }

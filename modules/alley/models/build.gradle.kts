@@ -1,10 +1,7 @@
-import com.codingfeline.buildkonfig.compiler.FieldSpec
-
 plugins {
     id("library-android")
     id("library-desktop")
     id("library-web")
-    alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
 kotlin {
@@ -21,21 +18,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.whyoleg.cryptography.core)
             implementation(libs.whyoleg.cryptography.provider.optimal)
+            implementation(projects.modules.utilsBuildConfig)
         }
-    }
-}
-
-val isWasmDebug = project.hasProperty("wasmDebug")
-
-buildkonfig {
-    packageName = "com.thekeeperofpie.artistalleydatabase.alley.models"
-
-    defaultConfigs {
-        buildConfigField(
-            type = FieldSpec.Type.BOOLEAN,
-            name = "isWasmDebug",
-            value = isWasmDebug.toString(),
-            const = true,
-        )
     }
 }
