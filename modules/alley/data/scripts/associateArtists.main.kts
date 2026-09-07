@@ -3,7 +3,6 @@
 import org.apache.commons.csv.CSVFormat
 import java.io.File
 import java.net.URI
-import java.util.UUID
 
 val inputs = listOf(
     __FILE__.resolve("../../inputs/2023/artists.csv"),

@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -86,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.delay
@@ -648,25 +648,25 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
     }
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun HeaderPreview() = PreviewDark {
     Header(onOpenLibraries = {}, onOpenMetrics = {})
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun FooterPreview() = PreviewDark {
     Footer()
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun ExportPreview() = PreviewDark {
     ExportSection(onOpenExport = {})
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun ImportPreview() = PreviewDark {
     var state by remember { mutableStateOf(LoadingResult.empty<Unit>()) }
@@ -685,7 +685,7 @@ private fun ImportPreview() = PreviewDark {
     )
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun FaqPreview() = PreviewDark {
     FaqSection(onInstallClick = {}, onOpenExport = {})

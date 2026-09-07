@@ -307,7 +307,7 @@ internal object ArtistListScreen {
     )
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun HomeScreenPreview() {
     ArtistListScreen(

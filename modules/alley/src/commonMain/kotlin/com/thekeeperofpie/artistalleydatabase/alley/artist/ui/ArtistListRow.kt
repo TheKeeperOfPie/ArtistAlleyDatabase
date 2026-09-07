@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_icon_content_description
@@ -38,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.FiberNew
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FormatPaint
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Verified
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -154,7 +154,7 @@ fun ArtistListRow(
     }
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun ArtistListRowPreview() {
     val artist = ArtistWithUserDataProvider.values.first()

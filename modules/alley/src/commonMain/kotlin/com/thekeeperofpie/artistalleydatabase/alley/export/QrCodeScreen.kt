@@ -32,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -60,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Download
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
@@ -307,7 +307,7 @@ private enum class ExportType(val textRes: StringResource) {
     JSON_FILE(Res.string.alley_export_qr_code_type_json_file),
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun QrCodeScreenPreview() {
     QrCodeScreen(
@@ -317,7 +317,7 @@ private fun QrCodeScreenPreview() {
     )
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun JsonFileSectionPreview() {
     OutlinedCard {

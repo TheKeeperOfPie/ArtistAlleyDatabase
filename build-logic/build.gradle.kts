@@ -1,3 +1,5 @@
+import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
+import java.lang.module.ModuleFinder.compose
 
 
 repositories {
@@ -67,6 +69,7 @@ dependencies {
     implementation(libs.material.kolor.palette.core)
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
+    implementation(libs.roborazzi.gradle.plugin)
     implementation(libs.scrimage.core)
     implementation(libs.scrimage.webp)
     implementation(libs.shared)

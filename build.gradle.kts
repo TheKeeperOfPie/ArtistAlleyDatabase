@@ -14,6 +14,7 @@ plugins {
     alias(libs.plugins.app.cash.burst).apply(false)
     alias(libs.plugins.app.cash.sqldelight).apply(false)
     alias(libs.plugins.com.google.devtools.ksp).apply(false)
+    alias(libs.plugins.io.github.takahirom.roborazzi).apply(false)
     alias(libs.plugins.org.jetbrains.compose).apply(false)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.compose).apply(false)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization).apply(false)

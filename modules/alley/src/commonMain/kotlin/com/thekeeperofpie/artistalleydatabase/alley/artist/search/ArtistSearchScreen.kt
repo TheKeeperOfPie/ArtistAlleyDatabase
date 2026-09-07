@@ -92,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
@@ -539,7 +540,7 @@ object ArtistSearchScreen {
         data class OpenMerch(val merch: String) : Event
     }
 
-    @Preview
+    @AlleyPreview
     @Composable
     private fun Preview() = PreviewDark {
         val results = ArtistWithUserDataProvider.values.take(5)

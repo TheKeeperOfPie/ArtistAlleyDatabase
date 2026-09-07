@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -126,6 +127,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCa
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
@@ -852,7 +854,7 @@ object ArtistDetailsScreen {
     }
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun PhoneLayout() = PreviewDark {
     val artist = ArtistWithUserDataProvider.values.first()

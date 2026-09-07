@@ -44,7 +44,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -79,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(
@@ -541,7 +541,7 @@ object DetailsScreen {
     }
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun DetailsScreen() = PreviewDark {
     val images = CatalogImagePreviewProvider.values.take(4).toList()
@@ -564,7 +564,7 @@ private fun DetailsScreen() = PreviewDark {
     }
 }
 
-@Preview
+@AlleyPreview
 @Composable
 private fun ImagePagerGrid() = PreviewDark {
     val images = CatalogImagePreviewProvider.values.take(4).toList()

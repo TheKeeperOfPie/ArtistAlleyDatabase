@@ -25,6 +25,7 @@ build-konfig = "0.22.0"
 burst = "2.13.0"
 coil = "3.6.2"
 colormath = "3.7.0"
+composable-preview-scanner = "0.9.3"
 # Compose Unstyled 2 removes a lot of APIs, need to migrate all ScrollAreas
 #noinspection NewerVersionAvailable
 compose-unstyled = "1.49.9"
@@ -54,6 +55,7 @@ jetbrains-compose-multiplatform-window-sizeclass = "1.12.0-alpha03"
 jimfs = "1.3.2"
 json-tree = "2.7.0"
 jsoup = "1.23.2"
+junit = "4.13.2"
 kermit = "2.1.0"
 kotlin-browser = "0.5.0"
 kotlin-core = "2.4.10"
@@ -73,6 +75,7 @@ multiplatform-markdown = "0.45.0"
 okhttp = "5.5.0"
 placeholder = "1.0.12"
 qrose = "1.1.2"
+roborazzi = "1.73.0"
 scrimage = "4.6.7"
 shared = "0.0.1"
 #noinspection NewerVersionAvailable
@@ -118,6 +121,7 @@ coil3-coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-o
 colormath-ext-jetpack-compose = { group = "com.github.ajalt.colormath", name = "colormath-ext-jetpack-compose", version.ref = "colormath" }
 com-google-devtools-ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "google-ksp" }
 com-mikepenz-aboutlibraries-plugin-gradle-plugin = { group = "com.mikepenz.aboutlibraries.plugin", name = "com.mikepenz.aboutlibraries.plugin.gradle.plugin", version.ref = "aboutLibraries" }
+composable-preview-scanner = { module = "io.github.sergio-sastre.ComposablePreviewScanner:android", version.ref = "composable-preview-scanner" }
 compose-compiler-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin-core" }
 compose-placeholder-material3 = { group = "com.eygraber", name = "compose-placeholder-material3", version.ref = "placeholder" }
 composeunstyled-primitives = { group = "com.composables", name = "composeunstyled-primitives", version.ref = "compose-unstyled" }
@@ -156,6 +160,7 @@ jetBrainsCompose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-to
 jimfs = { group = "com.google.jimfs", name = "jimfs", version.ref = "jimfs" }
 jsontree = { group = "com.sebastianneubauer.jsontree", name = "jsontree", version.ref = "json-tree" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+junit = { module = "junit:junit", version.ref = "junit" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 kotlin-multiplatform-diff = { group = "io.github.petertrr", name = "kotlin-multiplatform-diff", version.ref = "diff-utils" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin-core" }
@@ -205,6 +210,8 @@ paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", v
 paging-testing = { group = "androidx.paging", name = "paging-testing", version.ref = "androidx-paging" }
 palette-ktx = { group = "androidx.palette", name = "palette-ktx", version.ref = "androidx-palette" }
 qrose = { group = "io.github.alexzhirkevich", name = "qrose", version.ref = "qrose" }
+roborazzi-compose-desktop-preview-scanner-support = { module = "io.github.takahirom.roborazzi:roborazzi-compose-desktop-preview-scanner-support", version.ref = "roborazzi" }
+roborazzi-gradle-plugin = { module = "io.github.takahirom.roborazzi:roborazzi-gradle-plugin", version.ref = "roborazzi" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
 room-paging = { group = "androidx.room", name = "room-paging", version.ref = "androidx-room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
@@ -241,6 +248,7 @@ com-codingfeline-buildkonfig = { id = "com.codingfeline.buildkonfig", version.re
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
 com-mikepenz-aboutlibraries-plugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 dev-zacsweers-metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
+io-github-takahirom-roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 org-jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-multiplatform-plugin" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-core" }
 org-jetbrains-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin-core" }

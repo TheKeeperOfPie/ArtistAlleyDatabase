@@ -29,11 +29,12 @@ val AniListLanguageOption.textWithExplanation: StringResource
 @Composable
 fun previewSeriesWithUserData(id: String): SeriesWithUserData {
     if (!LocalInspectionMode.current) throw IllegalStateException("Must be in preview")
+    val random = Random(id.hashCode())
     return SeriesWithUserData(
         series = SeriesInfo(
             rowid = SeriesRowId(0),
             id = id,
-            uuid = Uuid.parse(id),
+            uuid = Uuid.fromLongs(random.nextLong(), random.nextLong()),
             notes = null,
             aniListId = null,
             aniListType = AniListType.NONE,

@@ -5,13 +5,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import kotlin.random.Random
+import kotlin.uuid.Uuid
 
 object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData> {
     override val values = sequence {
+        val random = Random(1234)
+        fun generateArtistId() = Uuid.fromLongs(random.nextLong(), random.nextLong()).toString()
         val databaseEntry =
             ArtistDatabaseEntry.Impl(
                 year = DataYear.LATEST,
-                id = "artistId",
+                id = generateArtistId(),
                 status = ArtistStatus.FINAL,
                 booth = "C39",
                 name = "Hatsune Miku",
@@ -41,31 +45,35 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
         val artist = ArtistWithUserData(
             artist = ArtistEntry(databaseEntry),
             userEntry = ArtistUserEntry(
-                artistId = "artistId",
+                artistId = databaseEntry.id,
                 dataYear = DataYear.ANIME_EXPO_2025,
                 favorite = false,
                 ignored = false,
             ),
         )
         yield(artist)
-        yield(
-            artist.copy(
-                artist = artist.artist.copy(
-                    databaseEntry = databaseEntry.copy(
-                        booth = "C40",
-                        name = "Megurine Luka",
-                    )
-                )
-            )
+
+        val artistTwo = databaseEntry.copy(
+            id = generateArtistId(),
+            booth = "C40",
+            name = "Megurine Luka",
         )
         yield(
             artist.copy(
-                artist = artist.artist.copy(
-                    databaseEntry = databaseEntry.copy(
-                        booth = "U41",
-                        name = "Kagamine Rin",
-                    )
-                )
+                artist = artist.artist.copy(databaseEntry = artistTwo),
+                userEntry = artist.userEntry.copy(artistId = artistTwo.id)
+            )
+        )
+
+        val artistThree = databaseEntry.copy(
+            id = generateArtistId(),
+            booth = "U41",
+            name = "Kagamine Rin",
+        )
+        yield(
+            artist.copy(
+                artist = artist.artist.copy(databaseEntry = artistThree),
+                userEntry = artist.userEntry.copy(artistId = artistTwo.id)
             )
         )
     }

@@ -1,3 +1,5 @@
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
+
 plugins {
 //    id("library-android")
     id("library-desktop")
@@ -5,11 +7,15 @@ plugins {
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
+    id("io.github.takahirom.roborazzi")
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            if (project.path != ":modules:utils-preview") {
+                implementation(project(":modules:utils-preview"))
+            }
             resolveLibraries(
                 "libs.jetBrainsCompose.components.resources",
                 "libs.jetBrainsCompose.material3",
@@ -34,6 +40,24 @@ kotlin {
                 "libs.jetBrainsCompose.ui.tooling",
             ).forEach(::implementation)
         }
+        getByName("desktopTest").dependencies {
+            resolveLibraries(
+                "libs.roborazzi.compose.desktop.preview.scanner.support",
+                "libs.composable.preview.scanner",
+                "libs.junit",
+            ).forEach(::implementation)
+        }
+    }
+}
+
+@OptIn(ExperimentalRoborazziApi::class)
+roborazzi {
+    outputDir = file("src/screenshotTest")
+    separateOutputDirs = true
+    generateComposePreviewDesktopTests {
+        enable = true
+        packages = listOf("*")
+        includePrivatePreviews = true
     }
 }
 
