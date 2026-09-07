@@ -5,7 +5,6 @@ import androidx.navigation.NavType
 import androidx.room.Room
 import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
-import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
@@ -56,10 +55,11 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import kotlin.reflect.KType
+import com.thekeeperofpie.anichive.BuildConfig as AppBuildConfig
 
 @SingleIn(AppScope::class)
 @DependencyGraph
-interface ApplicationComponent : AppComponent, AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent,
+internal interface ApplicationComponent : AppComponent, AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent,
     BrowseComponent, CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent,
     ApplicationVariantComponent, VgmdbComponent, WorkerComponent {
 
@@ -131,8 +131,8 @@ interface ApplicationComponent : AppComponent, AniListComponent, AnimeComponent,
     @SingleIn(AppScope::class)
     @Provides
     fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider {
-        override val versionCode = BuildConfig.VERSION_CODE
-        override val versionName = BuildConfig.VERSION_NAME
+        override val versionCode = AppBuildConfig.VERSION_CODE
+        override val versionName = AppBuildConfig.VERSION_NAME
         override val appDrawableModel = R.mipmap.ic_launcher
     }
 
@@ -149,11 +149,13 @@ interface ApplicationComponent : AppComponent, AniListComponent, AnimeComponent,
     @Provides
     fun provideNetworkClient(
         scope: ApplicationScope,
+        buildConfig: BuildConfig,
         application: Application,
         networkSettings: NetworkSettings,
         networkAuthProvider: NetworkAuthProvider,
     ): NetworkClient = buildNetworkClient(
         scope = scope,
+        buildConfig = buildConfig,
         application = application,
         networkSettings = networkSettings,
         authProviders = mapOf(networkAuthProvider.host to networkAuthProvider),

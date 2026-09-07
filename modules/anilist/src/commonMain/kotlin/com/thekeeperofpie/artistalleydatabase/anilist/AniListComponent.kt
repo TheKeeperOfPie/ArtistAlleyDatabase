@@ -62,7 +62,7 @@ interface AniListComponent : AniListSqlCacheComponent {
         return ApolloClient.Builder()
             .serverUrl(AniListDataUtils.GRAPHQL_API_URL)
             .httpEngine(networkClient.httpEngine)
-            .addLoggingInterceptors("AniListApi", networkSettings)
+            .addLoggingInterceptors(buildConfig.isDebug, "AniListApi", networkSettings)
             .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
             .apply { apolloHttpInterceptors.forEach(::addHttpInterceptor) }
             .addHttpInterceptor(AniListResponseCodeCoercingInterceptor)
@@ -105,7 +105,8 @@ interface AniListComponent : AniListSqlCacheComponent {
 
     @SingleIn(AppScope::class)
     @Provides
-    fun provideCharacterEntryDao(database: AniListDatabase): CharacterEntryDao = database.characterEntryDao()
+    fun provideCharacterEntryDao(database: AniListDatabase): CharacterEntryDao =
+        database.characterEntryDao()
 
     @SingleIn(AppScope::class)
     @Provides

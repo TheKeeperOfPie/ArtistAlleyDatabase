@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantDaily
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantUserList
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +38,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class Anime2AnimeViewModel(
     private val api: AuthedAniListApi,
     private val aniListAutocompleter: AniListAutocompleter,
+    buildConfig: BuildConfig,
     private val mediaListStatusController: MediaListStatusController,
     private val userMediaListController: UserMediaListController,
     private val ignoreController: IgnoreController,
@@ -59,6 +61,7 @@ class Anime2AnimeViewModel(
     private val gameDaily by lazy {
         GameVariantDaily(
             api,
+            buildConfig,
             mediaListStatusController,
             userMediaListController,
             ignoreController,
@@ -72,6 +75,7 @@ class Anime2AnimeViewModel(
     private val gameRandom by lazy {
         GameVariantRandom(
             api,
+            buildConfig,
             mediaListStatusController,
             userMediaListController,
             ignoreController,
@@ -85,6 +89,7 @@ class Anime2AnimeViewModel(
     private val gameCustom by lazy {
         GameVariantCustom(
             api,
+            buildConfig,
             mediaListStatusController,
             userMediaListController,
             ignoreController,
@@ -99,6 +104,7 @@ class Anime2AnimeViewModel(
     private val gameUserList by lazy {
         GameVariantUserList(
             api,
+            buildConfig,
             mediaListStatusController,
             userMediaListController,
             ignoreController,

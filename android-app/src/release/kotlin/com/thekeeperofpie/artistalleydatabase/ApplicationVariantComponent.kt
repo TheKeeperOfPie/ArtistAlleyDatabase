@@ -3,14 +3,18 @@ package com.thekeeperofpie.artistalleydatabase
 import com.apollographql.apollo.api.http.HttpRequest
 import com.apollographql.apollo.network.http.HttpInterceptor
 import com.apollographql.apollo.network.http.HttpInterceptorChain
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 
-interface ApplicationVariantComponent {
+internal interface ApplicationVariantComponent {
 
+    @Binds
+    val ReleaseBuildConfig.bindBuildConfig: BuildConfig
 
     /**
      * Introduces the release rate limiter. Unfortunately it's difficult to intercept rate limits while

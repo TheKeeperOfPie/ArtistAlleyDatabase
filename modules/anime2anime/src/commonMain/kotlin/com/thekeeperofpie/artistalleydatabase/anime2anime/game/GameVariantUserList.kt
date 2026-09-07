@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -28,6 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class GameVariantUserList(
     api: AuthedAniListApi,
+    buildConfig: BuildConfig,
     mediaListStatusController: MediaListStatusController,
     userMediaListController: UserMediaListController,
     ignoreController: IgnoreController,
@@ -37,6 +39,7 @@ class GameVariantUserList(
     onClearText: () -> Unit,
 ) : GameVariant<GameVariantUserList.Options>(
     api,
+    buildConfig,
     mediaListStatusController,
     userMediaListController,
     ignoreController,

@@ -6,7 +6,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 
-object DebugDoubleDrawer {
+internal object DebugDoubleDrawer {
 
     @Composable
     operator fun invoke(

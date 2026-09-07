@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom.Companion.loadRandom
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +15,7 @@ import kotlin.random.Random
 
 class GameVariantDaily(
     api: AuthedAniListApi,
+    buildConfig: BuildConfig,
     mediaListStatusController: MediaListStatusController,
     userMediaListController: UserMediaListController,
     ignoreController: IgnoreController,
@@ -23,6 +25,7 @@ class GameVariantDaily(
     onClearText: () -> Unit
 ) : GameVariant<Unit>(
     api,
+    buildConfig,
     mediaListStatusController,
     userMediaListController,
     ignoreController,

@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import com.thekeeperofpie.artistalleydatabase.debug.DebugDrawer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleModalNavigationDrawer
 
-object DebugDoubleDrawer {
+internal object DebugDoubleDrawer {
 
     @Composable
     operator fun invoke(

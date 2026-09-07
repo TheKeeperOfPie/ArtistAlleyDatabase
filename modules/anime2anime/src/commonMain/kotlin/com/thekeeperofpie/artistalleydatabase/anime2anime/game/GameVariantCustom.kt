@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -28,6 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class GameVariantCustom(
     api: AuthedAniListApi,
+    buildConfig: BuildConfig,
     mediaListStatusController: MediaListStatusController,
     userMediaListController: UserMediaListController,
     ignoreController: IgnoreController,
@@ -38,6 +40,7 @@ class GameVariantCustom(
     private val aniListAutocompleter: AniListAutocompleter,
 ) : GameVariant<Unit>(
     api,
+    buildConfig,
     mediaListStatusController,
     userMediaListController,
     ignoreController,
