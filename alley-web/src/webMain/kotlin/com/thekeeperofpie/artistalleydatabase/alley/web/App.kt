@@ -33,7 +33,6 @@ import artistalleydatabase.alley_web.generated.resources.service_worker_waiting_
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
-import coil3.decode.Decoder
 import coil3.key.Keyer
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
@@ -83,14 +82,6 @@ fun App(graph: ArtistAlleyWebGraph) {
                         concurrentRequestStrategy = { concurrentRequestStrategy },
                     )
                 )
-                add { result, options, _ ->
-                    Decoder {
-                        decodeBitmap(
-                            options = options,
-                            bytes = result.source.source().readByteArray(),
-                        )
-                    }
-                }
                 add(Mapper<ImageWithDimensions, com.eygraber.uri.Uri> { data, _ ->
                     data.coilImageModel as? com.eygraber.uri.Uri
                 })
