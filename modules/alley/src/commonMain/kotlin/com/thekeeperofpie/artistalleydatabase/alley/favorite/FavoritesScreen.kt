@@ -425,7 +425,7 @@ object FavoritesScreen {
             noResultsItem = noResultsItem,
             itemRow = { entry, onFavoriteToggle, modifier ->
                 ArtistListRow(
-                    entry = entry,
+                    artistWithUserData = entry.data,
                     onFavoriteToggle = {
                         if (it) {
                             onFavoriteToggle(it)

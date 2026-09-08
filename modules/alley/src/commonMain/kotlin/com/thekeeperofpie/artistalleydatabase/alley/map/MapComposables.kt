@@ -399,7 +399,7 @@ fun SingleTablePopup(
         }
 
         ArtistListRow(
-            entry = entry,
+            artistWithUserData = entry.data,
             onFavoriteToggle = { onFavoriteToggle(entry, it) },
             useSharedElements = false,
         )

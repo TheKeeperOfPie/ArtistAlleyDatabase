@@ -25,8 +25,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_new
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_new_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verified_content_description
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistProfileImage
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
@@ -43,25 +43,24 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ArtistListRow(
-    entry: ArtistEntryGridModel,
+    artistWithUserData: ArtistWithUserData,
     onFavoriteToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     tagRow: (@Composable () -> Unit)? = null,
     useSharedElements: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        val artist = entry.artist
+        val artist = artistWithUserData.artist
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .height(IntrinsicSize.Min)
                 .conditionally(useSharedElements, Modifier.sharedBounds("container", artist.id))
         ) {
-            val profileImage = entry.data.profileImage
             Spacer(Modifier.width(10.dp))
             ArtistProfileImage(
                 artistId = artist.id,
-                image = profileImage,
+                image = artistWithUserData.profileImage,
                 modifier = Modifier.padding(vertical = 10.dp)
             )
 
@@ -88,7 +87,7 @@ fun ArtistListRow(
             ) {
                 Text(
                     text = artist.name,
-                    color = if (entry.artist.verifiedArtist) {
+                    color = if (artist.verifiedArtist) {
                         MaterialTheme.colorScheme.tertiary
                     } else {
                         MaterialTheme.colorScheme.primary
@@ -106,14 +105,14 @@ fun ArtistListRow(
                         .weight(1f, fill = false)
                 )
 
-                if (entry.artist.newArtist) {
+                if (artist.newArtist) {
                     IconWithTooltip(
                         imageVector = Icons.Default.FiberNew,
                         tooltipText = stringResource(Res.string.alley_artist_new),
                         contentDescription = stringResource(Res.string.alley_artist_new_content_description),
                         modifier = Modifier.size(20.dp)
                     )
-                } else if (entry.artist.verifiedArtist) {
+                } else if (artist.verifiedArtist) {
                     IconWithTooltip(
                         imageVector = Icons.Default.Verified,
                         tooltipText = stringResource(Res.string.alley_artist_verified),
@@ -124,7 +123,7 @@ fun ArtistListRow(
                 }
             }
 
-            if (entry.artist.commissionModels.isNotEmpty()) {
+            if (artist.commissionModels.isNotEmpty()) {
                 IconWithTooltip(
                     imageVector = Icons.Default.FormatPaint,
                     tooltipText = stringResource(Res.string.alley_artist_has_commissions),
@@ -139,8 +138,8 @@ fun ArtistListRow(
             }
 
             FavoriteIconButton(
-                entryText = { entry.title },
-                favorite = {  entry.favorite },
+                entryText = { artist.name },
+                favorite = {  artistWithUserData.userEntry.favorite },
                 onFavoriteToggle = onFavoriteToggle,
                 modifier = Modifier
                     .align(Alignment.Top)
@@ -148,9 +147,7 @@ fun ArtistListRow(
             )
         }
 
-        if (tagRow != null && entry.series.isNotEmpty()) {
-            tagRow()
-        }
+        tagRow?.invoke()
     }
 }
 
@@ -159,11 +156,7 @@ fun ArtistListRow(
 private fun ArtistListRowPreview() {
     val artist = ArtistWithUserDataProvider.values.first()
     ArtistListRow(
-        entry = ArtistEntryGridModel.buildFromEntry(
-            randomSeed = 0,
-            showOnlyConfirmedTags = false,
-            entry = artist,
-        ),
+        artistWithUserData = artist,
         onFavoriteToggle = {},
     )
 }

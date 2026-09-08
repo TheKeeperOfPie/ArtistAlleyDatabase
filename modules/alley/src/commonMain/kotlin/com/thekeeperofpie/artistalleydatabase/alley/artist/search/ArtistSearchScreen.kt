@@ -236,7 +236,7 @@ object ArtistSearchScreen {
                 actions = actions,
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(
-                        entry = entry,
+                        artistWithUserData = entry.data,
                         onFavoriteToggle = onFavoriteToggle,
                         tagRow = {
                             SeriesRow(
