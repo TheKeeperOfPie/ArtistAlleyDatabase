@@ -27,12 +27,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.vgmdb"
-    }
-}
-
 compose.resources {
     publicResClass = true
 }

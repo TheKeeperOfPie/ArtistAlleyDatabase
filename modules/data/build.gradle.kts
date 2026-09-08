@@ -5,12 +5,6 @@ plugins {
     id("library-inject")
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.data"
-    }
-}
-
 kotlin{
     sourceSets{
         commonMain.dependencies {

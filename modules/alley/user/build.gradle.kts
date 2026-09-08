@@ -41,12 +41,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.alley.user"
-    }
-}
-
 sqldelight {
     databases {
         create("AlleySqlDatabase") {

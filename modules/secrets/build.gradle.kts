@@ -8,12 +8,6 @@ plugins {
     alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.secrets"
-    }
-}
-
 val properties = Properties().apply {
     val secretsFile = rootProject.projectDir.resolve("secrets.properties")
     if (secretsFile.exists()) {

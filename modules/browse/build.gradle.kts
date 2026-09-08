@@ -6,12 +6,6 @@ plugins {
 }
 
 kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.browse"
-    }
-}
-
-kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.entry)

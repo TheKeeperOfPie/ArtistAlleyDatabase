@@ -5,8 +5,6 @@ plugins {
 }
 
 kotlin {
-    android { namespace = "com.thekeeperofpie.artistalleydatabase.alley.models" }
-
     sourceSets {
         val jvmMain = create("jvmMain") {
             dependsOn(commonMain.get())

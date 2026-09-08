@@ -16,9 +16,3 @@ kotlin {
         }
     }
 }
-
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.anime.ignore.data"
-    }
-}

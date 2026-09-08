@@ -30,12 +30,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.settings"
-    }
-}
-
 compose.resources {
     publicResClass = true
 }

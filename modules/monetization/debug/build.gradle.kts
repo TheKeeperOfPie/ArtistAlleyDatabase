@@ -5,12 +5,6 @@ plugins {
 }
 
 kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.monetization.debug"
-    }
-}
-
-kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.monetization)

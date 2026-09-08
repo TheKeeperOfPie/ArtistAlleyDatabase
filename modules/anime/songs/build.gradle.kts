@@ -21,12 +21,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.anime.songs"
-    }
-}
-
 compose.resources {
     publicResClass = true
 }

@@ -20,12 +20,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.anime.seasonal"
-    }
-}
-
 compose.resources {
     publicResClass = true
 }

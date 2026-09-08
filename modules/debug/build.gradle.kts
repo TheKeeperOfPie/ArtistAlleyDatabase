@@ -11,9 +11,6 @@ kotlin {
             enable = true
         }
     }
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.debug"
-    }
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.utils)

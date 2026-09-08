@@ -17,9 +17,3 @@ kotlin {
         }
     }
 }
-
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.test_utils"
-    }
-}

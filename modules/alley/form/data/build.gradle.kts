@@ -16,12 +16,6 @@ kotlin {
         )
     }
 
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.alley.form.data"
-        compileSdk = 37
-        minSdk = 28
-    }
-
     sourceSets {
         commonMain.dependencies {
             api("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")

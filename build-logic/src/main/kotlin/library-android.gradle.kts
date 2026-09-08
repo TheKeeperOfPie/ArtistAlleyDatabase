@@ -9,7 +9,11 @@ plugins {
 
 kotlin {
     android {
-        val subpackage = project.path.split(":").joinToString(".").removePrefix(".")
+        val subpackage = project.path.split(":")
+            .filter { it != "modules" }
+            .joinToString(".")
+            .replace("-", "_")
+            .removePrefix(".")
         namespace = "com.thekeeperofpie.artistalleydatabase.$subpackage"
 
         compileSdk = 37

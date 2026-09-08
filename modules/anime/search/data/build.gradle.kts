@@ -17,12 +17,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.anime.search.data"
-    }
-}
-
 compose.resources {
     publicResClass = true
 }

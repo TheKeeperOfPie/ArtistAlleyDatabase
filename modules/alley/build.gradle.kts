@@ -89,12 +89,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.alley"
-    }
-}
-
 val properties = Properties().apply {
     val secretsFile = projectDir.resolve("secrets.properties")
     if (secretsFile.exists()) {

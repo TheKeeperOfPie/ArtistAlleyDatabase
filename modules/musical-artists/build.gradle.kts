@@ -7,12 +7,6 @@ plugins {
 }
 
 kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.musical_artists"
-    }
-}
-
-kotlin {
     sourceSets {
         commonMain.dependencies {
             runtimeOnly(libs.room.runtime)

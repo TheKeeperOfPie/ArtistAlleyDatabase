@@ -6,12 +6,6 @@ plugins {
 }
 
 kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.monetization"
-    }
-}
-
-kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.activity.compose)

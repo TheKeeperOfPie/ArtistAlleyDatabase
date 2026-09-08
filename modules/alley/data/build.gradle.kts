@@ -26,14 +26,6 @@ kotlin {
     }
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.alley.data"
-        compileSdk = 37
-        minSdk = 28
-    }
-}
-
 sqldelight {
     databases {
         create("AlleySqlDatabase") {

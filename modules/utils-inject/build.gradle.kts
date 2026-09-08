@@ -7,12 +7,6 @@ plugins {
     alias(libs.plugins.dev.zacsweers.metro)
 }
 
-kotlin {
-    android {
-        namespace = "com.thekeeperofpie.artistalleydatabase.inject"
-    }
-}
-
 @OptIn(DelicateMetroGradleApi::class)
 metro {
     enableTopLevelFunctionInjection.set(false)
