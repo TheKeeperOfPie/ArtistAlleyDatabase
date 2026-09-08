@@ -26,48 +26,38 @@ object AlleyImageUtils {
         DataYear.ANIME_NYC_2025,
             -> "files/images/${year.folderName}/catalogs/$imageName"
         DataYear.ANIME_EXPO_2026,
-        DataYear.ANIME_NYC_2026 -> "files/images/$imageName"
+        DataYear.ANIME_NYC_2026,
+            -> "files/images/$imageName"
     }
 
     fun getArtistImages(
         year: DataYear,
         images: List<DatabaseImage>,
     ) = images.mapNotNull {
-        try {
-            CatalogImage(
-                uri = Uri.parse(Res.getUri(getArtistImagePath(year, it.name))),
-                width = it.width,
-                height = it.height,
-            )
-        } catch (_: Throwable) {
-            null
-        }
+        val path = getArtistImagePath(year, it.name)
+        CatalogImage(
+            uri = resUriPathOrSafe(path) ?: return@mapNotNull null,
+            width = it.width,
+            height = it.height,
+        )
     }
 
     fun getTempImages(tempImages: List<DatabaseImage>) = tempImages.mapNotNull {
-        try {
-            val path = "files/images/${it.name}"
-            CatalogImage(
-                uri = Uri.parse(Res.getUri(path)),
-                width = it.width,
-                height = it.height,
-            )
-        } catch (_: Throwable) {
-            null
-        }
+        val path = "files/images/${it.name}"
+        CatalogImage(
+            uri = resUriPathOrSafe(path) ?: return@mapNotNull null,
+            width = it.width,
+            height = it.height,
+        )
     }
 
     fun getEmbedImagesMap(embeds: Map<String, DatabaseImage>) = embeds
-        .mapNotNull {
-            try {
-                it.key to Triple(
-                    "files/embeds/${it.value.name}",
-                    it.value.width,
-                    it.value.height,
-                )
-            } catch (_: Throwable) {
-                null
-            }
+        .map {
+            it.key to Triple(
+                "files/embeds/${it.value.name}",
+                it.value.width,
+                it.value.height,
+            )
         }
         .map { LinkModel.parse(it.first) to it.second }
         .sortedWith(embedComparator)
@@ -76,18 +66,11 @@ object AlleyImageUtils {
     fun getEmbedImages(embeds: Map<String, DatabaseImage>) =
         getEmbedImagesMap(embeds)
             .mapNotNull { (path, width, height) ->
-                try {
-                    CatalogImage(
-                        uri = Uri.parse(Res.getUri(path)),
-                        width = width,
-                        height = height,
-                    )
-                } catch (t: Throwable) {
-                    if (PlatformSpecificConfig.type == PlatformType.DESKTOP) {
-                        t.printStackTrace()
-                    }
-                    null
-                }
+                CatalogImage(
+                    uri = resUriPathOrSafe(path) ?: return@mapNotNull null,
+                    width = width,
+                    height = height,
+                )
             }
 
     private val embedOrder = listOf(
@@ -132,41 +115,34 @@ object AlleyImageUtils {
     fun getProfileImage(year: DataYear, profileImage: DatabaseImage?) =
         getProfileImageWithPath(year, profileImage)
             ?.let { (path, image) ->
-                try {
-                    CatalogImage(
-                        uri = Uri.parse(Res.getUri(path)),
-                        width = image.width,
-                        height = image.height,
-                        color = image.color,
-                    )
-                } catch (_: Throwable) {
-                    null
-                }
+                CatalogImage(
+                    uri = resUriPathOrSafe(path) ?: return@let null,
+                    width = image.width,
+                    height = image.height,
+                    color = image.color,
+                )
             }
 
     fun getRallyImages(
         year: DataYear,
         images: List<DatabaseImage>,
     ) = images.mapNotNull {
-        try {
-            val path = when (year) {
-                DataYear.ANIME_EXPO_2023,
-                DataYear.ANIME_EXPO_2024,
-                DataYear.ANIME_EXPO_2025,
-                DataYear.ANIME_NYC_2024,
-                DataYear.ANIME_NYC_2025,
-                    -> "files/images/${year.folderName}/rallies/${it.name}"
-                DataYear.ANIME_EXPO_2026,
-                DataYear.ANIME_NYC_2026 -> "files/images/${it.name}"
-            }
-            CatalogImage(
-                uri = Uri.parse(Res.getUri(path)),
-                width = it.width,
-                height = it.height,
-            )
-        } catch (_: Throwable) {
-            null
+        val path = when (year) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> "files/images/${year.folderName}/rallies/${it.name}"
+            DataYear.ANIME_EXPO_2026,
+            DataYear.ANIME_NYC_2026,
+                -> "files/images/${it.name}"
         }
+        CatalogImage(
+            uri = resUriPathOrSafe(path) ?: return@mapNotNull null,
+            width = it.width,
+            height = it.height,
+        )
     }
 
     fun getArtistImagesForForumPost(
@@ -183,7 +159,8 @@ object AlleyImageUtils {
             DataYear.ANIME_NYC_2025,
                 -> "files/images/${year.folderName}/catalogs/${it.name}"
             DataYear.ANIME_EXPO_2026,
-            DataYear.ANIME_NYC_2026 -> "files/images/${it.name}"
+            DataYear.ANIME_NYC_2026,
+                -> "files/images/${it.name}"
         }
     }.ifEmpty { tempImages.map { "files/images/${it.name}" } }
         .ifEmpty { getEmbedImagesMap(embeds).map { it.first } }
@@ -204,4 +181,16 @@ object AlleyImageUtils {
             ?.any { it.name.contains(imageName) }
             ?: false
     }
+
+    private fun resUriPathOrSafe(path: String) = Uri.parseOrNull(
+        try {
+            Res.getUri(path)
+        } catch (t: Throwable) {
+            if (PlatformSpecificConfig.type == PlatformType.DESKTOP) {
+                t.printStackTrace()
+            }
+            // Previews won't load resources, return fake
+            "blob:$path"
+        }
+    )
 }

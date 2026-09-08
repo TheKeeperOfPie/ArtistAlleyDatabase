@@ -4,3 +4,11 @@ plugins {
     id("library-desktop")
     id("library-web")
 }
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.coil3.coil.compose)
+        }
+    }
+}

@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlin.random.Random
 import kotlin.uuid.Uuid
 
@@ -12,10 +13,11 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
     override val values = sequence {
         val random = Random(1234)
         fun generateArtistId() = Uuid.fromLongs(random.nextLong(), random.nextLong()).toString()
+        val artistId = generateArtistId()
         val databaseEntry =
             ArtistDatabaseEntry.Impl(
                 year = DataYear.LATEST,
-                id = generateArtistId(),
+                id = artistId,
                 status = ArtistStatus.FINAL,
                 booth = "C39",
                 name = "Hatsune Miku",
@@ -34,7 +36,12 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 _images = emptyList(),
                 fallbackImageYear = null,
                 tempImages = emptyList(),
-                profileImage = null,
+                profileImage = DatabaseImage(
+                    name = "$artistId/profileImage.webp",
+                    width = null,
+                    height = null,
+                    color = null,
+                ),
                 embeds = emptyMap(),
                 editorNotes = null,
                 lastEditor = null,
