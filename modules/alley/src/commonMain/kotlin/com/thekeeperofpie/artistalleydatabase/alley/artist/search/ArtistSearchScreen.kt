@@ -63,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistSearchItem
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
@@ -70,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen2
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
@@ -98,6 +100,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.text.get
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object ArtistSearchScreen {
@@ -217,7 +220,11 @@ object ArtistSearchScreen {
                     }
                 }
 
-            SearchScreen(
+            val showGridByDefault by state.searchState.showGridByDefault
+                .collectAsMutableStateWithLifecycle()
+            val showRandomCatalogImage by state.searchState.showRandomCatalogImage
+                .collectAsMutableStateWithLifecycle()
+            SearchScreen2(
                 state = state.searchState,
                 eventSink = {
                     eventSink(Event.SearchEvent(it))
@@ -231,20 +238,39 @@ object ArtistSearchScreen {
                 gridState = gridState,
                 title = { title },
                 header = header,
-                itemToSharedElementId = { it.artist.id },
-                showOutdatedCatalogs = showOutdatedCatalogs,
                 actions = actions,
-                itemRow = { entry, onFavoriteToggle, modifier ->
-                    ArtistListRow(
+                itemRow = { displayType, entry ->
+                    val onFavoriteToggle: (Boolean) -> Unit = {
+                        entry.favorite = it
+                        eventSink(Event.SearchEvent(SearchScreen.Event.FavoriteToggle(entry, it)))
+                    }
+
+                    val onIgnoredToggle: (Boolean) -> Unit = {
+                        entry.ignored = it
+                        eventSink(Event.SearchEvent(SearchScreen.Event.IgnoreToggle(entry, it)))
+                    }
+                    ArtistSearchItem(
+                        displayType = displayType,
                         artistWithUserData = entry.data,
+                        showGridByDefault = showGridByDefault,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                        blockCrossAxisScrolling = { gridState.isScrollInProgress },
+                        showOutdatedCatalogs = showOutdatedCatalogs,
                         onFavoriteToggle = onFavoriteToggle,
+                        onIgnoredToggle = onIgnoredToggle,
+                        onClick = { imageIndex ->
+                            eventSink(Event.SearchEvent(SearchScreen.Event.OpenEntry(entry, imageIndex)))
+                        },
+                        onClickFullscreen = { imageIndex ->
+                            eventSink(Event.SearchEvent(SearchScreen.Event.OpenImageFullscreen(entry, imageIndex)))
+                        },
                         tagRow = {
                             SeriesRow(
                                 series = entry.series.mapNotNull { series()[it] },
-                                onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                                onSeriesClick = { eventSink(ArtistSearchScreen.Event.OpenSeries(it)) },
                                 onMoreClick = {
                                     eventSink(
-                                        Event.SearchEvent(
+                                        ArtistSearchScreen.Event.SearchEvent(
                                             SearchScreen.Event.OpenEntry(entry, 1)
                                         )
                                     )
@@ -252,7 +278,6 @@ object ArtistSearchScreen {
                                 modifier = Modifier.padding(start = 12.dp)
                             )
                         },
-                        modifier = modifier
                     )
                 },
                 columnHeader = { ColumnHeader(it, state.sortOption, state.sortAscending) },

@@ -87,6 +87,8 @@ import coil3.request.Disposable
 import coil3.request.ImageRequest
 import coil3.size.SizeResolver
 import com.composables.core.ScrollArea
+import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.search.rememberSearchPagerState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
@@ -105,6 +107,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
@@ -230,7 +233,8 @@ fun ImagePager(
 
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        // TODO: fillMaxSize doesn't work in the preview but does in production
+                        .conditionally(!LocalInspectionMode.current, Modifier.fillMaxSize())
                         .zoomable(
                             state = zoomableState,
                             onClick = if (onClickPage == null) null else {
@@ -701,4 +705,51 @@ fun BoxScope.ImageRowActions(listState: LazyListState) {
             )
         }
     }
+}
+
+@Composable
+private fun ImagePagerPreview(images: List<CatalogImage>) {
+    ImagePager(
+        images = images,
+        pagerState = rememberSearchPagerState(
+            entryId = "",
+            images = images,
+            showGridByDefault = false,
+            showRandomCatalogImage = false,
+        ),
+        sharedElementId = "",
+        onClickPage = {},
+        onClickFullscreen = {}
+    )
+}
+
+@AlleyPreview
+@Composable
+private fun ImagePagerSinglePreview() {
+    val images = listOf(
+        CatalogImage(
+            uri = Uri.parse("blob:image0.webp"),
+            width = 1000,
+            height = 500,
+        ),
+    )
+    ImagePagerPreview(images)
+}
+
+@AlleyPreview
+@Composable
+private fun ImagePagerMultiplePreview() {
+    val images = listOf(
+        CatalogImage(
+            uri = Uri.parse("blob:image0.webp"),
+            width = 1000,
+            height = 500,
+        ),
+        CatalogImage(
+            uri = Uri.parse("blob:image1.webp"),
+            width = 1000,
+            height = 500,
+        ),
+    )
+    ImagePagerPreview(images)
 }

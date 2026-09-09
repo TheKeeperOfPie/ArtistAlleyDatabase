@@ -33,7 +33,20 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 seriesConfirmed = listOf("Confirmed Series"),
                 merchInferred = listOf("Stickers", "Prints"),
                 merchConfirmed = listOf("Bags", "Shirts", "Stickers", "Prints"),
-                _images = emptyList(),
+                _images = listOf(
+                    DatabaseImage(
+                        name = "$artistId/image0.webp",
+                        width = 1000,
+                        height = 500,
+                        color = null,
+                    ),
+                    DatabaseImage(
+                        name = "$artistId/image1.webp",
+                        width = 1000,
+                        height = 500,
+                        color = null,
+                    ),
+                ),
                 fallbackImageYear = null,
                 tempImages = emptyList(),
                 profileImage = DatabaseImage(

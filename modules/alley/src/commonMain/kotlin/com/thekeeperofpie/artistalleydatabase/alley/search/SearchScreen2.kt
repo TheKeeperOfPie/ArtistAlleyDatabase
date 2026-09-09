@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.search
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -30,10 +28,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,8 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -53,39 +46,25 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_card
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_image
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_list
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_table
 import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.Event
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
-import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
-import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
-import com.thekeeperofpie.artistalleydatabase.icons.Icons
-import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ViewList
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Image
-import com.thekeeperofpie.artistalleydatabase.icons.filled.TableChart
-import com.thekeeperofpie.artistalleydatabase.icons.filled.ViewAgenda
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -93,7 +72,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScr
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollAreaState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
@@ -102,11 +80,11 @@ import kotlin.enums.EnumEntries
     ExperimentalMaterial3Api::class,
     ExperimentalComposeUiApi::class
 )
-object SearchScreen {
+object SearchScreen2 {
 
     @Composable
     operator fun <EntryModel, ColumnType> invoke(
-        state: State<ColumnType>,
+        state: SearchScreen.State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         query: MutableStateFlow<String>,
         entries: LazyPagingItems<EntryModel>,
@@ -116,20 +94,14 @@ object SearchScreen {
         gridState: LazyStaggeredGridState,
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
-        itemToSharedElementId: (EntryModel) -> Any,
-        showOutdatedCatalogs: () -> Boolean,
         actions: (@Composable RowScope.() -> Unit)? = null,
         header: @Composable () -> Unit,
-        itemRow: @Composable (
-            entry: EntryModel,
-            onFavoriteToggle: (Boolean) -> Unit,
-            modifier: Modifier,
-        ) -> Unit,
+        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        SearchScreen(
+        SearchScreen2(
             state = state,
             eventSink = eventSink,
             entries = entries,
@@ -160,8 +132,6 @@ object SearchScreen {
             },
             topBarScrollBehavior = scrollBehavior,
             header = header,
-            itemToSharedElementId = itemToSharedElementId,
-            showOutdatedCatalogs = showOutdatedCatalogs,
             itemRow = itemRow,
             columnHeader = columnHeader,
             tableCell = tableCell,
@@ -170,7 +140,7 @@ object SearchScreen {
 
     @Composable
     operator fun <EntryModel : SearchEntryModel, ColumnType> invoke(
-        state: State<ColumnType>,
+        state: SearchScreen.State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int,
@@ -181,13 +151,7 @@ object SearchScreen {
         topBar: @Composable () -> Unit,
         topBarScrollBehavior: TopAppBarScrollBehavior,
         header: @Composable () -> Unit,
-        itemToSharedElementId: (EntryModel) -> Any,
-        showOutdatedCatalogs: () -> Boolean,
-        itemRow: @Composable (
-            entry: EntryModel,
-            onFavoriteToggle: (Boolean) -> Unit,
-            modifier: Modifier,
-        ) -> Unit,
+        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
@@ -218,8 +182,6 @@ object SearchScreen {
                     gridState = gridState,
                     scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
                     onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                    itemToSharedElementId = itemToSharedElementId,
-                    showOutdatedCatalogs = showOutdatedCatalogs,
                     header = header,
                     itemRow = itemRow,
                     columnHeader = columnHeader,
@@ -241,7 +203,7 @@ object SearchScreen {
 
     @Composable
     fun <EntryModel, ColumnType> Content(
-        state: State<ColumnType>,
+        state: SearchScreen.State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int = { 0 },
@@ -249,14 +211,8 @@ object SearchScreen {
         gridState: LazyStaggeredGridState,
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
-        itemToSharedElementId: (EntryModel) -> Any,
-        showOutdatedCatalogs: () -> Boolean,
         header: @Composable () -> Unit,
-        itemRow: @Composable (
-            entry: EntryModel,
-            onFavoriteToggle: (Boolean) -> Unit,
-            modifier: Modifier,
-        ) -> Unit,
+        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit = {
             AutoSizeText(
                 text = stringResource(it.text),
@@ -304,14 +260,11 @@ object SearchScreen {
         } else {
             VerticalGrid(
                 state = state,
-                eventSink = eventSink,
                 scaffoldPadding = scaffoldPadding,
                 header = header,
                 entries = entries,
                 unfilteredCount = unfilteredCount,
                 gridState = gridState,
-                itemToSharedElementId = itemToSharedElementId,
-                showOutdatedCatalogs = showOutdatedCatalogs,
                 itemRow = itemRow,
                 noResultsItem = noResultsItem,
                 moreResultsItem = moreResultsItem,
@@ -366,29 +319,18 @@ object SearchScreen {
 
     @Composable
     private fun <EntryModel : SearchEntryModel> VerticalGrid(
-        state: State<*>,
-        eventSink: (Event<EntryModel>) -> Unit,
+        state: SearchScreen.State<*>,
         scaffoldPadding: PaddingValues,
         header: @Composable () -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int,
         gridState: LazyStaggeredGridState,
-        itemToSharedElementId: (EntryModel) -> Any,
-        showOutdatedCatalogs: () -> Boolean,
         noResultsItem: (@Composable () -> Unit)? = null,
         moreResultsItem: (@Composable () -> Unit)? = null,
-        itemRow: @Composable (
-            entry: EntryModel,
-            onFavoriteToggle: (Boolean) -> Unit,
-            modifier: Modifier,
-        ) -> Unit,
+        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
     ) {
         Box(Modifier.padding(scaffoldPadding)) {
             var displayType by state.displayType.collectAsMutableStateWithLifecycle()
-            val showGridByDefault by state.showGridByDefault
-                .collectAsMutableStateWithLifecycle()
-            val showRandomCatalogImage by state.showRandomCatalogImage
-                .collectAsMutableStateWithLifecycle()
             val forceOneDisplayColumn by state.forceOneDisplayColumn
                 .collectAsMutableStateWithLifecycle()
 
@@ -398,7 +340,6 @@ object SearchScreen {
             } else {
                 0.dp
             }
-            var maxLane by remember { mutableIntStateOf(0) }
             val scrollAreaState = rememberScrollAreaState(gridState)
             ScrollArea(state = scrollAreaState) {
                 LazyVerticalStaggeredGrid(
@@ -494,92 +435,7 @@ object SearchScreen {
                             contentType = entries.itemContentType { "search_entry" },
                         ) { index ->
                             val entry = entries[index] ?: return@items
-
-                            @Suppress("NAME_SHADOWING")
-                            val onFavoriteToggle: (Boolean) -> Unit = {
-                                entry.favorite = it
-                                eventSink(Event.FavoriteToggle(entry, it))
-                            }
-
-                            @Suppress("NAME_SHADOWING")
-                            val onIgnoredToggle: (Boolean) -> Unit = {
-                                entry.ignored = it
-                                eventSink(Event.IgnoreToggle(entry, it))
-                            }
-
-                            val sharedElementId = itemToSharedElementId(entry)
-                            when (displayType) {
-                                DisplayType.LIST -> {
-                                    val ignored = entry.ignored
-                                    val lane by remember(index) {
-                                        derivedStateOf {
-                                            gridState.layoutInfo.visibleItemsInfo
-                                                .find { it.index - 1 == index }
-                                                ?.lane
-                                        }
-                                    }
-                                    itemRow(
-                                        entry,
-                                        onFavoriteToggle,
-                                        Modifier
-                                            .sharedBounds("itemContainer", sharedElementId)
-                                            .combinedClickable(
-                                                onClick = { eventSink(Event.OpenEntry(entry, 1)) },
-                                                onLongClick = { onIgnoredToggle(!ignored) }
-                                            )
-                                            .alpha(if (entry.ignored) 0.38f else 1f)
-                                            .border(
-                                                width = 1.dp,
-                                                color = DividerDefaults.color,
-                                                start = lane != 0,
-                                                bottom = true,
-                                            )
-                                    )
-                                }
-                                DisplayType.CARD -> ItemCard(
-                                    entry = entry,
-                                    sharedElementId = itemToSharedElementId(entry),
-                                    showGridByDefault = showGridByDefault,
-                                    showRandomCatalogImage = showRandomCatalogImage,
-                                    blockCrossAxisScrolling = { gridState.isScrollInProgress },
-                                    showOutdatedCatalogs = showOutdatedCatalogs,
-                                    onFavoriteToggle = onFavoriteToggle,
-                                    onIgnoredToggle = onIgnoredToggle,
-                                    onClick = { entry, imageIndex ->
-                                        eventSink(Event.OpenEntry(entry, imageIndex))
-                                    },
-                                    onClickFullscreen = { entry, imageIndex ->
-                                        eventSink(Event.OpenImageFullscreen(entry, imageIndex))
-                                    },
-                                    itemRow = itemRow,
-                                    modifier = Modifier.sharedBounds(
-                                        "itemContainer",
-                                        sharedElementId
-                                    ),
-                                )
-                                DisplayType.IMAGE -> ItemImage(
-                                    entry = entry,
-                                    sharedElementId = itemToSharedElementId(entry),
-                                    showGridByDefault = showGridByDefault,
-                                    showRandomCatalogImage = showRandomCatalogImage,
-                                    blockCrossAxisScrolling = { gridState.isScrollInProgress },
-                                    showOutdatedCatalogs = showOutdatedCatalogs,
-                                    onFavoriteToggle = onFavoriteToggle,
-                                    onIgnoredToggle = onIgnoredToggle,
-                                    onClick = { entry, imageIndex ->
-                                        eventSink(Event.OpenEntry(entry, imageIndex))
-                                    },
-                                    onClickFullscreen = { entry, imageIndex ->
-                                        eventSink(Event.OpenImageFullscreen(entry, imageIndex))
-                                    },
-                                    itemRow = itemRow,
-                                    modifier = Modifier.sharedBounds(
-                                        "itemContainer",
-                                        sharedElementId
-                                    ),
-                                )
-                                DisplayType.TABLE -> throw IllegalArgumentException()
-                            }
+                            itemRow(displayType, entry)
                         }
 
                         if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
@@ -593,62 +449,5 @@ object SearchScreen {
                 PrimaryVerticalScrollbar(gridState)
             }
         }
-    }
-
-    interface SearchEntryModel : EntryGridModel {
-        val booth: String?
-        val images: List<CatalogImage>
-        val hasCatalog: Boolean
-        val fallbackImages: List<CatalogImage>
-        val fallbackYear: DataYear?
-        var favorite: Boolean
-        var ignored: Boolean
-        val title: String
-
-        override val imageUri: Uri? get() = null
-        override val placeholderText: String get() = ""
-        override val imageWidth: Int? get() = null
-        override val imageHeight: Int? get() = null
-        override val imageWidthToHeightRatio: Float get() = 1f
-    }
-
-    enum class DisplayType(val label: StringResource, val icon: ImageVector) {
-        CARD(Res.string.alley_display_type_card, Icons.Filled.ViewAgenda),
-        IMAGE(Res.string.alley_display_type_image, Icons.Filled.Image),
-        LIST(Res.string.alley_display_type_list, Icons.AutoMirrored.Filled.ViewList),
-        TABLE(Res.string.alley_display_type_table, Icons.Default.TableChart),
-    }
-
-    @Stable
-    class State<ColumnType>(
-        val columns: EnumEntries<ColumnType>,
-        val displayType: MutableStateFlow<DisplayType>,
-        val showGridByDefault: MutableStateFlow<Boolean>,
-        val showRandomCatalogImage: MutableStateFlow<Boolean>,
-        val forceOneDisplayColumn: MutableStateFlow<Boolean>,
-    ) where ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column
-
-    sealed interface Event<EntryModel : SearchEntryModel> {
-        data class FavoriteToggle<EntryModel : SearchEntryModel>(
-            val entry: EntryModel,
-            val favorite: Boolean,
-        ) : Event<EntryModel>
-
-        data class IgnoreToggle<EntryModel : SearchEntryModel>(
-            val entry: EntryModel,
-            val ignored: Boolean,
-        ) : Event<EntryModel>
-
-        data class OpenEntry<EntryModel : SearchEntryModel>(
-            val entry: EntryModel,
-            val imageIndex: Int,
-        ) : Event<EntryModel>
-
-        data class OpenImageFullscreen<EntryModel : SearchEntryModel>(
-            val entry: EntryModel,
-            val imageIndex: Int,
-        ) : Event<EntryModel>
-
-        class ClearFilters<EntryModel : SearchEntryModel> : Event<EntryModel>
     }
 }
