@@ -46,9 +46,11 @@ kotlin {
         commonMain.dependencies {
             api(libs.jetBrainsCompose.components.resources)
             api(libs.compose.placeholder.material3)
+            api(libs.composeunstyled.scrollbars)
             api(libs.jetBrainsAndroidX.lifecycle.runtime.compose)
             api(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
             api(libs.jetBrainsAndroidX.navigation3.ui)
+            api(libs.jetBrainsCompose.material3.windowSizeClass)
             api(libs.jetBrainsCompose.ui.backhandler)
             api(libs.paging.common)
             api(libs.paging.compose)

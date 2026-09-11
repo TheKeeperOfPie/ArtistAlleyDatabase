@@ -155,6 +155,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -439,17 +440,6 @@ fun HorizontalPagerIndicator(pagerState: PagerState, modifier: Modifier = Modifi
                     .size(8.dp)
             )
         }
-    }
-}
-
-@Composable
-fun currentWindowSizeClass(): WindowSizeClass {
-    val density = LocalDensity.current
-    val windowConfiguration = LocalWindowConfiguration.current
-    val width = windowConfiguration.screenWidthDp
-    val height = windowConfiguration.screenHeightDp
-    return remember(density, windowConfiguration) {
-        WindowSizeClass.calculateFromSize(DpSize(width, height))
     }
 }
 

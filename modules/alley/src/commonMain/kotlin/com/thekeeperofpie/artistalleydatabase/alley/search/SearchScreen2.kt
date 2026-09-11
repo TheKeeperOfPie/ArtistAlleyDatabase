@@ -2,17 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.alley.search
 
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -28,6 +26,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,8 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -49,15 +47,13 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
-import com.composables.core.ScrollArea
-import com.composables.core.rememberScrollAreaState
+import com.composeunstyled.rememberScrollbarState
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.Event
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -68,8 +64,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMayb
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryHorizontalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryVerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollbarState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.pluralStringResource
@@ -163,8 +160,6 @@ object SearchScreen2 {
         }
 
         Box {
-            var horizontalScrollBarWidth by remember { mutableStateOf(0) }
-            val horizontalScrollState = rememberScrollState()
             SortFilterBottomScaffold(
                 state = sortFilterState,
                 scaffoldState = scaffoldState,
@@ -178,24 +173,12 @@ object SearchScreen2 {
                     eventSink = eventSink,
                     entries = entries,
                     unfilteredCount = unfilteredCount,
-                    horizontalScrollState = horizontalScrollState,
                     gridState = gridState,
                     scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
-                    onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
                     header = header,
                     itemRow = itemRow,
                     columnHeader = columnHeader,
                     tableCell = tableCell,
-                )
-            }
-
-            if (PlatformSpecificConfig.scrollbarsAlwaysVisible) {
-                HorizontalScrollbar(
-                    state = horizontalScrollState,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .width(LocalDensity.current.run { horizontalScrollBarWidth.toDp() })
-                        .padding(horizontal = 8.dp)
                 )
             }
         }
@@ -207,10 +190,8 @@ object SearchScreen2 {
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int = { 0 },
-        horizontalScrollState: ScrollState,
         gridState: LazyStaggeredGridState,
         scaffoldPadding: PaddingValues,
-        onHorizontalScrollBarWidth: (Int) -> Unit,
         header: @Composable () -> Unit,
         itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit = {
@@ -245,22 +226,19 @@ object SearchScreen2 {
         val displayType by state.displayType.collectAsStateWithLifecycle()
         if (displayType == DisplayType.TABLE) {
             Table(
-                horizontalScrollState = horizontalScrollState,
                 header = header,
                 entries = entries,
                 unfilteredCount = unfilteredCount,
                 columns = state.columns,
-                scaffoldPadding = scaffoldPadding,
-                onWidthChanged = onHorizontalScrollBarWidth,
                 columnHeader = columnHeader,
                 tableCell = tableCell,
                 noResultsItem = noResultsItem,
                 moreResultsItem = moreResultsItem,
+                modifier = Modifier.padding(scaffoldPadding)
             )
         } else {
             VerticalGrid(
                 state = state,
-                scaffoldPadding = scaffoldPadding,
                 header = header,
                 entries = entries,
                 unfilteredCount = unfilteredCount,
@@ -268,35 +246,43 @@ object SearchScreen2 {
                 itemRow = itemRow,
                 noResultsItem = noResultsItem,
                 moreResultsItem = moreResultsItem,
+                modifier = Modifier.padding(scaffoldPadding)
             )
         }
     }
 
     @Composable
     private fun <EntryModel, ColumnType> Table(
-        horizontalScrollState: ScrollState,
         header: @Composable () -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int,
         columns: EnumEntries<ColumnType>,
-        scaffoldPadding: PaddingValues,
-        onWidthChanged: (Int) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+        modifier: Modifier = Modifier,
         noResultsItem: (@Composable () -> Unit)? = null,
         moreResultsItem: (@Composable () -> Unit)? = null,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
         val listState = rememberLazyListState()
-        val scrollAreaState = rememberScrollAreaState(listState)
-        ScrollArea(
-            state = scrollAreaState,
-            modifier = Modifier.fillMaxWidth()
-                .padding(scaffoldPadding)
-        ) {
-            Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+        Row(modifier = modifier.fillMaxWidth()) {
+            val verticalScrollbarState = rememberScrollbarState(listState)
+            val horizontalScrollState = rememberScrollState()
+            val horizontalScrollbarState = rememberScrollbarState(horizontalScrollState)
+            Column(modifier = Modifier.weight(1f)) {
+                val canScrollHorizontally by remember(horizontalScrollState) {
+                    if (!PlatformSpecificConfig.scrollbarsAlwaysVisible) {
+                        mutableStateOf(false)
+                    } else {
+                        derivedStateOf {
+                            horizontalScrollState.canScrollForward ||
+                                    horizontalScrollState.canScrollBackward
+                        }
+                    }
+                }
+                if (canScrollHorizontally) {
+                    PrimaryHorizontalScrollbar(horizontalScrollbarState)
+                }
+
                 TwoWayGrid(
                     header = header,
                     rows = entries,
@@ -309,27 +295,27 @@ object SearchScreen2 {
                     tableCell = tableCell,
                     noResultsHeader = noResultsItem,
                     moreResultsFooter = moreResultsItem,
-                    modifier = Modifier.onSizeChanged { onWidthChanged(it.width) }
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
 
-            PrimaryVerticalScrollbar(listState)
+            PrimaryVerticalScrollbar(verticalScrollbarState)
         }
     }
 
     @Composable
     private fun <EntryModel : SearchEntryModel> VerticalGrid(
         state: SearchScreen.State<*>,
-        scaffoldPadding: PaddingValues,
         header: @Composable () -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int,
         gridState: LazyStaggeredGridState,
+        modifier: Modifier = Modifier,
         noResultsItem: (@Composable () -> Unit)? = null,
         moreResultsItem: (@Composable () -> Unit)? = null,
         itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
     ) {
-        Box(Modifier.padding(scaffoldPadding)) {
+        Row(modifier = modifier) {
             var displayType by state.displayType.collectAsMutableStateWithLifecycle()
             val forceOneDisplayColumn by state.forceOneDisplayColumn
                 .collectAsMutableStateWithLifecycle()
@@ -340,114 +326,122 @@ object SearchScreen2 {
             } else {
                 0.dp
             }
-            val scrollAreaState = rememberScrollAreaState(gridState)
-            ScrollArea(state = scrollAreaState) {
-                LazyVerticalStaggeredGrid(
-                    columns = if (forceOneDisplayColumn) {
-                        StaggeredGridCells.Fixed(1)
-                    } else {
-                        when (displayType) {
-                            DisplayType.LIST,
-                            DisplayType.CARD,
-                                -> StaggeredGridCells.Adaptive(350.dp)
-                            DisplayType.IMAGE,
-                                -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
-                            DisplayType.TABLE -> throw IllegalArgumentException()
-                        }
-                    },
-                    state = gridState,
-                    contentPadding = when (displayType) {
-                        DisplayType.LIST,
-                        DisplayType.IMAGE,
-                            -> PaddingValues(
-                            top = 8.dp,
-                            start = horizontalContentPadding,
-                            end = horizontalContentPadding,
-                            bottom = 200.dp,
-                        )
-                        DisplayType.CARD,
-                            -> PaddingValues(
-                            start = 16.dp + horizontalContentPadding,
-                            end = 16.dp + horizontalContentPadding,
-                            top = 8.dp,
-                            bottom = 200.dp,
-                        )
-                        DisplayType.TABLE -> throw IllegalArgumentException()
-                    },
-                    verticalItemSpacing = when (displayType) {
-                        DisplayType.LIST,
-                        DisplayType.IMAGE,
-                            -> 0.dp
-                        DisplayType.CARD,
-                            -> 8.dp
-                        DisplayType.TABLE -> throw IllegalArgumentException()
-                    },
-                    horizontalArrangement = when (displayType) {
-                        DisplayType.CARD,
-                            -> 8.dp
-                        DisplayType.LIST,
-                        DisplayType.IMAGE,
-                            -> 0.dp
-                        DisplayType.TABLE -> throw IllegalArgumentException()
-                    }.let(Arrangement::spacedBy),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item("header", span = StaggeredGridItemSpan.FullLine) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            header()
-                            if (entries.loadState.refresh is LoadState.Loading) {
-                                InfiniteProgressIndicator()
-                            }
-                        }
-                    }
-
-                    if (entries.itemCount == 0) {
-                        if (entries.loadState.refresh !is LoadState.Loading) {
-                            if (moreResultsItem != null && unfilteredCount() > 0) {
-                                item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
-                                    moreResultsItem()
-                                }
-                            } else {
-                                item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
-                                    if (noResultsItem == null) {
-                                        Box(
-                                            contentAlignment = Alignment.Center,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Text(
-                                                text = stringResource(Res.string.alley_search_no_results),
-                                                modifier = Modifier.padding(16.dp)
-                                            )
-                                        }
-                                    } else {
-                                        noResultsItem()
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        items(
-                            count = entries.itemCount,
-                            key = entries.itemKey { it.id.scopedId },
-                            contentType = entries.itemContentType { "search_entry" },
-                        ) { index ->
-                            val entry = entries[index] ?: return@items
-                            itemRow(displayType, entry)
-                        }
-
-                        if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
-                            item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
-                                moreResultsItem()
-                            }
+            val scrollbarState = rememberScrollbarState(gridState)
+            LazyVerticalStaggeredGrid(
+                columns = displayType.columns(forceOneDisplayColumn),
+                state = gridState,
+                contentPadding = displayType.contentPadding(horizontalContentPadding),
+                verticalItemSpacing = displayType.verticalItemSpacing,
+                horizontalArrangement = displayType.horizontalArrangement,
+                modifier = Modifier.weight(1f)
+            ) {
+                item("header", span = StaggeredGridItemSpan.FullLine) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        header()
+                        if (entries.loadState.refresh is LoadState.Loading) {
+                            InfiniteProgressIndicator()
                         }
                     }
                 }
 
-                PrimaryVerticalScrollbar(gridState)
+                if (entries.itemCount == 0) {
+                    if (entries.loadState.refresh !is LoadState.Loading) {
+                        if (moreResultsItem != null && unfilteredCount() > 0) {
+                            item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
+                                moreResultsItem()
+                            }
+                        } else {
+                            item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
+                                if (noResultsItem == null) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = stringResource(Res.string.alley_search_no_results),
+                                            modifier = Modifier.padding(16.dp)
+                                        )
+                                    }
+                                } else {
+                                    noResultsItem()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    items(
+                        count = entries.itemCount,
+                        key = entries.itemKey { it.id.scopedId },
+                        contentType = entries.itemContentType { "search_entry" },
+                    ) { index ->
+                        val entry = entries[index] ?: return@items
+                        itemRow(displayType, entry)
+                    }
+
+                    if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
+                        item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
+                            moreResultsItem()
+                        }
+                    }
+                }
             }
+
+            PrimaryVerticalScrollbar(scrollbarState = scrollbarState)
         }
     }
 }
+
+private fun DisplayType.columns(forceOneDisplayColumn: Boolean) = if (forceOneDisplayColumn) {
+    StaggeredGridCells.Fixed(1)
+} else {
+    when (this) {
+        DisplayType.LIST,
+        DisplayType.CARD,
+            -> StaggeredGridCells.Adaptive(330.dp)
+        DisplayType.IMAGE,
+            -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
+        DisplayType.TABLE -> throw IllegalArgumentException()
+    }
+}
+
+private fun DisplayType.contentPadding(horizontalContentPadding: Dp) = when (this) {
+    DisplayType.LIST,
+    DisplayType.IMAGE,
+        -> PaddingValues(
+        top = 8.dp,
+        start = horizontalContentPadding,
+        end = horizontalContentPadding,
+        bottom = 200.dp,
+    )
+    DisplayType.CARD,
+        -> PaddingValues(
+        start = 16.dp + horizontalContentPadding,
+        end = 16.dp + horizontalContentPadding,
+        top = 8.dp,
+        bottom = 200.dp,
+    )
+    DisplayType.TABLE -> throw IllegalArgumentException()
+}
+
+private val DisplayType.verticalItemSpacing
+    get() = when (this) {
+        DisplayType.LIST,
+        DisplayType.IMAGE,
+            -> 0.dp
+        DisplayType.CARD,
+            -> 8.dp
+        DisplayType.TABLE -> throw IllegalArgumentException()
+    }
+
+private val DisplayType.horizontalArrangement
+    get() = when (this) {
+        DisplayType.CARD,
+            -> 8.dp
+        DisplayType.LIST,
+        DisplayType.IMAGE,
+            -> 0.dp
+        DisplayType.TABLE -> throw IllegalArgumentException()
+    }.let(Arrangement::spacedBy)

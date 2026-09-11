@@ -143,7 +143,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -166,6 +165,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCa
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver

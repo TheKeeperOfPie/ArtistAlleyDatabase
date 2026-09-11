@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.whyoleg.cryptography.core)
             implementation(libs.whyoleg.cryptography.provider.optimal)
             implementation(libs.zoomable)
+            implementation(libs.composeunstyled.scrollbars)
         }
         androidMain {
             dependsOn(jvmMain)

@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
+import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 
 @Composable
 fun ScrollableSideBySide(
