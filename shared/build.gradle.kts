@@ -10,9 +10,9 @@ repositories {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.multiplatform") version "2.4.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
-    id("com.android.kotlin.multiplatform.library") version "9.5.0-alpha04"
+    alias(libs.plugins.org.jetbrains.kotlin.multiplatform)
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    alias(libs.plugins.com.android.kotlin.multiplatform.library)
 }
 
 group = "com.thekeeperofpie.artistalleydatabase.shared"
