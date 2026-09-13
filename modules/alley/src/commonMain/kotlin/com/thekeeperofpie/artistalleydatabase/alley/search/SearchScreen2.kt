@@ -36,8 +36,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollbarState
+import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.PrimaryVerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.rememberScrollbarState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -149,7 +149,8 @@ private fun <T : Any> VerticalGrid(
                 }
             }
 
-            val showMoreResultsItem = moreResultsItem != null && unfilteredCount() > entries.itemCount
+            val showMoreResultsItem =
+                moreResultsItem != null && unfilteredCount() > entries.itemCount
             if (entries.loadState.refresh !is LoadState.Loading && !showMoreResultsItem && entries.itemCount == 0) {
                 item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
                     if (noResultsItem != null) {

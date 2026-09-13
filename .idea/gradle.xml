@@ -115,6 +115,7 @@
             <option value="$PROJECT_DIR$/modules/utils-preview" />
             <option value="$PROJECT_DIR$/modules/utils-roborazzi" />
             <option value="$PROJECT_DIR$/modules/utils-room" />
+            <option value="$PROJECT_DIR$/modules/utils-scrollbars" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
             <option value="$PROJECT_DIR$/shared" />
           </set>

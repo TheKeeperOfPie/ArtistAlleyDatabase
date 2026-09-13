@@ -33,6 +33,7 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsBuildConfig)
             implementation(projects.modules.utilsCompose)
+            implementation(projects.modules.utilsScrollbars)
 
             implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.coil3.coil.compose)

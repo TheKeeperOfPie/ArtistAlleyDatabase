@@ -173,5 +173,6 @@ include(
     ":modules:utils-preview",
     ":modules:utils-roborazzi",
     ":modules:utils-room",
+    ":modules:utils-scrollbars",
     ":modules:vgmdb",
 )
