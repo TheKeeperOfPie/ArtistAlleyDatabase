@@ -9,11 +9,8 @@ import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 
 @SingleIn(AppScope::class)
-@DependencyGraph
+@DependencyGraph(AppScope::class)
 internal interface ArtistAlleyEditDesktopGraph : ArtistAlleyEditGraph {
-
-    @Binds
-    val AlleyEditBuildConfig.bindBuildConfig: BuildConfig
 
     @Provides
     @SingleIn(AppScope::class)

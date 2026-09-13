@@ -5,8 +5,4 @@ import com.thekeeperofpie.artistalleydatabase.debug.DebugComponent
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.Binds
 
-internal interface ApplicationVariantComponent : DebugComponent, AnimeThemesComponent {
-
-    @Binds
-    val InternalBuildConfig.bindBuildConfig: BuildConfig
-}
+internal interface ApplicationVariantComponent : DebugComponent, AnimeThemesComponent

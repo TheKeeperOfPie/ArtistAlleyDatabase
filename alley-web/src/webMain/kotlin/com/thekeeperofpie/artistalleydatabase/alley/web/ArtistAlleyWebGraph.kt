@@ -1,20 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.alley.web
 
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 
-@DependencyGraph
+@DependencyGraph(AppScope::class)
 interface ArtistAlleyWebGraph : ArtistAlleyAppGraph {
     val appFileSystem: AppFileSystem
     val artistImageCache: ArtistImageCache
-
-    @Binds
-    val AlleyWebBuildConfig.bindBuildConfig: BuildConfig
 
     @Binds
     val ArtistAlleyWebSettings.bindArtistAlleySettings: ArtistAlleySettings

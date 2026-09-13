@@ -4,9 +4,11 @@ import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@ContributesBinding(AppScope::class)
 @Inject
+@ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
 internal class ReleaseBuildConfig : BuildConfig {
     override val buildType = "release"
 }

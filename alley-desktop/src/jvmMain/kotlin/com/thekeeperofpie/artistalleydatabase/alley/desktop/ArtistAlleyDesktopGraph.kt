@@ -4,7 +4,6 @@ import artistalleydatabase.alley_desktop.generated.resources.Res
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AboutLibrariesProvider
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
@@ -16,16 +15,13 @@ import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 
-@DependencyGraph
 @SingleIn(AppScope::class)
+@DependencyGraph(AppScope::class)
 interface ArtistAlleyDesktopGraph : ArtistAlleyGraph {
     val appFileSystem: AppFileSystem
 
     @Binds
     val ArtistAlleyDesktopSettings.bindArtistAlleySettings: ArtistAlleySettings
-
-    @Binds
-    val DesktopBuildConfig.bindBuildConfig: BuildConfig
 
     @Provides
     @SingleIn(AppScope::class)

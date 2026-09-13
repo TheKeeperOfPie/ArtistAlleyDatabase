@@ -58,7 +58,7 @@ import kotlin.reflect.KType
 import com.thekeeperofpie.anichive.BuildConfig as AppBuildConfig
 
 @SingleIn(AppScope::class)
-@DependencyGraph
+@DependencyGraph(AppScope::class)
 internal interface ApplicationComponent : AppComponent, AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent,
     BrowseComponent, CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent,
     ApplicationVariantComponent, VgmdbComponent, WorkerComponent {

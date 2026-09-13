@@ -13,9 +13,6 @@ import dev.zacsweers.metro.SingleIn
 
 internal interface ApplicationVariantComponent {
 
-    @Binds
-    val ReleaseBuildConfig.bindBuildConfig: BuildConfig
-
     /**
      * Introduces the release rate limiter. Unfortunately it's difficult to intercept rate limits while
      * also surfacing the errors to the debug drawer, so on debug builds the drawer controller includes

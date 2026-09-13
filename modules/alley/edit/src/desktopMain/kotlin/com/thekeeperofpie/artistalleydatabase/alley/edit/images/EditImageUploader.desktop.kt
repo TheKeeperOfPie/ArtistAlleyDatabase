@@ -1,7 +1,5 @@
-package com.thekeeperofpie.artistalleydatabase.alley.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
