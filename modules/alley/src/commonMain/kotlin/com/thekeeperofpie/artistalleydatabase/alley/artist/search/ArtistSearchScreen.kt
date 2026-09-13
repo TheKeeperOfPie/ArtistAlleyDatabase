@@ -59,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchMoreResults
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen2
@@ -142,17 +143,19 @@ object ArtistSearchScreen {
             showOutdatedCatalogs = { showOutdatedCatalogs },
             eventSink = {
                 when (it) {
-                    is Event.SearchEvent -> when (val searchEvent = it.event) {
-                        is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
-                            viewModel.toggleFavorite(searchEvent.entry, searchEvent.favorite)
-                        is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
-                            viewModel.toggleIgnored(searchEvent.entry, searchEvent.ignored)
-                        is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
-                            onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
-                        is SearchScreen.Event.OpenImageFullscreen<ArtistEntryGridModel> ->
-                            onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex, showOutdatedCatalogs)
-                        is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
-                    }
+                    is Event.FavoriteToggle ->
+                        viewModel.toggleFavorite(it.entry, it.favorite)
+                    is Event.IgnoreToggle ->
+                        viewModel.toggleIgnored(it.entry, it.ignored)
+                    is Event.OpenEntry ->
+                        onOpenArtist(it.entry.artist, it.imageIndex)
+                    is Event.OpenImageFullscreen ->
+                        onOpenArtistImageFullscreen(
+                            it.entry,
+                            it.imageIndex,
+                            showOutdatedCatalogs
+                        )
+                    is Event.ClearFilters -> sortFilterController.clear()
                     is Event.OpenMerch -> onOpenMerch(viewModel.year.value, it.merch)
                     is Event.OpenSeries -> onOpenSeries(viewModel.year.value, it.series)
                 }
@@ -218,8 +221,8 @@ object ArtistSearchScreen {
                 .collectAsMutableStateWithLifecycle()
             SearchScreen2(
                 state = state.searchState,
-                eventSink = { eventSink(Event.SearchEvent(it)) },
                 entries = entries,
+                itemToId = { it.id.scopedId },
                 unfilteredCount = { unfilteredCount },
                 scaffoldState = scaffoldState,
                 sortFilterState = sortFilterState,
@@ -242,15 +245,6 @@ object ArtistSearchScreen {
                     )
                 },
                 itemRow = { displayType, entry ->
-                    val onFavoriteToggle: (Boolean) -> Unit = {
-                        entry.favorite = it
-                        eventSink(Event.SearchEvent(SearchScreen.Event.FavoriteToggle(entry, it)))
-                    }
-
-                    val onIgnoredToggle: (Boolean) -> Unit = {
-                        entry.ignored = it
-                        eventSink(Event.SearchEvent(SearchScreen.Event.IgnoreToggle(entry, it)))
-                    }
                     ArtistSearchItem(
                         displayType = displayType,
                         artistWithUserData = entry.data,
@@ -258,25 +252,23 @@ object ArtistSearchScreen {
                         showRandomCatalogImage = showRandomCatalogImage,
                         blockCrossAxisScrolling = { gridState.isScrollInProgress },
                         showOutdatedCatalogs = showOutdatedCatalogs,
-                        onFavoriteToggle = onFavoriteToggle,
-                        onIgnoredToggle = onIgnoredToggle,
+                        onFavoriteToggle = {
+                            eventSink(Event.FavoriteToggle(entry, it))
+                        },
+                        onIgnoredToggle = {
+                            eventSink(Event.IgnoreToggle(entry, it))
+                        },
                         onClick = { imageIndex ->
-                            eventSink(Event.SearchEvent(SearchScreen.Event.OpenEntry(entry, imageIndex)))
+                            eventSink(Event.OpenEntry(entry, imageIndex))
                         },
                         onClickFullscreen = { imageIndex ->
-                            eventSink(Event.SearchEvent(SearchScreen.Event.OpenImageFullscreen(entry, imageIndex)))
+                            eventSink(Event.OpenImageFullscreen(entry, imageIndex))
                         },
                         tagRow = {
                             SeriesRow(
                                 series = entry.series.mapNotNull { series()[it] },
-                                onSeriesClick = { eventSink(ArtistSearchScreen.Event.OpenSeries(it)) },
-                                onMoreClick = {
-                                    eventSink(
-                                        ArtistSearchScreen.Event.SearchEvent(
-                                            SearchScreen.Event.OpenEntry(entry, 1)
-                                        )
-                                    )
-                                },
+                                onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                                onMoreClick = { eventSink(Event.OpenEntry(entry, 1)) },
                                 modifier = Modifier.padding(start = 12.dp)
                             )
                         },
@@ -289,14 +281,19 @@ object ArtistSearchScreen {
                         column = column,
                         series = series,
                         onEntryClick = { entry, imageIndex ->
-                            eventSink(
-                                Event.SearchEvent(SearchScreen.Event.OpenEntry(entry, imageIndex))
-                            )
+                            eventSink(Event.OpenEntry(entry, imageIndex))
                         },
                         onSeriesClick = { eventSink(Event.OpenSeries(it)) },
                         onMerchClick = { eventSink(Event.OpenMerch(it)) },
                     )
                 },
+                moreResultsItem = {
+                    SearchMoreResults(
+                        unfilteredCount = { unfilteredCount },
+                        itemCount = { entries.itemCount },
+                        onClick = { eventSink(Event.ClearFilters) },
+                    )
+                }
             )
         }
     }
@@ -552,7 +549,27 @@ object ArtistSearchScreen {
     }
 
     sealed interface Event {
-        data class SearchEvent(val event: SearchScreen.Event<ArtistEntryGridModel>) : Event
+        data class FavoriteToggle(
+            val entry: ArtistEntryGridModel,
+            val favorite: Boolean,
+        ) : Event
+
+        data class IgnoreToggle(
+            val entry: ArtistEntryGridModel,
+            val ignored: Boolean,
+        ) : Event
+
+        data class OpenEntry(
+            val entry: ArtistEntryGridModel,
+            val imageIndex: Int,
+        ) : Event
+
+        data class OpenImageFullscreen(
+            val entry: ArtistEntryGridModel,
+            val imageIndex: Int,
+        ) : Event
+
+        data object ClearFilters : Event
         data class OpenSeries(val series: String) : Event
         data class OpenMerch(val merch: String) : Event
     }

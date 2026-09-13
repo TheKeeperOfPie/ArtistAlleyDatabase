@@ -36,6 +36,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.composeunstyled.rememberScrollbarState
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchNoResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryHorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryVerticalScrollbar
@@ -122,9 +123,9 @@ object TwoWayGrid {
                             HorizontalDivider()
                         }
 
-                        if (rows.itemCount == 0 && noResultsHeader != null) {
+                        if (rows.itemCount == 0) {
                             item("tableNoResultsHeader") {
-                                noResultsHeader()
+                                SearchNoResults()
                             }
                         }
 

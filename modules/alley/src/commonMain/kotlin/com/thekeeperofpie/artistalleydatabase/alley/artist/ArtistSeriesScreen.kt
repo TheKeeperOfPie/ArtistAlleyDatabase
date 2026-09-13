@@ -25,9 +25,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Approval
@@ -132,25 +131,17 @@ object ArtistSeriesScreen {
             showOutdatedCatalogs = { showOutdatedCatalogs },
             eventSink = {
                 when (it) {
-                    is Event.SearchEvent -> when (val searchEvent = it.event) {
-                        is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
-                            artistSearchViewModel.toggleFavorite(
-                                searchEvent.entry,
-                                searchEvent.favorite
-                            )
-                        is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
-                            artistSearchViewModel.toggleIgnored(
-                                searchEvent.entry,
-                                searchEvent.ignored
-                            )
-                        is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
-                            onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
-                        is SearchScreen.Event.OpenImageFullscreen<ArtistEntryGridModel> ->
-                            onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex, showOutdatedCatalogs)
-                        is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
-                    }
                     is Event.OpenMerch -> onOpenMerch(artistSearchViewModel.year.value, it.merch)
                     is Event.OpenSeries -> onOpenSeries(artistSearchViewModel.year.value, it.series)
+                    is Event.FavoriteToggle ->
+                        artistSearchViewModel.toggleFavorite(it.entry, it.favorite)
+                    is Event.IgnoreToggle ->
+                        artistSearchViewModel.toggleIgnored(it.entry, it.ignored)
+                    is Event.OpenEntry ->
+                        onOpenArtist(it.entry.artist, it.imageIndex)
+                    is Event.OpenImageFullscreen ->
+                        onOpenArtistImageFullscreen(it.entry, it.imageIndex, showOutdatedCatalogs)
+                    is Event.ClearFilters -> sortFilterController.clear()
                 }
             },
             onClickBack = onClickBack,
