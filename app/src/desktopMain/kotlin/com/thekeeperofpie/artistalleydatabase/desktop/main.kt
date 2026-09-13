@@ -81,7 +81,9 @@ fun main() {
             }
         }
         val scope = rememberCoroutineScope { Dispatchers.Main }
-        val desktopComponent = createGraphFactory<DesktopComponent.Factory>().create(scope)
+        val desktopComponent = remember(scope) {
+            createGraphFactory<DesktopComponent.Factory>().create(scope)
+        }
         val settings = desktopComponent.settingsProvider
 
         SingletonImageLoader.setSafe { context ->

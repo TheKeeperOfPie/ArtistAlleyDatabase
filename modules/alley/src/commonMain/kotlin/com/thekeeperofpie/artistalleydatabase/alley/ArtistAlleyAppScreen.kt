@@ -62,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberN
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementDialog
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ArtistAlleyAppScreen {
@@ -81,6 +82,7 @@ object ArtistAlleyAppScreen {
                 LocalSharedTransitionScope provides this,
                 LocalNavigationResults provides rememberNavigationResults(),
                 LocalLanguageOptionMedia provides languageOption,
+                LocalMetroViewModelFactory provides graph.metroViewModelFactory,
             ) {
                 val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
                 DisposableEffect(navigationEventDispatcherOwner, navStack) {

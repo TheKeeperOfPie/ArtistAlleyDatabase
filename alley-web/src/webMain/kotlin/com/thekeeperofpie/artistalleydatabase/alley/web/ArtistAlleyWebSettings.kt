@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
@@ -28,9 +28,8 @@ import org.w3c.dom.StorageEvent
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-// TODO: Merge into webMain, can't import kotlinx.browser for some reason
+@ContributesBinding(AppScope::class)
 @SingleIn(AppScope::class)
-@Inject
 class ArtistAlleyWebSettings(
     private val applicationScope: ApplicationScope,
 ) : ArtistAlleySettings {

@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,14 +54,14 @@ object ArtistMerchScreen {
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
-        artistSearchViewModel: ArtistSearchViewModel = viewModel {
-            graph.artistSearchViewModelFactory.create(
+        artistSearchViewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
+            create(
                 lockedYear = route.year,
                 lockedSeries = null,
                 lockedMerch = route.merch,
                 isRoot = false,
                 lockedSerializedBooths = null,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
         artistMerchViewModel: ArtistMerchViewModel = viewModel {

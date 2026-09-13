@@ -25,9 +25,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Named
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -228,5 +233,19 @@ class ArtistSearchViewModel(
 
     fun toggleIgnored(entry: ArtistEntryGridModel, ignored: Boolean) {
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
+    }
+
+    @AssistedFactory
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(AppScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
+        fun create(
+            lockedYear: DataYear?,
+            @Named("lockedSeries") lockedSeries: String?,
+            @Named("lockedMerch") lockedMerch: String?,
+            isRoot: Boolean,
+            @Named("lockedSerializedBooths") lockedSerializedBooths: String?,
+            savedStateHandle: SavedStateHandle,
+        ): ArtistSearchViewModel
     }
 }

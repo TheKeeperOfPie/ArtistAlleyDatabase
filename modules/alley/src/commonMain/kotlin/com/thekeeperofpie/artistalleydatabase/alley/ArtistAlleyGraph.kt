@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
+import androidx.lifecycle.ViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogViewModel
@@ -33,16 +33,24 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
+import dev.zacsweers.metrox.viewmodel.ViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ViewModelGraph
+import kotlin.reflect.KClass
 
-interface ArtistAlleyGraph {
+interface ArtistAlleyGraph : ViewModelGraph {
 
     val artistDetailsViewModelFactory: ArtistDetailsViewModel.Factory
     val artistMapViewModelFactory: ArtistMapViewModel.Factory
     val artistMerchViewModelFactory: ArtistMerchViewModel.Factory
-    val artistSearchViewModelFactory: ArtistSearchViewModel.Factory
     val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
     val artistChangelogViewModelFactory: ArtistChangelogViewModel.Factory
     val buildConfig: BuildConfig
@@ -78,3 +86,12 @@ interface ArtistAlleyGraph {
     @Provides
     fun provideAlleyAboutLibrariesProvider(): AboutLibrariesProvider = AlleyAboutLibrariesProvider
 }
+
+@Inject
+@ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
+class ViewModelFactory(
+    override val viewModelProviders: Map<KClass<out ViewModel>, () -> ViewModel>,
+    override val assistedFactoryProviders: Map<KClass<out ViewModel>, () -> ViewModelAssistedFactory>,
+    override val manualAssistedFactoryProviders: Map<KClass<out ManualViewModelAssistedFactory>, () -> ManualViewModelAssistedFactory>,
+) : MetroViewModelFactory()

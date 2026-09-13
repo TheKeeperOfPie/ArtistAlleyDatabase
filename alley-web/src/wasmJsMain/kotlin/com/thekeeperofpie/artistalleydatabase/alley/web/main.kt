@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.web
 
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
@@ -12,7 +13,9 @@ fun main() {
     ComposeInit.init()
     ComposeViewport(document.body!!) {
         val scope = rememberCoroutineScope()
-        val graph = createGraphFactory<ArtistAlleyWebGraph.Factory>().create(scope)
+        val graph = remember(scope) {
+            createGraphFactory<ArtistAlleyWebGraph.Factory>().create(scope)
+        }
         App(graph = graph)
     }
 }

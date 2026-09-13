@@ -61,8 +61,9 @@ fun main() {
     ComposeInit.init()
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
-        val graph = createGraphFactory<ArtistAlleyFormDesktopGraph.Factory>()
-            .create(scope)
+        val graph = remember(scope) {
+            createGraphFactory<ArtistAlleyFormDesktopGraph.Factory>().create(scope)
+        }
 
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)

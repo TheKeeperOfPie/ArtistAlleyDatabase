@@ -35,6 +35,7 @@ kotlin {
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsScrollbars)
 
+            api(libs.metrox.viewmodel.compose)
             implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)

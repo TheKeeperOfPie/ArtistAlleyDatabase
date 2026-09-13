@@ -66,14 +66,6 @@ kotlin {
     }
 }
 
-@OptIn(DelicateMetroGradleApi::class)
-metro {
-    enableTopLevelFunctionInjection.set(false)
-    generateContributionHintsInFir.set(false)
-    supportedHintContributionPlatforms.set(emptySet())
-    generateAssistedFactories.set(true)
-}
-
 val isDebug = project.hasProperty("debug")
 buildkonfig {
     packageName = "com.thekeeperofpie.artistalleydatabase.alley.edit.secrets"

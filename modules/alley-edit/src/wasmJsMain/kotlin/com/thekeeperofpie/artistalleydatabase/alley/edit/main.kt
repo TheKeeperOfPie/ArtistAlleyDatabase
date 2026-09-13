@@ -58,8 +58,9 @@ fun main() {
         }
 
         val scope = rememberCoroutineScope()
-        val graph = createGraphFactory<ArtistAlleyEditWasmJsGraph.Factory>()
-            .create(scope)
+        val graph = remember(scope) {
+            createGraphFactory<ArtistAlleyEditWasmJsGraph.Factory>().create(scope)
+        }
 
         SingletonImageLoader.setSafe {
             ImageLoader.Builder(it)

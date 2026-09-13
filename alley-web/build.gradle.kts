@@ -19,13 +19,6 @@ plugins {
     alias(libs.plugins.dev.zacsweers.metro)
 }
 
-@OptIn(DelicateMetroGradleApi::class, RequiresIdeSupport::class, ExperimentalMetroGradleApi::class)
-metro {
-    enableTopLevelFunctionInjection.set(false)
-    generateContributionHintsInFir.set(false)
-    supportedHintContributionPlatforms.set(emptySet())
-}
-
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {

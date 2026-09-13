@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -89,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
@@ -118,14 +118,14 @@ object ArtistSearchScreen {
         onOpenExport: (DataYear) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
-        viewModel: ArtistSearchViewModel = viewModel {
-            graph.artistSearchViewModelFactory.create(
+        viewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
+            create(
                 lockedYear = lockedYear,
                 lockedSeries = null,
                 lockedMerch = null,
                 isRoot = isRoot,
                 lockedSerializedBooths = lockedSerializedBooths,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

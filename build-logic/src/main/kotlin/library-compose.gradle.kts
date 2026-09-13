@@ -23,6 +23,7 @@ kotlin {
                 "libs.jetBrainsCompose.runtime",
                 "libs.jetBrainsCompose.ui",
                 "libs.jetBrainsCompose.ui.tooling.preview",
+                "libs.metrox.viewmodel.compose",
             ).forEach(::implementation)
         }
         commonTest.dependencies {

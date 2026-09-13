@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
+import dev.zacsweers.metro.gradle.RequiresIdeSupport
 
 plugins {
     id("library-kotlin")
@@ -16,12 +16,7 @@ kotlin {
     }
 }
 
-@OptIn(DelicateMetroGradleApi::class)
+@OptIn(RequiresIdeSupport::class)
 metro {
-    // https://github.com/ZacSweers/metro/releases/tag/0.10.3
-    enableTopLevelFunctionInjection.set(false)
-    generateContributionHintsInFir.set(false)
-    supportedHintContributionPlatforms.set(emptySet())
-
     generateAssistedFactories.set(true)
 }
