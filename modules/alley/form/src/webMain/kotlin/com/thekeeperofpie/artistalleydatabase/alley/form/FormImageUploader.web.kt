@@ -1,23 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.WebImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import dev.zacsweers.metro.binding
 import io.ktor.client.HttpClient
 import kotlin.uuid.Uuid
 
 @Inject
-@ContributesBinding(AppScope::class, binding = binding<WebImageUploader>())
-@ContributesBinding(AppScope::class, binding = binding<ImageUploader>())
 @SingleIn(AppScope::class)
 class FormImageUploader(
     buildConfig: BuildConfig,

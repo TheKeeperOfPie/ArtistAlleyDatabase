@@ -6,16 +6,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import dev.zacsweers.metro.binding
 import io.ktor.client.HttpClient
 import kotlin.uuid.Uuid
 
 @Inject
-@ContributesBinding(AppScope::class, binding = binding<WebImageUploader>())
-@ContributesBinding(AppScope::class, binding = binding<ImageUploader>())
 @SingleIn(AppScope::class)
 class EditImageUploader(
     buildConfig: BuildConfig,
