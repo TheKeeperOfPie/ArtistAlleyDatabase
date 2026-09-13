@@ -72,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchColumn
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
@@ -397,7 +398,7 @@ object FavoritesScreen {
     private fun ArtistContent(
         state: State,
         gridState: LazyStaggeredGridState,
-        searchState: SearchScreen.State<ArtistSearchScreen.ArtistColumn>,
+        searchState: SearchScreen.State<ArtistSearchColumn>,
         horizontalScrollState: ScrollState,
         entries: LazyPagingItems<ArtistEntryGridModel>,
         series: () -> Map<String, GetSeriesTitles>,
@@ -784,7 +785,7 @@ object FavoritesScreen {
         val displayType: MutableStateFlow<DisplayType>,
         val year: MutableStateFlow<DataYear>,
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
-        val artistsSearchState: SearchScreen.State<ArtistSearchScreen.ArtistColumn>,
+        val artistsSearchState: SearchScreen.State<ArtistSearchColumn>,
         val artistsSortOption: MutableStateFlow<ArtistSearchSortOption>,
         val artistsSortAscending: MutableStateFlow<Boolean>,
         val artistsUnfilteredCount: StateFlow<Int>,

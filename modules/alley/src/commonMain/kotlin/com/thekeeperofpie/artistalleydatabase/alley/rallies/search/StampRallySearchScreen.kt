@@ -121,7 +121,7 @@ object StampRallySearchScreen {
         AutoSizeText(
             text = stringResource(column.text),
             modifier = Modifier.requiredWidth(column.size)
-                .then(TwoWayGrid.modifierDefaultCellPadding)
+                .then(TwoWayGrid.DefaultCellPaddingModifier)
         )
     }
 
@@ -131,11 +131,11 @@ object StampRallySearchScreen {
             StampRallyColumn.BOOTH -> AutoSizeText(
                 text = row?.booth.orEmpty(),
                 modifier = Modifier.requiredSize(column.size)
-                    .then(TwoWayGrid.modifierDefaultCellPadding)
+                    .then(TwoWayGrid.DefaultCellPaddingModifier)
             )
             StampRallyColumn.FANDOM -> Text(
                 text = row?.stampRally?.fandom.orEmpty(),
-                modifier = TwoWayGrid.modifierDefaultCellPadding
+                modifier = TwoWayGrid.DefaultCellPaddingModifier
             )
         }
     }

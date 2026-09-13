@@ -89,7 +89,7 @@ class ArtistSearchViewModel(
     }
 
     val searchState = SearchScreen.State(
-        columns = ArtistSearchScreen.ArtistColumn.entries,
+        columns = ArtistSearchColumn.entries,
         displayType = settings.displayType,
         showGridByDefault = settings.showGridByDefault,
         showRandomCatalogImage = settings.showRandomCatalogImage,

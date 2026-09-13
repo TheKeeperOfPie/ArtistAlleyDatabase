@@ -261,7 +261,7 @@ object SearchScreen {
             AutoSizeText(
                 text = stringResource(it.text),
                 modifier = Modifier.requiredWidth(it.size)
-                    .then(TwoWayGrid.modifierDefaultCellPadding)
+                    .then(TwoWayGrid.DefaultCellPaddingModifier)
             )
         },
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,

@@ -5,10 +5,10 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
@@ -24,6 +24,9 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,12 +34,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import com.composeunstyled.rememberScrollbarState
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryHorizontalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryVerticalScrollbar
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
 
 object TwoWayGrid {
 
-    val modifierDefaultCellPadding = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+    val DefaultCellPaddingModifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
 
     @Composable
     operator fun <T, ColumnType> invoke(
@@ -44,9 +53,9 @@ object TwoWayGrid {
         rows: LazyPagingItems<T>,
         unfilteredCount: () -> Int,
         columns: EnumEntries<ColumnType>,
-        columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
         modifier: Modifier = Modifier,
+        columnHeader: @Composable (column: ColumnType) -> Unit = { ColumnHeader(it) },
         noResultsHeader: @Composable (() -> Unit)? = null,
         moreResultsFooter: @Composable (() -> Unit)? = null,
         listState: LazyListState = rememberLazyListState(),
@@ -55,90 +64,117 @@ object TwoWayGrid {
         pinnedColumns: Int = 1,
         contentPadding: PaddingValues = PaddingValues(0.dp),
     ) where T : Any, ColumnType : Enum<ColumnType>, ColumnType : Column {
-        val width = remember(columns) {
-            val dividerCount = columns.size - 1
-            columns.fold(0.dp) { width, column -> width + column.size } +
-                    (DividerDefaults.Thickness * dividerCount)
-        }
-
         CompositionLocalProvider(LocalOverscrollFactory provides null) {
-            LazyColumn(
-                state = listState,
-                contentPadding = contentPadding,
-                modifier = modifier.width(width)
-            ) {
-                item("header") {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        header()
-                        if (rows.loadState.refresh is LoadState.Loading) {
-                            InfiniteProgressIndicator()
+            Row(modifier = modifier) {
+                Column(modifier = Modifier.weight(1f)) {
+                    val canScrollHorizontally by remember(horizontalScrollState) {
+                        if (!PlatformSpecificConfig.scrollbarsAlwaysVisible) {
+                            mutableStateOf(false)
+                        } else {
+                            derivedStateOf {
+                                horizontalScrollState.canScrollForward ||
+                                        horizontalScrollState.canScrollBackward
+                            }
                         }
                     }
-                }
-
-                stickyHeader("tableHeaders") {
-                    Row(
-                        Modifier.height(IntrinsicSize.Min)
-                            .padding(top = topOffset)
-                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
-                    ) {
-                        columns.take(pinnedColumns).forEach {
-                            columnHeader(it)
-                            VerticalDivider()
+                    if (canScrollHorizontally) {
+                        val horizontalScrollbarState = rememberScrollbarState(horizontalScrollState)
+                        PrimaryHorizontalScrollbar(horizontalScrollbarState)
+                    }
+                    val width = remember(columns) {
+                        val dividerCount = columns.size - 1
+                        columns.fold(0.dp) { width, column -> width + column.size } +
+                                (DividerDefaults.Thickness * dividerCount)
+                    }
+                    LazyColumn(state = listState, contentPadding = contentPadding) {
+                        item("header") {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.width(width)
+                            ) {
+                                header()
+                                if (rows.loadState.refresh is LoadState.Loading) {
+                                    InfiniteProgressIndicator()
+                                }
+                            }
                         }
-                        Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
-                            columns.drop(pinnedColumns).forEachIndexed { columnIndex, column ->
-                                columnHeader(column)
-                                if (columnIndex != columns.lastIndex - 1) {
+
+                        stickyHeader("tableHeaders") {
+                            Row(
+                                Modifier.height(IntrinsicSize.Min)
+                                    .padding(top = topOffset)
+                                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
+                            ) {
+                                columns.take(pinnedColumns).forEach {
+                                    columnHeader(it)
                                     VerticalDivider()
                                 }
-                            }
-                        }
-                    }
-                    HorizontalDivider()
-                }
-
-                if (rows.itemCount == 0 && noResultsHeader != null) {
-                    item("tableNoResultsHeader") {
-                        noResultsHeader()
-                    }
-                }
-
-                items(rows.itemCount) { index ->
-                    Row(Modifier.height(IntrinsicSize.Min)) {
-                        columns.take(pinnedColumns).forEach {
-                            Box(Modifier.requiredWidth(it.size)) {
-                                tableCell(rows[index], it)
-                            }
-                            VerticalDivider()
-                        }
-                        Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
-                            columns.drop(pinnedColumns).forEachIndexed { columnIndex, column ->
-                                Box(Modifier.requiredWidth(column.size)) {
-                                    tableCell(rows[index], column)
+                                Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
+                                    columns.drop(pinnedColumns)
+                                        .forEachIndexed { columnIndex, column ->
+                                            columnHeader(column)
+                                            if (columnIndex != columns.lastIndex - 1) {
+                                                VerticalDivider()
+                                            }
+                                        }
                                 }
-                                if (columnIndex != columns.lastIndex - 1) {
+                            }
+                            HorizontalDivider()
+                        }
+
+                        if (rows.itemCount == 0 && noResultsHeader != null) {
+                            item("tableNoResultsHeader") {
+                                noResultsHeader()
+                            }
+                        }
+
+                        items(rows.itemCount) { index ->
+                            Row(Modifier.height(IntrinsicSize.Min)) {
+                                columns.take(pinnedColumns).forEach {
+                                    Box(Modifier.requiredWidth(it.size)) {
+                                        tableCell(rows[index], it)
+                                    }
                                     VerticalDivider()
                                 }
+                                Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
+                                    columns.drop(pinnedColumns)
+                                        .forEachIndexed { columnIndex, column ->
+                                            Box(Modifier.requiredWidth(column.size)) {
+                                                tableCell(rows[index], column)
+                                            }
+                                            if (columnIndex != columns.lastIndex - 1) {
+                                                VerticalDivider()
+                                            }
+                                        }
+                                }
+                            }
+
+                            if (index != rows.itemCount - 1) {
+                                HorizontalDivider()
+                            }
+                        }
+
+                        if (moreResultsFooter != null && unfilteredCount() > rows.itemCount) {
+                            item("tableMoreResultsFooter") {
+                                moreResultsFooter()
                             }
                         }
                     }
-
-                    if (index != rows.itemCount - 1) {
-                        HorizontalDivider()
-                    }
                 }
 
-                if (moreResultsFooter != null && unfilteredCount() > rows.itemCount) {
-                    item("tableMoreResultsFooter") {
-                        moreResultsFooter()
-                    }
-                }
+                val verticalScrollbarState = rememberScrollbarState(listState)
+                PrimaryVerticalScrollbar(verticalScrollbarState)
             }
         }
+    }
+
+    @Composable
+    fun ColumnHeader(column: TwoWayGrid.Column) {
+        AutoSizeText(
+            text = stringResource(column.text),
+            modifier = Modifier.requiredWidth(column.size)
+                .then(DefaultCellPaddingModifier)
+        )
     }
 
     interface Column {

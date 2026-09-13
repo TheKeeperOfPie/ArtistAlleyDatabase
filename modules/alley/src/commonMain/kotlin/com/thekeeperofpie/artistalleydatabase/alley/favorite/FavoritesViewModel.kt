@@ -11,8 +11,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchColumn
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -109,7 +109,7 @@ class FavoritesViewModel(
     )
 
     val artistSearchState = SearchScreen.State(
-        columns = ArtistSearchScreen.ArtistColumn.entries,
+        columns = ArtistSearchColumn.entries,
         displayType = settings.displayType,
         showGridByDefault = settings.showGridByDefault,
         showRandomCatalogImage = settings.showRandomCatalogImage,

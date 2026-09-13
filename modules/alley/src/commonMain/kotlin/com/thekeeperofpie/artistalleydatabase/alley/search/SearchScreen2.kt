@@ -1,35 +1,24 @@
 package com.thekeeperofpie.artistalleydatabase.alley.search
 
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,194 +36,75 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
-import com.composeunstyled.rememberScrollbarState
-import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.Event
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryHorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollbarState
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.enums.EnumEntries
 
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalComposeUiApi::class
-)
-object SearchScreen2 {
-
-    @Composable
-    operator fun <EntryModel, ColumnType> invoke(
-        state: SearchScreen.State<ColumnType>,
-        eventSink: (Event<EntryModel>) -> Unit,
-        query: MutableStateFlow<String>,
-        entries: LazyPagingItems<EntryModel>,
-        unfilteredCount: () -> Int = { 0 },
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
-        sortFilterState: SortFilterState<*>,
-        gridState: LazyStaggeredGridState,
-        onClickBack: (() -> Unit)? = null,
-        title: () -> String? = { null },
-        actions: (@Composable RowScope.() -> Unit)? = null,
-        header: @Composable () -> Unit,
-        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
-        columnHeader: @Composable (column: ColumnType) -> Unit,
-        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
-    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        SearchScreen2(
-            state = state,
-            eventSink = eventSink,
-            entries = entries,
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun <EntryModel, ColumnType> SearchScreen2(
+    state: SearchScreen.State<ColumnType>,
+    eventSink: (Event<EntryModel>) -> Unit,
+    entries: LazyPagingItems<EntryModel>,
+    header: @Composable () -> Unit,
+    itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
+    modifier: Modifier = Modifier,
+    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+    gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
+    sortFilterState: SortFilterState<*>,
+    topBar: @Composable () -> Unit = {},
+    unfilteredCount: () -> Int = { 0 },
+    columnHeader: @Composable (column: ColumnType) -> Unit = { TwoWayGrid.ColumnHeader(it) },
+    tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+    noResultsItem: (@Composable () -> Unit)? = null,
+    moreResultsItem: (@Composable () -> Unit) = {
+        MoreResultsItem(
             unfilteredCount = unfilteredCount,
-            scaffoldState = scaffoldState,
-            sortFilterState = sortFilterState,
-            gridState = gridState,
-            onClickBack = onClickBack,
-            topBar = {
-                EnterAlwaysTopAppBarHeightChange(
-                    scrollBehavior = scrollBehavior,
-                    modifier = Modifier
-                        .animateEnterExit(
-                            enter = slideInVertically { -it },
-                            exit = slideOutVertically { -it },
-                        )
-                        .renderMaybeInSharedTransitionScopeOverlay(1f)
-                ) {
-                    DisplayTypeSearchBar(
-                        onClickBack = onClickBack,
-                        query = query,
-                        displayType = state.displayType,
-                        itemCount = { entries.itemCount },
-                        title = title,
-                        actions = actions,
-                    )
-                }
-            },
-            topBarScrollBehavior = scrollBehavior,
-            header = header,
-            itemRow = itemRow,
-            columnHeader = columnHeader,
-            tableCell = tableCell,
+            itemCount = { entries.itemCount },
+            onClick = { eventSink(Event.ClearFilters()) },
         )
-    }
-
-    @Composable
-    operator fun <EntryModel : SearchEntryModel, ColumnType> invoke(
-        state: SearchScreen.State<ColumnType>,
-        eventSink: (Event<EntryModel>) -> Unit,
-        entries: LazyPagingItems<EntryModel>,
-        unfilteredCount: () -> Int,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
-        sortFilterState: SortFilterState<*>,
-        gridState: LazyStaggeredGridState,
-        onClickBack: (() -> Unit)? = null,
-        topBar: @Composable () -> Unit,
-        topBarScrollBehavior: TopAppBarScrollBehavior,
-        header: @Composable () -> Unit,
-        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
-        columnHeader: @Composable (column: ColumnType) -> Unit,
-        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
-    ) where ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
-        val scope = rememberCoroutineScope()
-        BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-            scope.launch {
-                scaffoldState.bottomSheetState.partialExpand()
-            }
-        }
-
-        Box {
-            SortFilterBottomScaffold(
-                state = sortFilterState,
-                scaffoldState = scaffoldState,
-                sheetPeekHeight = 72.dp,
-                topBar = topBar,
-                // TODO: This breaks vertical scrolling with 1.12.0-beta03+
-//                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-            ) {
-                Content(
-                    state = state,
-                    eventSink = eventSink,
-                    entries = entries,
-                    unfilteredCount = unfilteredCount,
-                    gridState = gridState,
-                    scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
-                    header = header,
-                    itemRow = itemRow,
-                    columnHeader = columnHeader,
-                    tableCell = tableCell,
-                )
-            }
+    },
+) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
+    val scope = rememberCoroutineScope()
+    BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+        scope.launch {
+            scaffoldState.bottomSheetState.partialExpand()
         }
     }
-
-    @Composable
-    fun <EntryModel, ColumnType> Content(
-        state: SearchScreen.State<ColumnType>,
-        eventSink: (Event<EntryModel>) -> Unit,
-        entries: LazyPagingItems<EntryModel>,
-        unfilteredCount: () -> Int = { 0 },
-        gridState: LazyStaggeredGridState,
-        scaffoldPadding: PaddingValues,
-        header: @Composable () -> Unit,
-        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
-        columnHeader: @Composable (column: ColumnType) -> Unit = {
-            AutoSizeText(
-                text = stringResource(it.text),
-                modifier = Modifier.requiredWidth(it.size)
-                    .then(TwoWayGrid.modifierDefaultCellPadding)
-            )
-        },
-        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
-        noResultsItem: (@Composable () -> Unit)? = null,
-        moreResultsItem: (@Composable () -> Unit) = {
-            val filteredOut = unfilteredCount() - entries.itemCount
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    pluralStringResource(
-                        Res.plurals.alley_search_results_filtered_out,
-                        filteredOut,
-                        filteredOut,
-                    )
-                )
-                Button(onClick = { eventSink(Event.ClearFilters()) }) {
-                    Text(stringResource(Res.string.alley_search_clear_filters))
-                }
-            }
-        },
-    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
+    SortFilterBottomScaffold(
+        state = sortFilterState,
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 72.dp,
+        topBar = topBar,
+        modifier = modifier,
+        // TODO: This breaks vertical scrolling with 1.12.0-beta03+
+//                .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+    ) {
         val displayType by state.displayType.collectAsStateWithLifecycle()
         if (displayType == DisplayType.TABLE) {
-            Table(
+            TwoWayGrid(
                 header = header,
-                entries = entries,
+                rows = entries,
                 unfilteredCount = unfilteredCount,
                 columns = state.columns,
+                contentPadding = PaddingValues(bottom = 200.dp),
                 columnHeader = columnHeader,
                 tableCell = tableCell,
-                noResultsItem = noResultsItem,
-                moreResultsItem = moreResultsItem,
-                modifier = Modifier.padding(scaffoldPadding)
+                noResultsHeader = noResultsItem,
+                moreResultsFooter = moreResultsItem,
+                modifier = Modifier.fillMaxWidth()
             )
         } else {
             VerticalGrid(
@@ -246,150 +116,118 @@ object SearchScreen2 {
                 itemRow = itemRow,
                 noResultsItem = noResultsItem,
                 moreResultsItem = moreResultsItem,
-                modifier = Modifier.padding(scaffoldPadding)
             )
         }
     }
+}
 
-    @Composable
-    private fun <EntryModel, ColumnType> Table(
-        header: @Composable () -> Unit,
-        entries: LazyPagingItems<EntryModel>,
-        unfilteredCount: () -> Int,
-        columns: EnumEntries<ColumnType>,
-        columnHeader: @Composable (column: ColumnType) -> Unit,
-        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
-        modifier: Modifier = Modifier,
-        noResultsItem: (@Composable () -> Unit)? = null,
-        moreResultsItem: (@Composable () -> Unit)? = null,
-    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
-        val listState = rememberLazyListState()
-        Row(modifier = modifier.fillMaxWidth()) {
-            val verticalScrollbarState = rememberScrollbarState(listState)
-            val horizontalScrollState = rememberScrollState()
-            val horizontalScrollbarState = rememberScrollbarState(horizontalScrollState)
-            Column(modifier = Modifier.weight(1f)) {
-                val canScrollHorizontally by remember(horizontalScrollState) {
-                    if (!PlatformSpecificConfig.scrollbarsAlwaysVisible) {
-                        mutableStateOf(false)
-                    } else {
-                        derivedStateOf {
-                            horizontalScrollState.canScrollForward ||
-                                    horizontalScrollState.canScrollBackward
-                        }
-                    }
-                }
-                if (canScrollHorizontally) {
-                    PrimaryHorizontalScrollbar(horizontalScrollbarState)
-                }
+@Composable
+private fun <EntryModel : SearchEntryModel> VerticalGrid(
+    state: SearchScreen.State<*>,
+    header: @Composable () -> Unit,
+    entries: LazyPagingItems<EntryModel>,
+    unfilteredCount: () -> Int,
+    gridState: LazyStaggeredGridState,
+    modifier: Modifier = Modifier,
+    noResultsItem: (@Composable () -> Unit)? = null,
+    moreResultsItem: (@Composable () -> Unit)? = null,
+    itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
+) {
+    Row(modifier = modifier) {
+        var displayType by state.displayType.collectAsMutableStateWithLifecycle()
+        val forceOneDisplayColumn by state.forceOneDisplayColumn
+            .collectAsMutableStateWithLifecycle()
 
-                TwoWayGrid(
-                    header = header,
-                    rows = entries,
-                    unfilteredCount = unfilteredCount,
-                    columns = columns,
-                    listState = listState,
-                    horizontalScrollState = horizontalScrollState,
-                    contentPadding = PaddingValues(bottom = 200.dp),
-                    columnHeader = columnHeader,
-                    tableCell = tableCell,
-                    noResultsHeader = noResultsItem,
-                    moreResultsFooter = moreResultsItem,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-
-            PrimaryVerticalScrollbar(verticalScrollbarState)
+        val width = LocalWindowConfiguration.current.screenWidthDp
+        val horizontalContentPadding = if (width > 1200.dp) {
+            (width - 1200.dp) / 2
+        } else {
+            0.dp
         }
-    }
-
-    @Composable
-    private fun <EntryModel : SearchEntryModel> VerticalGrid(
-        state: SearchScreen.State<*>,
-        header: @Composable () -> Unit,
-        entries: LazyPagingItems<EntryModel>,
-        unfilteredCount: () -> Int,
-        gridState: LazyStaggeredGridState,
-        modifier: Modifier = Modifier,
-        noResultsItem: (@Composable () -> Unit)? = null,
-        moreResultsItem: (@Composable () -> Unit)? = null,
-        itemRow: @Composable (DisplayType, entry: EntryModel) -> Unit,
-    ) {
-        Row(modifier = modifier) {
-            var displayType by state.displayType.collectAsMutableStateWithLifecycle()
-            val forceOneDisplayColumn by state.forceOneDisplayColumn
-                .collectAsMutableStateWithLifecycle()
-
-            val width = LocalWindowConfiguration.current.screenWidthDp
-            val horizontalContentPadding = if (width > 1200.dp) {
-                (width - 1200.dp) / 2
-            } else {
-                0.dp
-            }
-            val scrollbarState = rememberScrollbarState(gridState)
-            LazyVerticalStaggeredGrid(
-                columns = displayType.columns(forceOneDisplayColumn),
-                state = gridState,
-                contentPadding = displayType.contentPadding(horizontalContentPadding),
-                verticalItemSpacing = displayType.verticalItemSpacing,
-                horizontalArrangement = displayType.horizontalArrangement,
-                modifier = Modifier.weight(1f)
-            ) {
-                item("header", span = StaggeredGridItemSpan.FullLine) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        header()
-                        if (entries.loadState.refresh is LoadState.Loading) {
-                            InfiniteProgressIndicator()
-                        }
+        val scrollbarState = rememberScrollbarState(gridState)
+        LazyVerticalStaggeredGrid(
+            columns = displayType.columns(forceOneDisplayColumn),
+            state = gridState,
+            contentPadding = displayType.contentPadding(horizontalContentPadding),
+            verticalItemSpacing = displayType.verticalItemSpacing,
+            horizontalArrangement = displayType.horizontalArrangement,
+            modifier = Modifier.weight(1f)
+        ) {
+            item("header", span = StaggeredGridItemSpan.FullLine) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    header()
+                    if (entries.loadState.refresh is LoadState.Loading) {
+                        InfiniteProgressIndicator()
                     }
                 }
+            }
 
-                if (entries.itemCount == 0) {
-                    if (entries.loadState.refresh !is LoadState.Loading) {
-                        if (moreResultsItem != null && unfilteredCount() > 0) {
-                            item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
-                                moreResultsItem()
-                            }
-                        } else {
-                            item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
-                                if (noResultsItem == null) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            text = stringResource(Res.string.alley_search_no_results),
-                                            modifier = Modifier.padding(16.dp)
-                                        )
-                                    }
-                                } else {
-                                    noResultsItem()
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    items(
-                        count = entries.itemCount,
-                        key = entries.itemKey { it.id.scopedId },
-                        contentType = entries.itemContentType { "search_entry" },
-                    ) { index ->
-                        val entry = entries[index] ?: return@items
-                        itemRow(displayType, entry)
-                    }
-
-                    if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
+            if (entries.itemCount == 0) {
+                if (entries.loadState.refresh !is LoadState.Loading) {
+                    if (moreResultsItem != null && unfilteredCount() > 0) {
                         item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
                             moreResultsItem()
                         }
+                    } else {
+                        item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
+                            if (noResultsItem == null) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.alley_search_no_results),
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            } else {
+                                noResultsItem()
+                            }
+                        }
+                    }
+                }
+            } else {
+                items(
+                    count = entries.itemCount,
+                    key = entries.itemKey { it.id.scopedId },
+                    contentType = entries.itemContentType { "search_entry" },
+                ) { index ->
+                    val entry = entries[index] ?: return@items
+                    itemRow(displayType, entry)
+                }
+
+                if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
+                    item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
+                        moreResultsItem()
                     }
                 }
             }
+        }
 
-            PrimaryVerticalScrollbar(scrollbarState = scrollbarState)
+        PrimaryVerticalScrollbar(scrollbarState = scrollbarState)
+    }
+}
+
+@Composable
+private fun MoreResultsItem(unfilteredCount: () -> Int, itemCount: () -> Int, onClick: () -> Unit) {
+    val filteredOut = unfilteredCount() - itemCount()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            pluralStringResource(
+                Res.plurals.alley_search_results_filtered_out,
+                filteredOut,
+                filteredOut,
+            )
+        )
+        Button(onClick = onClick) {
+            Text(stringResource(Res.string.alley_search_clear_filters))
         }
     }
 }

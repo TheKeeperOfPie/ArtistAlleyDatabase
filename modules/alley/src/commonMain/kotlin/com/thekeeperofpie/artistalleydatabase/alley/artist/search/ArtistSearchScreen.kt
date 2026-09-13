@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -35,8 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -45,14 +44,6 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_booth
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_commissions
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_merch
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_name
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_series
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_social_links
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_store_links
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_search_title_results_suffix
@@ -61,7 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistSearchItem
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
@@ -72,10 +62,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterData
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen2
-import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FeedbackHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
@@ -90,6 +81,8 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldMore
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -100,9 +93,8 @@ import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.text.get
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 object ArtistSearchScreen {
 
     @Composable
@@ -226,19 +218,29 @@ object ArtistSearchScreen {
                 .collectAsMutableStateWithLifecycle()
             SearchScreen2(
                 state = state.searchState,
-                eventSink = {
-                    eventSink(Event.SearchEvent(it))
-                },
-                query = state.query,
-                onClickBack = onClickBack,
+                eventSink = { eventSink(Event.SearchEvent(it)) },
                 entries = entries,
                 unfilteredCount = { unfilteredCount },
                 scaffoldState = scaffoldState,
                 sortFilterState = sortFilterState,
                 gridState = gridState,
-                title = { title },
                 header = header,
-                actions = actions,
+                topBar = {
+                    DisplayTypeSearchBar(
+                        onClickBack = onClickBack,
+                        query = state.query,
+                        displayType = state.searchState.displayType,
+                        itemCount = { entries.itemCount },
+                        title = { title },
+                        actions = actions,
+                        modifier = Modifier
+                            .animateEnterExit(
+                                enter = slideInVertically { -it },
+                                exit = slideOutVertically { -it },
+                            )
+                            .renderMaybeInSharedTransitionScopeOverlay(1f)
+                    )
+                },
                 itemRow = { displayType, entry ->
                     val onFavoriteToggle: (Boolean) -> Unit = {
                         entry.favorite = it
@@ -301,13 +303,13 @@ object ArtistSearchScreen {
 
     @Composable
     fun ColumnHeader(
-        column: ArtistColumn,
+        column: ArtistSearchColumn,
         sortOption: MutableStateFlow<ArtistSearchSortOption>,
         sortAscending: MutableStateFlow<Boolean>,
     ) {
         val columnSortOption = when (column) {
-            ArtistColumn.BOOTH -> ArtistSearchSortOption.BOOTH
-            ArtistColumn.NAME -> ArtistSearchSortOption.ARTIST
+            ArtistSearchColumn.BOOTH -> ArtistSearchSortOption.BOOTH
+            ArtistSearchColumn.NAME -> ArtistSearchSortOption.ARTIST
             else -> null
         }
         var sortOption by sortOption.collectAsMutableStateWithLifecycle()
@@ -323,7 +325,7 @@ object ArtistSearchScreen {
                         }
                     }
                 }
-                .then(TwoWayGrid.modifierDefaultCellPadding)
+                .then(TwoWayGrid.DefaultCellPaddingModifier)
         ) {
             AutoSizeText(
                 text = stringResource(column.text),
@@ -352,7 +354,7 @@ object ArtistSearchScreen {
     @Composable
     fun TableCell(
         row: ArtistEntryGridModel?,
-        column: ArtistColumn,
+        column: ArtistSearchColumn,
         series: () -> Map<String, GetSeriesTitles>,
         onEntryClick: (ArtistEntryGridModel, imageIndex: Int) -> Unit,
         onSeriesClick: (String) -> Unit,
@@ -362,19 +364,19 @@ object ArtistSearchScreen {
             .width(IntrinsicSize.Min)
             .height(IntrinsicSize.Min)
             .conditionallyNonNull(row) { clickable { onEntryClick(it, 1) } }
-            .then(TwoWayGrid.modifierDefaultCellPadding)
+            .then(TwoWayGrid.DefaultCellPaddingModifier)
         when (column) {
             // TODO: Dynamic minimum column size by measuring header text
-            ArtistColumn.BOOTH -> Box(clickableCellModifier) {
+            ArtistSearchColumn.BOOTH -> Box(clickableCellModifier) {
                 AutoSizeText(text = row?.booth.orEmpty())
             }
-            ArtistColumn.NAME -> Box(clickableCellModifier) {
+            ArtistSearchColumn.NAME -> Box(clickableCellModifier) {
                 Text(text = row?.artist?.name.orEmpty())
             }
-            ArtistColumn.SUMMARY -> Box(clickableCellModifier) {
+            ArtistSearchColumn.SUMMARY -> Box(clickableCellModifier) {
                 Text(text = row?.artist?.summary.orEmpty())
             }
-            ArtistColumn.SERIES -> {
+            ArtistSearchColumn.SERIES -> {
                 val shuffledSeries = row?.series
                 val languageOption = LocalLanguageOptionMedia.current
                 val series = series()
@@ -389,14 +391,14 @@ object ArtistSearchScreen {
                     onMoreClick = { if (row != null) onEntryClick(row, 1) },
                 )
             }
-            ArtistColumn.MERCH -> TagsCell(
+            ArtistSearchColumn.MERCH -> TagsCell(
                 column = column,
                 tags = row?.merch,
                 moreContentDescription = Res.string.alley_expand_merch,
                 onTagClick = onMerchClick,
                 onMoreClick = { if (row != null) onEntryClick(row, 1) },
             )
-            ArtistColumn.SOCIAL_LINKS -> row?.artist?.socialLinkModels?.let { socialLinkModels ->
+            ArtistSearchColumn.SOCIAL_LINKS -> row?.artist?.socialLinkModels?.let { socialLinkModels ->
                 val uriHandler = LocalUriHandler.current
                 Grid(socialLinkModels.size) {
                     val linkModel = socialLinkModels[it]
@@ -408,7 +410,7 @@ object ArtistSearchScreen {
                     )
                 }
             }
-            ArtistColumn.STORE_LINKS -> row?.artist?.storeLinkModels?.let { storeLinkModels ->
+            ArtistSearchColumn.STORE_LINKS -> row?.artist?.storeLinkModels?.let { storeLinkModels ->
                 val uriHandler = LocalUriHandler.current
                 Grid(count = storeLinkModels.size, columnCount = 2) {
                     val linkModel = storeLinkModels[it]
@@ -420,7 +422,7 @@ object ArtistSearchScreen {
                     )
                 }
             }
-            ArtistColumn.COMMISSIONS -> row?.artist?.commissionModels?.let {
+            ArtistSearchColumn.COMMISSIONS -> row?.artist?.commissionModels?.let {
                 Column {
                     val uriHandler = LocalUriHandler.current
                     it.forEach {
@@ -456,7 +458,7 @@ object ArtistSearchScreen {
 
     @Composable
     private fun TagsCell(
-        column: ArtistColumn,
+        column: ArtistSearchColumn,
         tags: List<String>?,
         moreContentDescription: StringResource,
         onTagClick: (String) -> Unit,
@@ -517,20 +519,6 @@ object ArtistSearchScreen {
         }
     }
 
-    enum class ArtistColumn(
-        override val size: Dp,
-        override val text: StringResource,
-    ) : TwoWayGrid.Column {
-        BOOTH(120.dp, Res.string.alley_artist_column_booth),
-        NAME(160.dp, Res.string.alley_artist_column_name),
-        SUMMARY(400.dp, Res.string.alley_artist_column_summary),
-        SERIES(288.dp, Res.string.alley_artist_column_series),
-        MERCH(144.dp, Res.string.alley_artist_column_merch),
-        SOCIAL_LINKS(144.dp, Res.string.alley_artist_column_social_links),
-        STORE_LINKS(96.dp, Res.string.alley_artist_column_store_links),
-        COMMISSIONS(144.dp, Res.string.alley_artist_column_commissions),
-    }
-
     @Stable
     class State(
         val lockedSeriesEntry: StateFlow<SeriesInfo?>,
@@ -543,7 +531,7 @@ object ArtistSearchScreen {
         val unfilteredCount: StateFlow<Int>,
         val sortOption: MutableStateFlow<ArtistSearchSortOption>,
         val sortAscending: MutableStateFlow<Boolean>,
-        val searchState: SearchScreen.State<ArtistColumn>,
+        val searchState: SearchScreen.State<ArtistSearchColumn>,
     ) {
         constructor(
             viewModel: ArtistSearchViewModel,
@@ -592,8 +580,8 @@ object ArtistSearchScreen {
             unfilteredCount = MutableStateFlow(1000),
             sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
             sortAscending = MutableStateFlow(false),
-            searchState = SearchScreen.State<ArtistColumn>(
-                columns = ArtistColumn.entries,
+            searchState = SearchScreen.State(
+                columns = ArtistSearchColumn.entries,
                 displayType = MutableStateFlow(DisplayType.CARD),
                 showGridByDefault = MutableStateFlow(false),
                 showRandomCatalogImage = MutableStateFlow(false),
