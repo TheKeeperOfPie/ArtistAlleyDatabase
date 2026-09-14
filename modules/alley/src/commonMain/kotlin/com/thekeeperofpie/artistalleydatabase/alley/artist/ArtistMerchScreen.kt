@@ -56,10 +56,7 @@ object ArtistMerchScreen {
         artistSearchViewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
             create(
                 lockedYear = route.year,
-                lockedSeries = null,
                 lockedMerch = route.merch,
-                isRoot = false,
-                lockedSerializedBooths = null,
                 savedStateHandle = it.createSavedStateHandle(),
             )
         },

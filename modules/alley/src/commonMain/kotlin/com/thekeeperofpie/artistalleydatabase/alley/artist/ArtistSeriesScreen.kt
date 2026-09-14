@@ -61,9 +61,6 @@ object ArtistSeriesScreen {
             create(
                 lockedYear = route.year,
                 lockedSeries = route.series,
-                lockedMerch = null,
-                isRoot = false,
-                lockedSerializedBooths = null,
                 savedStateHandle = it.createSavedStateHandle(),
             )
         },

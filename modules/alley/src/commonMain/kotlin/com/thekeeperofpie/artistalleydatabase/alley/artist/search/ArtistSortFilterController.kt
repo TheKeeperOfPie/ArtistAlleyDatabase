@@ -74,7 +74,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
@@ -86,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transformFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -449,38 +449,23 @@ class ArtistSortFilterController(
         )
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private val filterParams = combineStates(
-        sortOption,
-        settings.artistsSortAscending,
-        lockedSeriesEntry,
-        seriesAutocompleteSection.seriesIn,
-        merchIdIn,
-        commissionsIn,
-        linkTypeIdIn,
-        exhibitorTagsIn,
-        settings.artistTagsIn,
-        settings.artistTagsNotIn,
-        showOnlyConfirmedTags,
-        showOutdatedCatalogs,
-        hideFavorited,
-        hideIgnored,
-    ) {
+    val filterParams = transformFlow(scope) {
+        val seriesIn = setOfNotNull(lockedSeriesEntry.collectAsState().value?.rowid) +
+                seriesAutocompleteSection.seriesIn.collectAsState().value.map { it.rowid }
         FilterParams(
-            sortOption = it[0] as ArtistSearchSortOption,
-            sortAscending = it[1] as Boolean,
-            seriesIn = setOfNotNull((it[2] as SeriesInfo?)?.rowid) +
-                    (it[3] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.rowid },
-            merchIn = (it[4] as Set<String>) + setOfNotNull(lockedMerchId),
-            commissionsIn = it[5] as Set<CommissionType>,
-            linkTypesIn = (it[6] as Set<String>).map(Link.Type::valueOf).toSet(),
-            exhibitorTagsIn = it[7] as Set<String>,
-            artistTagsIn = it[8] as Set<ArtistTag>,
-            artistTagsNotIn = it[9] as Set<ArtistTag>,
-            showOnlyConfirmedTags = it[10] as Boolean,
-            showOutdatedCatalogs = it[11] as Boolean,
-            hideFavorited = it[12] as Boolean,
-            hideIgnored = it[13] as Boolean,
+            sortOption = sortOption.collectAsState().value,
+            sortAscending = sortAscending.collectAsState().value,
+            seriesIn = seriesIn,
+            merchIn = merchIdIn.collectAsState().value + setOfNotNull(lockedMerchId),
+            commissionsIn = commissionsIn.collectAsState().value,
+            linkTypesIn = linkTypeIdIn.collectAsState().value.map(Link.Type::valueOf).toSet(),
+            exhibitorTagsIn = exhibitorTagsIn.collectAsState().value,
+            artistTagsIn = settings.artistTagsIn.collectAsState().value,
+            artistTagsNotIn = settings.artistTagsNotIn.collectAsState().value,
+            showOnlyConfirmedTags = showOnlyConfirmedTags.collectAsState().value,
+            showOutdatedCatalogs = showOutdatedCatalogs.collectAsState().value,
+            hideFavorited = hideFavorited.collectAsState().value,
+            hideIgnored = hideIgnored.collectAsState().value,
         )
     }
 
