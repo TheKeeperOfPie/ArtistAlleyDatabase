@@ -15,3 +15,5 @@ annotation class ActivityScope
     AnnotationTarget.TYPE,
 )
 annotation class Named(val value: String)
+
+abstract class NavigatorScope private constructor()

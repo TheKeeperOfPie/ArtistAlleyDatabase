@@ -7,6 +7,11 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -18,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
@@ -25,12 +31,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
-import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
-import dev.zacsweers.metro.Named
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,11 +64,12 @@ class ArtistSearchViewModel(
     private val seriesImageLoader: SeriesImageLoader,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
-    @Assisted val lockedYear: DataYear?,
-    @Assisted @Named("lockedSeries") lockedSeries: String?,
-    @Assisted @Named("lockedMerch") val lockedMerch: String?,
+    private val navStack: AlleyNavStack,
     @Assisted isRoot: Boolean,
-    @Assisted @Named("lockedSerializedBooths") lockedSerializedBooths: String?,
+    @Assisted val lockedYear: DataYear?,
+    @Assisted lockedSeries: String?,
+    @Assisted val lockedMerch: String?,
+    @Assisted lockedSerializedBooths: String?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -235,16 +240,46 @@ class ArtistSearchViewModel(
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
+    fun onEvent(event: ArtistSearchScreen.Event) {
+        when (event) {
+            ArtistSearchScreen.Event.Back -> navStack.onBack()
+            ArtistSearchScreen.Event.ClearFilters -> sortFilterController.clear()
+            is ArtistSearchScreen.Event.FavoriteToggle ->
+                toggleFavorite(event.entry, event.favorite)
+            is ArtistSearchScreen.Event.IgnoreToggle ->
+                toggleIgnored(event.entry, event.ignored)
+            ArtistSearchScreen.Event.OpenChangelog ->
+                navStack.navigate(AlleyDestination.ArtistChangelog(year.value))
+            is ArtistSearchScreen.Event.OpenEntry ->
+                navStack.navigate(ArtistDetails(event.entry.artist, event.imageIndex))
+            ArtistSearchScreen.Event.OpenExport ->
+                navStack.navigate(AlleyDestination.Export(year.value))
+            is ArtistSearchScreen.Event.OpenImageFullscreen ->
+                navStack.navigate(
+                    AlleyDestination.Images.fromArtist(
+                        artistWithUserData = event.entry.data,
+                        showOutdatedCatalogs = sortFilterController.showOutdatedCatalogs.value,
+                        imageIndex = event.imageIndex,
+                    )
+                )
+            is ArtistSearchScreen.Event.OpenMerch ->
+                navStack.navigate(Merch(year.value, event.merch))
+            is ArtistSearchScreen.Event.OpenSeries ->
+                navStack.navigate(Series(year.value, event.series))
+            ArtistSearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
+        }
+    }
+
     @AssistedFactory
     @ManualViewModelAssistedFactoryKey
-    @ContributesIntoMap(AppScope::class)
+    @ContributesIntoMap(NavigatorScope::class)
     interface Factory : ManualViewModelAssistedFactory {
         fun create(
-            lockedYear: DataYear?,
-            @Named("lockedSeries") lockedSeries: String?,
-            @Named("lockedMerch") lockedMerch: String?,
-            isRoot: Boolean,
-            @Named("lockedSerializedBooths") lockedSerializedBooths: String?,
+            isRoot: Boolean = false,
+            lockedYear: DataYear? = null,
+            lockedSeries: String? = null,
+            lockedMerch: String? = null,
+            lockedSerializedBooths: String? = null,
             savedStateHandle: SavedStateHandle,
         ): ArtistSearchViewModel
     }

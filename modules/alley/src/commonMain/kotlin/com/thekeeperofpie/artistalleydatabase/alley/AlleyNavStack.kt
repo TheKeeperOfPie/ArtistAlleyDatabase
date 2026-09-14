@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -60,7 +60,7 @@ fun rememberAlleyNavStack(vararg initialDestinations: AlleyDestination): AlleyNa
         *initialDestinations.ifEmpty { arrayOf(AlleyDestination.Home) },
         savedStateConfiguration = SavedStateConfig,
     )
-    return remember(twoWayStack) { AlleyNavStack(twoWayStack) }
+    return retain(twoWayStack) { AlleyNavStack(twoWayStack) }
 }
 
 @Stable

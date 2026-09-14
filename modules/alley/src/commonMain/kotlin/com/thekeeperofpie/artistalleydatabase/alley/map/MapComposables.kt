@@ -311,7 +311,7 @@ fun SingleTablePopup(
     modifier: Modifier = Modifier,
 ) {
     val ignored = entry.ignored
-    val images = entry.displayImages(showOutdatedCatalogs())
+    val images = entry.data.displayImages(showOutdatedCatalogs())
     val imagesSize = images.size
     val pagerState = rememberPagerState(
         initialPage = imageIndex?.coerceAtMost(imagesSize) ?: 0,
@@ -380,7 +380,7 @@ fun SingleTablePopup(
             }
         }
 
-        if (entry.showingFallback(showOutdatedCatalogs())) {
+        if (entry.data.showingFallback(showOutdatedCatalogs())) {
             Box(
                 contentAlignment = Alignment.BottomCenter,
                 modifier = modifier

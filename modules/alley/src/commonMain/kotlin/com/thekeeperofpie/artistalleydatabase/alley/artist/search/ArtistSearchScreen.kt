@@ -46,10 +46,8 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_search_title_results_suffix
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistSearchItem
@@ -66,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FeedbackHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
@@ -100,29 +99,14 @@ object ArtistSearchScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
-        lockedYear: DataYear?,
         isRoot: Boolean,
-        lockedSerializedBooths: String?,
-        onClickBack: (() -> Unit)?,
-        onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
-        onOpenArtistImageFullscreen: (
-            artist: ArtistEntryGridModel,
-            imageIndex: Int?,
-            showOutdatedCatalogs: Boolean,
-        ) -> Unit,
-        onOpenMerch: (DataYear, String) -> Unit,
-        onOpenSeries: (DataYear, String) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
-        onOpenChangelog: (DataYear) -> Unit,
-        onOpenSettings: () -> Unit,
+        lockedYear: DataYear? = null,
+        lockedSerializedBooths: String? = null,
+        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         viewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
             create(
                 lockedYear = lockedYear,
-                lockedSeries = null,
-                lockedMerch = null,
                 isRoot = isRoot,
                 lockedSerializedBooths = lockedSerializedBooths,
                 savedStateHandle = it.createSavedStateHandle(),
@@ -141,40 +125,10 @@ object ArtistSearchScreen {
             sortFilterState = sortFilterController.state,
             series = { series },
             showOutdatedCatalogs = { showOutdatedCatalogs },
-            eventSink = {
-                when (it) {
-                    is Event.FavoriteToggle ->
-                        viewModel.toggleFavorite(it.entry, it.favorite)
-                    is Event.IgnoreToggle ->
-                        viewModel.toggleIgnored(it.entry, it.ignored)
-                    is Event.OpenEntry ->
-                        onOpenArtist(it.entry.artist, it.imageIndex)
-                    is Event.OpenImageFullscreen ->
-                        onOpenArtistImageFullscreen(
-                            it.entry,
-                            it.imageIndex,
-                            showOutdatedCatalogs
-                        )
-                    is Event.ClearFilters -> sortFilterController.clear()
-                    is Event.OpenMerch -> onOpenMerch(viewModel.year.value, it.merch)
-                    is Event.OpenSeries -> onOpenSeries(viewModel.year.value, it.series)
-                }
-            },
-            onClickBack,
-            header = {
-                Column {
-                    ConventionCountdownHeader(dataYearHeaderState.year, onOpenExport)
-                    FeedbackHeader(dataYearHeaderState.year)
-                    BottomSheetFilterDataYearHeader(
-                        dataYearHeaderState = dataYearHeaderState,
-                        scaffoldState = scaffoldState,
-                        onOpenChangelog = onOpenChangelog,
-                        onOpenSettings = onOpenSettings,
-                    )
-                }
-            },
-            scaffoldState,
-            scrollStateSaver,
+            eventSink = viewModel::onEvent,
+            header = { Header(dataYearHeaderState, scaffoldState, viewModel::onEvent) },
+            scaffoldState = scaffoldState,
+            scrollStateSaver = scrollStateSaver,
         )
     }
 
@@ -185,7 +139,6 @@ object ArtistSearchScreen {
         series: () -> Map<String, GetSeriesTitles>,
         showOutdatedCatalogs: () -> Boolean,
         eventSink: (Event) -> Unit,
-        onClickBack: (() -> Unit)?,
         header: @Composable () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
@@ -230,7 +183,7 @@ object ArtistSearchScreen {
                 header = header,
                 topBar = {
                     DisplayTypeSearchBar(
-                        onClickBack = onClickBack,
+                        onClickBack = { eventSink(Event.Back) },
                         query = state.query,
                         displayType = state.searchState.displayType,
                         itemCount = { entries.itemCount },
@@ -252,15 +205,9 @@ object ArtistSearchScreen {
                         showRandomCatalogImage = showRandomCatalogImage,
                         blockCrossAxisScrolling = { gridState.isScrollInProgress },
                         showOutdatedCatalogs = showOutdatedCatalogs,
-                        onFavoriteToggle = {
-                            eventSink(Event.FavoriteToggle(entry, it))
-                        },
-                        onIgnoredToggle = {
-                            eventSink(Event.IgnoreToggle(entry, it))
-                        },
-                        onClick = { imageIndex ->
-                            eventSink(Event.OpenEntry(entry, imageIndex))
-                        },
+                        onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
+                        onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },
+                        onClick = { imageIndex -> eventSink(Event.OpenEntry(entry, imageIndex)) },
                         onClickFullscreen = { imageIndex ->
                             eventSink(Event.OpenImageFullscreen(entry, imageIndex))
                         },
@@ -294,6 +241,27 @@ object ArtistSearchScreen {
                         onClick = { eventSink(Event.ClearFilters) },
                     )
                 }
+            )
+        }
+    }
+
+    @Composable
+    private fun Header(
+        dataYearHeaderState: DataYearHeaderState,
+        scaffoldState: BottomSheetScaffoldState,
+        eventSink: (Event) -> Unit
+    ) {
+        Column {
+            ConventionCountdownHeader(
+                dataYearHeaderState.year,
+                onOpenExport = { eventSink(Event.OpenExport) },
+            )
+            FeedbackHeader(dataYearHeaderState.year)
+            BottomSheetFilterDataYearHeader(
+                dataYearHeaderState = dataYearHeaderState,
+                scaffoldState = scaffoldState,
+                onOpenChangelog = { eventSink(Event.OpenChangelog) },
+                onOpenSettings = { eventSink(Event.OpenSettings) },
             )
         }
     }
@@ -549,29 +517,17 @@ object ArtistSearchScreen {
     }
 
     sealed interface Event {
-        data class FavoriteToggle(
-            val entry: ArtistEntryGridModel,
-            val favorite: Boolean,
-        ) : Event
-
-        data class IgnoreToggle(
-            val entry: ArtistEntryGridModel,
-            val ignored: Boolean,
-        ) : Event
-
-        data class OpenEntry(
-            val entry: ArtistEntryGridModel,
-            val imageIndex: Int,
-        ) : Event
-
-        data class OpenImageFullscreen(
-            val entry: ArtistEntryGridModel,
-            val imageIndex: Int,
-        ) : Event
-
-        data object ClearFilters : Event
-        data class OpenSeries(val series: String) : Event
+        data class FavoriteToggle(val entry: ArtistEntryGridModel, val favorite: Boolean) : Event
+        data class IgnoreToggle(val entry: ArtistEntryGridModel, val ignored: Boolean) : Event
+        data class OpenEntry(val entry: ArtistEntryGridModel, val imageIndex: Int) : Event
+        data class OpenImageFullscreen(val entry: ArtistEntryGridModel, val imageIndex: Int) : Event
         data class OpenMerch(val merch: String) : Event
+        data class OpenSeries(val series: String) : Event
+        data object Back : Event
+        data object ClearFilters : Event
+        data object OpenChangelog : Event
+        data object OpenExport : Event
+        data object OpenSettings : Event
     }
 
     @AlleyPreview
@@ -618,7 +574,6 @@ object ArtistSearchScreen {
             series = { emptyMap() },
             showOutdatedCatalogs = { true },
             eventSink = {},
-            onClickBack = {},
             header = {
                 BottomSheetFilterDataYearHeader(
                     dataYearHeaderState = dataYearHeaderState,

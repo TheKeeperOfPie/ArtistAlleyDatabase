@@ -21,7 +21,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_open_rallies
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen.Event
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
@@ -79,7 +78,6 @@ object ArtistSeriesScreen {
         ArtistSeriesScreen(
             artistSearchViewModel = artistSearchViewModel,
             artistSeriesViewModel = artistSeriesViewModel,
-            sortFilterController = artistSearchViewModel.sortFilterController,
             onClickBack = onClickBack,
             scrollStateSaver = scrollStateSaver,
             showRalliesButton = { hasRallies },
@@ -100,7 +98,6 @@ object ArtistSeriesScreen {
     operator fun invoke(
         artistSearchViewModel: ArtistSearchViewModel,
         artistSeriesViewModel: ArtistSeriesViewModel,
-        sortFilterController: ArtistSortFilterController,
         onClickBack: (() -> Unit)?,
         scrollStateSaver: ScrollStateSaver,
         showRalliesButton: () -> Boolean,
@@ -118,6 +115,7 @@ object ArtistSeriesScreen {
         onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     ) {
+        val sortFilterController = artistSearchViewModel.sortFilterController
         val state = remember(artistSearchViewModel, sortFilterController) {
             ArtistSearchScreen.State(artistSearchViewModel, sortFilterController)
         }
@@ -130,22 +128,7 @@ object ArtistSeriesScreen {
             series = { series },
             sortFilterState = sortFilterController.state,
             showOutdatedCatalogs = { showOutdatedCatalogs },
-            eventSink = {
-                when (it) {
-                    is Event.OpenMerch -> onOpenMerch(artistSearchViewModel.year.value, it.merch)
-                    is Event.OpenSeries -> onOpenSeries(artistSearchViewModel.year.value, it.series)
-                    is Event.FavoriteToggle ->
-                        artistSearchViewModel.toggleFavorite(it.entry, it.favorite)
-                    is Event.IgnoreToggle ->
-                        artistSearchViewModel.toggleIgnored(it.entry, it.ignored)
-                    is Event.OpenEntry ->
-                        onOpenArtist(it.entry.artist, it.imageIndex)
-                    is Event.OpenImageFullscreen ->
-                        onOpenArtistImageFullscreen(it.entry, it.imageIndex, showOutdatedCatalogs)
-                    is Event.ClearFilters -> sortFilterController.clear()
-                }
-            },
-            onClickBack = onClickBack,
+            eventSink = artistSearchViewModel::onEvent,
             header = {
                 Header(
                     state = state,

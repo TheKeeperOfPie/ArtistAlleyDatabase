@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -83,6 +84,36 @@ sealed interface AlleyDestination : NavKey {
         val showOpenButton: Boolean,
         val changelogDate: String? = null,
     ) : AlleyDestination {
+
+        companion object {
+            fun fromArtist(
+                artistWithUserData: ArtistWithUserData,
+                showOutdatedCatalogs: Boolean,
+                imageIndex: Int? = null,
+            ): Images {
+                val artist = artistWithUserData.artist
+                val images = artistWithUserData.displayImages(showOutdatedCatalogs)
+                val showingFallback = artistWithUserData.showingFallback(showOutdatedCatalogs)
+                return Images(
+                    year = if (showingFallback) {
+                        artistWithUserData.artist.fallbackImageYear ?: artistWithUserData.artist.year
+                    } else {
+                        artist.year
+                    },
+                    id = artist.id,
+                    type =Type.Artist(
+                        id = artist.id,
+                        booth = artist.booth,
+                        profileImage = artistWithUserData.profileImage,
+                        name = artist.name,
+                        showingFallback = showingFallback,
+                    ),
+                    images = images,
+                    initialImageIndex = imageIndex,
+                    showOpenButton = true,
+                )
+            }
+        }
 
         @Serializable
         sealed interface Type {
@@ -272,7 +303,7 @@ sealed interface AlleyDestination : NavKey {
                             }
                         }
                     }
-                    "export" -> Export( parts.getOrNull(1).toDataYearOrLatest())
+                    "export" -> Export(parts.getOrNull(1).toDataYearOrLatest())
                     "images" -> {
                         val dataYear = parts.getOrNull(1).toDataYearOrNull() ?: return null
                         val isStampRally = when (parts.getOrNull(2)) {

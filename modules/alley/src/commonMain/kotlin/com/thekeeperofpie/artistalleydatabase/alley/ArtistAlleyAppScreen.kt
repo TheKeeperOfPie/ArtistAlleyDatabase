@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -78,11 +79,14 @@ object ArtistAlleyAppScreen {
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
             val languageOption by graph.settings.languageOption
                 .collectAsStateWithLifecycle()
+            val navigatorGraph = retain(graph, navStack) {
+                graph.navigatorGraphFactory.create(navStack)
+            }
             CompositionLocalProvider(
                 LocalSharedTransitionScope provides this,
                 LocalNavigationResults provides rememberNavigationResults(),
                 LocalLanguageOptionMedia provides languageOption,
-                LocalMetroViewModelFactory provides graph.metroViewModelFactory,
+                LocalMetroViewModelFactory provides navigatorGraph.metroViewModelFactory,
             ) {
                 val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
                 DisposableEffect(navigationEventDispatcherOwner, navStack) {
@@ -120,31 +124,16 @@ object ArtistAlleyAppScreen {
                 AlleyDestination.ArtistDetails(entry, imageIndex)
             )
         }
-        val onOpenArtistImageFullscreen = { entry: ArtistEntryGridModel, imageIndex: Int?, showOutdatedCatalogs: Boolean ->
-            val artist = entry.artist
-            val images = entry.displayImages(showOutdatedCatalogs)
-            val showingFallback = entry.showingFallback(showOutdatedCatalogs)
-            navStack.navigate(
-                AlleyDestination.Images(
-                    year = if (showingFallback) {
-                        artist.fallbackImageYear ?: artist.year
-                    } else {
-                        artist.year
-                    },
-                    id = artist.id,
-                    type = AlleyDestination.Images.Type.Artist(
-                        id = artist.id,
-                        booth = artist.booth,
-                        profileImage = entry.data.profileImage,
-                        name = artist.name,
-                        showingFallback = showingFallback,
-                    ),
-                    images = images,
-                    initialImageIndex = imageIndex,
-                    showOpenButton = true,
+        val onOpenArtistImageFullscreen =
+            { entry: ArtistEntryGridModel, imageIndex: Int?, showOutdatedCatalogs: Boolean ->
+                navStack.navigate(
+                    AlleyDestination.Images.fromArtist(
+                        artistWithUserData = entry.data,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        imageIndex = imageIndex,
+                    )
                 )
-            )
-        }
+            }
         val onOpenSeries = { year: DataYear?, series: String ->
             navStack.navigate(
                 AlleyDestination.Series(year, series)
@@ -358,19 +347,10 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.ArtistsList> {
                 ArtistSearchScreen(
-                    graph = graph,
                     lockedYear = it.year,
                     isRoot = false,
                     lockedSerializedBooths = it.serializedBooths,
                     scrollStateSaver = ScrollStateSaver(),
-                    onClickBack = navStack::onBack,
-                    onOpenArtist = onOpenArtist,
-                    onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
-                    onOpenMerch = onOpenMerch,
-                    onOpenSeries = onOpenSeries,
-                    onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenArtistChangelog,
-                    onOpenSettings = onOpenSettings,
                 )
             }
 

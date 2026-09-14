@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -30,12 +29,6 @@ class ArtistEntryGridModel(
     override val title get() = artist.name
 
     override val hasCatalog = artist.images.isNotEmpty()
-
-    fun showingFallback(showOutdatedCatalogs: Boolean): Boolean =
-        showOutdatedCatalogs && !hasCatalog && fallbackImages.isNotEmpty()
-
-    fun displayImages(showOutdatedCatalogs: Boolean): List<CatalogImage> =
-        if (showingFallback(showOutdatedCatalogs)) fallbackImages else images
 
     companion object {
 

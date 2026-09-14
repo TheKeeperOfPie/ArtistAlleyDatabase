@@ -94,18 +94,7 @@ object AlleyRootScreen {
                 when (destination) {
                     AlleyRootDestination.ARTISTS ->
                         ArtistSearchScreen(
-                            graph = graph,
-                            lockedYear = null,
                             isRoot = true,
-                            lockedSerializedBooths = null,
-                            onClickBack = null,
-                            onOpenArtist = onOpenArtist,
-                            onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
-                            onOpenMerch = onOpenMerch,
-                            onOpenSeries = onOpenSeries,
-                            onOpenExport = onOpenExport,
-                            onOpenChangelog = onOpenArtistChangelog,
-                            onOpenSettings = onOpenSettings,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.ARTISTS.name,
                                 scrollPositions,

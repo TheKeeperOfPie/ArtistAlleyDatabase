@@ -32,9 +32,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewMo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
-import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.GraphExtension
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provider
@@ -46,7 +47,7 @@ import dev.zacsweers.metrox.viewmodel.ViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import kotlin.reflect.KClass
 
-interface ArtistAlleyGraph : ViewModelGraph {
+interface ArtistAlleyGraph {
 
     val artistDetailsViewModelFactory: ArtistDetailsViewModel.Factory
     val artistMapViewModelFactory: ArtistMapViewModel.Factory
@@ -81,15 +82,26 @@ interface ArtistAlleyGraph : ViewModelGraph {
 
     val settings: ArtistAlleySettings
     val aboutLibrariesProviders: Set<AboutLibrariesProvider>
+    
+    val navigatorGraphFactory: ArtistAlleyNavigatorGraph.Factory
 
     @IntoSet
     @Provides
     fun provideAlleyAboutLibrariesProvider(): AboutLibrariesProvider = AlleyAboutLibrariesProvider
 }
 
+@GraphExtension(NavigatorScope::class)
+interface ArtistAlleyNavigatorGraph : ViewModelGraph {
+
+    @GraphExtension.Factory
+    interface Factory {
+        fun create(@Provides navStack: AlleyNavStack): ArtistAlleyNavigatorGraph
+    }
+}
+
 @Inject
-@ContributesBinding(AppScope::class)
-@SingleIn(AppScope::class)
+@ContributesBinding(NavigatorScope::class)
+@SingleIn(NavigatorScope::class)
 class ViewModelFactory(
     override val viewModelProviders: Map<KClass<out ViewModel>, () -> ViewModel>,
     override val assistedFactoryProviders: Map<KClass<out ViewModel>, () -> ViewModelAssistedFactory>,

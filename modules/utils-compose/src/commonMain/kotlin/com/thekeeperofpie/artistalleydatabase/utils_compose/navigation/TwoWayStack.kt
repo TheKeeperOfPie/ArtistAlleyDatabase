@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.key
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -24,7 +24,7 @@ fun rememberTwoWayStack(
         *initialDestinations,
     )
     val forwardStack = rememberNavBackStack(savedStateConfiguration)
-    return remember(backStack, forwardStack) {
+    return retain(backStack, forwardStack) {
         TwoWayStack(backStack, forwardStack)
     }
 }
