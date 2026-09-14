@@ -36,9 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.GraphExtension
-import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.IntoSet
-import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
@@ -62,7 +60,7 @@ interface ArtistAlleyGraph {
     val favoriteRalliesChangelogViewModelFactory: FavoriteRalliesChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory
     val favoritesMapViewModelFactory: FavoritesMapViewModel.Factory
-    val imagesViewModel: Provider<ImagesViewModel>
+    val imagesViewModel: () -> ImagesViewModel
     val importViewModelFactory: ImportViewModel.Factory
     val mapViewModelFactory: MapViewModel.Factory
     val merchChangelogViewModelFactory: () -> MerchChangelogViewModel
@@ -77,8 +75,8 @@ interface ArtistAlleyGraph {
     val tagsViewModelFactory: TagsViewModel.Factory
 
     val metricsViewModel: () -> MetricsViewModel
-    val alleySettingsViewModel: Provider<AlleySettingsViewModel>
-    val qrCodeViewModel: Provider<QrCodeViewModel>
+    val alleySettingsViewModel: () -> AlleySettingsViewModel
+    val qrCodeViewModel: () -> QrCodeViewModel
 
     val settings: ArtistAlleySettings
     val aboutLibrariesProviders: Set<AboutLibrariesProvider>
@@ -99,7 +97,6 @@ interface ArtistAlleyNavigatorGraph : ViewModelGraph {
     }
 }
 
-@Inject
 @ContributesBinding(NavigatorScope::class)
 @SingleIn(NavigatorScope::class)
 class ViewModelFactory(

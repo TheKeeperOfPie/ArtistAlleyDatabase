@@ -15,15 +15,14 @@ import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.IntoSet
-import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 
 interface CdEntryComponent {
 
-    val cdSearchViewModel: Provider<CdSearchViewModel>
-    val cdBrowseSelectionViewModel: Provider<CdBrowseSelectionViewModel>
-    val cdEntryDetailsViewModel: Provider<CdEntryDetailsViewModel>
+    val cdSearchViewModel: () -> CdSearchViewModel
+    val cdBrowseSelectionViewModel: () -> CdBrowseSelectionViewModel
+    val cdEntryDetailsViewModel: () -> CdEntryDetailsViewModel
     val cdsFromMediaViewModelFactory: CdsFromMediaViewModel.Factory
 
     @SingleIn(AppScope::class)

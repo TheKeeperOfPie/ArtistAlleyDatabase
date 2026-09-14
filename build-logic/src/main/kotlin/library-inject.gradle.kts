@@ -1,5 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
+import dev.zacsweers.metro.gradle.DiagnosticSeverity
 import dev.zacsweers.metro.gradle.RequiresIdeSupport
 
 plugins {
@@ -19,4 +20,7 @@ kotlin {
 @OptIn(RequiresIdeSupport::class)
 metro {
     generateAssistedFactories.set(true)
+    generateContributionProviders.set(true)
+    unusedGraphInputsSeverity.set(DiagnosticSeverity.ERROR)
+    desugaredProviderSeverity.set(DiagnosticSeverity.ERROR)
 }

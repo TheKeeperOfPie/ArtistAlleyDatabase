@@ -7,11 +7,9 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 import io.ktor.client.HttpClient
 import kotlin.uuid.Uuid
 
-@Inject
 @ContributesBinding(AppScope::class)
 class FormImageUploader(buildConfig: BuildConfig, httpClient: HttpClient) :
     ImageUploader(buildConfig, httpClient) {

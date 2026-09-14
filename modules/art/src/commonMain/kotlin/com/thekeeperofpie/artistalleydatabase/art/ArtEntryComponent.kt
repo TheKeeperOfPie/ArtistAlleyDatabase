@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
-import androidx.lifecycle.SavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabArtists
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabCharacters
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabSeries
@@ -23,15 +22,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.IntoSet
-import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 
 interface ArtEntryComponent {
 
-    val artSearchViewModel: Provider<ArtSearchViewModel>
-    val artBrowseSelectionViewModel: Provider<ArtBrowseSelectionViewModel>
-    val artEntryDetailsViewModel: Provider<ArtEntryDetailsViewModel>
+    val artSearchViewModel: () -> ArtSearchViewModel
+    val artBrowseSelectionViewModel: () -> ArtBrowseSelectionViewModel
+    val artEntryDetailsViewModel: () -> ArtEntryDetailsViewModel
     val artEntryDetailsViewModel2Factory: ArtEntryDetailsViewModel2.Factory
 
     @SingleIn(AppScope::class)

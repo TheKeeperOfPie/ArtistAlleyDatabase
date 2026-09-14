@@ -2,8 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation.NavType
-import com.anilist.data.type.MediaListStatus
-import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersComponent
@@ -17,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.AnimeIgnoreDao
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.MangaUserListSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
@@ -26,7 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSearchSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSearchSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsComponent
@@ -43,7 +39,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.IntoSet
-import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import kotlin.reflect.KType
@@ -70,12 +65,12 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaRecommendationsViewModelFactoryFactory: MediaRecommendationsViewModel.TypedFactory.Factory
     val animeSortFilterViewModelFactoryFactory: AnimeSortFilterViewModel.TypedFactory.Factory
 
-    val animeHomeMediaViewModelAnime: Provider<AnimeHomeMediaViewModel.Anime>
-    val animeHomeMediaViewModelManga: Provider<AnimeHomeMediaViewModel.Manga>
-    val animeHomeViewModel: Provider<AnimeHomeViewModel>
-    val animeRootViewModel: Provider<AnimeRootViewModel>
-    val mediaEditViewModel: Provider<MediaEditViewModel>
-    val unlockScreenViewModel: Provider<UnlockScreenViewModel>
+    val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
+    val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
+    val animeHomeViewModel: () -> AnimeHomeViewModel
+    val animeRootViewModel: () -> AnimeRootViewModel
+    val mediaEditViewModel: () -> MediaEditViewModel
+    val unlockScreenViewModel: () -> UnlockScreenViewModel
 
     // TODO; Move into users module?
     val animeUserListViewModelFactory: AnimeUserListViewModel.Factory

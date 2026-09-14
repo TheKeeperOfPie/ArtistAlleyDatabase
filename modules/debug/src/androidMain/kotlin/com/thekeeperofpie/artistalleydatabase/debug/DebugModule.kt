@@ -4,12 +4,11 @@ import com.apollographql.apollo.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.debug.network.DebugNetworkController
 import com.thekeeperofpie.artistalleydatabase.debug.network.DebugNetworkViewModel
 import dev.zacsweers.metro.IntoSet
-import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
 
 interface DebugComponent {
 
-    val debugNetworkViewModel: Provider<DebugNetworkViewModel>
+    val debugNetworkViewModel: () -> DebugNetworkViewModel
 
     @Provides
     @IntoSet

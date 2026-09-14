@@ -49,7 +49,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.IntoSet
-import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import kotlinx.serialization.json.Json
@@ -65,9 +64,9 @@ internal interface ApplicationComponent : AppComponent, AniListComponent, AnimeC
 
     val activityComponentFactory: ActivityComponent.Factory
 
-    val chooserViewModel: Provider<ChooserViewModel>
-    val exportViewModel: Provider<ExportViewModel>
-    val importViewModel: Provider<ImportViewModel>
+    val chooserViewModel: () -> ChooserViewModel
+    val exportViewModel: () -> ExportViewModel
+    val importViewModel: () -> ImportViewModel
 
     val appMetadataProvider: AppMetadataProvider
     val artEntryNavigator: ArtEntryNavigator
