@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.BottomSheetScaffoldState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -50,6 +49,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen.Event
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen.State
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.ArtistSearchItem
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
@@ -94,177 +95,240 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
-object ArtistSearchScreen {
+@Composable
+fun ArtistSearchScreen(
+    scrollStateSaver: ScrollStateSaver,
+    isRoot: Boolean,
+    lockedYear: DataYear? = null,
+    lockedSerializedBooths: String? = null,
+    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+    viewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
+        create(
+            lockedYear = lockedYear,
+            isRoot = isRoot,
+            lockedSerializedBooths = lockedSerializedBooths,
+            savedStateHandle = it.createSavedStateHandle(),
+        )
+    },
+) {
+    val sortFilterController = viewModel.sortFilterController
+    val state = remember(viewModel, sortFilterController) {
+        State(viewModel, sortFilterController)
+    }
+    val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+    val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
+    val showOutdatedCatalogs by sortFilterController.showOutdatedCatalogs.collectAsStateWithLifecycle()
+    ArtistSearchScreen(
+        state = state,
+        sortFilterState = sortFilterController.state,
+        series = { series },
+        showOutdatedCatalogs = { showOutdatedCatalogs },
+        eventSink = viewModel::onEvent,
+        header = { Header(dataYearHeaderState, scaffoldState, viewModel::onEvent) },
+        scaffoldState = scaffoldState,
+        scrollStateSaver = scrollStateSaver,
+    )
+}
 
-    @Composable
-    operator fun invoke(
-        scrollStateSaver: ScrollStateSaver,
-        isRoot: Boolean,
-        lockedYear: DataYear? = null,
-        lockedSerializedBooths: String? = null,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
-        viewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
-            create(
-                lockedYear = lockedYear,
-                isRoot = isRoot,
-                lockedSerializedBooths = lockedSerializedBooths,
-                savedStateHandle = it.createSavedStateHandle(),
-            )
-        },
-    ) {
-        val sortFilterController = viewModel.sortFilterController
-        val state = remember(viewModel, sortFilterController) {
-            State(viewModel, sortFilterController)
-        }
-        val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
-        val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        val showOutdatedCatalogs by sortFilterController.showOutdatedCatalogs.collectAsStateWithLifecycle()
-        ArtistSearchScreen(
-            state = state,
-            sortFilterState = sortFilterController.state,
-            series = { series },
-            showOutdatedCatalogs = { showOutdatedCatalogs },
-            eventSink = viewModel::onEvent,
-            header = { Header(dataYearHeaderState, scaffoldState, viewModel::onEvent) },
+@Composable
+fun ArtistSearchScreen(
+    state: State,
+    sortFilterState: SortFilterState<*>,
+    series: () -> Map<String, GetSeriesTitles>,
+    showOutdatedCatalogs: () -> Boolean,
+    eventSink: (Event) -> Unit,
+    header: @Composable () -> Unit,
+    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+    scrollStateSaver: ScrollStateSaver,
+    actions: (@Composable RowScope.() -> Unit)? = null,
+) {
+    val gridState = scrollStateSaver.lazyStaggeredGridState()
+    sortFilterState.ImmediateScrollResetEffect(gridState)
+
+    CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
+        val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
+        val entries = state.results.collectAsLazyPagingItems()
+        val unfilteredCount by state.unfilteredCount.collectAsStateWithLifecycle()
+        val count = entries.itemCount
+        val title = (lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
+            ?: state.lockedMerch)
+            ?.let {
+                @Suppress("USELESS_IS_CHECK")
+                if (entries.loadState.refresh is LoadState.Loading) {
+                    it
+                } else {
+                    pluralStringResource(
+                        Res.plurals.alley_search_title_results_suffix,
+                        count,
+                        it,
+                        count,
+                    )
+                }
+            }
+
+        val showGridByDefault by state.searchState.showGridByDefault
+            .collectAsMutableStateWithLifecycle()
+        val showRandomCatalogImage by state.searchState.showRandomCatalogImage
+            .collectAsMutableStateWithLifecycle()
+        SearchScreen2(
+            state = state.searchState,
+            entries = entries,
+            itemToId = { it.id.scopedId },
+            unfilteredCount = { unfilteredCount },
             scaffoldState = scaffoldState,
-            scrollStateSaver = scrollStateSaver,
+            sortFilterState = sortFilterState,
+            gridState = gridState,
+            header = header,
+            topBar = {
+                DisplayTypeSearchBar(
+                    onClickBack = { eventSink(Event.Back) },
+                    query = state.query,
+                    displayType = state.searchState.displayType,
+                    itemCount = { entries.itemCount },
+                    title = { title },
+                    actions = actions,
+                    modifier = Modifier
+                        .animateEnterExit(
+                            enter = slideInVertically { -it },
+                            exit = slideOutVertically { -it },
+                        )
+                        .renderMaybeInSharedTransitionScopeOverlay(1f)
+                )
+            },
+            itemRow = { displayType, entry ->
+                ArtistSearchItem(
+                    displayType = displayType,
+                    artistWithUserData = entry.data,
+                    showGridByDefault = showGridByDefault,
+                    showRandomCatalogImage = showRandomCatalogImage,
+                    blockCrossAxisScrolling = { gridState.isScrollInProgress },
+                    showOutdatedCatalogs = showOutdatedCatalogs,
+                    onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
+                    onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },
+                    onClick = { imageIndex -> eventSink(Event.OpenEntry(entry, imageIndex)) },
+                    onClickFullscreen = { imageIndex ->
+                        eventSink(Event.OpenImageFullscreen(entry, imageIndex))
+                    },
+                    tagRow = {
+                        SeriesRow(
+                            series = entry.series.mapNotNull { series()[it] },
+                            onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                            onMoreClick = { eventSink(Event.OpenEntry(entry, 1)) },
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    },
+                )
+            },
+            columnHeader = { ArtistSearchScreen.ColumnHeader(it, state.sortOption, state.sortAscending) },
+            tableCell = { row, column ->
+                ArtistSearchScreen.TableCell(
+                    row = row,
+                    column = column,
+                    series = series,
+                    onEntryClick = { entry, imageIndex ->
+                        eventSink(Event.OpenEntry(entry, imageIndex))
+                    },
+                    onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                    onMerchClick = { eventSink(Event.OpenMerch(it)) },
+                )
+            },
+            moreResultsItem = {
+                SearchMoreResults(
+                    unfilteredCount = { unfilteredCount },
+                    itemCount = { entries.itemCount },
+                    onClick = { eventSink(Event.ClearFilters) },
+                )
+            }
         )
     }
+}
 
-    @Composable
-    operator fun invoke(
-        state: State,
-        sortFilterState: SortFilterState<*>,
-        series: () -> Map<String, GetSeriesTitles>,
-        showOutdatedCatalogs: () -> Boolean,
-        eventSink: (Event) -> Unit,
-        header: @Composable () -> Unit,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
-        scrollStateSaver: ScrollStateSaver,
-        actions: (@Composable RowScope.() -> Unit)? = null,
-    ) {
-        val gridState = scrollStateSaver.lazyStaggeredGridState()
-        sortFilterState.ImmediateScrollResetEffect(gridState)
+@Composable
+private fun Header(
+    dataYearHeaderState: DataYearHeaderState,
+    scaffoldState: BottomSheetScaffoldState,
+    eventSink: (Event) -> Unit,
+) {
+    Column {
+        ConventionCountdownHeader(
+            dataYearHeaderState.year,
+            onOpenExport = { eventSink(Event.OpenExport) },
+        )
+        FeedbackHeader(dataYearHeaderState.year)
+        BottomSheetFilterDataYearHeader(
+            dataYearHeaderState = dataYearHeaderState,
+            scaffoldState = scaffoldState,
+            onOpenChangelog = { eventSink(Event.OpenChangelog) },
+            onOpenSettings = { eventSink(Event.OpenSettings) },
+        )
+    }
+}
 
-        CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-            val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
-            val entries = state.results.collectAsLazyPagingItems()
-            val unfilteredCount by state.unfilteredCount.collectAsStateWithLifecycle()
-            val count = entries.itemCount
-            val title = (lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
-                ?: state.lockedMerch)
-                ?.let {
-                    @Suppress("USELESS_IS_CHECK")
-                    if (entries.loadState.refresh is LoadState.Loading) {
-                        it
-                    } else {
-                        pluralStringResource(
-                            Res.plurals.alley_search_title_results_suffix,
-                            count,
-                            it,
-                            count,
-                        )
+@Composable
+private fun TagsCell(
+    column: ArtistSearchColumn,
+    tags: List<String>?,
+    moreContentDescription: StringResource,
+    onTagClick: (String) -> Unit,
+    onMoreClick: () -> Unit,
+) {
+    if (tags.isNullOrEmpty()) return
+    Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+        tags.take(TagUtils.TAGS_TO_SHOW)
+            .forEach {
+                SuggestionChip(
+                    onClick = { onTagClick(it) },
+                    label = { Text(text = it, modifier = Modifier.padding(vertical = 4.dp)) },
+                    modifier = Modifier.widthIn(max = column.size - 16.dp)
+                )
+            }
+        if (tags.size > TagUtils.TAGS_TO_SHOW) {
+            IconButton(onClick = onMoreClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.OpenInNew,
+                    contentDescription = stringResource(moreContentDescription),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommissionChip(model: CommissionModel, label: @Composable () -> Unit) {
+    Box(Modifier.padding(horizontal = 4.dp)) {
+        SuggestionChip(
+            onClick = {},
+            icon = {
+                Icon(
+                    imageVector = model.icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+            },
+            label = label,
+        )
+    }
+}
+
+@Composable
+private fun Grid(count: Int, columnCount: Int = 3, item: @Composable (index: Int) -> Unit) {
+    Column {
+        val rowCount = (count + columnCount - 1) / columnCount
+        var index = 0
+        repeat(rowCount) {
+            Row {
+                repeat(columnCount) {
+                    if (index < count) {
+                        item(index++)
                     }
                 }
-
-            val showGridByDefault by state.searchState.showGridByDefault
-                .collectAsMutableStateWithLifecycle()
-            val showRandomCatalogImage by state.searchState.showRandomCatalogImage
-                .collectAsMutableStateWithLifecycle()
-            SearchScreen2(
-                state = state.searchState,
-                entries = entries,
-                itemToId = { it.id.scopedId },
-                unfilteredCount = { unfilteredCount },
-                scaffoldState = scaffoldState,
-                sortFilterState = sortFilterState,
-                gridState = gridState,
-                header = header,
-                topBar = {
-                    DisplayTypeSearchBar(
-                        onClickBack = { eventSink(Event.Back) },
-                        query = state.query,
-                        displayType = state.searchState.displayType,
-                        itemCount = { entries.itemCount },
-                        title = { title },
-                        actions = actions,
-                        modifier = Modifier
-                            .animateEnterExit(
-                                enter = slideInVertically { -it },
-                                exit = slideOutVertically { -it },
-                            )
-                            .renderMaybeInSharedTransitionScopeOverlay(1f)
-                    )
-                },
-                itemRow = { displayType, entry ->
-                    ArtistSearchItem(
-                        displayType = displayType,
-                        artistWithUserData = entry.data,
-                        showGridByDefault = showGridByDefault,
-                        showRandomCatalogImage = showRandomCatalogImage,
-                        blockCrossAxisScrolling = { gridState.isScrollInProgress },
-                        showOutdatedCatalogs = showOutdatedCatalogs,
-                        onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
-                        onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },
-                        onClick = { imageIndex -> eventSink(Event.OpenEntry(entry, imageIndex)) },
-                        onClickFullscreen = { imageIndex ->
-                            eventSink(Event.OpenImageFullscreen(entry, imageIndex))
-                        },
-                        tagRow = {
-                            SeriesRow(
-                                series = entry.series.mapNotNull { series()[it] },
-                                onSeriesClick = { eventSink(Event.OpenSeries(it)) },
-                                onMoreClick = { eventSink(Event.OpenEntry(entry, 1)) },
-                                modifier = Modifier.padding(start = 12.dp)
-                            )
-                        },
-                    )
-                },
-                columnHeader = { ColumnHeader(it, state.sortOption, state.sortAscending) },
-                tableCell = { row, column ->
-                    TableCell(
-                        row = row,
-                        column = column,
-                        series = series,
-                        onEntryClick = { entry, imageIndex ->
-                            eventSink(Event.OpenEntry(entry, imageIndex))
-                        },
-                        onSeriesClick = { eventSink(Event.OpenSeries(it)) },
-                        onMerchClick = { eventSink(Event.OpenMerch(it)) },
-                    )
-                },
-                moreResultsItem = {
-                    SearchMoreResults(
-                        unfilteredCount = { unfilteredCount },
-                        itemCount = { entries.itemCount },
-                        onClick = { eventSink(Event.ClearFilters) },
-                    )
-                }
-            )
+            }
         }
     }
+}
 
-    @Composable
-    private fun Header(
-        dataYearHeaderState: DataYearHeaderState,
-        scaffoldState: BottomSheetScaffoldState,
-        eventSink: (Event) -> Unit
-    ) {
-        Column {
-            ConventionCountdownHeader(
-                dataYearHeaderState.year,
-                onOpenExport = { eventSink(Event.OpenExport) },
-            )
-            FeedbackHeader(dataYearHeaderState.year)
-            BottomSheetFilterDataYearHeader(
-                dataYearHeaderState = dataYearHeaderState,
-                scaffoldState = scaffoldState,
-                onOpenChangelog = { eventSink(Event.OpenChangelog) },
-                onOpenSettings = { eventSink(Event.OpenSettings) },
-            )
-        }
-    }
+object ArtistSearchScreen {
+
 
     @Composable
     fun ColumnHeader(
@@ -421,69 +485,6 @@ object ArtistSearchScreen {
         }
     }
 
-    @Composable
-    private fun TagsCell(
-        column: ArtistSearchColumn,
-        tags: List<String>?,
-        moreContentDescription: StringResource,
-        onTagClick: (String) -> Unit,
-        onMoreClick: () -> Unit,
-    ) {
-        if (tags.isNullOrEmpty()) return
-        Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-            tags.take(TagUtils.TAGS_TO_SHOW)
-                .forEach {
-                    SuggestionChip(
-                        onClick = { onTagClick(it) },
-                        label = { Text(text = it, modifier = Modifier.padding(vertical = 4.dp)) },
-                        modifier = Modifier.widthIn(max = column.size - 16.dp)
-                    )
-                }
-            if (tags.size > TagUtils.TAGS_TO_SHOW) {
-                IconButton(onClick = onMoreClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.OpenInNew,
-                        contentDescription = stringResource(moreContentDescription),
-                    )
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun CommissionChip(model: CommissionModel, label: @Composable () -> Unit) {
-        Box(Modifier.padding(horizontal = 4.dp)) {
-            SuggestionChip(
-                onClick = {},
-                icon = {
-                    Icon(
-                        imageVector = model.icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                    )
-                },
-                label = label,
-            )
-        }
-    }
-
-    @Composable
-    private fun Grid(count: Int, columnCount: Int = 3, item: @Composable (index: Int) -> Unit) {
-        Column {
-            val rowCount = (count + columnCount - 1) / columnCount
-            var index = 0
-            repeat(rowCount) {
-                Row {
-                    repeat(columnCount) {
-                        if (index < count) {
-                            item(index++)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     @Stable
     class State(
         val lockedSeriesEntry: StateFlow<SeriesInfo?>,
@@ -529,60 +530,60 @@ object ArtistSearchScreen {
         data object OpenExport : Event
         data object OpenSettings : Event
     }
+}
 
-    @AlleyPreview
-    @Composable
-    private fun Preview() = PreviewDark {
-        val results = ArtistWithUserDataProvider.values.take(5)
-            .toList()
-            .map {
-                ArtistEntryGridModel.buildFromEntry(
-                    randomSeed = 1,
-                    showOnlyConfirmedTags = false,
-                    entry = it,
-                )
-            }
-        val state = State(
-            lockedSeriesEntry = MutableStateFlow(null),
-            lockedMerch = null,
-            lockedYear = null,
-            randomSeed = 1,
-            year = MutableStateFlow(DataYear.ANIME_EXPO_2025),
-            query = MutableStateFlow(""),
-            results = MutableStateFlow(PagingData.from(results)),
-            unfilteredCount = MutableStateFlow(1000),
-            sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
-            sortAscending = MutableStateFlow(false),
-            searchState = SearchScreen.State(
-                columns = ArtistSearchColumn.entries,
-                displayType = MutableStateFlow(DisplayType.CARD),
-                showGridByDefault = MutableStateFlow(false),
-                showRandomCatalogImage = MutableStateFlow(false),
-                forceOneDisplayColumn = MutableStateFlow(false),
-            ),
-        )
+@AlleyPreview
+@Composable
+private fun Preview() = PreviewDark {
+    val results = ArtistWithUserDataProvider.values.take(5)
+        .toList()
+        .map {
+            ArtistEntryGridModel.buildFromEntry(
+                randomSeed = 1,
+                showOnlyConfirmedTags = false,
+                entry = it,
+            )
+        }
+    val state = State(
+        lockedSeriesEntry = MutableStateFlow(null),
+        lockedMerch = null,
+        lockedYear = null,
+        randomSeed = 1,
+        year = MutableStateFlow(DataYear.ANIME_EXPO_2025),
+        query = MutableStateFlow(""),
+        results = MutableStateFlow(PagingData.from(results)),
+        unfilteredCount = MutableStateFlow(1000),
+        sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
+        sortAscending = MutableStateFlow(false),
+        searchState = SearchScreen.State(
+            columns = ArtistSearchColumn.entries,
+            displayType = MutableStateFlow(DisplayType.CARD),
+            showGridByDefault = MutableStateFlow(false),
+            showRandomCatalogImage = MutableStateFlow(false),
+            forceOneDisplayColumn = MutableStateFlow(false),
+        ),
+    )
 
-        val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
-        val scaffoldState = rememberBottomSheetScaffoldState()
-        ArtistSearchScreen(
-            state = state,
-            sortFilterState = SortFilterState(
-                emptyList(),
-                MutableStateFlow(Unit),
-                MutableStateFlow(false)
-            ),
-            series = { emptyMap() },
-            showOutdatedCatalogs = { true },
-            eventSink = {},
-            header = {
-                BottomSheetFilterDataYearHeader(
-                    dataYearHeaderState = dataYearHeaderState,
-                    scaffoldState = scaffoldState,
-                    onOpenChangelog = {},
-                    onOpenSettings = {},
-                )
-            },
-            scrollStateSaver = ScrollStateSaver.STUB,
-        )
-    }
+    val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+    val scaffoldState = rememberBottomSheetScaffoldState()
+    ArtistSearchScreen(
+        state = state,
+        sortFilterState = SortFilterState(
+            emptyList(),
+            MutableStateFlow(Unit),
+            MutableStateFlow(false)
+        ),
+        series = { emptyMap() },
+        showOutdatedCatalogs = { true },
+        eventSink = {},
+        header = {
+            BottomSheetFilterDataYearHeader(
+                dataYearHeaderState = dataYearHeaderState,
+                scaffoldState = scaffoldState,
+                onOpenChangelog = {},
+                onOpenSettings = {},
+            )
+        },
+        scrollStateSaver = ScrollStateSaver.STUB,
+    )
 }

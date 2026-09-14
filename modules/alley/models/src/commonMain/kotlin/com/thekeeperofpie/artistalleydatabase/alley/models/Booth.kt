@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
+// TODO: Doesn't support double letters well
 data class Booth(val letters: String, val number: Int) : Comparable<Booth> {
 
     companion object {
@@ -8,7 +9,8 @@ data class Booth(val letters: String, val number: Int) : Comparable<Booth> {
                 return null
             }
             val letters = value.takeWhile { !it.isDigit() }.ifEmpty { null } ?: return null
-            val number = value.dropWhile { !it.isDigit() }.toIntOrNull()?.takeIf { it in (1..99) } ?: return null
+            val number = value.dropWhile { !it.isDigit() }.toIntOrNull()?.takeIf { it in (1..99) }
+                ?: return null
             return Booth(letters, number)
         }
     }
@@ -21,6 +23,12 @@ data class Booth(val letters: String, val number: Int) : Comparable<Booth> {
         return number.compareTo(other.number)
     }
 
+    fun generateNext(): Booth = if (number == 99) {
+        Booth(letters + 1, 1)
+    } else {
+        copy(number = number + 1)
+    }
+
     override fun toString() = "$letters${number.toString().padStart(2, '0')}"
 }
 
@@ -31,11 +39,7 @@ private class BoothRange(
     // TODO: Doesn't support double letter booths
     override fun iterator() = object : Iterator<Booth> {
         var current = start
-        override fun next() = if (current.number == 99) {
-            Booth(current.letters + 1, 1)
-        } else {
-            current.copy(number = current.number + 1)
-        }
+        override fun next() = current.generateNext().also { current = it }
 
         override fun hasNext() = start <= endInclusive
     }
