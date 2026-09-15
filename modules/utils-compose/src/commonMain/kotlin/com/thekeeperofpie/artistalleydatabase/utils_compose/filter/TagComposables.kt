@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,8 +19,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -31,6 +35,9 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry.Category
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry.Tag
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.TextFieldStateSerializer
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -154,6 +161,143 @@ fun TagSection(
                     tags = children,
                     tagIdIn = tagIdIn,
                     tagIdNotIn = tagIdNotIn,
+                    disabledOptions = disabledOptions,
+                    level = 0,
+                    tagChip = tagChip,
+                )
+            }
+
+            if (footer != null && expanded) {
+                footer()
+            }
+        }
+    }
+}
+
+@Serializable
+class TagSectionState(
+    @Serializable(with = SnapshotStateSetSerializer::class)
+    val tagIdIn: SnapshotStateSet<String> = mutableStateSetOf(),
+    @Serializable(with = SnapshotStateSetSerializer::class)
+    val tagIdNotIn: SnapshotStateSet<String> = mutableStateSetOf(),
+    @Serializable(with = TextFieldStateSerializer::class)
+    val query: TextFieldState = TextFieldState(),
+)
+
+@Composable
+fun TagSection2(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    state: TagSectionState,
+    sectionHeader: @Composable () -> Unit,
+    sectionHeaderDropdownContentDescriptionRes: StringResource,
+    summaryText: (@Composable () -> String?)? = null,
+    onSummaryClick: () -> Unit = {},
+    header: (@Composable () -> Unit)? = null,
+    footer: (@Composable () -> Unit)? = null,
+    tags: List<Pair<String, TagEntry>>,
+    disabledOptions: Set<String>,
+    showSearch: Boolean = true,
+    showRootTagsWhenNotExpanded: Boolean = true,
+    showRootTagsAtBottom: Boolean = false,
+    categoryToName: @Composable (Category) -> String,
+    tagChip: @Composable (tag: Tag, selected: Boolean, enabled: Boolean, Modifier) -> Unit,
+) {
+    @Suppress("NAME_SHADOWING")
+    val expanded = expanded()
+    CustomFilterSection(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        header = sectionHeader,
+        headerDropdownContentDescriptionRes = sectionHeaderDropdownContentDescriptionRes,
+        summaryText = summaryText,
+        onSummaryClick = onSummaryClick,
+    ) {
+        Column(modifier = Modifier.animateContentSize()) {
+            val queryText = state.query.text.toString()
+            val subcategoriesToShow = when {
+                queryText.isNotBlank() -> tags.map { it.second }.mapNotNull {
+                    it.filter {
+                        state.tagIdIn.contains(it.id) || state.tagIdNotIn.contains(it.id) || it.matches(queryText)
+                    }
+                }
+                expanded -> tags.map { it.second }
+                else -> tags.map { it.second }.mapNotNull {
+                    it.filter { state.tagIdIn.contains(it.id) || state.tagIdNotIn.contains(it.id) }
+                }
+            }.filterIsInstance<Category>()
+
+            if (header != null && (expanded || subcategoriesToShow.isNotEmpty())) {
+                header()
+            }
+
+            if (showSearch && expanded) {
+                TextField(
+                    state = state.query,
+                    placeholder = {
+                        Text(text = stringResource(Res.string.tag_search_placeholder))
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { state.query.clearText() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(
+                                    Res.string.tag_search_clear_content_description
+                                ),
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 32.dp, end = 16.dp)
+                )
+            }
+
+            val children = when {
+                showRootTagsWhenNotExpanded -> tags.map { it.second }
+                queryText.isNotBlank() -> tags.map { it.second }.mapNotNull {
+                    it.filter {
+                        state.tagIdIn.contains(it.id) || state.tagIdNotIn.contains(it.id) || it.matches(queryText)
+                    }
+                }
+                expanded -> tags.map { it.second }
+                else -> tags.map { it.second }.mapNotNull {
+                    it.filter { state.tagIdIn.contains(it.id) || state.tagIdNotIn.contains(it.id) }
+                }
+            }.filterIsInstance<Tag>()
+
+            if (!showRootTagsAtBottom && children.isNotEmpty()) {
+                TagChips(
+                    tags = children,
+                    tagIdIn = state.tagIdIn,
+                    tagIdNotIn = state.tagIdNotIn,
+                    disabledOptions = disabledOptions,
+                    level = 0,
+                    tagChip = tagChip,
+                )
+            }
+
+            subcategoriesToShow.forEachIndexed { index, section ->
+                TagSubsection(
+                    category = section,
+                    categoryToName = categoryToName,
+                    tagIdIn = state.tagIdIn,
+                    tagIdNotIn = state.tagIdNotIn,
+                    disabledOptions = disabledOptions,
+                    parentExpanded = expanded,
+                    level = 0,
+                    query = queryText,
+                    showDivider = (expanded && footer != null) ||
+                            index != subcategoriesToShow.size - 1,
+                    tagChip = tagChip,
+                )
+            }
+
+            if (showRootTagsAtBottom && children.isNotEmpty()) {
+                TagChips(
+                    tags = children,
+                    tagIdIn = state.tagIdIn,
+                    tagIdNotIn = state.tagIdNotIn,
                     disabledOptions = disabledOptions,
                     level = 0,
                     tagChip = tagChip,

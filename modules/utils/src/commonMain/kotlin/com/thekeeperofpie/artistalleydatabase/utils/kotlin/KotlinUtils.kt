@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 import kotlin.time.Duration
+import kotlin.uuid.Uuid
 
 fun <T> List<T>.splitAtIndex(index: Int) =
     if (index == size - 1) {
@@ -242,3 +244,5 @@ fun <T> MutableList<T>.toggle(value: T) {
         add(value)
     }
 }
+
+fun Uuid.Companion.random(random: Random) = Uuid.fromLongs(random.nextLong(), random.nextLong())
