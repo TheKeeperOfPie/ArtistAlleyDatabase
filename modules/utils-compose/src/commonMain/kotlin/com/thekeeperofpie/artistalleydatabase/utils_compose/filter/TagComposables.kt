@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -182,7 +183,15 @@ class TagSectionState(
     val tagIdNotIn: SnapshotStateSet<String> = mutableStateSetOf(),
     @Serializable(with = TextFieldStateSerializer::class)
     val query: TextFieldState = TextFieldState(),
-)
+) {
+    fun clear() {
+        Snapshot.withMutableSnapshot {
+            tagIdIn.clear()
+            tagIdNotIn.clear()
+            query.clearText()
+        }
+    }
+}
 
 @Composable
 fun TagSection2(
@@ -196,7 +205,7 @@ fun TagSection2(
     header: (@Composable () -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
     tags: List<Pair<String, TagEntry>>,
-    disabledOptions: Set<String>,
+    disabledOptions: Set<String> = emptySet(),
     showSearch: Boolean = true,
     showRootTagsWhenNotExpanded: Boolean = true,
     showRootTagsAtBottom: Boolean = false,

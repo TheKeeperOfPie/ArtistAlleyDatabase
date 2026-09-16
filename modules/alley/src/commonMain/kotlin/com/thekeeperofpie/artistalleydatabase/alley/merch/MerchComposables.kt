@@ -1,10 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.merch
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateSetOf
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_chip_state_content_description
@@ -96,7 +98,14 @@ internal class MerchTagSectionState(
     @Serializable(with = TextFieldStateSerializer::class)
     val query: TextFieldState = TextFieldState(),
     val tags: TagSectionState = TagSectionState(),
-)
+) {
+    fun clear() {
+        Snapshot.withMutableSnapshot {
+            query.clearText()
+            tags.clear()
+        }
+    }
+}
 
 @Composable
 internal fun MerchTagSection2(

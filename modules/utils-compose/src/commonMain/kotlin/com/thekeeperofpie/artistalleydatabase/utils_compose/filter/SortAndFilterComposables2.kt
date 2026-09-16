@@ -254,6 +254,13 @@ class FilterSectionState<T>(
     val filterNotIn: SnapshotStateSet<T> = mutableStateSetOf(),
     val filterLockedIn: T? = null,
 ) {
+    fun clear() {
+        Snapshot.withMutableSnapshot {
+            filterIn.replaceAll(setOfNotNull(filterLockedIn))
+            filterNotIn.clear()
+        }
+    }
+
     internal fun onClick(options: List<T>, selectionMethod: SelectionMethod, filter: T) {
         if (filterLockedIn == filter) return
         Snapshot.withMutableSnapshot {
@@ -414,6 +421,27 @@ fun CustomFilterSection(
     }
 
     content()
+}
+
+@Composable
+fun SectionGroup(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    header: @Composable () -> Unit,
+    headerDropdownContentDescriptionRes: StringResource,
+    content: @Composable () -> Unit,
+) {
+    val expanded = expanded()
+    CustomFilterSection(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        header = header,
+        headerDropdownContentDescriptionRes = headerDropdownContentDescriptionRes,
+    ) {
+        Column(modifier = Modifier.padding(start = 16.dp)) {
+            content()
+        }
+    }
 }
 
 @Composable

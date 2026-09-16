@@ -5,6 +5,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalInspectionMode
 import coil3.ColorImage
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImagePreviewHandler
@@ -21,5 +22,13 @@ fun PreviewDark(content: @Composable () -> Unit) {
         MaterialTheme(colorScheme = darkColorScheme()) {
             Surface(content = content)
         }
+    }
+}
+
+@Suppress("ComposableNaming")
+@Composable
+fun assertInPreview() {
+    if (!LocalInspectionMode.current) {
+        throw IllegalStateException("Must be in Compose preview")
     }
 }
