@@ -11,6 +11,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ShowOnlyConfirmedTagsSection
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
@@ -28,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
@@ -108,17 +110,16 @@ object ArtistMerchScreen {
         }
         val merchEntry by artistMerchViewModel.merchEntry.collectAsStateWithLifecycle()
         val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        val showOutdatedCatalogs by sortFilterController.showOutdatedCatalogs.collectAsStateWithLifecycle()
+        val showOutdatedCatalogs by sortFilterController.state.persistentState.showOutdatedCatalogs.collectAsStateWithLifecycle()
+        val seriesAutocompleteResults by artistSearchViewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
             series = { series },
-            sortFilterState = sortFilterController.state,
             showOutdatedCatalogs = { showOutdatedCatalogs },
             eventSink = artistSearchViewModel::onEvent,
             header = {
                 Header(
                     state = state,
-                    sortFilterController = sortFilterController,
                     scaffoldState = scaffoldState,
                     merchEntry = { merchEntry },
                     onFavoriteToggle = artistMerchViewModel::onFavoriteToggle,
@@ -128,6 +129,8 @@ object ArtistMerchScreen {
             },
             scaffoldState = scaffoldState,
             scrollStateSaver = scrollStateSaver,
+            seriesImage = artistSearchViewModel::seriesImage,
+            seriesAutocompleteResults = { seriesAutocompleteResults },
             actions = {
                 IconButton(onClick = onClickMap) {
                     Icon(
@@ -142,7 +145,6 @@ object ArtistMerchScreen {
     @Composable
     private fun Header(
         state: ArtistSearchScreen.State,
-        sortFilterController: ArtistSortFilterController,
         scaffoldState: BottomSheetScaffoldState,
         merchEntry: () -> MerchWithUserData?,
         onFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
@@ -162,8 +164,12 @@ object ArtistMerchScreen {
                     },
                 )
                 HorizontalDivider()
-                sortFilterController.showOnlyConfirmedTagsSection
-                    .Content(sortFilterController.state.expanded, false)
+
+                var showOnlyConfirmedTags by state.sortFilterState.persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+                ShowOnlyConfirmedTagsSection(
+                    enabled = { showOnlyConfirmedTags },
+                    onEnabledChanged = { showOnlyConfirmedTags = it },
+                )
             }
             BottomSheetFilterDataYearHeader(
                 dataYearHeaderState = dataYearHeaderState,

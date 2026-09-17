@@ -13,6 +13,7 @@ import androidx.compose.runtime.snapshots.ObserverHandle
 import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +31,7 @@ import kotlin.time.TimeSource
 
 fun <T> transform(
     scope: CoroutineScope,
-    context: CoroutineContext = EmptyCoroutineContext,
+    context: CoroutineContext = Dispatchers.Main,
     onUpdate: @Composable () -> T,
 ): State<T> {
     var state: MutableState<T>? = null
@@ -46,7 +47,7 @@ fun <T> transform(
 
 fun <T> transformFlow(
     scope: CoroutineScope,
-    context: CoroutineContext = EmptyCoroutineContext,
+    context: CoroutineContext = Dispatchers.Main,
     onUpdate: @Composable () -> T,
 ): StateFlow<T> {
     var state: MutableStateFlow<T>? = null
@@ -62,7 +63,7 @@ fun <T> transformFlow(
 
 fun <T> transformInternal(
     scope: CoroutineScope,
-    context: CoroutineContext = EmptyCoroutineContext,
+    context: CoroutineContext = Dispatchers.Main,
     onUpdate: @Composable () -> T,
     onValue: (T) -> Unit,
 ) {

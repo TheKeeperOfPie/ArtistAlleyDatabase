@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
@@ -32,8 +33,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -85,12 +89,13 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -117,33 +122,38 @@ fun ArtistSearchScreen(
     }
     val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
     val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-    val showOutdatedCatalogs by sortFilterController.showOutdatedCatalogs.collectAsStateWithLifecycle()
+    val showOutdatedCatalogs by sortFilterController.state.persistentState.showOutdatedCatalogs.collectAsStateWithLifecycle()
+    val seriesAutocompleteResults by viewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
     ArtistSearchScreen(
         state = state,
-        sortFilterState = sortFilterController.state,
         series = { series },
         showOutdatedCatalogs = { showOutdatedCatalogs },
         eventSink = viewModel::onEvent,
         header = { Header(dataYearHeaderState, scaffoldState, viewModel::onEvent) },
         scaffoldState = scaffoldState,
         scrollStateSaver = scrollStateSaver,
+        seriesImage = viewModel::seriesImage,
+        seriesAutocompleteResults = { seriesAutocompleteResults },
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ArtistSearchScreen(
     state: State,
-    sortFilterState: SortFilterState<*>,
     series: () -> Map<String, GetSeriesTitles>,
     showOutdatedCatalogs: () -> Boolean,
     eventSink: (Event) -> Unit,
     header: @Composable () -> Unit,
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     scrollStateSaver: ScrollStateSaver,
+    seriesImage: (SeriesInfo) -> String?,
+    seriesAutocompleteResults: () -> List<SeriesInfo>,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val gridState = scrollStateSaver.lazyStaggeredGridState()
-    sortFilterState.ImmediateScrollResetEffect(gridState)
+    // TODO
+//    sortFilterState.ImmediateScrollResetEffect(gridState)
 
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
         val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
@@ -170,15 +180,15 @@ fun ArtistSearchScreen(
             .collectAsMutableStateWithLifecycle()
         val showRandomCatalogImage by state.searchState.showRandomCatalogImage
             .collectAsMutableStateWithLifecycle()
-        SearchScreen2(
-            state = state.searchState,
-            entries = entries,
-            itemToId = { it.id.scopedId },
-            unfilteredCount = { unfilteredCount },
+        val scope = rememberCoroutineScope()
+        BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+            scope.launch {
+                scaffoldState.bottomSheetState.partialExpand()
+            }
+        }
+        SortFilterBottomScaffold2(
             scaffoldState = scaffoldState,
-            sortFilterState = sortFilterState,
-            gridState = gridState,
-            header = header,
+            sheetPeekHeight = 72.dp,
             topBar = {
                 DisplayTypeSearchBar(
                     onClickBack = { eventSink(Event.Back) },
@@ -195,51 +205,77 @@ fun ArtistSearchScreen(
                         .renderMaybeInSharedTransitionScopeOverlay(1f)
                 )
             },
-            itemRow = { displayType, entry ->
-                ArtistSearchItem(
-                    displayType = displayType,
-                    artistWithUserData = entry.data,
-                    showGridByDefault = showGridByDefault,
-                    showRandomCatalogImage = showRandomCatalogImage,
-                    blockCrossAxisScrolling = { gridState.isScrollInProgress },
-                    showOutdatedCatalogs = showOutdatedCatalogs,
-                    onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
-                    onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },
-                    onClick = { imageIndex -> eventSink(Event.OpenEntry(entry, imageIndex)) },
-                    onClickFullscreen = { imageIndex ->
-                        eventSink(Event.OpenImageFullscreen(entry, imageIndex))
-                    },
-                    tagRow = {
-                        SeriesRow(
-                            series = entry.series.mapNotNull { series()[it] },
-                            onSeriesClick = { eventSink(Event.OpenSeries(it)) },
-                            onMoreClick = { eventSink(Event.OpenEntry(entry, 1)) },
-                            modifier = Modifier.padding(start = 12.dp)
-                        )
-                    },
+            sheetContent = {
+                ArtistSortFilterSheetContent(
+                    state = state.sortFilterState,
+                    sheetState = scaffoldState.bottomSheetState,
+                    seriesImage = seriesImage,
+                    seriesAutocompleteResults = seriesAutocompleteResults
                 )
             },
-            columnHeader = { ArtistSearchScreen.ColumnHeader(it, state.sortOption, state.sortAscending) },
-            tableCell = { row, column ->
-                ArtistSearchScreen.TableCell(
-                    row = row,
-                    column = column,
-                    series = series,
-                    onEntryClick = { entry, imageIndex ->
-                        eventSink(Event.OpenEntry(entry, imageIndex))
-                    },
-                    onSeriesClick = { eventSink(Event.OpenSeries(it)) },
-                    onMerchClick = { eventSink(Event.OpenMerch(it)) },
-                )
-            },
-            moreResultsItem = {
-                SearchMoreResults(
-                    unfilteredCount = { unfilteredCount },
-                    itemCount = { entries.itemCount },
-                    onClick = { eventSink(Event.ClearFilters) },
-                )
-            }
-        )
+            // TODO: This breaks vertical scrolling with 1.12.0-beta03+
+//                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+        ) {
+            SearchScreen2(
+                state = state.searchState,
+                entries = entries,
+                itemToId = { it.id.scopedId },
+                unfilteredCount = { unfilteredCount },
+                gridState = gridState,
+                header = header,
+                itemRow = { displayType, entry ->
+                    ArtistSearchItem(
+                        displayType = displayType,
+                        artistWithUserData = entry.data,
+                        showGridByDefault = showGridByDefault,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                        blockCrossAxisScrolling = { gridState.isScrollInProgress },
+                        showOutdatedCatalogs = showOutdatedCatalogs,
+                        onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
+                        onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },
+                        onClick = { imageIndex -> eventSink(Event.OpenEntry(entry, imageIndex)) },
+                        onClickFullscreen = { imageIndex ->
+                            eventSink(Event.OpenImageFullscreen(entry, imageIndex))
+                        },
+                        tagRow = {
+                            SeriesRow(
+                                series = entry.series.mapNotNull { series()[it] },
+                                onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                                onMoreClick = { eventSink(Event.OpenEntry(entry, 1)) },
+                                modifier = Modifier.padding(start = 12.dp)
+                            )
+                        },
+                    )
+                },
+                columnHeader = {
+                    ArtistSearchScreen.ColumnHeader(
+                        it,
+                        state.sortFilterState.persistentState.sortOption,
+                        state.sortFilterState.persistentState.sortAscending,
+                    )
+                },
+                tableCell = { row, column ->
+                    ArtistSearchScreen.TableCell(
+                        row = row,
+                        column = column,
+                        series = series,
+                        onEntryClick = { entry, imageIndex ->
+                            eventSink(Event.OpenEntry(entry, imageIndex))
+                        },
+                        onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                        onMerchClick = { eventSink(Event.OpenMerch(it)) },
+                    )
+                },
+                moreResultsItem = {
+                    SearchMoreResults(
+                        unfilteredCount = { unfilteredCount },
+                        itemCount = { entries.itemCount },
+                        onClick = { eventSink(Event.ClearFilters) },
+                    )
+                },
+                modifier = Modifier.padding(it)
+            )
+        }
     }
 }
 
@@ -328,7 +364,6 @@ private fun Grid(count: Int, columnCount: Int = 3, item: @Composable (index: Int
 }
 
 object ArtistSearchScreen {
-
 
     @Composable
     fun ColumnHeader(
@@ -495,13 +530,12 @@ object ArtistSearchScreen {
         val query: MutableStateFlow<String>,
         val results: StateFlow<PagingData<ArtistEntryGridModel>>,
         val unfilteredCount: StateFlow<Int>,
-        val sortOption: MutableStateFlow<ArtistSearchSortOption>,
-        val sortAscending: MutableStateFlow<Boolean>,
         val searchState: SearchScreen.State<ArtistSearchColumn>,
+        val sortFilterState: ArtistSortFilterState,
     ) {
         constructor(
             viewModel: ArtistSearchViewModel,
-            sortFilterController: ArtistSortFilterController,
+            sortFilterController: ArtistSortFilterController2,
         ) : this(
             lockedSeriesEntry = viewModel.lockedSeriesEntry,
             lockedMerch = viewModel.lockedMerch,
@@ -511,9 +545,8 @@ object ArtistSearchScreen {
             query = viewModel.query,
             results = viewModel.results,
             unfilteredCount = viewModel.unfilteredCount,
-            sortOption = sortFilterController.sortOption,
-            sortAscending = sortFilterController.sortAscending,
             searchState = viewModel.searchState,
+            sortFilterState = sortFilterController.state,
         )
     }
 
@@ -553,8 +586,6 @@ private fun Preview() = PreviewDark {
         query = MutableStateFlow(""),
         results = MutableStateFlow(PagingData.from(results)),
         unfilteredCount = MutableStateFlow(1000),
-        sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
-        sortAscending = MutableStateFlow(false),
         searchState = SearchScreen.State(
             columns = ArtistSearchColumn.entries,
             displayType = MutableStateFlow(DisplayType.CARD),
@@ -562,17 +593,13 @@ private fun Preview() = PreviewDark {
             showRandomCatalogImage = MutableStateFlow(false),
             forceOneDisplayColumn = MutableStateFlow(false),
         ),
+        sortFilterState = ArtistSortFilterState.rememberForPreview(),
     )
 
     val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
     val scaffoldState = rememberBottomSheetScaffoldState()
     ArtistSearchScreen(
         state = state,
-        sortFilterState = SortFilterState(
-            emptyList(),
-            MutableStateFlow(Unit),
-            MutableStateFlow(false)
-        ),
         series = { emptyMap() },
         showOutdatedCatalogs = { true },
         eventSink = {},
@@ -585,5 +612,7 @@ private fun Preview() = PreviewDark {
             )
         },
         scrollStateSaver = ScrollStateSaver.STUB,
+        seriesImage = { null },
+        seriesAutocompleteResults = { emptyList() },
     )
 }

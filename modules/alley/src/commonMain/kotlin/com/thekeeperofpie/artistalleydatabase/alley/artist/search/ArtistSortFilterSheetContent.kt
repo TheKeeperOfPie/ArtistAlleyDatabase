@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
@@ -23,16 +25,21 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.annotation.RememberInComposition
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -42,8 +49,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import androidx.savedstate.compose.serialization.serializers.SnapshotStateListSerializer
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_content_description
@@ -65,7 +74,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_clear_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterState.Section
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
@@ -74,8 +83,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection2
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSectionState
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection.SeriesFilterEntry
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
+import com.thekeeperofpie.artistalleydatabase.alley.ui.assertInPreview
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
@@ -91,6 +102,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SectionGroup
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SectionsExpandIndicator
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldSheetContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
@@ -108,36 +121,63 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun ArtistSortFilterSheetContent(
     state: ArtistSortFilterState,
-    persistentState: ArtistSortFilterPersistentState,
+    sheetState: SheetState,
     seriesImage: (SeriesInfo) -> String?,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
-    merchTagData: () -> MerchTagData,
 ) {
-    Column {
+    SortFilterBottomScaffoldSheetContent(
+        sheetState = sheetState,
+        actions = {
+            val expandedSections = state.saveableState.expandedSections
+            val allSectionsExpanded by remember(expandedSections) {
+                derivedStateOf {
+                    expandedSections.containsAll(Section.entries)
+                }
+            }
+            SectionsExpandIndicator(
+                allSectionsExpanded = { allSectionsExpanded },
+                onSectionsExpandedChanged = {
+                    if (it) {
+                        expandedSections.addAll(Section.entries)
+                    } else {
+                        expandedSections.clear()
+                    }
+                },
+                activatedCount = { 0 }, // TODO
+                targetValue = { sheetState.targetValue },
+            )
+        }
+    ) {
+        val saveableState = state.saveableState
+        val persistentState = state.persistentState
+        var sortOption by persistentState.sortOption.collectAsMutableStateWithLifecycle()
+        var sortAscending by persistentState.sortAscending.collectAsMutableStateWithLifecycle()
         SortSection(
             header = { Text(stringResource(Res.string.alley_sort_label)) },
-            expanded = { Section.SORT in state.expandedSections },
-            onExpandedChange = { state.expandedSections.toggle(Section.SORT) },
+            expanded = { Section.SORT in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.SORT) },
             sortOptions = { ArtistSearchSortOption.entries },
-            sortOption = { state.sortOption },
-            onSortClick = { state.sortOption = it },
+            sortOption = { sortOption },
+            onSortClick = { sortOption = it },
             sortOptionLabel = { Text(stringResource(it.textRes)) },
-            sortAscending = { state.sortAscending },
-            onSortAscendingChange = { state.sortAscending = it },
+            sortAscending = { sortAscending },
+            onSortAscendingChange = { sortAscending = it },
         )
 
         HorizontalDivider()
 
+        var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
         SeriesSection(
-            expanded = { Section.SERIES in state.expandedSections },
-            onExpandedChange = { state.expandedSections.toggle(Section.SERIES) },
-            state = state.series,
+            expanded = { Section.SERIES in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.SERIES) },
+            state = saveableState.series,
             image = seriesImage,
+            lockedSeries = state.lockedSeries,
             autocompleteResults = seriesAutocompleteResults,
             showOnlyConfirmedTagsSection = {
                 ShowOnlyConfirmedTagsSection(
-                    enabled = { state.showOnlyConfirmedTags },
-                    onEnabledChanged = { state.showOnlyConfirmedTags = it },
+                    enabled = { showOnlyConfirmedTags },
+                    onEnabledChanged = { showOnlyConfirmedTags = it },
                     modifier = Modifier.padding(start = 32.dp)
                 )
             },
@@ -146,14 +186,15 @@ internal fun ArtistSortFilterSheetContent(
         HorizontalDivider()
 
         MerchTagSection2(
-            expanded = { Section.MERCH in state.expandedSections },
-            onExpandedChange = { state.expandedSections.toggle(Section.MERCH) },
-            state = state.merch,
-            merchTagData = merchTagData,
+            expanded = { Section.MERCH in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.MERCH) },
+            state = saveableState.merch,
+            merchTagData = state.merchTagData,
+            merchIdsLockedIn = state.merchIdsLockedIn,
             header = {
                 ShowOnlyConfirmedTagsSection(
-                    enabled = { state.showOnlyConfirmedTags },
-                    onEnabledChanged = { state.showOnlyConfirmedTags = it },
+                    enabled = { showOnlyConfirmedTags },
+                    onEnabledChanged = { showOnlyConfirmedTags = it },
                     modifier = Modifier.padding(start = 32.dp)
                 )
             },
@@ -162,10 +203,10 @@ internal fun ArtistSortFilterSheetContent(
         HorizontalDivider()
 
         FilterSection2(
-            expanded = { Section.COMMISSIONS in state.expandedSections },
-            onExpandedChange = { state.expandedSections.toggle(Section.COMMISSIONS) },
+            expanded = { Section.COMMISSIONS in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.COMMISSIONS) },
             options = CommissionType.entries,
-            state = state.commissions,
+            state = saveableState.commissions,
             selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
             title = { Text(stringResource(Res.string.alley_commission_type_filter_label)) },
             titleDropdownContentDescriptionRes = Res.string.alley_commission_type_filter_content_description,
@@ -174,33 +215,58 @@ internal fun ArtistSortFilterSheetContent(
 
         HorizontalDivider()
 
+        var artistTagsIn by persistentState.artistTagsIn.collectAsMutableStateWithLifecycle()
+        var artistTagsNotIn by persistentState.artistTagsNotIn.collectAsMutableStateWithLifecycle()
         FilterSection2(
-            expanded = { Section.ARTIST_TAGS in state.expandedSections },
-            onExpandedChange = { state.expandedSections.toggle(Section.ARTIST_TAGS) },
+            expanded = { Section.ARTIST_TAGS in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.ARTIST_TAGS) },
             options = ArtistTag.entries,
-            state = state.artistTags,
-            selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ALLOW_EXCLUDE,
+            filterIn = { artistTagsIn },
+            filterNotIn = { artistTagsNotIn },
             title = { Text(stringResource(Res.string.alley_artist_tags_filter_label)) },
             titleDropdownContentDescriptionRes = Res.string.alley_artist_tags_filter_content_description,
+            onOptionClick = {
+                val (newFilterIn, newFilterNotIn) = FilterSectionState.onClick(
+                    options = ArtistTag.entries,
+                    selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ALLOW_EXCLUDE,
+                    filterIn = artistTagsIn,
+                    filterNotIn = artistTagsNotIn,
+                    filter = it,
+                )
+                Snapshot.withMutableSnapshot {
+                    artistTagsIn = newFilterIn
+                    artistTagsNotIn = newFilterNotIn
+                }
+            },
             optionLabel = { Text(stringResource(it.textRes)) },
+            optionLeadingIcon = { _, enabled ->
+                IncludeExcludeIcon(
+                    enabled = enabled,
+                    contentDescriptionRes = Res.string.alley_artist_tags_filter_chip_state_content_description,
+                )
+            }
         )
 
         HorizontalDivider()
 
         LinksSection(
-            expanded = { Section.LINKS in state.expandedSections },
-            onExpandedChange = { state.expandedSections.toggle(Section.LINKS) },
-            linksState = state.links,
+            expanded = { Section.LINKS in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.LINKS) },
+            linksState = saveableState.links,
         )
 
         HorizontalDivider()
 
         AdvancedSection(
-            expanded = { Section.ADVANCED in state.expandedSections },
-            onExpandedChange = { state.expandedSections.toggle(Section.ADVANCED) },
-            state = state,
+            expanded = { Section.ADVANCED in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.ADVANCED) },
+            state = saveableState,
             persistentState = persistentState,
         )
+
+        HorizontalDivider()
+
+        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -208,7 +274,7 @@ internal fun ArtistSortFilterSheetContent(
 private fun AdvancedSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    state: ArtistSortFilterState,
+    state: ArtistSortFilterSaveableState,
     persistentState: ArtistSortFilterPersistentState,
 ) {
     SectionGroup(
@@ -224,16 +290,24 @@ private fun AdvancedSection(
             onEnabledChanged = { showGridByDefault = it },
         )
 
+        HorizontalDivider()
+
         var showRandomCatalogImage by persistentState.showRandomCatalogImage.collectAsMutableStateWithLifecycle()
         SwitchSection(
             title = { Text(stringResource(Res.string.alley_filter_show_random_catalog_image)) },
             enabled = { showRandomCatalogImage },
             onEnabledChanged = { showRandomCatalogImage = it },
         )
+
+        HorizontalDivider()
+
+        var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
         ShowOnlyConfirmedTagsSection(
-            enabled = { state.showOnlyConfirmedTags },
-            onEnabledChanged = { state.showOnlyConfirmedTags = it },
+            enabled = { showOnlyConfirmedTags },
+            onEnabledChanged = { showOnlyConfirmedTags = it },
         )
+
+        HorizontalDivider()
 
         var showOutdatedCatalogs by persistentState.showOutdatedCatalogs.collectAsMutableStateWithLifecycle()
         SwitchSection(
@@ -241,16 +315,23 @@ private fun AdvancedSection(
             enabled = { showOutdatedCatalogs },
             onEnabledChanged = { showOutdatedCatalogs = it },
         )
+
+        HorizontalDivider()
+
         SwitchSection(
             title = { Text(stringResource(Res.string.alley_filter_hide_favorited)) },
             enabled = { state.hideFavorited },
             onEnabledChanged = { state.hideFavorited = it },
         )
+
+        HorizontalDivider()
         SwitchSection(
             title = { Text(stringResource(Res.string.alley_filter_hide_ignored)) },
             enabled = { state.hideIgnored },
             onEnabledChanged = { state.hideIgnored = it },
         )
+
+        HorizontalDivider()
 
         var forceOneDisplayColumn by persistentState.forceOneDisplayColumn.collectAsMutableStateWithLifecycle()
         SwitchSection(
@@ -262,7 +343,7 @@ private fun AdvancedSection(
 }
 
 @Composable
-private fun ShowOnlyConfirmedTagsSection(
+internal fun ShowOnlyConfirmedTagsSection(
     enabled: () -> Boolean,
     onEnabledChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -279,8 +360,9 @@ private fun ShowOnlyConfirmedTagsSection(
 private fun SeriesSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    state: ArtistSortFilterState.SeriesState,
+    state: ArtistSortFilterSaveableState.SeriesState,
     image: (SeriesInfo) -> String?,
+    lockedSeries: () -> SeriesInfo?,
     autocompleteResults: () -> List<SeriesInfo>,
     showOnlyConfirmedTagsSection: (@Composable () -> Unit)? = null,
 ) {
@@ -367,7 +449,7 @@ private fun SeriesSection(
                     .padding(start = 48.dp, end = 16.dp)
                     .animateContentSize(),
             ) {
-                state.lockedSeries?.let {
+                lockedSeries()?.let {
                     FilterChip(
                         selected = true,
                         enabled = false,
@@ -409,7 +491,7 @@ private val linkTypes =
 private fun LinksSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    linksState: ArtistSortFilterState.LinksState,
+    linksState: ArtistSortFilterSaveableState.LinksState,
 ) {
     val tagsState = linksState.links
     TagSection2(
@@ -446,51 +528,100 @@ private fun LinksSection(
     )
 }
 
+class ArtistSortFilterState(
+    val persistentState: ArtistSortFilterPersistentState,
+    val saveableState: ArtistSortFilterSaveableState,
+    val lockedSeries: () -> SeriesInfo?,
+    val merchTagData: () -> MerchTagData,
+    val merchIdsLockedIn: () -> Set<String>,
+) {
+    fun clear() {
+        Snapshot.withMutableSnapshot { 
+            persistentState.clear()
+            saveableState.clear()
+        }
+    }
+
+    companion object {
+        @Composable
+        fun rememberForPreview(): ArtistSortFilterState {
+            assertInPreview()
+            val persistentState = ArtistSortFilterPersistentState.rememberForPreview()
+            val saveableState = rememberSaveable { ArtistSortFilterSaveableState() }
+            return remember(persistentState, saveableState) {
+                ArtistSortFilterState(
+                    persistentState = persistentState,
+                    saveableState = saveableState,
+                    lockedSeries = { null },
+                    merchTagData = { MerchTagData(MerchEntryProvider.values.toList()) },
+                    merchIdsLockedIn = { emptySet() },
+                )
+            }
+        }
+    }
+}
+
 /** Everything backed by an externally owned source */
 class ArtistSortFilterPersistentState(
+    val sortOption: MutableStateFlow<ArtistSearchSortOption>,
+    val sortAscending: MutableStateFlow<Boolean>,
+    val artistTagsIn: MutableStateFlow<Set<ArtistTag>>,
+    val artistTagsNotIn: MutableStateFlow<Set<ArtistTag>>,
     val showGridByDefault: MutableStateFlow<Boolean>,
     val showRandomCatalogImage: MutableStateFlow<Boolean>,
+    val showOnlyConfirmedTags: MutableStateFlow<Boolean>,
     val showOutdatedCatalogs: MutableStateFlow<Boolean>,
     val forceOneDisplayColumn: MutableStateFlow<Boolean>,
 ) {
     fun clear() {
         showGridByDefault.value = false
         showRandomCatalogImage.value = false
+        showOnlyConfirmedTags.value = false
+        artistTagsIn.value = emptySet()
+        artistTagsNotIn.value = emptySet()
+    }
+
+    companion object {
+        @Composable
+        fun rememberForPreview(): ArtistSortFilterPersistentState {
+            assertInPreview()
+            return ArtistSortFilterPersistentState(
+                sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
+                sortAscending = MutableStateFlow(true),
+                artistTagsIn = MutableStateFlow(setOf(ArtistTag.HAS_CATALOG)),
+                artistTagsNotIn = MutableStateFlow(setOf(ArtistTag.VERIFIED)),
+                showGridByDefault = MutableStateFlow(false),
+                showRandomCatalogImage = MutableStateFlow(true),
+                showOnlyConfirmedTags = MutableStateFlow(false),
+                showOutdatedCatalogs = MutableStateFlow(true),
+                forceOneDisplayColumn = MutableStateFlow(false),
+            )
+        }
     }
 }
 
-@Suppress("CanBeParameter")
 @Serializable
-internal class ArtistSortFilterState @RememberInComposition constructor(
-    private val _sortOption: MutableState<ArtistSearchSortOption> =
-        mutableStateOf(ArtistSearchSortOption.RANDOM),
-    private val _sortAscending: MutableState<Boolean> = mutableStateOf(true),
-    private val _showOnlyConfirmedTags: MutableState<Boolean> = mutableStateOf(false),
+class ArtistSortFilterSaveableState @RememberInComposition constructor(
     val series: SeriesState = SeriesState(),
     val merch: MerchTagSectionState = MerchTagSectionState(),
     val commissions: FilterSectionState<CommissionType> = FilterSectionState(),
-    val artistTags: FilterSectionState<ArtistTag> = FilterSectionState(),
     val links: LinksState = LinksState(),
-    @Serializable(with = SnapshotStateSetSerializer::class)
+    @Serializable(SnapshotStateSetSerializer::class)
     val expandedSections: SnapshotStateSet<Section> = mutableStateSetOf(),
     // TODO: Store hides persistently?
+    @Serializable(MutableStateSerializer::class)
     private val _hideFavorited: MutableState<Boolean> = mutableStateOf(false),
+    @Serializable(MutableStateSerializer::class)
     private val _hideIgnored: MutableState<Boolean> = mutableStateOf(false),
 ) {
-    var sortOption by _sortOption
-    var sortAscending by _sortAscending
-    var showOnlyConfirmedTags by _showOnlyConfirmedTags
-
     var hideFavorited by _hideFavorited
     var hideIgnored by _hideIgnored
 
     fun clear() {
         Snapshot.withMutableSnapshot {
-            showOnlyConfirmedTags = false
             series.clear()
             merch.clear()
             commissions.clear()
-            artistTags.clear()
             links.clear()
             hideFavorited = false
             hideIgnored = false
@@ -499,10 +630,9 @@ internal class ArtistSortFilterState @RememberInComposition constructor(
 
     @Serializable
     class SeriesState @RememberInComposition constructor(
-        @Serializable(with = TextFieldStateSerializer::class)
+        @Serializable(TextFieldStateSerializer::class)
         val query: TextFieldState = TextFieldState(),
-        val lockedSeries: SeriesFilterEntry? = null,
-        @Serializable(with = SnapshotStateListSerializer::class)
+        @Serializable(SnapshotStateListSerializer::class)
         val seriesIn: SnapshotStateList<SeriesFilterEntry> = mutableStateListOf(),
     ) {
         fun clear() {
@@ -514,7 +644,7 @@ internal class ArtistSortFilterState @RememberInComposition constructor(
     }
 
     @Serializable
-    internal class LinksState(
+    class LinksState(
         val links: TagSectionState = TagSectionState(),
     ) {
         fun clear() {
@@ -537,29 +667,23 @@ internal class ArtistSortFilterState @RememberInComposition constructor(
 private fun ArtistSortFilterSheetContentPreview(state: ArtistSortFilterState) {
     ArtistSortFilterSheetContent(
         state = state,
-        persistentState = ArtistSortFilterPersistentState(
-            showGridByDefault = MutableStateFlow(false),
-            showRandomCatalogImage = MutableStateFlow(true),
-            showOutdatedCatalogs = MutableStateFlow(true),
-            forceOneDisplayColumn = MutableStateFlow(false),
-        ),
+        sheetState = rememberBottomSheetState(SheetValue.PartiallyExpanded),
         seriesImage = { null },
         seriesAutocompleteResults = { emptyList() },
-        merchTagData = { MerchTagData(MerchEntryProvider.values.toList()) }
     )
 }
 
 @AlleyPreview
 @Composable
 private fun ArtistSortFilterSheetContentPreview() {
-    ArtistSortFilterSheetContentPreview(remember { ArtistSortFilterState() })
+    ArtistSortFilterSheetContentPreview(ArtistSortFilterState.rememberForPreview())
 }
 
 @AlleyPreview
 @Composable
 private fun ArtistSortFilterSheetContentExpandedPreview0() {
-    val state = remember { ArtistSortFilterState() }.apply {
-        expandedSections.addAll(Section.entries.take(4))
+    val state = ArtistSortFilterState.rememberForPreview().apply {
+        saveableState.expandedSections.addAll(Section.entries.take(4))
     }
     ArtistSortFilterSheetContentPreview(state)
 }
@@ -569,8 +693,8 @@ private fun ArtistSortFilterSheetContentExpandedPreview0() {
 private fun ArtistSortFilterSheetContentExpandedPreview1() {
     val scrollState = rememberScrollState(1000)
     Column(modifier = Modifier.verticalScroll(scrollState)) {
-        val state = remember { ArtistSortFilterState() }.apply {
-            expandedSections.addAll(Section.entries.drop(4))
+        val state = ArtistSortFilterState.rememberForPreview().apply {
+            saveableState.expandedSections.addAll(Section.entries.drop(4))
         }
         ArtistSortFilterSheetContentPreview(state)
     }

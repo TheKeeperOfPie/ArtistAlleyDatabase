@@ -20,7 +20,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -62,7 +61,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -1070,47 +1068,6 @@ fun SortFilterBottomScaffold(
                 Spacer(Modifier.height(1.dp))
             }
         },
-        sheetContainerColor = Color.Unspecified,
-        sheetTonalElevation = 4.dp,
-        sheetShadowElevation = 4.dp,
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = topBar,
-        modifier = modifier,
-        content = content,
-        // TODO: Error state
-        // snackbarHost = {},
-    )
-}
-
-@Composable
-fun SortFilterBottomScaffold2(
-    modifier: Modifier = Modifier,
-    topBar: @Composable (() -> Unit)? = null,
-    sheetState: SheetState = rememberBottomSheetState(
-        initialValue = SheetValue.PartiallyExpanded,
-        enabledValues = setOf(SheetValue.PartiallyExpanded, SheetValue.Expanded),
-    ),
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
-    sheetPeekHeight: Dp = Dp.Unspecified,
-    bottomNavigationState: BottomNavigationState? = null,
-    sheetContent: @Composable ColumnScope.() -> Unit,
-    content: @Composable (PaddingValues) -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(
-        enabled = bottomSheetState.targetValue == SheetValue.Expanded
-                && !WindowInsets.isImeVisibleKmp
-    ) {
-        scope.launch { bottomSheetState.partialExpand() }
-    }
-
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
-                (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
-        sheetDragHandle = null,
-        sheetContent = sheetContent,
         sheetContainerColor = Color.Unspecified,
         sheetTonalElevation = 4.dp,
         sheetShadowElevation = 4.dp,

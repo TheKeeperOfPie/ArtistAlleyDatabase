@@ -10,17 +10,11 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material3.BottomSheetScaffoldState
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,13 +28,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.rememberScrollbarState
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun <T : Any, ColumnType> SearchScreen2(
     state: SearchScreen.State<ColumnType>,
@@ -49,58 +39,40 @@ fun <T : Any, ColumnType> SearchScreen2(
     header: @Composable () -> Unit,
     itemRow: @Composable (DisplayType, entry: T) -> Unit,
     modifier: Modifier = Modifier,
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
-    sortFilterState: SortFilterState<*>,
-    topBar: @Composable () -> Unit = {},
     unfilteredCount: () -> Int = { 0 },
     columnHeader: @Composable (column: ColumnType) -> Unit = { TwoWayGrid.ColumnHeader(it) },
     tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
     noResultsItem: (@Composable () -> Unit)? = null,
     moreResultsItem: (@Composable () -> Unit)? = null,
 ) where ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
-    val scope = rememberCoroutineScope()
-    BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-        scope.launch {
-            scaffoldState.bottomSheetState.partialExpand()
-        }
-    }
-    SortFilterBottomScaffold(
-        state = sortFilterState,
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 72.dp,
-        topBar = topBar,
-        modifier = modifier,
-        // TODO: This breaks vertical scrolling with 1.12.0-beta03+
-//                .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-    ) {
-        val displayType by state.displayType.collectAsStateWithLifecycle()
-        if (displayType == DisplayType.TABLE) {
-            TwoWayGrid(
-                header = header,
-                rows = entries,
-                unfilteredCount = unfilteredCount,
-                columns = state.columns,
-                contentPadding = PaddingValues(bottom = 200.dp),
-                columnHeader = columnHeader,
-                tableCell = tableCell,
-                noResultsHeader = noResultsItem,
-                moreResultsFooter = moreResultsItem,
-                modifier = Modifier.fillMaxWidth()
-            )
-        } else {
-            VerticalGrid(
-                state = state,
-                header = header,
-                entries = entries,
-                itemToId = itemToId,
-                unfilteredCount = unfilteredCount,
-                gridState = gridState,
-                itemRow = itemRow,
-                noResultsItem = noResultsItem,
-                moreResultsItem = moreResultsItem,
-            )
-        }
+    val displayType by state.displayType.collectAsStateWithLifecycle()
+    if (displayType == DisplayType.TABLE) {
+        TwoWayGrid(
+            header = header,
+            rows = entries,
+            unfilteredCount = unfilteredCount,
+            columns = state.columns,
+            contentPadding = PaddingValues(bottom = 200.dp),
+            columnHeader = columnHeader,
+            tableCell = tableCell,
+            noResultsHeader = noResultsItem,
+            moreResultsFooter = moreResultsItem,
+            modifier = modifier.fillMaxWidth()
+        )
+    } else {
+        VerticalGrid(
+            state = state,
+            header = header,
+            entries = entries,
+            itemToId = itemToId,
+            unfilteredCount = unfilteredCount,
+            gridState = gridState,
+            itemRow = itemRow,
+            noResultsItem = noResultsItem,
+            moreResultsItem = moreResultsItem,
+            modifier = modifier,
+        )
     }
 }
 

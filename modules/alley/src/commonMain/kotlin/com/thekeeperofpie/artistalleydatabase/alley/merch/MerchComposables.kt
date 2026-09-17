@@ -5,9 +5,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.snapshots.Snapshot
-import androidx.compose.runtime.snapshots.SnapshotStateSet
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_content_description
@@ -17,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExclud
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSectionState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.TextFieldStateSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.serialization.Serializable
@@ -92,9 +89,7 @@ internal fun MerchTagSection(
 }
 
 @Serializable
-internal class MerchTagSectionState(
-    @Serializable(with = SnapshotStateSetSerializer::class)
-    val merchIdsLockedIn: SnapshotStateSet<String> = mutableStateSetOf(),
+class MerchTagSectionState(
     @Serializable(with = TextFieldStateSerializer::class)
     val query: TextFieldState = TextFieldState(),
     val tags: TagSectionState = TagSectionState(),
@@ -113,6 +108,7 @@ internal fun MerchTagSection2(
     onExpandedChange: (Boolean) -> Unit,
     state: MerchTagSectionState,
     merchTagData: () -> MerchTagData,
+    merchIdsLockedIn: () -> Set<String>,
     sectionHeader: @Composable () -> Unit = { Text(stringResource(Res.string.alley_merch_filter_label)) },
     sectionHeaderDropdownContentDescriptionRes: StringResource = Res.string.alley_merch_filter_content_description,
     header: (@Composable () -> Unit)? = null,
@@ -126,7 +122,7 @@ internal fun MerchTagSection2(
         header = header,
         tags = merchData.tags,
         state = state.tags,
-        disabledOptions = state.merchIdsLockedIn,
+        disabledOptions = merchIdsLockedIn(),
         showRootTagsWhenNotExpanded = false,
         categoryToName = { it.id },
         tagChip = { merch, selected, enabled, modifier ->
@@ -137,7 +133,7 @@ internal fun MerchTagSection2(
                 onClick = {
                     state.tags.tagIdIn.replaceAll(
                         merchData.toggle(
-                            merchIdsLockedIn = state.merchIdsLockedIn,
+                            merchIdsLockedIn = merchIdsLockedIn(),
                             merchIdIn = state.tags.tagIdIn,
                             merchId = merchId,
                             wasSelected = selected,
