@@ -21,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -106,14 +105,6 @@ class ArtistSearchViewModel(
         savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
     }
 
-    val searchState = SearchScreen.State(
-        columns = ArtistSearchColumn.entries,
-        displayType = settings.displayType,
-        showGridByDefault = settings.showGridByDefault,
-        showRandomCatalogImage = settings.showRandomCatalogImage,
-        forceOneDisplayColumn = settings.forceOneDisplayColumn,
-    )
-
     val lockedSeriesEntry = flowOf(lockedSeries)
         .flatMapLatest {
             if (it == null) flowOf(null) else seriesEntryDao.getSeriesById(it)
@@ -133,6 +124,7 @@ class ArtistSearchViewModel(
     )
 
     val displayType = settings.displayType
+    val forceOneDisplayColumn = settings.forceOneDisplayColumn
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 

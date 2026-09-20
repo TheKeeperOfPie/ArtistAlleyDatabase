@@ -50,10 +50,10 @@ object TwoWayGrid {
 
     @Composable
     operator fun <T, ColumnType> invoke(
+        columns: EnumEntries<ColumnType>,
         header: @Composable () -> Unit,
         rows: LazyPagingItems<T>,
         unfilteredCount: () -> Int,
-        columns: EnumEntries<ColumnType>,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
         modifier: Modifier = Modifier,
         columnHeader: @Composable (column: ColumnType) -> Unit = { ColumnHeader(it) },
@@ -63,7 +63,7 @@ object TwoWayGrid {
         horizontalScrollState: ScrollState = rememberScrollState(),
         topOffset: Dp = 0.dp,
         pinnedColumns: Int = 1,
-        contentPadding: PaddingValues = PaddingValues(0.dp),
+        contentPadding: PaddingValues = PaddingValues(bottom = 200.dp),
     ) where T : Any, ColumnType : Enum<ColumnType>, ColumnType : Column {
         CompositionLocalProvider(LocalOverscrollFactory provides null) {
             Row(modifier = modifier) {
