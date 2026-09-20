@@ -22,7 +22,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -37,7 +36,7 @@ fun <T : Any, ColumnType> SearchScreen2(
     entries: LazyPagingItems<T>,
     itemToId: (T) -> Any,
     header: @Composable () -> Unit,
-    itemRow: @Composable (DisplayType, entry: T) -> Unit,
+    itemRow: @Composable (SearchDisplayType, entry: T) -> Unit,
     modifier: Modifier = Modifier,
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     unfilteredCount: () -> Int = { 0 },
@@ -47,7 +46,7 @@ fun <T : Any, ColumnType> SearchScreen2(
     moreResultsItem: (@Composable () -> Unit)? = null,
 ) where ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
     val displayType by state.displayType.collectAsStateWithLifecycle()
-    if (displayType == DisplayType.TABLE) {
+    if (displayType == SearchDisplayType.TABLE) {
         TwoWayGrid(
             header = header,
             rows = entries,
@@ -87,7 +86,7 @@ private fun <T : Any> VerticalGrid(
     modifier: Modifier = Modifier,
     noResultsItem: (@Composable () -> Unit)? = null,
     moreResultsItem: (@Composable () -> Unit)? = null,
-    itemRow: @Composable (DisplayType, entry: T) -> Unit,
+    itemRow: @Composable (SearchDisplayType, entry: T) -> Unit,
 ) {
     Row(modifier = modifier) {
         var displayType by state.displayType.collectAsMutableStateWithLifecycle()
@@ -153,54 +152,54 @@ private fun <T : Any> VerticalGrid(
     }
 }
 
-private fun DisplayType.columns(forceOneDisplayColumn: Boolean) = if (forceOneDisplayColumn) {
+private fun SearchDisplayType.columns(forceOneDisplayColumn: Boolean) = if (forceOneDisplayColumn) {
     StaggeredGridCells.Fixed(1)
 } else {
     when (this) {
-        DisplayType.LIST,
-        DisplayType.CARD,
+        SearchDisplayType.LIST,
+        SearchDisplayType.CARD,
             -> StaggeredGridCells.Adaptive(330.dp)
-        DisplayType.IMAGE,
+        SearchDisplayType.IMAGE,
             -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
-        DisplayType.TABLE -> throw IllegalArgumentException()
+        SearchDisplayType.TABLE -> throw IllegalArgumentException()
     }
 }
 
-private fun DisplayType.contentPadding(horizontalContentPadding: Dp) = when (this) {
-    DisplayType.LIST,
-    DisplayType.IMAGE,
+private fun SearchDisplayType.contentPadding(horizontalContentPadding: Dp) = when (this) {
+    SearchDisplayType.LIST,
+    SearchDisplayType.IMAGE,
         -> PaddingValues(
         top = 8.dp,
         start = horizontalContentPadding,
         end = horizontalContentPadding,
         bottom = 200.dp,
     )
-    DisplayType.CARD,
+    SearchDisplayType.CARD,
         -> PaddingValues(
         start = 16.dp + horizontalContentPadding,
         end = 16.dp + horizontalContentPadding,
         top = 8.dp,
         bottom = 200.dp,
     )
-    DisplayType.TABLE -> throw IllegalArgumentException()
+    SearchDisplayType.TABLE -> throw IllegalArgumentException()
 }
 
-private val DisplayType.verticalItemSpacing
+private val SearchDisplayType.verticalItemSpacing
     get() = when (this) {
-        DisplayType.LIST,
-        DisplayType.IMAGE,
+        SearchDisplayType.LIST,
+        SearchDisplayType.IMAGE,
             -> 0.dp
-        DisplayType.CARD,
+        SearchDisplayType.CARD,
             -> 8.dp
-        DisplayType.TABLE -> throw IllegalArgumentException()
+        SearchDisplayType.TABLE -> throw IllegalArgumentException()
     }
 
-private val DisplayType.horizontalArrangement
+private val SearchDisplayType.horizontalArrangement
     get() = when (this) {
-        DisplayType.CARD,
+        SearchDisplayType.CARD,
             -> 8.dp
-        DisplayType.LIST,
-        DisplayType.IMAGE,
+        SearchDisplayType.LIST,
+        SearchDisplayType.IMAGE,
             -> 0.dp
-        DisplayType.TABLE -> throw IllegalArgumentException()
+        SearchDisplayType.TABLE -> throw IllegalArgumentException()
     }.let(Arrangement::spacedBy)

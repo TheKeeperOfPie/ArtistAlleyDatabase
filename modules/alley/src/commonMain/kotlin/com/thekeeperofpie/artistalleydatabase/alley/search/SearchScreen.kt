@@ -43,7 +43,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -53,10 +52,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_card
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_image
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_list
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_table
 import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
@@ -73,11 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
-import com.thekeeperofpie.artistalleydatabase.icons.Icons
-import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.ViewList
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Image
-import com.thekeeperofpie.artistalleydatabase.icons.filled.TableChart
-import com.thekeeperofpie.artistalleydatabase.icons.filled.ViewAgenda
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -93,7 +83,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScr
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollAreaState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
@@ -287,7 +276,7 @@ object SearchScreen {
         },
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
         val displayType by state.displayType.collectAsStateWithLifecycle()
-        if (displayType == DisplayType.TABLE) {
+        if (displayType == SearchDisplayType.TABLE) {
             Table(
                 horizontalScrollState = horizontalScrollState,
                 header = header,
@@ -406,48 +395,48 @@ object SearchScreen {
                         StaggeredGridCells.Fixed(1)
                     } else {
                         when (displayType) {
-                            DisplayType.LIST,
-                            DisplayType.CARD,
+                            SearchDisplayType.LIST,
+                            SearchDisplayType.CARD,
                                 -> StaggeredGridCells.Adaptive(350.dp)
-                            DisplayType.IMAGE,
+                            SearchDisplayType.IMAGE,
                                 -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
-                            DisplayType.TABLE -> throw IllegalArgumentException()
+                            SearchDisplayType.TABLE -> throw IllegalArgumentException()
                         }
                     },
                     state = gridState,
                     contentPadding = when (displayType) {
-                        DisplayType.LIST,
-                        DisplayType.IMAGE,
+                        SearchDisplayType.LIST,
+                        SearchDisplayType.IMAGE,
                             -> PaddingValues(
                             top = 8.dp,
                             start = horizontalContentPadding,
                             end = horizontalContentPadding,
                             bottom = 200.dp,
                         )
-                        DisplayType.CARD,
+                        SearchDisplayType.CARD,
                             -> PaddingValues(
                             start = 16.dp + horizontalContentPadding,
                             end = 16.dp + horizontalContentPadding,
                             top = 8.dp,
                             bottom = 200.dp,
                         )
-                        DisplayType.TABLE -> throw IllegalArgumentException()
+                        SearchDisplayType.TABLE -> throw IllegalArgumentException()
                     },
                     verticalItemSpacing = when (displayType) {
-                        DisplayType.LIST,
-                        DisplayType.IMAGE,
+                        SearchDisplayType.LIST,
+                        SearchDisplayType.IMAGE,
                             -> 0.dp
-                        DisplayType.CARD,
+                        SearchDisplayType.CARD,
                             -> 8.dp
-                        DisplayType.TABLE -> throw IllegalArgumentException()
+                        SearchDisplayType.TABLE -> throw IllegalArgumentException()
                     },
                     horizontalArrangement = when (displayType) {
-                        DisplayType.CARD,
+                        SearchDisplayType.CARD,
                             -> 8.dp
-                        DisplayType.LIST,
-                        DisplayType.IMAGE,
+                        SearchDisplayType.LIST,
+                        SearchDisplayType.IMAGE,
                             -> 0.dp
-                        DisplayType.TABLE -> throw IllegalArgumentException()
+                        SearchDisplayType.TABLE -> throw IllegalArgumentException()
                     }.let(Arrangement::spacedBy),
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -509,7 +498,7 @@ object SearchScreen {
 
                             val sharedElementId = itemToSharedElementId(entry)
                             when (displayType) {
-                                DisplayType.LIST -> {
+                                SearchDisplayType.LIST -> {
                                     val ignored = entry.ignored
                                     val lane by remember(index) {
                                         derivedStateOf {
@@ -536,7 +525,7 @@ object SearchScreen {
                                             )
                                     )
                                 }
-                                DisplayType.CARD -> ItemCard(
+                                SearchDisplayType.CARD -> ItemCard(
                                     entry = entry,
                                     sharedElementId = itemToSharedElementId(entry),
                                     showGridByDefault = showGridByDefault,
@@ -557,7 +546,7 @@ object SearchScreen {
                                         sharedElementId
                                     ),
                                 )
-                                DisplayType.IMAGE -> ItemImage(
+                                SearchDisplayType.IMAGE -> ItemImage(
                                     entry = entry,
                                     sharedElementId = itemToSharedElementId(entry),
                                     showGridByDefault = showGridByDefault,
@@ -578,7 +567,7 @@ object SearchScreen {
                                         sharedElementId
                                     ),
                                 )
-                                DisplayType.TABLE -> throw IllegalArgumentException()
+                                SearchDisplayType.TABLE -> throw IllegalArgumentException()
                             }
                         }
 
@@ -612,17 +601,10 @@ object SearchScreen {
         override val imageWidthToHeightRatio: Float get() = 1f
     }
 
-    enum class DisplayType(val label: StringResource, val icon: ImageVector) {
-        CARD(Res.string.alley_display_type_card, Icons.Filled.ViewAgenda),
-        IMAGE(Res.string.alley_display_type_image, Icons.Filled.Image),
-        LIST(Res.string.alley_display_type_list, Icons.AutoMirrored.Filled.ViewList),
-        TABLE(Res.string.alley_display_type_table, Icons.Default.TableChart),
-    }
-
     @Stable
     class State<ColumnType>(
         val columns: EnumEntries<ColumnType>,
-        val displayType: MutableStateFlow<DisplayType>,
+        val displayType: MutableStateFlow<SearchDisplayType>,
         val showGridByDefault: MutableStateFlow<Boolean>,
         val showRandomCatalogImage: MutableStateFlow<Boolean>,
         val forceOneDisplayColumn: MutableStateFlow<Boolean>,

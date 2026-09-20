@@ -4,7 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -62,8 +62,8 @@ class ArtistAlleyWebSettings(
     override val displayType by register(
         serialize = { it.name },
         deserialize = { value ->
-            SearchScreen.DisplayType.entries.find { it.name == value }
-                ?: SearchScreen.DisplayType.CARD
+            SearchDisplayType.entries.find { it.name == value }
+                ?: SearchDisplayType.CARD
         },
     )
     override val artistsSortOption by register(

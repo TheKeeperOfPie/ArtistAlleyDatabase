@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchItemImage
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.rememberSearchPagerState
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
@@ -39,7 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 
 @Composable
 fun ArtistSearchItem(
-    displayType: DisplayType,
+    displayType: SearchDisplayType,
     artistWithUserData: ArtistWithUserData,
     showGridByDefault: Boolean,
     showRandomCatalogImage: Boolean,
@@ -70,7 +70,7 @@ fun ArtistSearchItem(
     )
     val ignored = userEntry.ignored
     when (displayType) {
-        DisplayType.LIST -> {
+        SearchDisplayType.LIST -> {
             ArtistListRow(
                 artistWithUserData = artistWithUserData,
                 onFavoriteToggle = onFavoriteToggle,
@@ -90,7 +90,7 @@ fun ArtistSearchItem(
                     )
             )
         }
-        DisplayType.CARD ->
+        SearchDisplayType.CARD ->
             SearchItemCard(
                 ignored = ignored,
                 onIgnoredToggle = onIgnoredToggle,
@@ -114,7 +114,7 @@ fun ArtistSearchItem(
                     tagRow = tagRow,
                 )
             }
-        DisplayType.IMAGE -> {
+        SearchDisplayType.IMAGE -> {
             SearchItemImage(
                 images = images,
                 ignored = ignored,
@@ -183,7 +183,7 @@ fun ArtistSearchItem(
                 modifier = Modifier.sharedBounds("itemContainer", sharedElementId),
             )
         }
-        DisplayType.TABLE -> throw IllegalArgumentException()
+        SearchDisplayType.TABLE -> throw IllegalArgumentException()
     }
 }
 
@@ -231,7 +231,7 @@ private fun ArtistImagePager(
 }
 
 @Composable
-private fun Preview(displayType: DisplayType) {
+private fun Preview(displayType: SearchDisplayType) {
     val artistWithUserData = ArtistWithUserDataProvider.values.first()
     ArtistSearchItem(
         displayType = displayType,
@@ -257,12 +257,12 @@ private fun Preview(displayType: DisplayType) {
 
 @AlleyPreview
 @Composable
-private fun ArtistSearchItemCardPreview() = Preview(DisplayType.CARD)
+private fun ArtistSearchItemCardPreview() = Preview(SearchDisplayType.CARD)
 
 @AlleyPreview
 @Composable
-private fun ArtistSearchItemImagePreview() = Preview(DisplayType.IMAGE)
+private fun ArtistSearchItemImagePreview() = Preview(SearchDisplayType.IMAGE)
 
 @AlleyPreview
 @Composable
-private fun ArtistSearchItemListPreview() = Preview(DisplayType.LIST)
+private fun ArtistSearchItemListPreview() = Preview(SearchDisplayType.LIST)

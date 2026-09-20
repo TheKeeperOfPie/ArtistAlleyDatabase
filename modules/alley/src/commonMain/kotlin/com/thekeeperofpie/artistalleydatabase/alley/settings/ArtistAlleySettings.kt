@@ -4,7 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -16,7 +16,7 @@ interface ArtistAlleySettings {
     val appTheme: MutableStateFlow<AppThemeSetting>
     val lastKnownArtistsCsvSize: MutableStateFlow<Long>
     val lastKnownStampRalliesCsvSize: MutableStateFlow<Long>
-    val displayType: MutableStateFlow<SearchScreen.DisplayType>
+    val displayType: MutableStateFlow<SearchDisplayType>
     val artistsSortOption: MutableStateFlow<ArtistSearchSortOption>
     val artistsSortAscending: MutableStateFlow<Boolean>
     val stampRalliesSortOption: MutableStateFlow<StampRallySearchSortOption>

@@ -84,8 +84,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
@@ -782,7 +782,7 @@ object FavoritesScreen {
         val randomSeed: Int,
         val tab: MutableStateFlow<EntryTab>,
         val query: MutableStateFlow<String>,
-        val displayType: MutableStateFlow<DisplayType>,
+        val displayType: MutableStateFlow<SearchDisplayType>,
         val year: MutableStateFlow<DataYear>,
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
         val artistsSearchState: SearchScreen.State<ArtistSearchColumn>,

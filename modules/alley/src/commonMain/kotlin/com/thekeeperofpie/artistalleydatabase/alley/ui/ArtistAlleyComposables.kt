@@ -125,7 +125,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
@@ -807,7 +807,7 @@ private fun YearDropdown(
 fun DisplayTypeSearchBar(
     onClickBack: (() -> Unit)?,
     query: MutableStateFlow<String>,
-    displayType: MutableStateFlow<DisplayType>,
+    displayType: MutableStateFlow<SearchDisplayType>,
     itemCount: () -> Int,
     title: () -> String?,
     modifier: Modifier = Modifier,
@@ -880,7 +880,7 @@ fun DisplayTypeSearchBar(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
                         ) {
-                            DisplayType.entries.forEach {
+                            SearchDisplayType.entries.forEach {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(it.label)) },
                                     leadingIcon = {

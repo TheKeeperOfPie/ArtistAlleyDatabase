@@ -61,9 +61,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchMoreResults
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen2
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
@@ -588,7 +588,7 @@ private fun Preview() = PreviewDark {
         unfilteredCount = MutableStateFlow(1000),
         searchState = SearchScreen.State(
             columns = ArtistSearchColumn.entries,
-            displayType = MutableStateFlow(DisplayType.CARD),
+            displayType = MutableStateFlow(SearchDisplayType.CARD),
             showGridByDefault = MutableStateFlow(false),
             showRandomCatalogImage = MutableStateFlow(false),
             forceOneDisplayColumn = MutableStateFlow(false),

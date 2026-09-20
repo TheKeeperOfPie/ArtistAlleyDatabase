@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -36,7 +36,7 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
         override val appTheme = MutableStateFlow(AppThemeSetting.AUTO)
         override val lastKnownArtistsCsvSize = MutableStateFlow(-1L)
         override val lastKnownStampRalliesCsvSize = MutableStateFlow(-1L)
-        override val displayType = MutableStateFlow(SearchScreen.DisplayType.CARD)
+        override val displayType = MutableStateFlow(SearchDisplayType.CARD)
         override val artistsSortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM)
         override val artistsSortAscending = MutableStateFlow(true)
         override val stampRalliesSortOption = MutableStateFlow(StampRallySearchSortOption.RANDOM)
