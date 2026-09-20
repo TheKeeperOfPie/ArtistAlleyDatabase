@@ -1,11 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.merch
 
-import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.snapshots.Snapshot
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_content_description
@@ -15,9 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExclud
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSectionState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.TextFieldStateSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
-import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -88,25 +83,11 @@ internal fun MerchTagSection(
     )
 }
 
-@Serializable
-class MerchTagSectionState(
-    @Serializable(with = TextFieldStateSerializer::class)
-    val query: TextFieldState = TextFieldState(),
-    val tags: TagSectionState = TagSectionState(),
-) {
-    fun clear() {
-        Snapshot.withMutableSnapshot {
-            query.clearText()
-            tags.clear()
-        }
-    }
-}
-
 @Composable
 internal fun MerchTagSection2(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    state: MerchTagSectionState,
+    state: TagSectionState,
     merchTagData: () -> MerchTagData,
     merchIdsLockedIn: () -> Set<String>,
     sectionHeader: @Composable () -> Unit = { Text(stringResource(Res.string.alley_merch_filter_label)) },
@@ -121,20 +102,20 @@ internal fun MerchTagSection2(
         sectionHeaderDropdownContentDescriptionRes = sectionHeaderDropdownContentDescriptionRes,
         header = header,
         tags = merchData.tags,
-        state = state.tags,
+        state = state,
         disabledOptions = merchIdsLockedIn(),
         showRootTagsWhenNotExpanded = false,
         categoryToName = { it.id },
         tagChip = { merch, selected, enabled, modifier ->
             val merchId = merch.id
-            val selected = merchData.selected(state.tags.tagIdIn, merchId)
+            val selected = merchData.selected(state.tagIdIn, merchId)
             FilterChip(
                 selected = selected,
                 onClick = {
-                    state.tags.tagIdIn.replaceAll(
+                    state.tagIdIn.replaceAll(
                         merchData.toggle(
                             merchIdsLockedIn = merchIdsLockedIn(),
-                            merchIdIn = state.tags.tagIdIn,
+                            merchIdIn = state.tagIdIn,
                             merchId = merchId,
                             wasSelected = selected,
                         )
@@ -146,7 +127,7 @@ internal fun MerchTagSection2(
                 },
                 leadingIcon = {
                     IncludeExcludeIcon(
-                        enabled = if (state.tags.tagIdIn.contains(merchId)) true else null,
+                        enabled = if (state.tagIdIn.contains(merchId)) true else null,
                         contentDescriptionRes = Res.string.alley_merch_chip_state_content_description,
                     )
                 },

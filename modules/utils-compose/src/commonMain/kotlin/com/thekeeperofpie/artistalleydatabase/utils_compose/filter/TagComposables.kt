@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
@@ -184,6 +185,10 @@ class TagSectionState(
     @Serializable(with = TextFieldStateSerializer::class)
     val query: TextFieldState = TextFieldState(),
 ) {
+    val isDefault by derivedStateOf {
+        tagIdIn.isEmpty() && tagIdNotIn.isEmpty()
+    }
+
     fun clear() {
         Snapshot.withMutableSnapshot {
             tagIdIn.clear()

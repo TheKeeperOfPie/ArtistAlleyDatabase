@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
@@ -12,6 +13,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,18 +24,23 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -47,6 +54,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.Snapshot
@@ -123,7 +132,7 @@ fun <SortType> SortSection(
     onExpandedChange: (Boolean) -> Unit,
     sortOptions: () -> List<SortType>,
     sortOption: () -> SortType,
-    onSortClick: (SortType) -> Unit,
+    onSortChanged: (SortType) -> Unit,
     sortOptionLabel: @Composable (SortType) -> Unit,
     sortAscending: () -> Boolean?,
     onSortAscendingChange: (Boolean) -> Unit,
@@ -149,14 +158,23 @@ fun <SortType> SortSection(
             ) {
                 Header(expanded = expanded, content = header)
 
-                val sortOption = sortOption()
-                sortOptions().forEach {
-                    val enabled = it == sortOption
+                val option = sortOption()
+                val options = sortOptions()
+                options.forEach {
+                    val enabled = it == option
                     if (!expanded && !enabled) return@forEach
                     FilterChip(
                         selected = enabled,
                         enabled = clickable,
-                        onClick = { onSortClick(it) },
+                        onClick = {
+                            onSortChanged(
+                                if (option == it) {
+                                    options[(options.indexOf(it) + 1) % options.size]
+                                } else {
+                                    it
+                                }
+                            )
+                        },
                         label = { sortOptionLabel(it) },
                         modifier = Modifier.animateContentSize()
                     )
@@ -298,6 +316,10 @@ class FilterSectionState<T>(
     val filterNotIn: SnapshotStateSet<T> = mutableStateSetOf(),
     val filterLockedIn: T? = null,
 ) {
+    val isDefault by derivedStateOf {
+        filterIn.isEmpty() && filterNotIn.isEmpty()
+    }
+
     fun clear() {
         Snapshot.withMutableSnapshot {
             filterIn.replaceAll(setOfNotNull(filterLockedIn))
@@ -530,7 +552,7 @@ fun SectionGroup(
     onExpandedChange: (Boolean) -> Unit,
     header: @Composable () -> Unit,
     headerDropdownContentDescriptionRes: StringResource,
-    content: @Composable () -> Unit,
+    content: @Composable (expanded: Boolean) -> Unit,
 ) {
     val expanded = expanded()
     CustomFilterSection(
@@ -539,13 +561,12 @@ fun SectionGroup(
         header = header,
         headerDropdownContentDescriptionRes = headerDropdownContentDescriptionRes,
     ) {
-        AnimatedVisibility(
-            visible = expanded,
-            enter = expandVertically(),
-            exit = shrinkVertically(),
-        ) {
+        AnimatedContent(
+            targetState = expanded,
+            transitionSpec = { expandVertically().togetherWith(shrinkVertically()) },
+        ) { expandedState ->
             Column(modifier = Modifier.padding(start = 16.dp)) {
-                content()
+                content(expandedState)
             }
         }
     }
@@ -621,43 +642,57 @@ fun SortFilterBottomScaffold2(
 fun SortFilterBottomScaffoldSheetContent(
     sheetState: SheetState,
     actions: (@Composable RowScope.() -> Unit)? = null,
+    footer: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
 
-    Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    if (sheetState.currentValue == SheetValue.Expanded) {
-                        scope.launch { sheetState.partialExpand() }
-                    } else {
-                        scope.launch { sheetState.expand() }
+    Column {
+        Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (sheetState.currentValue == SheetValue.Expanded) {
+                            scope.launch { sheetState.partialExpand() }
+                        } else {
+                            scope.launch { sheetState.expand() }
+                        }
                     }
-                }
-        ) {
-            BottomSheetDefaults.DragHandle(
-                color = LocalContentColor.current,
-                modifier = Modifier.align(Alignment.Center)
-            )
+            ) {
+                BottomSheetDefaults.DragHandle(
+                    color = LocalContentColor.current,
+                    modifier = Modifier.align(Alignment.Center)
+                )
 
-            if (actions != null) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 8.dp)
-                ) {
-                    actions()
+                if (actions != null) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 8.dp)
+                    ) {
+                        actions()
+                    }
                 }
             }
         }
-    }
 
-    Column(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
-    ) {
-        content()
+        Column(
+            Modifier
+                .weight(1f, fill = false)
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .verticalScroll(rememberScrollState())
+                .animateContentSize()
+        ) {
+            content()
+
+            Spacer(Modifier.height(72.dp))
+
+            if (footer != null) {
+                HorizontalDivider()
+                footer()
+            }
+        }
     }
 }
 
@@ -665,7 +700,7 @@ fun SortFilterBottomScaffoldSheetContent(
 fun SectionsExpandIndicator(
     allSectionsExpanded: () -> Boolean,
     onSectionsExpandedChanged: (Boolean) -> Unit,
-    activatedCount: () -> Int,
+    activatedCount: @Composable () -> Int,
     targetValue: () -> SheetValue,
     modifier: Modifier = Modifier,
 ) {

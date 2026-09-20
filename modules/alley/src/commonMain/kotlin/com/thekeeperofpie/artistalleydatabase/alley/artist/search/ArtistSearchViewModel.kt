@@ -181,9 +181,9 @@ class ArtistSearchViewModel(
             sortOption = sortOption,
             sortAscending = sortAscending,
             seriesIn = seriesIn,
-            merchIn = saveableState.merch.tags.tagIdIn.toSet() + setOfNotNull(lockedMerch),
+            merchIn = saveableState.merch.tagIdIn.toSet() + setOfNotNull(lockedMerch),
             commissionsIn = saveableState.commissions.filterIn.toSet(),
-            linkTypesIn = saveableState.links.links.tagIdIn.toSet().map(Link.Type::valueOf).toSet(),
+            linkTypesIn = saveableState.links.tagIdIn.toSet().map(Link.Type::valueOf).toSet(),
             exhibitorTagsIn = emptySet(), // TODO
             artistTagsIn = artistTagsIn,
             artistTagsNotIn = artistTagsNotIn,

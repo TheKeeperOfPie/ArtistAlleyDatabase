@@ -9,10 +9,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
@@ -28,11 +27,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.annotation.RememberInComposition
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -74,13 +75,13 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_clear_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
+import artistalleydatabase.modules.utils_compose.generated.resources.clear
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection2
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSectionState
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection.SeriesFilterEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
@@ -117,6 +118,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 @Composable
 internal fun ArtistSortFilterSheetContent(
@@ -143,9 +145,16 @@ internal fun ArtistSortFilterSheetContent(
                         expandedSections.clear()
                     }
                 },
-                activatedCount = { 0 }, // TODO
+                activatedCount = { state.activeCount },
                 targetValue = { sheetState.targetValue },
             )
+        },
+        footer = {
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = { state.clear() }) {
+                    Text(text = stringResource(UtilsComposeRes.string.clear))
+                }
+            }
         }
     ) {
         val saveableState = state.saveableState
@@ -158,7 +167,7 @@ internal fun ArtistSortFilterSheetContent(
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SORT) },
             sortOptions = { ArtistSearchSortOption.entries },
             sortOption = { sortOption },
-            onSortClick = { sortOption = it },
+            onSortChanged = { sortOption = it },
             sortOptionLabel = { Text(stringResource(it.textRes)) },
             sortAscending = { sortAscending },
             onSortAscendingChange = { sortAscending = it },
@@ -252,7 +261,7 @@ internal fun ArtistSortFilterSheetContent(
         LinksSection(
             expanded = { Section.LINKS in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.LINKS) },
-            linksState = saveableState.links,
+            state = saveableState.links,
         )
 
         HorizontalDivider()
@@ -265,8 +274,6 @@ internal fun ArtistSortFilterSheetContent(
         )
 
         HorizontalDivider()
-
-        Spacer(Modifier.height(120.dp))
     }
 }
 
@@ -282,63 +289,72 @@ private fun AdvancedSection(
         onExpandedChange = onExpandedChange,
         header = { Text(stringResource(Res.string.alley_filter_advanced)) },
         headerDropdownContentDescriptionRes = Res.string.alley_filter_advanced_expand_content_description,
-    ) {
-        var showGridByDefault by persistentState.showGridByDefault.collectAsMutableStateWithLifecycle()
-        SwitchSection(
-            title = { Text(stringResource(Res.string.alley_filter_show_grid_by_default)) },
-            enabled = { showGridByDefault },
-            onEnabledChanged = { showGridByDefault = it },
-        )
+    ) { expandedState ->
+        if (expandedState) {
+            var showGridByDefault by persistentState.showGridByDefault.collectAsMutableStateWithLifecycle()
+            SwitchSection(
+                title = { Text(stringResource(Res.string.alley_filter_show_grid_by_default)) },
+                enabled = { showGridByDefault },
+                onEnabledChanged = { showGridByDefault = it },
+            )
 
-        HorizontalDivider()
+            HorizontalDivider()
 
-        var showRandomCatalogImage by persistentState.showRandomCatalogImage.collectAsMutableStateWithLifecycle()
-        SwitchSection(
-            title = { Text(stringResource(Res.string.alley_filter_show_random_catalog_image)) },
-            enabled = { showRandomCatalogImage },
-            onEnabledChanged = { showRandomCatalogImage = it },
-        )
+            var showRandomCatalogImage by persistentState.showRandomCatalogImage.collectAsMutableStateWithLifecycle()
+            SwitchSection(
+                title = { Text(stringResource(Res.string.alley_filter_show_random_catalog_image)) },
+                enabled = { showRandomCatalogImage },
+                onEnabledChanged = { showRandomCatalogImage = it },
+            )
 
-        HorizontalDivider()
+            HorizontalDivider()
 
-        var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
-        ShowOnlyConfirmedTagsSection(
-            enabled = { showOnlyConfirmedTags },
-            onEnabledChanged = { showOnlyConfirmedTags = it },
-        )
+            var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+            ShowOnlyConfirmedTagsSection(
+                enabled = { showOnlyConfirmedTags },
+                onEnabledChanged = { showOnlyConfirmedTags = it },
+            )
 
-        HorizontalDivider()
+            HorizontalDivider()
 
-        var showOutdatedCatalogs by persistentState.showOutdatedCatalogs.collectAsMutableStateWithLifecycle()
-        SwitchSection(
-            title = { Text(stringResource(Res.string.alley_filter_show_outdated_catalogs)) },
-            enabled = { showOutdatedCatalogs },
-            onEnabledChanged = { showOutdatedCatalogs = it },
-        )
+            var showOutdatedCatalogs by persistentState.showOutdatedCatalogs.collectAsMutableStateWithLifecycle()
+            SwitchSection(
+                title = { Text(stringResource(Res.string.alley_filter_show_outdated_catalogs)) },
+                enabled = { showOutdatedCatalogs },
+                onEnabledChanged = { showOutdatedCatalogs = it },
+            )
 
-        HorizontalDivider()
+            HorizontalDivider()
 
-        SwitchSection(
-            title = { Text(stringResource(Res.string.alley_filter_hide_favorited)) },
-            enabled = { state.hideFavorited },
-            onEnabledChanged = { state.hideFavorited = it },
-        )
+            var forceOneDisplayColumn by persistentState.forceOneDisplayColumn.collectAsMutableStateWithLifecycle()
+            SwitchSection(
+                title = { Text(stringResource(Res.string.alley_filter_force_one_display_column)) },
+                enabled = { forceOneDisplayColumn },
+                onEnabledChanged = { forceOneDisplayColumn = it },
+            )
 
-        HorizontalDivider()
-        SwitchSection(
-            title = { Text(stringResource(Res.string.alley_filter_hide_ignored)) },
-            enabled = { state.hideIgnored },
-            onEnabledChanged = { state.hideIgnored = it },
-        )
+            HorizontalDivider()
+        }
 
-        HorizontalDivider()
+        if (expandedState || state.hideFavorited) {
+            SwitchSection(
+                title = { Text(stringResource(Res.string.alley_filter_hide_favorited)) },
+                enabled = { state.hideFavorited },
+                onEnabledChanged = { state.hideFavorited = it },
+            )
+        }
 
-        var forceOneDisplayColumn by persistentState.forceOneDisplayColumn.collectAsMutableStateWithLifecycle()
-        SwitchSection(
-            title = { Text(stringResource(Res.string.alley_filter_force_one_display_column)) },
-            enabled = { forceOneDisplayColumn },
-            onEnabledChanged = { forceOneDisplayColumn = it },
-        )
+        if (expandedState || (state.hideFavorited && !state.hideIgnored)) {
+            HorizontalDivider()
+        }
+
+        if (expandedState || state.hideIgnored) {
+            SwitchSection(
+                title = { Text(stringResource(Res.string.alley_filter_hide_ignored)) },
+                enabled = { state.hideIgnored },
+                onEnabledChanged = { state.hideIgnored = it },
+            )
+        }
     }
 }
 
@@ -491,16 +507,15 @@ private val linkTypes =
 private fun LinksSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    linksState: ArtistSortFilterSaveableState.LinksState,
+    state: TagSectionState,
 ) {
-    val tagsState = linksState.links
     TagSection2(
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         sectionHeader = { Text(stringResource(Res.string.alley_link_type_filter_label)) },
         sectionHeaderDropdownContentDescriptionRes = Res.string.alley_link_type_filter_content_description,
         tags = linkTypes,
-        state = tagsState,
+        state = state,
         showSearch = false,
         showRootTagsWhenNotExpanded = false,
         showRootTagsAtBottom = true,
@@ -510,7 +525,7 @@ private fun LinksSection(
                 selected = selected,
                 onClick = {
                     val linkTypeId = linkTag.id
-                    tagsState.tagIdIn.toggle(linkTypeId)
+                    state.tagIdIn.toggle(linkTypeId)
                 },
                 enabled = enabled,
                 label = {
@@ -518,7 +533,7 @@ private fun LinksSection(
                 },
                 leadingIcon = {
                     IncludeExcludeIcon(
-                        enabled = if (tagsState.tagIdIn.contains(linkTag.id)) true else null,
+                        enabled = if (state.tagIdIn.contains(linkTag.id)) true else null,
                         contentDescriptionRes = Res.string.alley_link_type_filter_chip_state_content_description,
                     )
                 },
@@ -535,8 +550,13 @@ class ArtistSortFilterState(
     val merchTagData: () -> MerchTagData,
     val merchIdsLockedIn: () -> Set<String>,
 ) {
+    val activeCount: Int
+        @Composable get() {
+            return persistentState.activeCount + saveableState.activeCount
+        }
+
     fun clear() {
-        Snapshot.withMutableSnapshot { 
+        Snapshot.withMutableSnapshot {
             persistentState.clear()
             saveableState.clear()
         }
@@ -573,10 +593,16 @@ class ArtistSortFilterPersistentState(
     val showOutdatedCatalogs: MutableStateFlow<Boolean>,
     val forceOneDisplayColumn: MutableStateFlow<Boolean>,
 ) {
+    val activeCount: Int
+        @Composable get() {
+            // Sort and advanced options are not reset on clear and thus don't count as active
+            var count = 0
+            if (artistTagsIn.collectAsState().value.isNotEmpty()) count++
+            if (artistTagsNotIn.collectAsState().value.isNotEmpty()) count++
+            return count
+        }
+
     fun clear() {
-        showGridByDefault.value = false
-        showRandomCatalogImage.value = false
-        showOnlyConfirmedTags.value = false
         artistTagsIn.value = emptySet()
         artistTagsNotIn.value = emptySet()
     }
@@ -603,9 +629,9 @@ class ArtistSortFilterPersistentState(
 @Serializable
 class ArtistSortFilterSaveableState @RememberInComposition constructor(
     val series: SeriesState = SeriesState(),
-    val merch: MerchTagSectionState = MerchTagSectionState(),
+    val merch: TagSectionState = TagSectionState(),
     val commissions: FilterSectionState<CommissionType> = FilterSectionState(),
-    val links: LinksState = LinksState(),
+    val links: TagSectionState = TagSectionState(),
     @Serializable(SnapshotStateSetSerializer::class)
     val expandedSections: SnapshotStateSet<Section> = mutableStateSetOf(),
     // TODO: Store hides persistently?
@@ -616,6 +642,17 @@ class ArtistSortFilterSaveableState @RememberInComposition constructor(
 ) {
     var hideFavorited by _hideFavorited
     var hideIgnored by _hideIgnored
+
+    val activeCount by derivedStateOf {
+        var count = 0
+        if (series.seriesIn.isNotEmpty()) count++
+        if (!merch.isDefault) count++
+        if (!commissions.isDefault) count++
+        if (!links.isDefault) count++
+        if (hideFavorited) count++
+        if (hideIgnored) count++
+        count
+    }
 
     fun clear() {
         Snapshot.withMutableSnapshot {
@@ -640,15 +677,6 @@ class ArtistSortFilterSaveableState @RememberInComposition constructor(
                 query.clearText()
                 seriesIn.clear()
             }
-        }
-    }
-
-    @Serializable
-    class LinksState(
-        val links: TagSectionState = TagSectionState(),
-    ) {
-        fun clear() {
-            links.clear()
         }
     }
 
