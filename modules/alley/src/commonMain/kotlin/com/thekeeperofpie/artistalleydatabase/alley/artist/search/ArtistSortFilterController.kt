@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration.Companion.milliseconds
 
 @AssistedInject
-class ArtistSortFilterController2(
+class ArtistSortFilterController(
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
     merchCache: MerchCache,

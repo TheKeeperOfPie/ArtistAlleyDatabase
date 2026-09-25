@@ -19,7 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController2
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
@@ -85,7 +85,7 @@ class FavoritesViewModel(
     userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
-    artistSortFilterControllerFactory: ArtistSortFilterController2.Factory,
+    artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
     private val navStack: AlleyNavStack,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {

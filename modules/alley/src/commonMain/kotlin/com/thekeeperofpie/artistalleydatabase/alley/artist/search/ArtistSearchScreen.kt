@@ -590,7 +590,7 @@ object ArtistSearchScreen {
     ) {
         constructor(
             viewModel: ArtistSearchViewModel,
-            sortFilterController: ArtistSortFilterController2,
+            sortFilterController: ArtistSortFilterController,
         ) : this(
             lockedSeriesEntry = viewModel.lockedSeriesEntry,
             lockedMerch = viewModel.lockedMerch,

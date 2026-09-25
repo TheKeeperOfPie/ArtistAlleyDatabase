@@ -64,7 +64,7 @@ class ArtistSearchViewModel(
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     private val navStack: AlleyNavStack,
-    artistSortFilterControllerFactory: ArtistSortFilterController2.Factory,
+    artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
     @Assisted isRoot: Boolean,
     @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
