@@ -325,9 +325,6 @@ class FavoritesViewModel(
         is FavoritesScreen.Event.OpenSeries -> onOpenSeries(year.value, event.series)
         is FavoritesScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
             is SearchScreen.Event.FavoriteToggle<*> -> when (searchEvent.entry) {
-                is ArtistEntryGridModel -> artistMutationUpdates.tryEmit(
-                    searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite)
-                )
                 is StampRallyEntryGridModel -> rallyMutationUpdates.tryEmit(
                     searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite)
                 )
@@ -336,9 +333,6 @@ class FavoritesViewModel(
                 )
             }
             is SearchScreen.Event.IgnoreToggle<*> -> when (searchEvent.entry) {
-                is ArtistEntryGridModel -> artistMutationUpdates.tryEmit(
-                    searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored)
-                )
                 is StampRallyEntryGridModel -> rallyMutationUpdates.tryEmit(
                     searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored)
                 )
@@ -347,8 +341,6 @@ class FavoritesViewModel(
                 )
             }
             is SearchScreen.Event.OpenEntry<*> -> when (searchEvent.entry) {
-                is ArtistEntryGridModel ->
-                    onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
                 is StampRallyEntryGridModel ->
                     onOpenStampRally(
                         searchEvent.entry.stampRally,
@@ -359,8 +351,6 @@ class FavoritesViewModel(
                 )
             }
             is SearchScreen.Event.OpenImageFullscreen<*> -> when (searchEvent.entry) {
-                is ArtistEntryGridModel ->
-                    onOpenArtistImageFullscreen(searchEvent.entry, searchEvent.imageIndex)
                 is StampRallyEntryGridModel ->
                     onOpenStampRallyImageFullscreen(
                         searchEvent.entry.stampRally,
