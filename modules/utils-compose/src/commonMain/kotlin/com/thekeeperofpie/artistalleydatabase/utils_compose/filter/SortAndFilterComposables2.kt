@@ -591,7 +591,7 @@ fun SortFilterBottomScaffold2(
         enabledValues = setOf(SheetValue.PartiallyExpanded, SheetValue.Expanded),
     ),
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
-    sheetPeekHeight: Dp = Dp.Unspecified,
+    sheetPeekHeight: Dp = 72.dp,
     bottomNavigationState: BottomNavigationState? = null,
     sheetContent: @Composable ColumnScope.() -> Unit,
     content: @Composable (PaddingValues) -> Unit,

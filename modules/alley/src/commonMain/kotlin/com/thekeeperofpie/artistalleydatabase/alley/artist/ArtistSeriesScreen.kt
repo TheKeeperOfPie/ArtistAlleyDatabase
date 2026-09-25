@@ -121,12 +121,10 @@ object ArtistSeriesScreen {
         val seriesEntry by artistSeriesViewModel.seriesEntry.collectAsStateWithLifecycle()
         val seriesImage by artistSeriesViewModel.seriesImage.collectAsStateWithLifecycle()
         val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        val showOutdatedCatalogs by sortFilterController.state.persistentState.showOutdatedCatalogs.collectAsStateWithLifecycle()
         val seriesAutocompleteResults by artistSearchViewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
             series = { series },
-            showOutdatedCatalogs = { showOutdatedCatalogs },
             eventSink = artistSearchViewModel::onEvent,
             header = {
                 Header(

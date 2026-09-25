@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -19,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -28,14 +25,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -48,7 +43,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -58,20 +52,19 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @AssistedInject
 class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
-    private val merchCache: MerchCache,
     val seriesEntryCache: SeriesEntryCache,
     private val seriesEntryDao: SeriesEntryDao,
     private val seriesImageLoader: SeriesImageLoader,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     private val navStack: AlleyNavStack,
+    artistSortFilterControllerFactory: ArtistSortFilterController2.Factory,
     @Assisted isRoot: Boolean,
     @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
@@ -112,16 +105,16 @@ class ArtistSearchViewModel(
         .flowOn(dispatchers.io)
         .stateInForCompose(this, null)
 
-    val sortFilterController = ArtistSortFilterController2(
+    val sortFilterController = artistSortFilterControllerFactory.create(
         scope = viewModelScope,
         savedStateHandle = savedStateHandle,
         dataYear = year,
         lockedMerchId = lockedMerch,
         lockedSeriesEntry = lockedSeriesEntry,
-        settings = settings,
-        merchCache = merchCache,
         allowSettingsBasedToggles = lockedMerch == null && lockedSeries == null,
     )
+
+    val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
 
     val displayType = settings.displayType
     val forceOneDisplayColumn = settings.forceOneDisplayColumn
@@ -136,20 +129,9 @@ class ArtistSearchViewModel(
                 year = year,
                 query = query,
                 searchQuery = ArtistSearchQuery(
-                    ArtistSortFilterController.FilterParams(
-                        sortOption = ArtistSearchSortOption.BOOTH,
-                        sortAscending = true,
-                        seriesIn = setOfNotNull(seriesInfo?.rowid),
-                        merchIn = setOfNotNull(lockedMerch),
-                        commissionsIn = emptySet(),
-                        linkTypesIn = emptySet(),
-                        exhibitorTagsIn = emptySet(),
-                        artistTagsIn = emptySet(),
-                        artistTagsNotIn = emptySet(),
-                        showOnlyConfirmedTags = false,
-                        showOutdatedCatalogs = false,
-                        hideFavorited = false,
-                        hideIgnored = false,
+                    ArtistSortFilterParams.unfiltered(
+                        lockedSeriesIn = seriesInfo?.rowid,
+                        lockedMerchIn = lockedMerch,
                     ),
                     randomSeed = randomSeed,
                 ),
@@ -158,37 +140,9 @@ class ArtistSearchViewModel(
         }
         .stateInForCompose(0)
 
-    private val filterParams by transform(viewModelScope) {
-        val persistentState = sortFilterController.state.persistentState
-        val saveableState = sortFilterController.state.saveableState
-        val sortOption by persistentState.sortOption.collectAsState()
-        val sortAscending by persistentState.sortAscending.collectAsState()
-        val seriesIn = setOfNotNull(lockedSeriesEntry.collectAsState().value?.rowid) +
-                saveableState.series.seriesIn.toSet().map { it.rowid }
-        val artistTagsIn by persistentState.artistTagsIn.collectAsState()
-        val artistTagsNotIn by persistentState.artistTagsNotIn.collectAsState()
-        val showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsState()
-        val showOutdatedCatalogs by persistentState.showOutdatedCatalogs.collectAsState()
-        ArtistSortFilterController.FilterParams(
-            sortOption = sortOption,
-            sortAscending = sortAscending,
-            seriesIn = seriesIn,
-            merchIn = saveableState.merch.tagIdIn.toSet() + setOfNotNull(lockedMerch),
-            commissionsIn = saveableState.commissions.filterIn.toSet(),
-            linkTypesIn = saveableState.links.tagIdIn.toSet().map(Link.Type::valueOf).toSet(),
-            exhibitorTagsIn = emptySet(), // TODO
-            artistTagsIn = artistTagsIn,
-            artistTagsNotIn = artistTagsNotIn,
-            showOnlyConfirmedTags = showOnlyConfirmedTags,
-            showOutdatedCatalogs = showOutdatedCatalogs,
-            hideFavorited = saveableState.hideFavorited,
-            hideIgnored = saveableState.hideIgnored,
-        )
-    }
-
     val results = combine(
         year,
-        snapshotFlow { filterParams }.mapLatest {
+        snapshotFlow { sortFilterController.filterParams }.mapLatest {
             ArtistSearchQuery(filterParams = it, randomSeed = randomSeed)
         },
         query,
@@ -242,13 +196,6 @@ class ArtistSearchViewModel(
             .flowOn(dispatchers.io)
             .stateInForCompose(this, false)
     }
-
-    val seriesAutocompleteResults =
-        snapshotFlow { sortFilterController.state.saveableState.series.query.text.toString() }
-            .debounce(500.milliseconds)
-            .mapLatest(seriesEntryDao::searchSeriesForAutocomplete)
-            .flowOn(dispatchers.io)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         viewModelScope.launch(dispatchers.io) {

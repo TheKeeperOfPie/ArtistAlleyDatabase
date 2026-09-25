@@ -58,7 +58,6 @@ interface ArtistAlleyGraph {
     val favoriteSeriesChangelogViewModelFactory: FavoriteSeriesChangelogViewModel.Factory
     val favoriteMerchChangelogViewModelFactory: FavoriteMerchChangelogViewModel.Factory
     val favoriteRalliesChangelogViewModelFactory: FavoriteRalliesChangelogViewModel.Factory
-    val favoritesViewModelFactory: FavoritesViewModel.Factory
     val favoritesMapViewModelFactory: FavoritesMapViewModel.Factory
     val imagesViewModel: () -> ImagesViewModel
     val importViewModelFactory: ImportViewModel.Factory

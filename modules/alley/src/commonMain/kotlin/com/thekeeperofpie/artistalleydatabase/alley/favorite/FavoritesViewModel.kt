@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.favorite
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,17 +8,22 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchColumn
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController2
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
@@ -37,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
@@ -50,6 +57,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +78,6 @@ import kotlin.random.Random
 class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
-    merchCache: MerchCache,
     merchEntryDao: MerchEntryDao,
     val seriesEntryCache: SeriesEntryCache,
     seriesEntryDao: SeriesEntryDao,
@@ -76,24 +85,24 @@ class FavoritesViewModel(
     userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
+    artistSortFilterControllerFactory: ArtistSortFilterController2.Factory,
+    private val navStack: AlleyNavStack,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     val year = settings.dataYear
+    
+    val showOutdatedCatalogs = settings.showOutdatedCatalogs
 
-    val artistSortFilterController = ArtistSortFilterController(
+    val artistSortFilterController = artistSortFilterControllerFactory.create(
         scope = viewModelScope,
         savedStateHandle = savedStateHandle,
         dataYear = year,
         lockedMerchId = null,
         lockedSeriesEntry = ReadOnlyStateFlow(null),
-        dispatchers = dispatchers,
-        settings = settings,
-        merchCache = merchCache,
-        seriesEntryDao = seriesEntryDao,
-        seriesImageLoader = seriesImageLoader,
-        allowHideFavorited = false,
     )
+
+    val seriesAutocompleteResults get() = artistSortFilterController.seriesAutocompleteResults
 
     val stampRallySortFilterController = StampRallySortFilterController(
         scope = viewModelScope,
@@ -106,14 +115,6 @@ class FavoritesViewModel(
         settings = settings,
         savedStateHandle = savedStateHandle,
         allowHideFavorited = false,
-    )
-
-    val artistSearchState = SearchScreen.State(
-        columns = ArtistSearchColumn.entries,
-        displayType = settings.displayType,
-        showGridByDefault = settings.showGridByDefault,
-        showRandomCatalogImage = settings.showRandomCatalogImage,
-        forceOneDisplayColumn = settings.forceOneDisplayColumn,
     )
 
     val stampRallySearchState = SearchScreen.State(
@@ -137,21 +138,7 @@ class FavoritesViewModel(
                 year = year,
                 query = query,
                 searchQuery = ArtistSearchQuery(
-                    ArtistSortFilterController.FilterParams(
-                        sortOption = ArtistSearchSortOption.BOOTH,
-                        sortAscending = true,
-                        seriesIn = emptySet(),
-                        merchIn = emptySet(),
-                        commissionsIn = emptySet(),
-                        linkTypesIn = emptySet(),
-                        exhibitorTagsIn = emptySet(),
-                        artistTagsIn = emptySet(),
-                        artistTagsNotIn = emptySet(),
-                        showOnlyConfirmedTags = false,
-                        showOutdatedCatalogs = false,
-                        hideFavorited = false,
-                        hideIgnored = false,
-                    ),
+                    ArtistSortFilterParams.unfiltered(),
                     randomSeed = randomSeed,
                 ),
                 onlyFavorites = true,
@@ -161,7 +148,7 @@ class FavoritesViewModel(
 
     val artistEntries = combine(
         inputs,
-        artistSortFilterController.state.filterParams,
+        snapshotFlow { artistSortFilterController.filterParams },
         ::Pair,
     ).flatMapLatest { (inputs, filterParams) ->
         val (query, year, showOnlyConfirmedTags) = inputs
@@ -312,7 +299,8 @@ class FavoritesViewModel(
         }
     }
 
-    fun seriesImage(series: SeriesImageInfo) = seriesImageLoader.getSeriesImage(series)
+    fun seriesImage(series: SeriesInfo) = seriesImageLoader.getSeriesImage(series)
+    fun seriesImageInfo(series: SeriesImageInfo) = seriesImageLoader.getSeriesImage(series)
 
     fun onEvent(
         event: FavoritesScreen.Event,
@@ -411,10 +399,42 @@ class FavoritesViewModel(
         }
         is FavoritesScreen.Event.OpenExport -> onOpenExport(event.dataYear)
         FavoritesScreen.Event.OpenSettings -> onOpenSettings()
+        is FavoritesScreen.Event.ArtistSearchEvent -> when (val searchEvent = event.event) {
+            is ArtistSearchScreen.Event.FavoriteToggle -> artistMutationUpdates.tryEmit(
+                searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite)
+            )
+            is ArtistSearchScreen.Event.IgnoreToggle -> artistMutationUpdates.tryEmit(
+                searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored)
+            )
+            is ArtistSearchScreen.Event.ClearFilters -> artistSortFilterController.clear()
+            ArtistSearchScreen.Event.Back -> navStack.onBack()
+            ArtistSearchScreen.Event.OpenChangelog ->
+                navStack.navigate(AlleyDestination.ArtistChangelog(year.value))
+            is ArtistSearchScreen.Event.OpenEntry ->
+                navStack.navigate(ArtistDetails(searchEvent.entry.artist, searchEvent.imageIndex))
+            ArtistSearchScreen.Event.OpenExport ->
+                navStack.navigate(AlleyDestination.Export(year.value))
+            is ArtistSearchScreen.Event.OpenImageFullscreen ->
+                navStack.navigate(
+                    AlleyDestination.Images.fromArtist(
+                        artistWithUserData = searchEvent.entry.data,
+                        showOutdatedCatalogs =
+                            artistSortFilterController.state.persistentState.showOutdatedCatalogs.value,
+                        imageIndex = searchEvent.imageIndex,
+                    )
+                )
+            is ArtistSearchScreen.Event.OpenMerch ->
+                navStack.navigate(Merch(year.value, searchEvent.merch))
+            is ArtistSearchScreen.Event.OpenSeries ->
+                navStack.navigate(Series(year.value, searchEvent.series))
+            ArtistSearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
+        }
     }
 
     @AssistedFactory
-    interface Factory {
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
         fun create(savedStateHandle: SavedStateHandle): FavoritesViewModel
     }
 }
