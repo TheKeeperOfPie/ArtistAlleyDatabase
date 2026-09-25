@@ -14,6 +14,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,10 +32,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -44,8 +47,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
@@ -54,10 +60,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
@@ -67,9 +76,12 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
+import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.section_expand_all_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_ascending
@@ -86,6 +98,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldMore
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
@@ -99,6 +112,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
 @Composable
 private fun Header(
@@ -496,13 +510,125 @@ fun <FilterType> FilterSection2(
     }
 }
 
+@Serializable
+class RangeDataSectionState(
+    private val initialRangeData: RangeData = RangeData(100),
+    @Serializable(MutableStateSerializer::class)
+    private val _data: MutableState<RangeData> = mutableStateOf(initialRangeData),
+) {
+    var data by _data
+
+    val isDefault by derivedStateOf { data == initialRangeData }
+
+    fun clear() {
+        data = initialRangeData
+    }
+}
+
+@Composable
+fun RangeDataFilterSection2(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    state: RangeDataSectionState,
+    header: @Composable () -> Unit,
+    headerDropdownContentDescriptionRes: StringResource,
+) {
+    @Suppress("NAME_SHADOWING")
+    val expanded = expanded()
+    val onRangeChange: (String, String) -> Unit = { start, end ->
+        Snapshot.withMutableSnapshot {
+            val data = state.data
+            state.data = data.copy(
+                startString = start,
+                endString = end.takeIf { it != "${data.maxValue}" }
+                    .orEmpty()
+            )
+        }
+    }
+    CustomFilterSection(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        header = header,
+        headerDropdownContentDescriptionRes = headerDropdownContentDescriptionRes,
+        summaryLabel = state.data.summaryText?.let { { Text(it) } },
+        onSummaryClick = { onRangeChange("", "") },
+    ) {
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            ) {
+                @Suppress("NAME_SHADOWING")
+                val range = state.data
+                CustomOutlinedTextField(
+                    value = range.startString,
+                    onValueChange = { onRangeChange("0", range.endString) },
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                    ),
+                    contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                        start = 12.dp,
+                        top = 8.dp,
+                        end = 12.dp,
+                        bottom = 8.dp
+                    ),
+                    // TODO: Figure out a text size dependent width or get wrap width working
+                    modifier = Modifier.width(64.dp),
+                )
+
+                RangeSlider(
+                    value = range.value,
+                    valueRange = range.valueRange,
+                    steps = range.maxValue,
+                    onValueChange = {
+                        onRangeChange(
+                            it.start.roundToInt().toString(),
+                            it.endInclusive.roundToInt()
+                                .takeIf { range.hardMax || it != range.maxValue }
+                                ?.toString()
+                                .orEmpty()
+                        )
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 4.dp),
+                )
+
+                CustomOutlinedTextField(
+                    value = range.endString,
+                    onValueChange = { onRangeChange(range.startString, it) },
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                    ),
+                    contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                        start = 12.dp,
+                        top = 8.dp,
+                        end = 12.dp,
+                        bottom = 8.dp
+                    ),
+                    modifier = Modifier.width(64.dp),
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun CustomFilterSection(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     header: @Composable () -> Unit,
     headerDropdownContentDescriptionRes: StringResource,
-    summaryText: (@Composable () -> String?)? = null,
+    summaryLabel: (@Composable () -> Unit)? = null,
     onSummaryClick: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
@@ -523,11 +649,11 @@ fun CustomFilterSection(
             Header(expanded, content = header)
 
             if (!expanded) {
-                summaryText?.invoke()?.let {
+                if (summaryLabel != null) {
                     FilterChip(
                         selected = true,
                         onClick = onSummaryClick,
-                        label = { Text(it) },
+                        label = summaryLabel,
                         modifier = Modifier
                             .padding(0.dp)
                             .heightIn(min = 32.dp)
@@ -641,6 +767,7 @@ fun SortFilterBottomScaffold2(
 @Composable
 fun SortFilterBottomScaffoldSheetContent(
     sheetState: SheetState,
+    scrollState: ScrollState = rememberScrollState(),
     actions: (@Composable RowScope.() -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
@@ -681,7 +808,7 @@ fun SortFilterBottomScaffoldSheetContent(
             Modifier
                 .weight(1f, fill = false)
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .animateContentSize()
         ) {
             content()

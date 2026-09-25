@@ -1,11 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.state
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.runtime.toMutableStateList
+import androidx.savedstate.serialization.SavedStateConfiguration
+import androidx.savedstate.serialization.SavedStateConfiguration.Companion.DEFAULT
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -135,4 +139,17 @@ fun <T> SnapshotStateSet<T>.replaceAll(values: Set<T>) {
         clear()
         addAll(values)
     }
+}
+
+@Composable
+inline fun <reified T : Any> rememberSerializable(
+    configuration: SavedStateConfiguration = DEFAULT,
+    noinline init: () -> T,
+): T {
+    return rememberSerializable(
+        inputs = arrayOf(Unit),
+        serializer = configuration.serializersModule.serializer<T>(),
+        configuration = configuration,
+        init = init,
+    )
 }

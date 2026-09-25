@@ -268,6 +268,7 @@ object FavoritesScreen {
                             sheetState = scaffoldState.bottomSheetState,
                             seriesImage = seriesImage,
                             seriesAutocompleteResults = seriesAutocompleteResults,
+                            showHideFavorited = false,
                         )
                     },
                     modifier = Modifier
@@ -308,7 +309,6 @@ object FavoritesScreen {
                     ralliesScrollStateSaver = ralliesScrollStateSaver,
                     seriesScrollStateSaver = seriesScrollStateSaver,
                     merchScrollStateSaver = merchScrollStateSaver,
-                    seriesImage = seriesImage,
                     seriesImageInfo = seriesImageInfo,
                     eventSink = eventSink,
                 )
@@ -325,7 +325,6 @@ object FavoritesScreen {
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,
         merchScrollStateSaver: ScrollStateSaver,
-        seriesImage: (SeriesInfo) -> String?,
         seriesImageInfo: (SeriesImageInfo) -> String?,
         eventSink: (Event) -> Unit,
     ) {

@@ -1,6 +1,4 @@
-@file:OptIn(ExperimentalComposeUiApi::class)
-
-package com.thekeeperofpie.artistalleydatabase.alley.artist.search
+package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -8,8 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -17,8 +15,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.annotation.RememberInComposition
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,59 +23,47 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_chip_state_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_label
-import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_favorited
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_outdated_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
-import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_chip_state_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_fandom_merch_warning
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_merch_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_limit
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_limit_expand_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_merch_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.clear
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSaveableState.Section
-import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
-import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ShowOnlyConfirmedTagsSection
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection2
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterState
-import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.ui.assertInPreview
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSection2
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSectionState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeDataFilterSection2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeDataSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SectionGroup
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SectionsExpandIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldSheetContent
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
@@ -90,8 +74,8 @@ import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 @Composable
-internal fun ArtistSortFilterSheetContent(
-    state: ArtistSortFilterState,
+internal fun StampRallySortFilterSheetContent(
+    state: StampRallySortFilterState,
     sheetState: SheetState,
     seriesImage: (SeriesInfo) -> String?,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
@@ -137,7 +121,7 @@ internal fun ArtistSortFilterSheetContent(
             header = { Text(stringResource(Res.string.alley_sort_label)) },
             expanded = { Section.SORT in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SORT) },
-            sortOptions = { ArtistSearchSortOption.entries },
+            sortOptions = { StampRallySearchSortOption.entries },
             sortOption = { sortOption },
             onSortChanged = { sortOption = it },
             sortOptionLabel = { Text(stringResource(it.textRes)) },
@@ -147,7 +131,6 @@ internal fun ArtistSortFilterSheetContent(
 
         HorizontalDivider()
 
-        var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
         SeriesFilterSection(
             expanded = { Section.SERIES in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SERIES) },
@@ -155,13 +138,6 @@ internal fun ArtistSortFilterSheetContent(
             image = seriesImage,
             lockedSeries = state.lockedSeries,
             autocompleteResults = seriesAutocompleteResults,
-            showOnlyConfirmedTagsSection = {
-                ShowOnlyConfirmedTagsSection(
-                    enabled = { showOnlyConfirmedTags },
-                    onEnabledChanged = { showOnlyConfirmedTags = it },
-                    modifier = Modifier.padding(start = 32.dp)
-                )
-            },
         )
 
         HorizontalDivider()
@@ -172,68 +148,52 @@ internal fun ArtistSortFilterSheetContent(
             state = saveableState.merch,
             merchTagData = state.merchTagData,
             merchIdsLockedIn = state.merchIdsLockedIn,
+            sectionHeader = { Text(stringResource(Res.string.alley_stamp_rally_filter_merch)) },
+            sectionHeaderDropdownContentDescriptionRes = Res.string.alley_stamp_rally_filter_merch_content_description,
             header = {
-                ShowOnlyConfirmedTagsSection(
-                    enabled = { showOnlyConfirmedTags },
-                    onEnabledChanged = { showOnlyConfirmedTags = it },
-                    modifier = Modifier.padding(start = 32.dp)
+                Text(
+                    text = stringResource(Res.string.alley_stamp_rally_filter_fandom_merch_warning),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(
+                        start = 32.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 8.dp,
+                    )
                 )
             },
         )
 
         HorizontalDivider()
 
-        FilterSection2(
-            expanded = { Section.COMMISSIONS in saveableState.expandedSections },
-            onExpandedChange = { saveableState.expandedSections.toggle(Section.COMMISSIONS) },
-            options = CommissionType.entries,
-            state = saveableState.commissions,
-            selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
-            title = { Text(stringResource(Res.string.alley_commission_type_filter_label)) },
-            titleDropdownContentDescriptionRes = Res.string.alley_commission_type_filter_content_description,
-            optionLabel = { Text(stringResource(it.textRes)) },
+        MerchTagSection2(
+            expanded = { Section.PRIZE_MERCH in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.PRIZE_MERCH) },
+            state = saveableState.prizeMerch,
+            merchTagData = state.merchTagData,
+            merchIdsLockedIn = { emptySet() },
+            sectionHeader = { Text(stringResource(Res.string.alley_stamp_rally_filter_prize_merch)) },
+            sectionHeaderDropdownContentDescriptionRes = Res.string.alley_stamp_rally_filter_prize_merch_content_description,
         )
 
         HorizontalDivider()
 
-        var artistTagsIn by persistentState.artistTagsIn.collectAsMutableStateWithLifecycle()
-        var artistTagsNotIn by persistentState.artistTagsNotIn.collectAsMutableStateWithLifecycle()
-        FilterSection2(
-            expanded = { Section.ARTIST_TAGS in saveableState.expandedSections },
-            onExpandedChange = { saveableState.expandedSections.toggle(Section.ARTIST_TAGS) },
-            options = ArtistTag.entries,
-            filterIn = { artistTagsIn },
-            filterNotIn = { artistTagsNotIn },
-            title = { Text(stringResource(Res.string.alley_artist_tags_filter_label)) },
-            titleDropdownContentDescriptionRes = Res.string.alley_artist_tags_filter_content_description,
-            onOptionClick = {
-                val (newFilterIn, newFilterNotIn) = FilterSectionState.onClick(
-                    options = ArtistTag.entries,
-                    selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ALLOW_EXCLUDE,
-                    filterIn = artistTagsIn,
-                    filterNotIn = artistTagsNotIn,
-                    filter = it,
-                )
-                Snapshot.withMutableSnapshot {
-                    artistTagsIn = newFilterIn
-                    artistTagsNotIn = newFilterNotIn
-                }
-            },
-            optionLabel = { Text(stringResource(it.textRes)) },
-            optionLeadingIcon = { _, enabled ->
-                IncludeExcludeIcon(
-                    enabled = enabled,
-                    contentDescriptionRes = Res.string.alley_artist_tags_filter_chip_state_content_description,
-                )
-            }
+        RangeDataFilterSection2(
+            expanded = { Section.TOTAL_COST in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.TOTAL_COST) },
+            state = saveableState.totalCost,
+            header = { Text(stringResource(Res.string.alley_stamp_rally_filter_total_cost)) },
+            headerDropdownContentDescriptionRes = Res.string.alley_stamp_rally_filter_total_cost_expand_content_description,
         )
 
         HorizontalDivider()
 
-        LinksSection(
-            expanded = { Section.LINKS in saveableState.expandedSections },
-            onExpandedChange = { saveableState.expandedSections.toggle(Section.LINKS) },
-            state = saveableState.links,
+        RangeDataFilterSection2(
+            expanded = { Section.PRIZE_LIMIT in saveableState.expandedSections },
+            onExpandedChange = { saveableState.expandedSections.toggle(Section.PRIZE_LIMIT) },
+            state = saveableState.prizeLimit,
+            header = { Text(stringResource(Res.string.alley_stamp_rally_filter_prize_limit)) },
+            headerDropdownContentDescriptionRes = Res.string.alley_stamp_rally_filter_prize_limit_expand_content_description,
         )
 
         HorizontalDivider()
@@ -254,8 +214,8 @@ internal fun ArtistSortFilterSheetContent(
 private fun AdvancedSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    state: ArtistSortFilterSaveableState,
-    persistentState: ArtistSortFilterPersistentState,
+    state: StampRallySortFilterSaveableState,
+    persistentState: StampRallySortFilterPersistentState,
     showHideFavorited: Boolean,
 ) {
     SectionGroup(
@@ -287,15 +247,6 @@ private fun AdvancedSection(
             ShowOnlyConfirmedTagsSection(
                 enabled = { showOnlyConfirmedTags },
                 onEnabledChanged = { showOnlyConfirmedTags = it },
-            )
-
-            HorizontalDivider()
-
-            var showOutdatedCatalogs by persistentState.showOutdatedCatalogs.collectAsMutableStateWithLifecycle()
-            SwitchSection(
-                title = { Text(stringResource(Res.string.alley_filter_show_outdated_catalogs)) },
-                enabled = { showOutdatedCatalogs },
-                onEnabledChanged = { showOutdatedCatalogs = it },
             )
 
             HorizontalDivider()
@@ -332,102 +283,35 @@ private fun AdvancedSection(
     }
 }
 
-@Composable
-internal fun ShowOnlyConfirmedTagsSection(
-    enabled: () -> Boolean,
-    onEnabledChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    SwitchSection(
-        title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
-        enabled = enabled,
-        onEnabledChanged = onEnabledChanged,
-        modifier = modifier,
-    )
-}
-
-private val linkTypes =
-    Link.Type.entries.groupBy { it.category }
-        .mapValues { (category, types) ->
-            if (category == LinkCategory.OTHER) {
-                LinkTagEntry.Tag(Link.Type.OTHER_NON_STORE)
-            } else {
-                LinkTagEntry.Category(
-                    category = category,
-                    children = types.associate { it.name to LinkTagEntry.Tag(it) },
-                )
-            } as TagEntry
-        }
-        .map { it.key.name to it.value }
-        .sortedBy { it.first }
-
-@Composable
-private fun LinksSection(
-    expanded: () -> Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    state: TagSectionState,
-) {
-    TagSection2(
-        expanded = expanded,
-        onExpandedChange = onExpandedChange,
-        sectionHeader = { Text(stringResource(Res.string.alley_link_type_filter_label)) },
-        sectionHeaderDropdownContentDescriptionRes = Res.string.alley_link_type_filter_content_description,
-        tags = linkTypes,
-        state = state,
-        showSearch = false,
-        showRootTagsWhenNotExpanded = false,
-        showRootTagsAtBottom = true,
-        categoryToName = { stringResource((it as LinkTagEntry.Category).category.textRes) },
-        tagChip = { linkTag, selected, enabled, modifier ->
-            FilterChip(
-                selected = selected,
-                onClick = {
-                    val linkTypeId = linkTag.id
-                    state.tagIdIn.toggle(linkTypeId)
-                },
-                enabled = enabled,
-                label = {
-                    AutoHeightText(stringResource((linkTag as LinkTagEntry.Tag).type.textRes))
-                },
-                leadingIcon = {
-                    IncludeExcludeIcon(
-                        enabled = if (state.tagIdIn.contains(linkTag.id)) true else null,
-                        contentDescriptionRes = Res.string.alley_link_type_filter_chip_state_content_description,
-                    )
-                },
-                modifier = modifier
-            )
-        }
-    )
-}
-
-class ArtistSortFilterState(
-    val persistentState: ArtistSortFilterPersistentState,
-    val saveableState: ArtistSortFilterSaveableState,
+class StampRallySortFilterState(
+    val persistentState: StampRallySortFilterPersistentState,
+    val saveableState: StampRallySortFilterSaveableState,
     val lockedSeries: () -> SeriesInfo?,
     val merchTagData: () -> MerchTagData,
     val merchIdsLockedIn: () -> Set<String>,
 ) {
-    val activeCount: Int
-        @Composable get() {
-            return persistentState.activeCount + saveableState.activeCount
-        }
+    val activeCount get() = saveableState.activeCount
 
     fun clear() {
         Snapshot.withMutableSnapshot {
-            persistentState.clear()
             saveableState.clear()
         }
     }
 
     companion object {
         @Composable
-        fun rememberForPreview(): ArtistSortFilterState {
+        fun rememberForPreview(): StampRallySortFilterState {
             assertInPreview()
-            val persistentState = ArtistSortFilterPersistentState.rememberForPreview()
-            val saveableState = rememberSerializable { ArtistSortFilterSaveableState() }
+            val persistentState = StampRallySortFilterPersistentState.rememberForPreview()
+            val saveableState = rememberSerializable {
+                StampRallySortFilterSaveableState()
+                    .apply {
+                        totalCost.data = RangeData(startString = "20", endString = "50")
+                        prizeLimit.data = RangeData(startString = "0", endString = "25")
+                    }
+            }
             return remember(persistentState, saveableState) {
-                ArtistSortFilterState(
+                StampRallySortFilterState(
                     persistentState = persistentState,
                     saveableState = saveableState,
                     lockedSeries = { null },
@@ -439,45 +323,24 @@ class ArtistSortFilterState(
     }
 }
 
-/** Everything backed by an externally owned source */
-class ArtistSortFilterPersistentState(
-    val sortOption: MutableStateFlow<ArtistSearchSortOption>,
+class StampRallySortFilterPersistentState(
+    val sortOption: MutableStateFlow<StampRallySearchSortOption>,
     val sortAscending: MutableStateFlow<Boolean>,
-    val artistTagsIn: MutableStateFlow<Set<ArtistTag>>,
-    val artistTagsNotIn: MutableStateFlow<Set<ArtistTag>>,
     val showGridByDefault: MutableStateFlow<Boolean>,
     val showRandomCatalogImage: MutableStateFlow<Boolean>,
     val showOnlyConfirmedTags: MutableStateFlow<Boolean>,
-    val showOutdatedCatalogs: MutableStateFlow<Boolean>,
     val forceOneDisplayColumn: MutableStateFlow<Boolean>,
 ) {
-    val activeCount: Int
-        @Composable get() {
-            // Sort and advanced options are not reset on clear and thus don't count as active
-            var count = 0
-            if (artistTagsIn.collectAsState().value.isNotEmpty()) count++
-            if (artistTagsNotIn.collectAsState().value.isNotEmpty()) count++
-            return count
-        }
-
-    fun clear() {
-        artistTagsIn.value = emptySet()
-        artistTagsNotIn.value = emptySet()
-    }
-
     companion object {
         @Composable
-        fun rememberForPreview(): ArtistSortFilterPersistentState {
+        fun rememberForPreview(): StampRallySortFilterPersistentState {
             assertInPreview()
-            return ArtistSortFilterPersistentState(
-                sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
+            return StampRallySortFilterPersistentState(
+                sortOption = MutableStateFlow(StampRallySearchSortOption.RANDOM),
                 sortAscending = MutableStateFlow(true),
-                artistTagsIn = MutableStateFlow(setOf(ArtistTag.HAS_CATALOG)),
-                artistTagsNotIn = MutableStateFlow(setOf(ArtistTag.VERIFIED)),
                 showGridByDefault = MutableStateFlow(false),
                 showRandomCatalogImage = MutableStateFlow(true),
                 showOnlyConfirmedTags = MutableStateFlow(false),
-                showOutdatedCatalogs = MutableStateFlow(true),
                 forceOneDisplayColumn = MutableStateFlow(false),
             )
         }
@@ -485,13 +348,14 @@ class ArtistSortFilterPersistentState(
 }
 
 @Serializable
-class ArtistSortFilterSaveableState @RememberInComposition constructor(
-    val series: SeriesFilterState = SeriesFilterState(),
-    val merch: TagSectionState = TagSectionState(),
-    val commissions: FilterSectionState<CommissionType> = FilterSectionState(),
-    val links: TagSectionState = TagSectionState(),
+class StampRallySortFilterSaveableState(
     @Serializable(SnapshotStateSetSerializer::class)
     val expandedSections: SnapshotStateSet<Section> = mutableStateSetOf(),
+    val series: SeriesFilterState = SeriesFilterState(),
+    val merch: TagSectionState = TagSectionState(),
+    val prizeMerch: TagSectionState = TagSectionState(),
+    val totalCost: RangeDataSectionState = RangeDataSectionState(RangeData(100)),
+    val prizeLimit: RangeDataSectionState = RangeDataSectionState(RangeData(50)),
     // TODO: Store hides persistently?
     @Serializable(MutableStateSerializer::class)
     private val _hideFavorited: MutableState<Boolean> = mutableStateOf(false),
@@ -505,10 +369,9 @@ class ArtistSortFilterSaveableState @RememberInComposition constructor(
         var count = 0
         if (!series.isDefault) count++
         if (!merch.isDefault) count++
-        if (!commissions.isDefault) count++
-        if (!links.isDefault) count++
-        if (hideFavorited) count++
-        if (hideIgnored) count++
+        if (!prizeMerch.isDefault) count++
+        if (!totalCost.isDefault) count++
+        if (!prizeLimit.isDefault) count++
         count
     }
 
@@ -516,10 +379,9 @@ class ArtistSortFilterSaveableState @RememberInComposition constructor(
         Snapshot.withMutableSnapshot {
             series.clear()
             merch.clear()
-            commissions.clear()
-            links.clear()
-            hideFavorited = false
-            hideIgnored = false
+            prizeMerch.clear()
+            totalCost.clear()
+            prizeLimit.clear()
         }
     }
 
@@ -527,19 +389,19 @@ class ArtistSortFilterSaveableState @RememberInComposition constructor(
         SORT,
         SERIES,
         MERCH,
-        COMMISSIONS,
-        ARTIST_TAGS,
-        LINKS,
+        PRIZE_MERCH,
+        TOTAL_COST,
+        PRIZE_LIMIT,
         ADVANCED,
     }
 }
 
 @Composable
-private fun ArtistSortFilterSheetContentPreview(
-    state: ArtistSortFilterState,
+private fun StampRallySortFilterSheetContentPreview(
+    state: StampRallySortFilterState,
     scrollState: ScrollState = rememberScrollState(),
 ) {
-    ArtistSortFilterSheetContent(
+    StampRallySortFilterSheetContent(
         state = state,
         scrollState = scrollState,
         sheetState = rememberBottomSheetState(SheetValue.PartiallyExpanded),
@@ -550,25 +412,25 @@ private fun ArtistSortFilterSheetContentPreview(
 
 @AlleyPreview
 @Composable
-private fun ArtistSortFilterSheetContentPreview() {
-    ArtistSortFilterSheetContentPreview(ArtistSortFilterState.rememberForPreview())
+private fun StampRallySortFilterSheetContentPreview() {
+    StampRallySortFilterSheetContentPreview(StampRallySortFilterState.rememberForPreview())
 }
 
 @AlleyPreview
 @Composable
-private fun ArtistSortFilterSheetContentExpandedPreview0() {
-    val state = ArtistSortFilterState.rememberForPreview().apply {
+private fun StampRallySortFilterSheetContentExpandedPreview0() {
+    val state = StampRallySortFilterState.rememberForPreview().apply {
         saveableState.expandedSections.addAll(Section.entries.take(4))
     }
-    ArtistSortFilterSheetContentPreview(state)
+    StampRallySortFilterSheetContentPreview(state)
 }
 
 @AlleyPreview
 @Composable
-private fun ArtistSortFilterSheetContentExpandedPreview1() {
+private fun StampRallySortFilterSheetContentExpandedPreview1() {
     val scrollState = rememberScrollState(1000)
-    val state = ArtistSortFilterState.rememberForPreview().apply {
+    val state = StampRallySortFilterState.rememberForPreview().apply {
         saveableState.expandedSections.addAll(Section.entries.drop(4))
     }
-    ArtistSortFilterSheetContentPreview(state, scrollState)
+    StampRallySortFilterSheetContentPreview(state, scrollState)
 }

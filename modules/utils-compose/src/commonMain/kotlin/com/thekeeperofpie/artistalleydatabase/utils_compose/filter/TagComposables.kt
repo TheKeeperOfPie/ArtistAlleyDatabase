@@ -205,7 +205,7 @@ fun TagSection2(
     state: TagSectionState,
     sectionHeader: @Composable () -> Unit,
     sectionHeaderDropdownContentDescriptionRes: StringResource,
-    summaryText: (@Composable () -> String?)? = null,
+    summaryLabel: (@Composable () -> Unit)? = null,
     onSummaryClick: () -> Unit = {},
     header: (@Composable () -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
@@ -224,7 +224,7 @@ fun TagSection2(
         onExpandedChange = onExpandedChange,
         header = sectionHeader,
         headerDropdownContentDescriptionRes = sectionHeaderDropdownContentDescriptionRes,
-        summaryText = summaryText,
+        summaryLabel = summaryLabel,
         onSummaryClick = onSummaryClick,
     ) {
         Column(modifier = Modifier.animateContentSize()) {
