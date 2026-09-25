@@ -2,11 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
@@ -20,8 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -37,6 +36,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -62,9 +63,7 @@ class StampRallySearchViewModel(
     @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
     @Assisted private val savedStateHandle: SavedStateHandle,
-) : EntrySearchViewModel<StampRallySearchQuery, StampRallyEntryGridModel>() {
-    override val sections = emptyList<EntrySection>()
-
+) : ViewModel() {
     val displayType = settings.displayType
     val forceOneDisplayColumn = settings.forceOneDisplayColumn
     val randomSeed = Random.nextInt().absoluteValue
@@ -92,6 +91,8 @@ class StampRallySearchViewModel(
 
     val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
 
+    val query = savedStateHandle.getMutableStateFlow("query", "")
+
     val unfilteredCount = combine(dataYear, query, ::Pair)
         .flatMapLatest { (year, query) ->
             stampRallyEntryDao.searchCount(
@@ -113,38 +114,37 @@ class StampRallySearchViewModel(
         }
     }
 
-    override fun searchOptions() = defer {
+    val results = combine(
+        dataYear,
         snapshotFlow { sortFilterController.filterParams }.mapLatest {
             StampRallySearchQuery(
                 filterParams = it,
                 randomSeed = randomSeed,
             )
-        }
-    }
-
-    override fun mapQuery(
-        query: String,
-        options: StampRallySearchQuery,
-    ) = dataYear
-        .flatMapLatest {
+        },
+        query,
+        ::SearchParams
+    )
+        .flatMapLatest { (year, searchQuery, query) ->
             Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 stampRallyEntryDao.searchPagingSource(
-                    year = it,
+                    year = year,
                     query = query,
-                    searchQuery = options
+                    searchQuery = searchQuery,
                 )
             }.flow
+                .map {
+                    it.filterOnIO {
+                        val passesFavorite = !it.userEntry.favorite || !searchQuery.filterParams.hideFavorited
+                        val passesIgnore = !it.userEntry.ignored || !searchQuery.filterParams.hideIgnored
+                        passesFavorite && passesIgnore
+                    }
+                }
+                .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         }
         .flowOn(CustomDispatchers.IO)
-        .map {
-            it.filterOnIO {
-                val passesFavorite = !it.userEntry.favorite || !options.filterParams.hideFavorited
-                val passesIgnore = !it.userEntry.ignored || !options.filterParams.hideIgnored
-                passesFavorite && passesIgnore
-            }
-        }
-        .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, PagingData.empty())
 
     fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
     fun seriesImage(info: SeriesImageInfo) = seriesImageLoader.getSeriesImage(info)
@@ -173,6 +173,12 @@ class StampRallySearchViewModel(
         StampRallySearchScreen.Event.OpenChangelog -> navStack.navigate(AlleyDestination.ArtistChangelog(dataYear.value))
         StampRallySearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
     }
+
+    private data class SearchParams(
+        val year: DataYear,
+        val searchQuery: StampRallySearchQuery,
+        val query: String,
+    )
 
     @AssistedFactory
     @ManualViewModelAssistedFactoryKey

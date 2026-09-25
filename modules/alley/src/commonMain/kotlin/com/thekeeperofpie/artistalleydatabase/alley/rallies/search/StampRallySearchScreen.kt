@@ -283,7 +283,7 @@ object StampRallySearchScreen {
     fun TableCell(row: StampRallyEntryGridModel?, column: StampRallySearchColumn) {
         when (column) {
             StampRallySearchColumn.BOOTH -> AutoSizeText(
-                text = row?.booth.orEmpty(),
+                text = row?.stampRallyWithUserData?.stampRally?.hostTable.orEmpty(),
                 modifier = Modifier.requiredSize(column.size)
                     .then(TwoWayGrid.DefaultCellPaddingModifier)
             )

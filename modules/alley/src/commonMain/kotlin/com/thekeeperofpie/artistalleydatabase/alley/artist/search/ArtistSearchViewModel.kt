@@ -120,7 +120,7 @@ class ArtistSearchViewModel(
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
-    val query = MutableStateFlow("")
+    val query = savedStateHandle.getMutableStateFlow("query", "")
 
     val unfilteredCount = combine(lockedSeriesEntry, year, query, ::Triple)
         .flatMapLatest { (seriesInfo, year, query) ->

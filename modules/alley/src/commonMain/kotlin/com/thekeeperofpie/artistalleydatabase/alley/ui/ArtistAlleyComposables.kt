@@ -19,7 +19,6 @@ import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -37,7 +36,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,7 +52,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.RadioButton
@@ -77,7 +74,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.inset
@@ -92,13 +88,11 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -121,12 +115,8 @@ import com.composables.core.HorizontalScrollbar
 import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
@@ -150,7 +140,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnima
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -158,196 +147,9 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.atStartOfDayIn
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
-import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
-
-@Composable
-fun <EntryModel : SearchEntryModel> ItemCard(
-    entry: EntryModel,
-    sharedElementId: Any,
-    showGridByDefault: Boolean,
-    showRandomCatalogImage: Boolean,
-    blockCrossAxisScrolling: () -> Boolean,
-    showOutdatedCatalogs: () -> Boolean,
-    onFavoriteToggle: (Boolean) -> Unit,
-    onIgnoredToggle: (Boolean) -> Unit,
-    onClick: (EntryModel, Int) -> Unit,
-    onClickFullscreen: (EntryModel, Int) -> Unit,
-    modifier: Modifier = Modifier,
-    itemRow: @Composable (
-        entry: EntryModel,
-        onFavoriteToggle: (Boolean) -> Unit,
-        modifier: Modifier,
-    ) -> Unit,
-) {
-    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty() && showOutdatedCatalogs()
-    val images = if (showingFallback) entry.fallbackImages else entry.images
-    val pagerState = rememberPagerState(
-        entry = entry,
-        images = images,
-        showGridByDefault = showGridByDefault,
-        showRandomCatalogImage = showRandomCatalogImage,
-    )
-
-    val ignored = entry.ignored
-    ThemeAwareElevatedCard(
-        onClick = { onClick(entry, pagerState.settledPage) },
-        onLongClick = { onIgnoredToggle(!ignored) },
-        modifier = modifier.alpha(if (entry.ignored) 0.38f else 1f)
-    ) {
-        if (images.isNotEmpty() && !entry.ignored) {
-            ImagePager(
-                images = images,
-                pagerState = pagerState,
-                sharedElementId = sharedElementId,
-                blockCrossAxisScrolling = blockCrossAxisScrolling,
-                onClickPage = { onClick(entry, it) },
-                onClickFullscreen = { onClickFullscreen(entry, it) },
-                modifier = Modifier.conditionally(
-                    showingFallback,
-                    Modifier.border(
-                        width = 2.dp,
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-                    )
-                )
-            )
-            if (showingFallback) {
-                ImageFallbackBanner(
-                    sharedElementId = sharedElementId,
-                    fallbackYear = entry.fallbackYear!!,
-                )
-            }
-        }
-
-        itemRow(entry, onFavoriteToggle, Modifier)
-    }
-}
-
-@Composable
-fun <EntryModel : SearchEntryModel> ItemImage(
-    entry: EntryModel,
-    sharedElementId: Any,
-    showGridByDefault: Boolean,
-    showRandomCatalogImage: Boolean,
-    blockCrossAxisScrolling: () -> Boolean,
-    showOutdatedCatalogs: () -> Boolean,
-    onFavoriteToggle: (Boolean) -> Unit,
-    onIgnoredToggle: (Boolean) -> Unit,
-    onClick: (EntryModel, Int) -> Unit,
-    onClickFullscreen: (EntryModel, Int) -> Unit,
-    modifier: Modifier = Modifier,
-    itemRow: @Composable (
-        entry: EntryModel,
-        onFavoriteToggle: (Boolean) -> Unit,
-        modifier: Modifier,
-    ) -> Unit,
-) {
-    val showingFallback = !entry.hasCatalog && entry.fallbackImages.isNotEmpty() && showOutdatedCatalogs()
-    val images = if (showingFallback) entry.fallbackImages else entry.images
-    val pagerState = rememberPagerState(
-        entry = entry,
-        images = images,
-        showGridByDefault = showGridByDefault,
-        showRandomCatalogImage = showRandomCatalogImage,
-    )
-
-    val ignored = entry.ignored
-    Box(
-        modifier = modifier
-            .combinedClickable(
-                onClick = { onClick(entry, pagerState.settledPage) },
-                onLongClick = { onIgnoredToggle(!ignored) }
-            )
-            .background(color = MaterialTheme.colorScheme.surface)
-            .run {
-                if (images.isEmpty()) {
-                    border(width = Dp.Hairline, color = MaterialTheme.colorScheme.surfaceBright)
-                } else {
-                    border(width = Dp.Hairline, color = MaterialTheme.colorScheme.surfaceDim)
-                }
-            }
-            .alpha(if (entry.ignored) 0.38f else 1f)
-    ) {
-        if (images.isEmpty() || entry.ignored) {
-            itemRow(entry, onFavoriteToggle, Modifier)
-        } else {
-            ImagePager(
-                images = images,
-                pagerState = pagerState,
-                sharedElementId = sharedElementId,
-                blockCrossAxisScrolling = blockCrossAxisScrolling,
-                onClickPage = { onClick(entry, it) },
-                onClickFullscreen = { onClickFullscreen(entry, it) },
-                clipCorners = false,
-            )
-
-            if (showingFallback) {
-                ImageFallbackBanner(
-                    sharedElementId = sharedElementId,
-                    fallbackYear = entry.fallbackYear!!,
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(topEnd = 12.dp)
-                    )
-            ) {
-                val booth = entry.booth
-                if (booth != null) {
-                    Text(
-                        text = booth,
-                        style = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
-                            .sharedElement("booth", sharedElementId, zIndexInOverlay = 1f)
-                    )
-                }
-                
-                FavoriteIconButton(
-                    entryText = { entry.title },
-                    favorite = {  entry.favorite },
-                    onFavoriteToggle = onFavoriteToggle,
-                    modifier = Modifier
-                        .sharedElement("favorite", sharedElementId, zIndexInOverlay = 1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun <EntryModel : SearchEntryModel> rememberPagerState(
-    entry: EntryModel,
-    images: List<CatalogImage>,
-    showGridByDefault: Boolean,
-    showRandomCatalogImage: Boolean,
-): PagerState {
-    val pageCount = if (images.isEmpty()) {
-        0
-    } else if (images.size == 1) {
-        1
-    } else {
-        images.size + 1
-    }
-    return rememberPagerState(
-        initialPage = if (showGridByDefault || images.isEmpty()) {
-            0
-        } else if (showRandomCatalogImage) {
-            (1..images.size).random(Random(LocalStableRandomSeed.current + entry.id.hashCode()))
-        } else {
-            1
-        },
-        pageCount = { pageCount },
-    )
-}
 
 @Composable
 internal fun ImageFallbackBanner(
