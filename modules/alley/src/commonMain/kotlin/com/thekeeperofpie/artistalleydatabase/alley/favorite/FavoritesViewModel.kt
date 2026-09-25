@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
@@ -27,11 +28,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallyFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
@@ -48,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
@@ -86,6 +85,7 @@ class FavoritesViewModel(
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
     artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
+    stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
     private val navStack: AlleyNavStack,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -104,25 +104,11 @@ class FavoritesViewModel(
 
     val seriesAutocompleteResults get() = artistSortFilterController.seriesAutocompleteResults
 
-    val stampRallySortFilterController = StampRallySortFilterController(
+    val stampRallySortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
         lockedSeriesEntry = ReadOnlyStateFlow(null),
-        dispatchers = dispatchers,
         dataYear = year,
-        merchEntryDao = merchEntryDao,
-        seriesEntryDao = seriesEntryDao,
-        seriesImageLoader = seriesImageLoader,
-        settings = settings,
         savedStateHandle = savedStateHandle,
-        allowHideFavorited = false,
-    )
-
-    val stampRallySearchState = SearchScreen.State(
-        columns = StampRallySearchScreen.StampRallyColumn.entries,
-        displayType = settings.displayType,
-        showGridByDefault = settings.showGridByDefault,
-        showRandomCatalogImage = settings.showRandomCatalogImage,
-        forceOneDisplayColumn = settings.forceOneDisplayColumn,
     )
 
     val tab = MutableStateFlow(FavoritesScreen.EntryTab.ARTISTS)
@@ -180,17 +166,7 @@ class FavoritesViewModel(
                 year = year,
                 query = query,
                 searchQuery = StampRallySearchQuery(
-                    filterParams = StampRallySortFilterController.FilterParams(
-                        sortOption = StampRallySearchSortOption.RANDOM,
-                        sortAscending = true,
-                        seriesIn = emptySet(),
-                        merchIdIn = emptySet(),
-                        prizeMerchIdIn = emptySet(),
-                        totalCost = RangeData(100),
-                        prizeLimit = RangeData(50),
-                        hideFavorited = false,
-                        hideIgnored = false,
-                    ),
+                    filterParams = StampRallyFilterParams.unfiltered(),
                     randomSeed = randomSeed,
                 ),
                 onlyFavorites = true,
@@ -199,7 +175,7 @@ class FavoritesViewModel(
         .stateInForCompose(0)
 
     val stampRallyEntries =
-        combine(inputs, stampRallySortFilterController.state.filterParams, ::Pair)
+        combine(inputs, snapshotFlow { stampRallySortFilterController.filterParams }, ::Pair)
             .flatMapLatest { (inputs, filterParams) ->
                 val (query, year, showOnlyConfirmedTags) = inputs
                 Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
@@ -323,53 +299,6 @@ class FavoritesViewModel(
     ) = when (event) {
         is FavoritesScreen.Event.OpenMerch -> onOpenMerch(year.value, event.merch)
         is FavoritesScreen.Event.OpenSeries -> onOpenSeries(year.value, event.series)
-        is FavoritesScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
-            is SearchScreen.Event.FavoriteToggle<*> -> when (searchEvent.entry) {
-                is StampRallyEntryGridModel -> rallyMutationUpdates.tryEmit(
-                    searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite)
-                )
-                else -> throw IllegalArgumentException(
-                    "Entry model not supported: ${searchEvent.entry}"
-                )
-            }
-            is SearchScreen.Event.IgnoreToggle<*> -> when (searchEvent.entry) {
-                is StampRallyEntryGridModel -> rallyMutationUpdates.tryEmit(
-                    searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored)
-                )
-                else -> throw IllegalArgumentException(
-                    "Entry model not supported: ${searchEvent.entry}"
-                )
-            }
-            is SearchScreen.Event.OpenEntry<*> -> when (searchEvent.entry) {
-                is StampRallyEntryGridModel ->
-                    onOpenStampRally(
-                        searchEvent.entry.stampRally,
-                        searchEvent.imageIndex,
-                    )
-                else -> throw IllegalArgumentException(
-                    "Entry model not supported: ${searchEvent.entry}"
-                )
-            }
-            is SearchScreen.Event.OpenImageFullscreen<*> -> when (searchEvent.entry) {
-                is StampRallyEntryGridModel ->
-                    onOpenStampRallyImageFullscreen(
-                        searchEvent.entry.stampRally,
-                        searchEvent.imageIndex,
-                    )
-                else -> throw IllegalArgumentException(
-                    "Entry model not supported: ${searchEvent.entry}"
-                )
-            }
-            is SearchScreen.Event.ClearFilters<*> -> when (tab.value) {
-                FavoritesScreen.EntryTab.ARTISTS ->
-                    artistSortFilterController.clear()
-                FavoritesScreen.EntryTab.RALLIES ->
-                    stampRallySortFilterController.clear()
-                FavoritesScreen.EntryTab.SERIES ->
-                    seriesSortFilterController.state.sections.value.forEach { it.clear() }
-                FavoritesScreen.EntryTab.MERCH -> Unit
-            }
-        }
         FavoritesScreen.Event.NavigateToArtists -> onNavigateToArtists()
         FavoritesScreen.Event.NavigateToRallies -> onNavigateToRallies()
         FavoritesScreen.Event.NavigateToSeries -> onNavigateToSeries()
@@ -418,6 +347,33 @@ class FavoritesViewModel(
             is ArtistSearchScreen.Event.OpenSeries ->
                 navStack.navigate(Series(year.value, searchEvent.series))
             ArtistSearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
+        }
+        is FavoritesScreen.Event.StampRallySearchEvent -> when (val searchEvent = event.event) {
+            is StampRallySearchScreen.Event.FavoriteToggle -> rallyMutationUpdates.tryEmit(
+                searchEvent.entry.stampRallyWithUserData.userEntry.copy(favorite = searchEvent.favorite)
+            )
+            is StampRallySearchScreen.Event.IgnoreToggle -> rallyMutationUpdates.tryEmit(
+                searchEvent.entry.stampRallyWithUserData.userEntry.copy(ignored = searchEvent.ignored)
+            )
+            is StampRallySearchScreen.Event.OpenEntry ->
+                navStack.navigate(
+                    StampRallyDetails(
+                        searchEvent.entry.stampRallyWithUserData.stampRally,
+                        searchEvent.imageIndex
+                    )
+                )
+            is StampRallySearchScreen.Event.OpenImageFullscreen ->
+                navStack.navigate(
+                    AlleyDestination.Images.fromStampRally(
+                        stampRallyWithUserData = searchEvent.entry.stampRallyWithUserData,
+                        imageIndex = searchEvent.imageIndex,
+                    )
+                )
+            is StampRallySearchScreen.Event.ClearFilters -> stampRallySortFilterController.clear()
+            StampRallySearchScreen.Event.Back -> navStack.onBack()
+            StampRallySearchScreen.Event.OpenChangelog ->
+                navStack.navigate(AlleyDestination.ArtistChangelog(year.value))
+            StampRallySearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
         }
     }
 

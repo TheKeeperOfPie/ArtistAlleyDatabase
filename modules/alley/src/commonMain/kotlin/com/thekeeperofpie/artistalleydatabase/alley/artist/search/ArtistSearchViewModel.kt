@@ -9,7 +9,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
@@ -232,7 +231,7 @@ class ArtistSearchViewModel(
             ArtistSearchScreen.Event.OpenChangelog ->
                 navStack.navigate(AlleyDestination.ArtistChangelog(year.value))
             is ArtistSearchScreen.Event.OpenEntry ->
-                navStack.navigate(ArtistDetails(event.entry.artist, event.imageIndex))
+                navStack.navigate(AlleyDestination.ArtistDetails(event.entry.artist, event.imageIndex))
             ArtistSearchScreen.Event.OpenExport ->
                 navStack.navigate(AlleyDestination.Export(year.value))
             is ArtistSearchScreen.Event.OpenImageFullscreen ->

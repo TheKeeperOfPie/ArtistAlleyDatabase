@@ -4,9 +4,11 @@ import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import kotlinx.serialization.Serializable
@@ -96,12 +98,13 @@ sealed interface AlleyDestination : NavKey {
                 val showingFallback = artistWithUserData.showingFallback(showOutdatedCatalogs)
                 return Images(
                     year = if (showingFallback) {
-                        artistWithUserData.artist.fallbackImageYear ?: artistWithUserData.artist.year
+                        artistWithUserData.artist.fallbackImageYear
+                            ?: artistWithUserData.artist.year
                     } else {
                         artist.year
                     },
                     id = artist.id,
-                    type =Type.Artist(
+                    type = Type.Artist(
                         id = artist.id,
                         booth = artist.booth,
                         profileImage = artistWithUserData.profileImage,
@@ -109,6 +112,28 @@ sealed interface AlleyDestination : NavKey {
                         showingFallback = showingFallback,
                     ),
                     images = images,
+                    initialImageIndex = imageIndex,
+                    showOpenButton = true,
+                )
+            }
+
+            fun fromStampRally(
+                stampRallyWithUserData: StampRallyWithUserData,
+                imageIndex: Int? = null,
+            ): Images {
+                val stampRally = stampRallyWithUserData.stampRally
+                return Images(
+                    year = stampRally.year,
+                    id = stampRally.id,
+                    type = Type.StampRally(
+                        id = stampRally.id,
+                        hostTable = stampRally.hostTable,
+                        fandom = stampRally.fandom,
+                    ),
+                    images = AlleyImageUtils.getRallyImages(
+                        year = stampRally.year,
+                        images = stampRally.images,
+                    ),
                     initialImageIndex = imageIndex,
                     showOpenButton = true,
                 )

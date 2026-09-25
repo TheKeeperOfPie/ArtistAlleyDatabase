@@ -45,7 +45,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.clear
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ShowOnlyConfirmedTagsSection
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection2
@@ -243,14 +242,6 @@ private fun AdvancedSection(
 
             HorizontalDivider()
 
-            var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
-            ShowOnlyConfirmedTagsSection(
-                enabled = { showOnlyConfirmedTags },
-                onEnabledChanged = { showOnlyConfirmedTags = it },
-            )
-
-            HorizontalDivider()
-
             var forceOneDisplayColumn by persistentState.forceOneDisplayColumn.collectAsMutableStateWithLifecycle()
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_force_one_display_column)) },
@@ -288,7 +279,7 @@ class StampRallySortFilterState(
     val saveableState: StampRallySortFilterSaveableState,
     val lockedSeries: () -> SeriesInfo?,
     val merchTagData: () -> MerchTagData,
-    val merchIdsLockedIn: () -> Set<String>,
+    val merchIdsLockedIn: () -> Set<String>, // TODO: Not wired up
 ) {
     val activeCount get() = saveableState.activeCount
 
@@ -328,7 +319,6 @@ class StampRallySortFilterPersistentState(
     val sortAscending: MutableStateFlow<Boolean>,
     val showGridByDefault: MutableStateFlow<Boolean>,
     val showRandomCatalogImage: MutableStateFlow<Boolean>,
-    val showOnlyConfirmedTags: MutableStateFlow<Boolean>,
     val forceOneDisplayColumn: MutableStateFlow<Boolean>,
 ) {
     companion object {
@@ -340,7 +330,6 @@ class StampRallySortFilterPersistentState(
                 sortAscending = MutableStateFlow(true),
                 showGridByDefault = MutableStateFlow(false),
                 showRandomCatalogImage = MutableStateFlow(true),
-                showOnlyConfirmedTags = MutableStateFlow(false),
                 forceOneDisplayColumn = MutableStateFlow(false),
             )
         }

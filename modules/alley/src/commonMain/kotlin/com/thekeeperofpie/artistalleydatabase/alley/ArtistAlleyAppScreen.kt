@@ -544,16 +544,9 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.StampRallies> {
                 StampRallySearchScreen(
-                    graph = graph,
                     lockedYear = it.year,
                     lockedSeries = it.series,
                     scrollStateSaver = ScrollStateSaver(),
-                    onClickBack = navStack::onBack,
-                    onOpenStampRally = onOpenStampRally,
-                    onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
-                    onOpenExport = onOpenExport,
-                    onOpenChangelog = onOpenStampRallyChangelog,
-                    onOpenSettings = onOpenSettings,
                 )
             }
 

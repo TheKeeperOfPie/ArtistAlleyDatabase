@@ -14,7 +14,6 @@ class ArtistEntryGridModel(
 
     val artist get() = data.artist
     val userEntry get() = data.userEntry
-    val images get() = data.images
 
     val id = EntryId("artist_entry", artist.id)
 

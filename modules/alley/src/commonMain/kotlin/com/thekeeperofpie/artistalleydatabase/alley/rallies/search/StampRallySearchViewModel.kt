@@ -1,17 +1,20 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.hoc081098.flowext.defer
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -19,15 +22,18 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,18 +53,20 @@ import kotlin.random.Random
 class StampRallySearchViewModel(
     dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
-    merchEntryDao: MerchEntryDao,
     private val seriesImageLoader: SeriesImageLoader,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userEntryDao: UserEntryDao,
-    private val settings: ArtistAlleySettings,
-    @Assisted lockedYear: DataYear?,
+    settings: ArtistAlleySettings,
+    stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
+    private val navStack: AlleyNavStack,
+    @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
     @Assisted private val savedStateHandle: SavedStateHandle,
 ) : EntrySearchViewModel<StampRallySearchQuery, StampRallyEntryGridModel>() {
     override val sections = emptyList<EntrySection>()
 
     val displayType = settings.displayType
+    val forceOneDisplayColumn = settings.forceOneDisplayColumn
     val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 
@@ -68,14 +76,6 @@ class StampRallySearchViewModel(
         savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
     }
 
-    val searchState = SearchScreen.State(
-        columns = StampRallySearchScreen.StampRallyColumn.entries,
-        displayType = settings.displayType,
-        showGridByDefault = settings.showGridByDefault,
-        showRandomCatalogImage = settings.showRandomCatalogImage,
-        forceOneDisplayColumn = settings.forceOneDisplayColumn,
-    )
-
     val lockedSeriesEntry = flowOf(lockedSeries)
         .flatMapLatest {
             if (it == null) flowOf(null) else seriesEntryDao.getSeriesById(it)
@@ -83,18 +83,14 @@ class StampRallySearchViewModel(
         .flowOn(dispatchers.io)
         .stateInForCompose(this, null)
 
-    val sortFilterController = StampRallySortFilterController(
+    val sortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
         lockedSeriesEntry = lockedSeriesEntry,
-        dispatchers = dispatchers,
         dataYear = dataYear,
-        merchEntryDao = merchEntryDao,
-        seriesEntryDao = seriesEntryDao,
-        seriesImageLoader = seriesImageLoader,
-        settings = settings,
         savedStateHandle = savedStateHandle,
-        allowHideFavorited = true,
     )
+
+    val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
 
     val unfilteredCount = combine(dataYear, query, ::Pair)
         .flatMapLatest { (year, query) ->
@@ -102,17 +98,7 @@ class StampRallySearchViewModel(
                 year = year,
                 query = query,
                 searchQuery = StampRallySearchQuery(
-                    filterParams = StampRallySortFilterController.FilterParams(
-                        sortOption = StampRallySearchSortOption.RANDOM,
-                        sortAscending = true,
-                        seriesIn = setOfNotNull(lockedSeries),
-                        merchIdIn = emptySet(),
-                        prizeMerchIdIn = emptySet(),
-                        totalCost = RangeData(100),
-                        prizeLimit = RangeData(50),
-                        hideFavorited = false,
-                        hideIgnored = false,
-                    ),
+                    filterParams = StampRallyFilterParams.unfiltered(lockedSeries),
                     randomSeed = randomSeed,
                 ),
             )
@@ -128,7 +114,7 @@ class StampRallySearchViewModel(
     }
 
     override fun searchOptions() = defer {
-        sortFilterController.state.filterParams.mapLatest {
+        snapshotFlow { sortFilterController.filterParams }.mapLatest {
             StampRallySearchQuery(
                 filterParams = it,
                 randomSeed = randomSeed,
@@ -160,18 +146,38 @@ class StampRallySearchViewModel(
         .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
+    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
     fun seriesImage(info: SeriesImageInfo) = seriesImageLoader.getSeriesImage(info)
 
-    fun toggleFavorite(entry: StampRallyEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
-    }
-
-    fun toggleIgnored(entry: StampRallyEntryGridModel, ignored: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
+    fun onEvent(event: StampRallySearchScreen.Event) = when (event) {
+        is StampRallySearchScreen.Event.FavoriteToggle ->
+            mutationUpdates.tryEmit(event.entry.stampRallyWithUserData.userEntry.copy(favorite = event.favorite))
+        is StampRallySearchScreen.Event.IgnoreToggle ->
+            mutationUpdates.tryEmit(event.entry.stampRallyWithUserData.userEntry.copy(ignored = event.ignored))
+        is StampRallySearchScreen.Event.OpenEntry ->
+            navStack.navigate(
+                StampRallyDetails(
+                    event.entry.stampRallyWithUserData.stampRally,
+                    event.imageIndex
+                )
+            )
+        is StampRallySearchScreen.Event.OpenImageFullscreen ->
+            navStack.navigate(
+                AlleyDestination.Images.fromStampRally(
+                    stampRallyWithUserData = event.entry.stampRallyWithUserData,
+                    imageIndex = event.imageIndex,
+                )
+            )
+        is StampRallySearchScreen.Event.ClearFilters -> sortFilterController.clear()
+        StampRallySearchScreen.Event.Back -> navStack.onBack()
+        StampRallySearchScreen.Event.OpenChangelog -> navStack.navigate(AlleyDestination.ArtistChangelog(dataYear.value))
+        StampRallySearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
     }
 
     @AssistedFactory
-    interface Factory {
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
         fun create(
             lockedYear: DataYear?,
             lockedSeries: String?,

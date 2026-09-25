@@ -804,6 +804,7 @@ fun SortFilterBottomScaffoldSheetContent(
             }
         }
 
+        // TODO: Add vertical scroll bar
         Column(
             Modifier
                 .weight(1f, fill = false)

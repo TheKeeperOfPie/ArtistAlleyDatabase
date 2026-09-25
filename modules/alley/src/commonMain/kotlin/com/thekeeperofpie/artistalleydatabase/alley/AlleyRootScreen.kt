@@ -173,14 +173,8 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.STAMP_RALLIES ->
                         StampRallySearchScreen(
-                            graph = graph,
                             lockedYear = null,
                             lockedSeries = null,
-                            onOpenStampRally = onOpenStampRally,
-                            onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
-                            onOpenExport = onOpenExport,
-                            onOpenChangelog = onOpenStampRallyChangelog,
-                            onOpenSettings = onOpenSettings,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.STAMP_RALLIES.name,
                                 scrollPositions,

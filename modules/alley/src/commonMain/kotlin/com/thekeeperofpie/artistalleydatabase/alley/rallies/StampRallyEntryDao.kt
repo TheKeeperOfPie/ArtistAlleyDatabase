@@ -73,7 +73,7 @@ fun SqlCursor.toStampRallyWithUserData(dataYear: DataYear): StampRallyWithUserDa
             lastEditTime = null,
         ),
         seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(15)!!),
-        artistBoothToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(getString(16)!!)
+        _artistBoothsToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(getString(16)!!)
             .associate {
                 it.booth.orEmpty() to it.profileImage?.let(ColumnAdapters.databaseImageAdapter::decode)
             },

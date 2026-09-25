@@ -68,7 +68,6 @@ interface ArtistAlleyGraph {
     val stampRallyChangelogViewModelFactory: StampRallyChangelogViewModel.Factory
     val stampRallyDetailsViewModelFactory: StampRallyDetailsViewModel.Factory
     val stampRallyMapViewModelFactory: StampRallyMapViewModel.Factory
-    val stampRallySearchViewModelFactory: StampRallySearchViewModel.Factory
     val tagChangelogViewModelFactory: TagChangelogViewModel.Factory
     val tagMapViewModelFactory: TagMapViewModel.Factory
     val tagsViewModelFactory: TagsViewModel.Factory
