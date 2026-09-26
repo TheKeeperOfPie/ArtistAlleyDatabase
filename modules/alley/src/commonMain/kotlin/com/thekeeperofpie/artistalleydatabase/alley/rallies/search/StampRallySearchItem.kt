@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.search.rememberSearchPagerState
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
@@ -45,7 +44,6 @@ fun StampRallySearchItem(
     onIgnoredToggle: (Boolean) -> Unit,
     onClick: (imageIndex: Int) -> Unit,
     onClickFullscreen: (imageIndex: Int) -> Unit,
-    seriesImage: (SeriesImageInfo) -> String?,
 ) {
     val stampRally = stampRallyWithUserData.stampRally
     val userEntry = stampRallyWithUserData.userEntry
@@ -63,7 +61,6 @@ fun StampRallySearchItem(
             StampRallyListRow(
                 stampRallyWithUserData = stampRallyWithUserData,
                 onFavoriteToggle = onFavoriteToggle,
-                seriesImage = seriesImage,
                 modifier = Modifier
                     .sharedBounds("itemContainer", sharedElementId)
                     .combinedClickable(
@@ -98,7 +95,6 @@ fun StampRallySearchItem(
                 StampRallyListRow(
                     stampRallyWithUserData = stampRallyWithUserData,
                     onFavoriteToggle = onFavoriteToggle,
-                    seriesImage = seriesImage,
                 )
             }
         SearchDisplayType.IMAGE -> {
@@ -160,7 +156,6 @@ fun StampRallySearchItem(
                     StampRallyListRow(
                         stampRallyWithUserData = stampRallyWithUserData,
                         onFavoriteToggle = onFavoriteToggle,
-                        seriesImage = seriesImage,
                     )
                 },
                 modifier = Modifier.sharedBounds("itemContainer", sharedElementId),
@@ -210,7 +205,6 @@ private fun Preview(displayType: SearchDisplayType) {
         onIgnoredToggle = {},
         onClick = {},
         onClickFullscreen = {},
-        seriesImage = { it.id },
     )
 }
 

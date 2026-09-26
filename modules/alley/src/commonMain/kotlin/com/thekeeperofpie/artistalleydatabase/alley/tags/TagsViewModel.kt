@@ -7,7 +7,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -18,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
@@ -49,14 +47,13 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class, SavedStateHandleSaveableApi::class, FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @AssistedInject
 class TagsViewModel(
     dispatchers: CustomDispatchers,
     merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     settings: ArtistAlleySettings,
-    private val seriesImageLoader: SeriesImageLoader,
     userEntryDao: UserEntryDao,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -137,8 +134,6 @@ class TagsViewModel(
             }
         }
     }
-
-    fun getSeriesImage(series: SeriesInfo) = seriesImageLoader.getSeriesImage(series)
 
     fun onSeriesFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
         seriesMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))

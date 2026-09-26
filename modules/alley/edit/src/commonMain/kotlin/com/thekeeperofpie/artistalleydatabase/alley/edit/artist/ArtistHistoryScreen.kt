@@ -130,7 +130,6 @@ object ArtistHistoryScreen {
             seriesById = { seriesById },
             merchById = { merchById },
             saveProgress = viewModel.saveProgress,
-            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickRefresh = viewModel::onClickRefresh,
             onApplied = viewModel::onApplied,
@@ -146,7 +145,6 @@ object ArtistHistoryScreen {
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         saveProgress: MutableStateFlow<JobProgress<BackendRequest.ArtistSave.Response>>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickRefresh: () -> Unit,
         onApplied: (ArtistHistoryEntry) -> Unit,
@@ -247,7 +245,6 @@ object ArtistHistoryScreen {
                             artist = { artist },
                             seriesById = seriesById(),
                             merchById = merchById(),
-                            seriesImage = seriesImage,
                             modifier = Modifier.weight(1f)
                         )
 
@@ -275,7 +272,6 @@ object ArtistHistoryScreen {
                             artist = { artist },
                             seriesById = seriesById(),
                             merchById = merchById(),
-                            seriesImage = seriesImage,
                             modifier = Modifier.weight(1f)
                         )
 
@@ -299,7 +295,6 @@ object ArtistHistoryScreen {
         artist: () -> ArtistDatabaseEntry?,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
-        seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
         Column(modifier = modifier) {
@@ -336,7 +331,6 @@ object ArtistHistoryScreen {
                         seriesPredictions = { emptyFlow() },
                         merchById = { merchById },
                         merchPredictions = { emptyFlow() },
-                        seriesImage = seriesImage,
                         forceLocked = true,
                         modifier = Modifier.fillMaxWidth(),
                     )

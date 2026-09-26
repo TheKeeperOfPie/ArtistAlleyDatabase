@@ -54,7 +54,6 @@ internal object RemoteArtistDataHistoryMergeScreen {
             saving = { saveTaskState.showBlockingLoadingIndicator },
             seriesById = { seriesById },
             merchById = { merchById },
-            seriesImage = viewModel::seriesImage,
             inferredArtists = { LoadingResult.empty() },
             onConfirmId = {},
             onClickBack = onClickBack,

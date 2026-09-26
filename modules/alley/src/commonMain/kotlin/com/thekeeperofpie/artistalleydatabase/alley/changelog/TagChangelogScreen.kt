@@ -34,9 +34,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -82,7 +82,6 @@ object TagChangelogScreen {
             series = { series },
             merch = { merch },
             seriesTitles = { seriesTitles },
-            seriesImage = viewModel::seriesImage,
             showOnlyConfirmedTags = { showOnlyConfirmedTags },
             onChangeShowOnlyConfirmedTags = { showOnlyConfirmedTags = it },
             onClickBack = onClickBack,
@@ -102,7 +101,6 @@ object TagChangelogScreen {
         dataYear: DataYear,
         changes: () -> List<DayChange>,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
-        seriesImage: (seriesId: String) -> String?,
         series: () -> SeriesWithUserData?,
         merch: () -> MerchWithUserData?,
         showOnlyConfirmedTags: () -> Boolean,
@@ -142,7 +140,6 @@ object TagChangelogScreen {
                             SeriesHeader(
                                 year = dataYear,
                                 series = series,
-                                seriesImage = { series()?.let { seriesImage(it.series.id) } },
                                 showOnlyConfirmedTags = { showOnlyConfirmedTags() },
                                 onChangeShowOnlyConfirmedTags = onChangeShowOnlyConfirmedTags,
                                 onFavoriteToggle = onSeriesFavoriteToggle,
@@ -173,7 +170,6 @@ object TagChangelogScreen {
                                 added = it.addedRallies,
                                 updated = it.updatedRallies,
                                 seriesTitles = seriesTitles,
-                                seriesImage = seriesImage,
                                 onClickStampRally = onClickStampRally,
                                 onClickSeries = onClickSeries,
                                 onClickMerch = onClickMerch,
@@ -192,7 +188,6 @@ object TagChangelogScreen {
     private fun SeriesHeader(
         year: DataYear,
         series: () -> SeriesWithUserData?,
-        seriesImage: () -> String?,
         showOnlyConfirmedTags: () -> Boolean,
         onChangeShowOnlyConfirmedTags: (Boolean) -> Unit,
         onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
@@ -205,7 +200,6 @@ object TagChangelogScreen {
         ) {
             SeriesRow(
                 data = series,
-                image = seriesImage,
                 textStyle = LocalTextStyle.current,
                 showAllTitles = true,
                 showNotes = true,

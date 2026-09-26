@@ -24,18 +24,14 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
-import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.network.DeDupeConcurrentRequestStrategy
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
-import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.credentialsHttpClient
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -45,8 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfigura
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack
 import dev.zacsweers.metro.createGraphFactory
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -80,13 +74,7 @@ fun main() {
                             concurrentRequestStrategy = { concurrentRequestStrategy },
                         )
                     )
-                    add(Mapper<Uri, coil3.Uri> { data, _ ->
-                        data.toString().toUri()
-                    })
-                    add(Mapper<PlatformImageKey, PlatformFile> { data, _ ->
-                        PlatformImageCache[data]
-                    })
-                    addPlatformFileSupport()
+                    graph.alleyEditCoilInit.addComponents()
                 }
                 .memoryCache {
                     MemoryCache.Builder()

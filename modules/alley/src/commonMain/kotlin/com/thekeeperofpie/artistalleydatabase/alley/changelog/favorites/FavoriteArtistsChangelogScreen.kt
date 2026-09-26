@@ -41,7 +41,6 @@ object FavoriteArtistsChangelogScreen {
             dataYear = dataYear,
             changes = { changes },
             seriesTitles = { seriesTitles },
-            seriesImage = viewModel::seriesImage,
             showOnlyConfirmedTags = null,
             onChangeShowOnlyConfirmedTags = {},
             onClickBack = onClickBack,

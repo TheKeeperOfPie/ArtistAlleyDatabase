@@ -119,7 +119,6 @@ object ArtistSeriesScreen {
             ArtistSearchScreen.State(artistSearchViewModel, sortFilterController)
         }
         val seriesEntry by artistSeriesViewModel.seriesEntry.collectAsStateWithLifecycle()
-        val seriesImage by artistSeriesViewModel.seriesImage.collectAsStateWithLifecycle()
         val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         val seriesAutocompleteResults by artistSearchViewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
         ArtistSearchScreen(
@@ -131,7 +130,6 @@ object ArtistSeriesScreen {
                     state = state,
                     scaffoldState = scaffoldState,
                     seriesEntry = { seriesEntry },
-                    seriesImage = { seriesImage },
                     onFavoriteToggle = artistSeriesViewModel::onFavoriteToggle,
                     onOpenChangelog = onOpenChangelog,
                     onOpenSettings = onOpenSettings,
@@ -139,7 +137,6 @@ object ArtistSeriesScreen {
             },
             scaffoldState = scaffoldState,
             scrollStateSaver = scrollStateSaver,
-            seriesImage = artistSearchViewModel::seriesImage,
             seriesAutocompleteResults = { seriesAutocompleteResults },
             actions = {
                 if (showRalliesButton()) {
@@ -165,7 +162,6 @@ object ArtistSeriesScreen {
         state: ArtistSearchScreen.State,
         scaffoldState: BottomSheetScaffoldState,
         seriesEntry: () -> SeriesWithUserData?,
-        seriesImage: () -> String?,
         onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
@@ -176,7 +172,6 @@ object ArtistSeriesScreen {
                 val data = seriesEntry()
                 SeriesRow(
                     data = data,
-                    image = seriesImage,
                     textStyle = LocalTextStyle.current,
                     showAllTitles = true,
                     showNotes = true,

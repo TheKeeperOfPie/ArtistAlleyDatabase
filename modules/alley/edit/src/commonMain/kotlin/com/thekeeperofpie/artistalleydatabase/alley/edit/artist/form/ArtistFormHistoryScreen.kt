@@ -54,7 +54,6 @@ object ArtistFormHistoryScreen {
             saving = { saveTaskState.showBlockingLoadingIndicator },
             seriesById = { seriesById },
             merchById = { merchById },
-            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSave = {
                 viewModel.onClickSave(

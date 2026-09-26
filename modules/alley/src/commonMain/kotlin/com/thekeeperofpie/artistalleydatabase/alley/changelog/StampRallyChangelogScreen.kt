@@ -52,7 +52,6 @@ internal object StampRallyChangelogScreen {
         StampRallyChangelogScreen(
             changes = { changes },
             seriesTitles = { seriesTitles },
-            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickStampRally = onClickStampRally,
             onClickSeries = onClickSeries,
@@ -65,7 +64,6 @@ internal object StampRallyChangelogScreen {
     operator fun invoke(
         changes: () -> List<DayChange>,
         seriesTitles: () -> Map<String, GetSeriesTitles>,
-        seriesImage: (seriesId: String) -> String?,
         onClickBack: () -> Unit,
         onClickStampRally: (StampRallyChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
@@ -96,7 +94,6 @@ internal object StampRallyChangelogScreen {
                                 added = it.added,
                                 updated = it.updated,
                                 seriesTitles = seriesTitles,
-                                seriesImage = seriesImage,
                                 onClickStampRally = onClickStampRally,
                                 onClickSeries = onClickSeries,
                                 onClickMerch = onClickMerch,

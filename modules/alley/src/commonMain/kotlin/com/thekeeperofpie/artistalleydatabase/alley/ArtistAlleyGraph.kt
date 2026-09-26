@@ -76,6 +76,8 @@ interface ArtistAlleyGraph {
     val alleySettingsViewModel: () -> AlleySettingsViewModel
     val qrCodeViewModel: () -> QrCodeViewModel
 
+    val alleyCoilInit: AlleyCoilInit
+
     val settings: ArtistAlleySettings
     val aboutLibrariesProviders: Set<AboutLibrariesProvider>
     

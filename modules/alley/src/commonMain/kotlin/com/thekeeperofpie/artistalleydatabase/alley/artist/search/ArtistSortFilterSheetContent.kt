@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalComposeUiApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import androidx.compose.foundation.ScrollState
@@ -27,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
@@ -93,7 +90,6 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res as Util
 internal fun ArtistSortFilterSheetContent(
     state: ArtistSortFilterState,
     sheetState: SheetState,
-    seriesImage: (SeriesInfo) -> String?,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
     scrollState: ScrollState = rememberScrollState(),
     showHideFavorited: Boolean = true,
@@ -152,7 +148,6 @@ internal fun ArtistSortFilterSheetContent(
             expanded = { Section.SERIES in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SERIES) },
             state = saveableState.series,
-            image = seriesImage,
             lockedSeries = state.lockedSeries,
             autocompleteResults = seriesAutocompleteResults,
             showOnlyConfirmedTagsSection = {
@@ -543,7 +538,6 @@ private fun ArtistSortFilterSheetContentPreview(
         state = state,
         scrollState = scrollState,
         sheetState = rememberBottomSheetState(SheetValue.PartiallyExpanded),
-        seriesImage = { null },
         seriesAutocompleteResults = { emptyList() },
     )
 }

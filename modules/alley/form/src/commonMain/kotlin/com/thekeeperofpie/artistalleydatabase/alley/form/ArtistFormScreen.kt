@@ -210,7 +210,6 @@ object ArtistFormScreen {
             merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
             tablePredictions = viewModel::tablePredictions,
-            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickDone = viewModel::onClickDone,
             onConfirmMerge = viewModel::onConfirmMerge,
@@ -229,7 +228,6 @@ object ArtistFormScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickDone: () -> Unit,
         onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
@@ -347,7 +345,6 @@ object ArtistFormScreen {
                             merchById = merchById,
                             merchPredictions = merchPredictions,
                             tablePredictions = tablePredictions,
-                            seriesImage = seriesImage,
                             onClickDone = onClickDone,
                             onConfirmMerge = onConfirmMerge,
                             onClickEditImages = onClickEditImages,
@@ -384,7 +381,6 @@ object ArtistFormScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickDone: () -> Unit,
         onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
@@ -437,7 +433,6 @@ object ArtistFormScreen {
                                     seriesPredictions = seriesPredictions,
                                     merchById = merchById,
                                     merchPredictions = merchPredictions,
-                                    seriesImage = seriesImage,
                                     onClickEditImages = onClickEditImages,
                                 )
 
@@ -452,7 +447,6 @@ object ArtistFormScreen {
                                     seriesPredictions = seriesPredictions,
                                     merchById = merchById,
                                     merchPredictions = merchPredictions,
-                                    seriesImage = seriesImage,
                                 )
 
                                 Spacer(Modifier.height(16.dp))
@@ -468,7 +462,6 @@ object ArtistFormScreen {
                                         merchById = merchById,
                                         merchPredictions = merchPredictions,
                                         tablePredictions = tablePredictions,
-                                        seriesImage = seriesImage,
                                         onClickEditImages = onClickEditImages,
                                         modifier = modifier,
                                     )
@@ -510,7 +503,6 @@ object ArtistFormScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
     ) {
         val focusState = rememberFocusState(
             listOfNotNull(
@@ -594,7 +586,6 @@ object ArtistFormScreen {
                 inferred = formState.series.inferred,
                 seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
-                seriesImage = seriesImage,
                 initiallyHide = false,
                 showUnknownIndicator = false,
             )
@@ -632,7 +623,6 @@ object ArtistFormScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
         modifier: Modifier = Modifier,
     ) {
@@ -669,7 +659,6 @@ object ArtistFormScreen {
                 merchById = merchById,
                 merchPredictions = merchPredictions,
                 tablePredictions = tablePredictions,
-                seriesImage = seriesImage,
                 onClickEditImages = onClickEditImages,
             )
 
@@ -690,7 +679,6 @@ object ArtistFormScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
     ) {
@@ -821,7 +809,6 @@ object ArtistFormScreen {
                                 merchById = merchById,
                                 merchPredictions = merchPredictions,
                                 tablePredictions = tablePredictions,
-                                seriesImage = seriesImage,
                             ) {
                                 val requestKey =
                                     rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
@@ -891,7 +878,6 @@ object ArtistFormScreen {
                                     series = formState.series,
                                     seriesById = seriesById,
                                     seriesPredictions = seriesPredictions,
-                                    seriesImage = seriesImage,
                                     showUnknownIndicator = false,
                                 )
                                 MerchSection(
@@ -1142,7 +1128,6 @@ object ArtistFormScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
     ) {
         Column {
@@ -1258,7 +1243,6 @@ object ArtistFormScreen {
                         confirmed = state.series.confirmed,
                         seriesById = seriesById,
                         seriesPredictions = seriesPredictions,
-                        seriesImage = seriesImage,
                         showUnknownIndicator = false,
                     )
                     MerchConfirmedSection(

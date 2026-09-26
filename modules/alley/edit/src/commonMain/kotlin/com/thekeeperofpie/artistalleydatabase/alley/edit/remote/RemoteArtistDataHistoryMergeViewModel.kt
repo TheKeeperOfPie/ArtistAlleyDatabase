@@ -9,9 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
@@ -30,7 +28,6 @@ import kotlin.uuid.Uuid
 class RemoteArtistDataHistoryMergeViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
-    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val id: ArtistRemoteEntry.Id,
@@ -76,8 +73,6 @@ class RemoteArtistDataHistoryMergeViewModel(
     private val saveTask: ExclusiveTask<SaveData, BackendRequest.SaveRemoteArtistData.Response> =
         ExclusiveTask(viewModelScope, ::save)
     val saveTaskState get() = saveTask.state
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickSave(capturedState: ArtistFormState.CapturedState) {
         val entry = entry.value ?: return

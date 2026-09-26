@@ -60,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallySeriesImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesId
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
@@ -320,7 +321,6 @@ fun ChangelogStampRallyRow(
     stampRally: StampRallyChangelogEntry,
     isLast: Boolean,
     seriesTitles: () -> Map<String, GetSeriesTitles>,
-    seriesImage: (seriesId: String) -> String?,
     onClick: () -> Unit,
     onClickSeries: (String) -> Unit,
     onClickMerch: (String) -> Unit,
@@ -376,7 +376,7 @@ fun ChangelogStampRallyRow(
                 stampRallyId = stampRally.rally.id,
                 seriesId = seriesId,
                 startTable = stampRally.rally.startTableOrDefault,
-                image = { seriesId?.let(seriesImage) }
+                image = { seriesId?.let(::SeriesId) }
             )
 
             SeriesAndMerchRows(
@@ -405,7 +405,7 @@ fun LazyListScope.changelogDayHeader(
     key: String = "changelogDayHeader",
 ) {
     val headerKey = listOf(key, date)
-    stickyHeader(key = headerKey, "ChangelogDayHeader") { headerIndex ->
+    stickyHeader(key = headerKey, "ChangelogDayHeader") {
         val pinned by remember {
             derivedStateOf {
                 val offset = listState.layoutInfo.visibleItemsInfo
@@ -509,7 +509,6 @@ fun LazyListScope.stampRallyChangelogDay(
     added: List<StampRallyChangelogEntry>,
     updated: List<StampRallyChangelogEntry>,
     seriesTitles: () -> Map<String, GetSeriesTitles>,
-    seriesImage: (seriesId: String) -> String?,
     onClickStampRally: (StampRallyChangelogEntry) -> Unit,
     onClickSeries: (String) -> Unit,
     onClickMerch: (String) -> Unit,
@@ -533,7 +532,6 @@ fun LazyListScope.stampRallyChangelogDay(
                 stampRally = change,
                 isLast = index == added.lastIndex,
                 seriesTitles = seriesTitles,
-                seriesImage = seriesImage,
                 onClick = { onClickStampRally(change) },
                 onClickSeries = onClickSeries,
                 onClickMerch = onClickMerch,
@@ -568,7 +566,6 @@ fun LazyListScope.stampRallyChangelogDay(
                 stampRally = change,
                 isLast = index == updated.lastIndex,
                 seriesTitles = seriesTitles,
-                seriesImage = seriesImage,
                 onClick = { onClickStampRally(change) },
                 onClickSeries = onClickSeries,
                 onClickMerch = onClickMerch,

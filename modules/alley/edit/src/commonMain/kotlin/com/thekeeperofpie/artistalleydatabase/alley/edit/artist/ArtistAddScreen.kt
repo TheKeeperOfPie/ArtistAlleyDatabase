@@ -92,7 +92,6 @@ object ArtistAddScreen {
             seriesPredictions = viewModel::seriesPredictions,
             merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
-            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, images ->
                 onClickEditImages(
@@ -117,7 +116,6 @@ object ArtistAddScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
@@ -207,7 +205,6 @@ object ArtistAddScreen {
                             seriesPredictions = seriesPredictions,
                             merchById = merchById,
                             merchPredictions = merchPredictions,
-                            seriesImage = seriesImage,
                             locked = !sameArtist.isEmpty(),
                             onClickSameArtist = onClickSameArtist,
                         )
@@ -294,7 +291,6 @@ object ArtistAddScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         locked: Boolean,
         onClickSameArtist: (artistId: Uuid) -> Unit,
     ) {
@@ -311,7 +307,6 @@ object ArtistAddScreen {
                 seriesPredictions = seriesPredictions,
                 merchById = merchById,
                 merchPredictions = merchPredictions,
-                seriesImage = seriesImage,
                 forceLocked = locked,
             )
         }

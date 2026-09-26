@@ -82,9 +82,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
-import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ClickableIconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
@@ -143,7 +143,6 @@ object StampRallyDetailsScreen {
         }
         val entry by viewModel.entry.collectAsStateWithLifecycle()
         val series by viewModel.series.collectAsStateWithLifecycle()
-        val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
         StampRallyDetailsScreen(
             route = route,
             entry = { entry },
@@ -151,7 +150,6 @@ object StampRallyDetailsScreen {
             userNotesTextState = viewModel.userNotes,
             images = { images },
             imagePagerState = imagePagerState,
-            seriesImages = { seriesImages },
             eventSink = {
                 when (it) {
                     is Event.DetailsEvent ->
@@ -195,7 +193,6 @@ object StampRallyDetailsScreen {
         userNotesTextState: TextFieldState,
         images: () -> List<CatalogImage>,
         imagePagerState: PagerState,
-        seriesImages: () -> Map<String, String>,
         eventSink: (Event) -> Unit,
     ) {
         val uriHandler = LocalUriHandler.current
@@ -217,7 +214,6 @@ object StampRallyDetailsScreen {
                 entry = entry(),
                 series = series,
                 userNotesTextState = userNotesTextState,
-                seriesImages = seriesImages,
                 eventSink = eventSink,
                 onClickOpenUri = {
                     try {
@@ -233,7 +229,6 @@ object StampRallyDetailsScreen {
         entry: StampRallyDetailsViewModel.Entry?,
         series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
-        seriesImages: () -> Map<String, String>,
         eventSink: (Event) -> Unit,
         onClickOpenUri: (String) -> Unit,
     ) {
@@ -433,7 +428,6 @@ object StampRallyDetailsScreen {
                             item = { value, expanded, _ ->
                                 SeriesRow(
                                     data = value,
-                                    image = { value?.series?.id?.let { seriesImages()[it] } },
                                     onFavoriteToggle = {
                                         if (value != null) {
                                             eventSink(Event.SeriesFavoriteToggle(value, it))
@@ -687,7 +681,6 @@ private fun PhoneLayout() {
             userNotesTextState = rememberTextFieldState(),
             images = { images },
             imagePagerState = rememberImagePagerState(images, 1),
-            seriesImages = { emptyMap() },
             eventSink = {},
         )
     }

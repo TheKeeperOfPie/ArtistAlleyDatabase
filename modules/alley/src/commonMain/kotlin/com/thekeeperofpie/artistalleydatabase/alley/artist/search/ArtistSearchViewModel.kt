@@ -16,11 +16,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -59,7 +57,6 @@ class ArtistSearchViewModel(
     dispatchers: CustomDispatchers,
     val seriesEntryCache: SeriesEntryCache,
     private val seriesEntryDao: SeriesEntryDao,
-    private val seriesImageLoader: SeriesImageLoader,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     private val navStack: AlleyNavStack,
@@ -208,8 +205,6 @@ class ArtistSearchViewModel(
         val searchQuery: ArtistSearchQuery,
         val query: String,
     )
-
-    fun seriesImage(seriesInfo: SeriesInfo) = seriesImageLoader.getSeriesImage(seriesInfo)
 
     fun toggleFavorite(entry: ArtistEntryGridModel, favorite: Boolean) {
         mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))

@@ -9,7 +9,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.toChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
@@ -27,7 +26,6 @@ import kotlin.random.Random
 class FavoritesChangelogViewModel(
     dispatchers: CustomDispatchers,
     val seriesEntryCache: SeriesEntryCache,
-    private val seriesImageLoader: SeriesImageLoader,
     settings: ArtistAlleySettings,
     useCaseFactory: FavoritesChangelogUseCase.Factory,
     userEntryDao: UserEntryDao,
@@ -95,8 +93,6 @@ class FavoritesChangelogViewModel(
             seriesIdsToHighlight = changes.input.favoriteSeriesIds,
             merchIdsToHighlight = changes.input.favoriteMerchIds,
         )
-
-    fun seriesImage(seriesId: String) = seriesImageLoader.getSeriesImage(seriesId)
 
     data class Input(
         val showOnlyConfirmedTags: Boolean,

@@ -5,10 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
@@ -23,7 +21,6 @@ import kotlin.time.Clock
 @AssistedInject
 class StampRallyHistoryViewModel(
     private val database: AlleyEditDatabase,
-    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: EditTagAutocomplete,
     artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
@@ -40,8 +37,6 @@ class StampRallyHistoryViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val tablesByBooth = artistTableAutocomplete.tablesByBooth(dataYear)
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
     val saveProgress = saveJob.state

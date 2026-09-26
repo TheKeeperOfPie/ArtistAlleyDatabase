@@ -145,7 +145,6 @@ internal object StampRallyFormMergeScreen {
             seriesById = { seriesById },
             merchById = { merchById },
             tablesByBooth = { tablesByBooth },
-            seriesImage = viewModel::seriesImage,
             inferRallies = viewModel::inferRallies,
             onClickBack = onClickBack,
             onClickSave = { images, updated ->
@@ -228,7 +227,6 @@ internal object StampRallyFormMergeScreen {
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         tablesByBooth: () -> Map<String, ArtistTable>,
-        seriesImage: (SeriesInfo) -> String?,
         inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
@@ -340,7 +338,6 @@ internal object StampRallyFormMergeScreen {
                                 stampRallyFormState = stampRallyFormState,
                                 formTimestamp = formDiff?.timestamp,
                                 seriesById = seriesById,
-                                seriesImage = seriesImage,
                                 inferRallies = inferRallies,
                                 merchById = merchById,
                             )
@@ -360,7 +357,6 @@ internal object StampRallyFormMergeScreen {
         formTimestamp: Instant?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        seriesImage: (SeriesInfo) -> String?,
         inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         modifier: Modifier = Modifier,
     ) {
@@ -406,7 +402,6 @@ internal object StampRallyFormMergeScreen {
                     merchById = merchById,
                     merchPredictions = { emptyFlow() },
                     tablePredictions = { emptyFlow() },
-                    seriesImage = seriesImage,
                     showImages = true,
                     forceLocked = true,
                     modifier = modifier.fillMaxWidth(),

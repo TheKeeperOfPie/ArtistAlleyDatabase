@@ -76,7 +76,6 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res as Util
 internal fun StampRallySortFilterSheetContent(
     state: StampRallySortFilterState,
     sheetState: SheetState,
-    seriesImage: (SeriesInfo) -> String?,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
     scrollState: ScrollState = rememberScrollState(),
     showHideFavorited: Boolean = true,
@@ -134,7 +133,6 @@ internal fun StampRallySortFilterSheetContent(
             expanded = { Section.SERIES in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SERIES) },
             state = saveableState.series,
-            image = seriesImage,
             lockedSeries = state.lockedSeries,
             autocompleteResults = seriesAutocompleteResults,
         )
@@ -394,7 +392,6 @@ private fun StampRallySortFilterSheetContentPreview(
         state = state,
         scrollState = scrollState,
         sheetState = rememberBottomSheetState(SheetValue.PartiallyExpanded),
-        seriesImage = { null },
         seriesAutocompleteResults = { emptyList() },
     )
 }

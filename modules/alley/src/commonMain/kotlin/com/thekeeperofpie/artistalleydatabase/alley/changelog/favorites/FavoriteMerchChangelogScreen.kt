@@ -44,7 +44,6 @@ object FavoriteMerchChangelogScreen {
             dataYear = dataYear,
             changes = { changes },
             seriesTitles = { seriesTitles },
-            seriesImage = viewModel::seriesImage,
             showOnlyConfirmedTags = { showOnlyConfirmedTags },
             onChangeShowOnlyConfirmedTags = { showOnlyConfirmedTags = it },
             onClickBack = onClickBack,

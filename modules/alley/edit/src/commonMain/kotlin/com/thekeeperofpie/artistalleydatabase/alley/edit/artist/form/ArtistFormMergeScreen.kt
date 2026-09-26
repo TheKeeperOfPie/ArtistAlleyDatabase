@@ -126,7 +126,6 @@ internal object ArtistFormMergeScreen {
             saving = { saveTaskState.showBlockingLoadingIndicator },
             seriesById = { seriesById },
             merchById = { merchById },
-            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSave = {
                 viewModel.onClickSave(
@@ -182,7 +181,6 @@ internal object ArtistFormMergeScreen {
         saving: () -> Boolean,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (ArtistFormState.CapturedState) -> Unit,
         onClickSaveAndEdit: (ArtistFormState.CapturedState) -> Unit?,
@@ -282,7 +280,6 @@ internal object ArtistFormMergeScreen {
                                 artistFormState = artistFormState,
                                 formTimestamp = entry()?.second?.timestamp,
                                 seriesById = seriesById,
-                                seriesImage = seriesImage,
                                 merchById = merchById,
                             )
                         },
@@ -301,7 +298,6 @@ internal object ArtistFormMergeScreen {
         formTimestamp: Instant?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
         if (artistFormState != null) {
@@ -336,7 +332,6 @@ internal object ArtistFormMergeScreen {
                     seriesPredictions = { emptyFlow() },
                     merchById = merchById,
                     merchPredictions = { emptyFlow() },
-                    seriesImage = seriesImage,
                     forceLocked = true,
                     showStatus = false,
                     showImages = true,

@@ -11,10 +11,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -33,7 +31,6 @@ class StampRallyAddViewModel(
     val tagAutocomplete: EditTagAutocomplete,
     val artistTableAutocomplete: ArtistTableAutocomplete,
     private val rallyInference: StampRallyInference,
-    private val seriesImageLoader: SeriesImageLoader,
     @Assisted private val dataYear: DataYear,
     @Assisted stampRallyId: String,
     @Assisted booths: Set<String>,
@@ -64,8 +61,6 @@ class StampRallyAddViewModel(
     fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
     fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun inferRallies(tables: List<String>, seriesIds: List<String>) =
         rallyInference.inferRallies(

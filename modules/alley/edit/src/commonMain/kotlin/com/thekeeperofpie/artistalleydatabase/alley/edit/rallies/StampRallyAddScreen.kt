@@ -86,7 +86,6 @@ object StampRallyAddScreen {
             merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
             tablePredictions = viewModel::tablePredictions,
-            seriesImage = viewModel::seriesImage,
             inferRallies = viewModel::inferRallies,
             onClickBack = onClickBack,
             onClickEditImages = onClickEditImages,
@@ -104,7 +103,6 @@ object StampRallyAddScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
         inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
@@ -216,7 +214,6 @@ object StampRallyAddScreen {
                                     merchById = merchById,
                                     merchPredictions = merchPredictions,
                                     tablePredictions = tablePredictions,
-                                    seriesImage = seriesImage,
                                     onClickEditImages = { requestKey, images ->
                                         onClickEditImages(
                                             requestKey,

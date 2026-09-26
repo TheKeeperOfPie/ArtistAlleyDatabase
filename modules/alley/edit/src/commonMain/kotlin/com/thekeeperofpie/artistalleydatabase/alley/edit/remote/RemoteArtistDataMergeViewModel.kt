@@ -12,8 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplet
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
@@ -37,7 +35,6 @@ class RemoteArtistDataMergeViewModel(
     private val artistInference: ArtistInference,
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
-    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val id: ArtistRemoteEntry.Id,
@@ -110,8 +107,6 @@ class RemoteArtistDataMergeViewModel(
 
     private val saveTask = ExclusiveTask(viewModelScope, ::save)
     val saveTaskState get() = saveTask.state
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onConfirmArtist(artistId: Uuid?) {
         confirmedArtistId.value = artistId

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditCoilInit
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import dev.zacsweers.metro.AppScope
@@ -11,4 +12,5 @@ interface ArtistAlleyFormGraph : ArtistAlleyGraph {
     val appFileSystem: AppFileSystem
     val artistFormViewModelFactory: ArtistFormViewModel.Factory
     val imagesEditViewModelFactory: ImagesEditViewModel.Factory
+    val alleyEditCoilInit: AlleyEditCoilInit
 }

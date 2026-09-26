@@ -44,6 +44,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_metrics_title
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesId
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
@@ -76,7 +77,6 @@ internal fun MetricsScreen(
         includeInferred = { includeInferred },
         onIncludeInferredChange = { includeInferred = it },
         seriesTitles = seriesTitles,
-        seriesImage = viewModel::seriesImage,
         onNavigateBack = onNavigateBack,
         onClickArtist = onClickArtist,
         onClickSeries = onClickSeries,
@@ -91,7 +91,6 @@ internal fun MetricsScreen(
     onIncludeInferredChange: (Boolean) -> Unit,
     data: () -> MetricsViewModel.Data,
     seriesTitles: Map<String, GetSeriesTitles>,
-    seriesImage: (String) -> String?,
     onNavigateBack: () -> Unit,
     onClickArtist: (MetricsDao.ArtistData) -> Unit,
     onClickSeries: (MetricsDao.SeriesData) -> Unit,
@@ -154,7 +153,7 @@ internal fun MetricsScreen(
                     ) {
                         IndexText(index)
                         AsyncImage(
-                            model = seriesImage(series.id),
+                            model = SeriesId(series.id),
                             null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxHeight()

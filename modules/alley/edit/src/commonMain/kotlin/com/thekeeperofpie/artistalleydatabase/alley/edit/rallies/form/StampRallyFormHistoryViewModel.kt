@@ -8,9 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistTableAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
@@ -27,7 +25,6 @@ import kotlin.uuid.Uuid
 class StampRallyFormHistoryViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
-    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: EditTagAutocomplete,
     artistTableAutocomplete: ArtistTableAutocomplete,
     @Assisted private val dataYear: DataYear,
@@ -49,8 +46,6 @@ class StampRallyFormHistoryViewModel(
 
     private val saveTask = ExclusiveTask(viewModelScope, ::save)
     val saveTaskState get() = saveTask.state
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickSave(
         images: List<EditImage>,

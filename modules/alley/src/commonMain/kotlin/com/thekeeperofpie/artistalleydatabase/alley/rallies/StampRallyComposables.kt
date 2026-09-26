@@ -88,7 +88,7 @@ fun StampRallySeriesImage(
     stampRallyId: String,
     seriesId: String?,
     startTable: String?,
-    image: () -> String?,
+    image: Any?,
 ) {
     Box(
         contentAlignment = Alignment.Center,
@@ -96,7 +96,6 @@ fun StampRallySeriesImage(
             .width(72.dp)
             .heightIn(min = 80.dp)
     ) {
-        val image = image()
         if (image != null) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalPlatformContext.current)

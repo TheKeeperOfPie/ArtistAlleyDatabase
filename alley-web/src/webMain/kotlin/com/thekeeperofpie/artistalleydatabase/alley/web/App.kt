@@ -33,7 +33,6 @@ import artistalleydatabase.alley_web.generated.resources.service_worker_waiting_
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
-import coil3.key.Keyer
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.network.DeDupeConcurrentRequestStrategy
@@ -82,18 +81,14 @@ fun App(graph: ArtistAlleyWebGraph) {
                         concurrentRequestStrategy = { concurrentRequestStrategy },
                     )
                 )
+                // TODO: Why is declaring this here required instead of relying on AlleyCoilInit?
                 add(Mapper<ImageWithDimensions, com.eygraber.uri.Uri> { data, _ ->
                     data.coilImageModel as? com.eygraber.uri.Uri
                 })
                 add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                     data.toString().toUri()
                 })
-                add(Keyer<ImageWithDimensions> { data, _ ->
-                    (data.coilImageModel as? com.eygraber.uri.Uri).toString()
-                })
-                add(Keyer<com.eygraber.uri.Uri> { data, _ ->
-                    data.toString()
-                })
+                graph.alleyCoilInit.addComponents()
             }
             .memoryCache {
                 MemoryCache.Builder()

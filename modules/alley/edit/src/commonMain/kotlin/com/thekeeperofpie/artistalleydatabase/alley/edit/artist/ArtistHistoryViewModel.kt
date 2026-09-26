@@ -6,8 +6,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
@@ -23,7 +21,6 @@ import kotlin.uuid.Uuid
 @AssistedInject
 class ArtistHistoryViewModel(
     private val database: AlleyEditDatabase,
-    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
@@ -37,8 +34,6 @@ class ArtistHistoryViewModel(
         .mapLatest { database.loadArtistHistory(dataYear, artistId) }
         .mapLatest(ArtistHistoryEntryWithDiff::calculateDiffs)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
     val saveProgress = saveJob.state

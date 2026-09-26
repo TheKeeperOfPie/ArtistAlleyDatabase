@@ -101,7 +101,6 @@ object StampRallyEditScreen {
             merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
             tablePredictions = viewModel::tablePredictions,
-            seriesImage = viewModel::seriesImage,
             inferRallies = viewModel::inferRallies,
             hasPendingChanges = viewModel::hasPendingChanges,
             onClickBack = onClickBack,
@@ -129,7 +128,6 @@ object StampRallyEditScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
         inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         hasPendingChanges: () -> Boolean,
         onClickBack: (force: Boolean) -> Unit,
@@ -238,7 +236,6 @@ object StampRallyEditScreen {
                                 merchById = merchById,
                                 merchPredictions = merchPredictions,
                                 tablePredictions = tablePredictions,
-                                seriesImage = seriesImage,
                                 inferRallies = inferRallies,
                                 onConfirmDelete = onConfirmDelete,
                                 onClickAddImages = {
@@ -366,7 +363,6 @@ object StampRallyEditScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
         inferRallies: (List<String>, List<String>) -> Flow<StampRallyInference.Output>,
         onConfirmDelete: () -> Unit,
         onClickAddImages: () -> Unit,
@@ -407,7 +403,6 @@ object StampRallyEditScreen {
                     merchById = merchById,
                     merchPredictions = merchPredictions,
                     tablePredictions = tablePredictions,
-                    seriesImage = seriesImage,
                 )
 
                 DeleteButton(

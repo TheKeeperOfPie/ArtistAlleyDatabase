@@ -51,7 +51,6 @@ object SeriesResolutionScreen {
                 OutlinedCard {
                     SeriesRow(
                         series = series,
-                        image = { viewModel.seriesImage(series) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

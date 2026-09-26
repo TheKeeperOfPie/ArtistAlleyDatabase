@@ -288,7 +288,6 @@ interface ArtistFormScope : EntryFormScope {
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         initiallyHide: Boolean = false,
         showUnknownIndicator: Boolean = true,
     )
@@ -299,7 +298,6 @@ interface ArtistFormScope : EntryFormScope {
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         showItems: () -> Boolean,
         onShowItems: (Boolean) -> Unit,
         initiallyHide: Boolean,
@@ -312,7 +310,6 @@ interface ArtistFormScope : EntryFormScope {
         confirmed: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         showUnknownIndicator: Boolean = true,
     )
 
@@ -747,7 +744,6 @@ private abstract class ArtistFormScopeImpl(
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         initiallyHide: Boolean,
         showUnknownIndicator: Boolean,
     ) {
@@ -757,7 +753,6 @@ private abstract class ArtistFormScopeImpl(
             inferred = inferred,
             seriesById = seriesById,
             seriesPredictions = seriesPredictions,
-            seriesImage = seriesImage,
             showItems = { showItems },
             onShowItems = { showItems = it },
             initiallyHide = initiallyHide,
@@ -771,7 +766,6 @@ private abstract class ArtistFormScopeImpl(
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         showItems: () -> Boolean,
         onShowItems: (Boolean) -> Unit,
         initiallyHide: Boolean,
@@ -798,7 +792,6 @@ private abstract class ArtistFormScopeImpl(
             items = inferred,
             showItems = { forceLocked || showItems() },
             predictions = seriesPredictions,
-            image = seriesImage,
             showUnknownIndicator = showUnknownIndicator,
             additionalHeaderActions = {
                 if (!this@ArtistFormScopeImpl.forceLocked && (!showItems() || initiallyHide)) {
@@ -817,7 +810,6 @@ private abstract class ArtistFormScopeImpl(
         confirmed: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         showUnknownIndicator: Boolean,
     ) {
         val seriesById = seriesById()
@@ -839,7 +831,6 @@ private abstract class ArtistFormScopeImpl(
             listRevertDialogState = revertDialogStateConfirmed,
             items = confirmed,
             predictions = seriesPredictions,
-            image = seriesImage,
             showUnknownIndicator = showUnknownIndicator,
         )
     }
@@ -1014,7 +1005,6 @@ object ArtistForm {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
         forceLockId: Boolean = false,
         showStatus: Boolean = true,
@@ -1107,7 +1097,6 @@ object ArtistForm {
                 inferred = state.series.inferred,
                 seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
-                seriesImage = seriesImage,
                 showItems = { showSeriesInferred },
                 onShowItems = { showSeriesInferred = it },
                 initiallyHide = hasImages,
@@ -1120,7 +1109,6 @@ object ArtistForm {
                     confirmed = state.series.confirmed,
                     seriesById = seriesById,
                     seriesPredictions = seriesPredictions,
-                    seriesImage = seriesImage,
                     showUnknownIndicator = showUnknownIndicator,
                 )
             }
@@ -1161,8 +1149,8 @@ object ArtistForm {
     operator fun invoke(
         focusState: EntryForm2.FocusState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
-        forceLocked: Boolean = false,
         modifier: Modifier = Modifier,
+        forceLocked: Boolean = false,
         content: @Composable ArtistFormScope.() -> Unit,
     ) {
         EntryForm2(forceLocked = forceLocked, focusState = focusState, modifier = modifier) {

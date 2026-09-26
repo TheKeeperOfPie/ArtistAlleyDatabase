@@ -132,7 +132,6 @@ fun ArtistSearchScreen(
         header = { Header(dataYearHeaderState, scaffoldState, viewModel::onEvent) },
         scaffoldState = scaffoldState,
         scrollStateSaver = scrollStateSaver,
-        seriesImage = viewModel::seriesImage,
         seriesAutocompleteResults = { seriesAutocompleteResults },
     )
 }
@@ -146,7 +145,6 @@ fun ArtistSearchScreen(
     header: @Composable () -> Unit,
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     scrollStateSaver: ScrollStateSaver,
-    seriesImage: (SeriesInfo) -> String?,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
@@ -203,7 +201,6 @@ fun ArtistSearchScreen(
                 ArtistSortFilterSheetContent(
                     state = state.sortFilterState,
                     sheetState = scaffoldState.bottomSheetState,
-                    seriesImage = seriesImage,
                     seriesAutocompleteResults = seriesAutocompleteResults
                 )
             },
@@ -659,7 +656,6 @@ private fun Preview() = PreviewDark {
             )
         },
         scrollStateSaver = ScrollStateSaver.STUB,
-        seriesImage = { null },
         seriesAutocompleteResults = { emptyList() },
     )
 }

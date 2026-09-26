@@ -13,7 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -43,7 +42,6 @@ class TagChangelogViewModel(
     stampRallyEntryDao: StampRallyEntryDao,
     dispatchers: CustomDispatchers,
     val seriesEntryCache: SeriesEntryCache,
-    private val seriesImageLoader: SeriesImageLoader,
     settings: ArtistAlleySettings,
     userEntryDao: UserEntryDao,
     @Assisted dataYear: DataYear,
@@ -155,8 +153,6 @@ class TagChangelogViewModel(
             merchId != null -> filter { it.rally.merch.contains(merchId) }
             else -> this
         }
-
-    fun seriesImage(seriesId: String) = seriesImageLoader.getSeriesImage(seriesId)
 
     fun onSeriesFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
         seriesMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))

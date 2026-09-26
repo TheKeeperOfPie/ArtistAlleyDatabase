@@ -119,6 +119,7 @@ fun SmallSeriesCard(
     modifier: Modifier = Modifier,
     faded: Boolean = false,
 ) {
+    // TODO: Generalize this for any data input to remove explicit image input
     val imageState = rememberCoilImageState(image)
     ThemeAwareElevatedCard(
         onClick = onClick,

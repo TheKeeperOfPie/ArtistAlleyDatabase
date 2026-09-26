@@ -36,7 +36,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterData
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchList
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchMoreResults
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
@@ -89,8 +88,6 @@ fun StampRallySearchScreen(
         },
         scaffoldState = scaffoldState,
         scrollStateSaver = scrollStateSaver,
-        seriesImage = viewModel::seriesImage,
-        seriesImageInfo = viewModel::seriesImage,
         seriesAutocompleteResults = { seriesAutocompleteResults },
     )
 }
@@ -103,8 +100,6 @@ fun StampRallySearchScreen(
     header: @Composable () -> Unit,
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     scrollStateSaver: ScrollStateSaver,
-    seriesImage: (SeriesInfo) -> String?,
-    seriesImageInfo: (SeriesImageInfo) -> String?,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
@@ -160,7 +155,6 @@ fun StampRallySearchScreen(
                 StampRallySortFilterSheetContent(
                     state = state.sortFilterState,
                     sheetState = scaffoldState.bottomSheetState,
-                    seriesImage = seriesImage,
                     seriesAutocompleteResults = seriesAutocompleteResults
                 )
             },
@@ -172,7 +166,6 @@ fun StampRallySearchScreen(
                 sortFilterState = state.sortFilterState,
                 header = header,
                 entries = entries,
-                seriesImage = seriesImageInfo,
                 unfilteredCount = { unfilteredCount },
                 displayType = { displayType },
                 eventSink = eventSink,
@@ -188,7 +181,6 @@ internal fun StampRallySearchScreenContent(
     sortFilterState: StampRallySortFilterState,
     header: @Composable () -> Unit,
     entries: LazyPagingItems<StampRallyWithUserData>,
-    seriesImage: (SeriesImageInfo) -> String?,
     unfilteredCount: () -> Int,
     displayType: () -> SearchDisplayType,
     eventSink: (Event) -> Unit,
@@ -251,7 +243,6 @@ internal fun StampRallySearchScreenContent(
                     onClickFullscreen = { imageIndex ->
                         eventSink(Event.OpenImageFullscreen(entry, imageIndex))
                     },
-                    seriesImage = seriesImage,
                 )
             },
             noResultsItem = noResultsItem,

@@ -20,8 +20,6 @@ import coil3.decode.ImageSource
 import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
-import coil3.key.Keyer
-import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.Options
@@ -30,7 +28,6 @@ import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
-import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
@@ -59,6 +56,7 @@ fun main() {
                             options: Options,
                             imageLoader: ImageLoader,
                         ): Fetcher? {
+                            println("fetching $data")
                             if (data.scheme != "jar") {
                                 return networkFactory.create(
                                     data.toString().toUri(),
@@ -83,10 +81,7 @@ fun main() {
                             }
                         }
                     })
-                    add(Mapper<ImageWithDimensions, Any> { data, _ -> data.coilImageModel })
-                    add(Keyer<Uri> { data, _ ->
-                        data.toString()
-                    })
+                    graph.alleyCoilInit.addComponents()
                 }
                 .memoryCache {
                     MemoryCache.Builder()

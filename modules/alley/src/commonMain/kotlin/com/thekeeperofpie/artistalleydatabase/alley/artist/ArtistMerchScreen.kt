@@ -127,7 +127,6 @@ object ArtistMerchScreen {
             },
             scaffoldState = scaffoldState,
             scrollStateSaver = scrollStateSaver,
-            seriesImage = artistSearchViewModel::seriesImage,
             seriesAutocompleteResults = { seriesAutocompleteResults },
             actions = {
                 IconButton(onClick = onClickMap) {

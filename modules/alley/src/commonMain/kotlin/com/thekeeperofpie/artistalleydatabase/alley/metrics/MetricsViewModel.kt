@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.metrics
 import androidx.lifecycle.ViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,7 +16,6 @@ class MetricsViewModel(
     settings: ArtistAlleySettings,
     private val metricsDao: MetricsDao,
     val seriesEntryCache: SeriesEntryCache,
-    val seriesImageLoader: SeriesImageLoader,
 ) : ViewModel() {
 
     val dataYear = MutableStateFlow(settings.dataYear.value)
@@ -34,8 +32,6 @@ class MetricsViewModel(
             )
         }
         .stateInForCompose(Data())
-
-    fun seriesImage(id: String) = seriesImageLoader.getSeriesImage(id)
 
     data class Data(
         val artistsBySeries: List<MetricsDao.ArtistData> = emptyList(),

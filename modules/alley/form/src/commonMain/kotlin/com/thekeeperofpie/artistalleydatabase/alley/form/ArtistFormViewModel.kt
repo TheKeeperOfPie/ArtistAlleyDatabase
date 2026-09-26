@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
@@ -55,7 +54,6 @@ class ArtistFormViewModel(
     artistInference: ArtistInference,
     private val buildConfig: BuildConfig,
     private val formDatabase: AlleyFormDatabase,
-    private val seriesImageLoader: SeriesImageLoader,
     val tagAutocomplete: FormTagAutocomplete,
     val artistTableAutocomplete: FormArtistTableAutocomplete,
     private val imageUploader: ImageUploader,
@@ -272,8 +270,6 @@ class ArtistFormViewModel(
     fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
     fun tablePredictions(query: String) = artistTableAutocomplete.predictions(dataYear, query)
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickDone() {
         val artist = artist.value ?: return

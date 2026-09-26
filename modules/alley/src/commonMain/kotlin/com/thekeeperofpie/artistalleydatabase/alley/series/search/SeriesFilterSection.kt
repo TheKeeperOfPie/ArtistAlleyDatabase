@@ -42,7 +42,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_clear_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection.SeriesFilterEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -78,7 +77,6 @@ internal fun SeriesFilterSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     state: SeriesFilterState,
-    image: (SeriesInfo) -> String?,
     lockedSeries: () -> SeriesInfo?,
     autocompleteResults: () -> List<SeriesInfo>,
     showOnlyConfirmedTagsSection: (@Composable () -> Unit)? = null,
@@ -148,7 +146,7 @@ internal fun SeriesFilterSection(
                                     state.seriesIn += SeriesFilterEntry(it)
                                     focusManager.clearFocus(true)
                                 },
-                                text = { SeriesRow(series = it, image = { image(it) }) },
+                                text = { SeriesRow(series = it) },
                                 contentPadding = PaddingValues(
                                     horizontal = 12.dp,
                                     vertical = 4.dp,

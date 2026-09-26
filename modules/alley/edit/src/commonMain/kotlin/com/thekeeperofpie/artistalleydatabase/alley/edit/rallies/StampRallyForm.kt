@@ -120,11 +120,10 @@ object StampRallyForm {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
+        modifier: Modifier = Modifier,
         showImages: Boolean = false,
         forceLocked: Boolean = false,
         onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
-        modifier: Modifier = Modifier,
     ) {
         val focusState = rememberFocusState(
             listOf(
@@ -152,7 +151,6 @@ object StampRallyForm {
             merchById = merchById,
             merchPredictions = merchPredictions,
             tablePredictions = tablePredictions,
-            seriesImage = seriesImage,
             forceLocked = forceLocked,
             modifier = modifier,
         ) {
@@ -198,7 +196,6 @@ object StampRallyForm {
                 series = state.series,
                 seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
-                seriesImage = seriesImage,
             )
             MerchSection(state.stateMerch, state.merch, merchById, merchPredictions)
             NotesSection(
@@ -225,7 +222,6 @@ object StampRallyForm {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         tablePredictions: suspend (String) -> Flow<List<ArtistTable>>,
-        seriesImage: (SeriesInfo) -> String?,
         forceLocked: Boolean = false,
         modifier: Modifier = Modifier,
         content: @Composable StampRallyFormScope.() -> Unit,
@@ -626,7 +622,6 @@ abstract class StampRallyFormScope(
         series: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        seriesImage: (SeriesInfo) -> String?,
         showUnknownIndicator: Boolean = true,
     ) {
         val seriesById = seriesById()
@@ -648,7 +643,6 @@ abstract class StampRallyFormScope(
             listRevertDialogState = listRevertDialogState,
             items = series,
             predictions = seriesPredictions,
-            image = seriesImage,
             showUnknownIndicator = showUnknownIndicator,
         )
     }

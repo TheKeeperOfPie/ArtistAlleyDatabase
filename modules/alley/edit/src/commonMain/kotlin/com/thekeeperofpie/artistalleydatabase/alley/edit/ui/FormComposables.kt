@@ -279,8 +279,8 @@ private fun <T, R : Comparable<R>> rememberAddUniqueErrorState(
 }
 
 
-context(formScope: EntryFormScope)
 @Composable
+context(formScope: EntryFormScope)
 internal fun SeriesSection(
     state: EntryForm2.SingleTextState,
     title: StringResource,
@@ -289,7 +289,6 @@ internal fun SeriesSection(
     items: SnapshotStateList<SeriesInfo>,
     showItems: () -> Boolean = { true },
     predictions: suspend (String) -> Flow<List<SeriesInfo>>,
-    image: (SeriesInfo) -> String?,
     showUnknownIndicator: Boolean = true,
     additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
@@ -315,7 +314,6 @@ internal fun SeriesSection(
                 }
                 SeriesRow(
                     series = value,
-                    image = { image(value) },
                     textStyle = textStyle,
                     showAllTitles = true,
                     showUnknownIndicator = showUnknownIndicator,
@@ -351,8 +349,8 @@ internal fun SeriesSection(
     )
 }
 
-context(scope: EntryFormScope)
 @Composable
+context(scope: EntryFormScope)
 internal fun NotesSection(
     state: EntryForm2.SingleTextState,
     revertDialogState: RevertDialogState,

@@ -60,7 +60,6 @@ internal object SeriesListScreen {
         SeriesListScreen(
             query = viewModel.query,
             series = viewModel.series.collectAsLazyPagingItems(),
-            loadImage = viewModel::loadImage,
             onRefresh = viewModel::refresh,
             onClickEditSeries = onClickEditSeries,
             onClickAddSeries = onClickAddSeries,
@@ -71,7 +70,6 @@ internal object SeriesListScreen {
     private operator fun invoke(
         query: TextFieldState,
         series: LazyPagingItems<SeriesInfo>,
-        loadImage: (SeriesInfo) -> String?,
         onRefresh: () -> Unit,
         onClickEditSeries: (SeriesInfo, SeriesColumn) -> Unit,
         onClickAddSeries: () -> Unit,
@@ -135,7 +133,7 @@ internal object SeriesListScreen {
                     when (column) {
                         SeriesColumn.IMAGE -> {
                             AsyncImage(
-                                model = row?.let { loadImage(it) },
+                                model = row,
                                 contentDescription = null,
                                 contentScale = ContentScale.FillWidth,
                                 modifier = Modifier.fillMaxWidth()

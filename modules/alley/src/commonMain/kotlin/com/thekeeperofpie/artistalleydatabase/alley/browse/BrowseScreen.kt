@@ -178,11 +178,6 @@ object BrowseScreen {
                                     item = { data ->
                                         SeriesRow(
                                             data = data,
-                                            image = {
-                                                data?.let {
-                                                    tagsViewModel.getSeriesImage(it.series)
-                                                }
-                                            },
                                             textStyle = LocalTextStyle.current,
                                             onFavoriteToggle = {
                                                 if (data != null) {

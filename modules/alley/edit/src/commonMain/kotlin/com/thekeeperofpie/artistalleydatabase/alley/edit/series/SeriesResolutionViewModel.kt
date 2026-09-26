@@ -9,7 +9,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import dev.zacsweers.metro.Assisted
@@ -24,7 +23,6 @@ class SeriesResolutionViewModel(
     private val artistCache: ArtistCache,
     private val editDatabase: AlleyEditDatabase,
     private val tagAutocomplete: EditTagAutocomplete,
-    private val seriesImageLoader: SeriesImageLoader,
     @Assisted private val seriesId: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -37,8 +35,6 @@ class SeriesResolutionViewModel(
 
     fun seriesPredictions(query: String) =
         tagAutocomplete.seriesPredictions(query, allowCustom = false)
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onClickDone(series: SeriesInfo) = commitJob.launch { series }
 

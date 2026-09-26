@@ -21,29 +21,22 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
-import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.network.DeDupeConcurrentRequestStrategy
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
-import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
-import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
 import dev.zacsweers.metro.createGraphFactory
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.jetbrains.compose.resources.WebResourcesConfiguration
@@ -66,20 +59,6 @@ fun main() {
             ImageLoader.Builder(it)
                 .crossfade(false)
                 .components {
-                    add(Mapper<ImageWithDimensions, Uri> { data, _ ->
-                        (data.coilImageModel as? Uri)
-                    })
-                    add(Mapper<Uri, coil3.Uri> { data, _ ->
-                        data.toString().toUri()
-                    })
-                    add(Mapper<ImageWithDimensions, PlatformImageKey> { data, _ ->
-                        data.coilImageModel as? PlatformImageKey
-                    })
-                    add(Mapper<PlatformImageKey, PlatformFile> { data, _ ->
-                        PlatformImageCache[data]
-                    })
-                    addPlatformFileSupport()
-
                     val concurrentRequestStrategy = DeDupeConcurrentRequestStrategy()
                     add(
                         KtorNetworkFetcherFactory(
@@ -87,6 +66,7 @@ fun main() {
                             concurrentRequestStrategy = { concurrentRequestStrategy },
                         )
                     )
+                    graph.alleyEditCoilInit.addComponents()
                 }
                 .memoryCache {
                     MemoryCache.Builder()

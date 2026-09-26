@@ -13,12 +13,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyD
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -52,7 +49,6 @@ import kotlin.random.Random
 class StampRallySearchViewModel(
     dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
-    private val seriesImageLoader: SeriesImageLoader,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
@@ -141,9 +137,6 @@ class StampRallySearchViewModel(
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
         .stateIn(viewModelScope, SharingStarted.Eagerly, PagingData.empty())
-
-    fun seriesImage(info: SeriesInfo) = seriesImageLoader.getSeriesImage(info)
-    fun seriesImage(info: SeriesImageInfo) = seriesImageLoader.getSeriesImage(info)
 
     fun onEvent(event: StampRallySearchScreen.Event) = when (event) {
         is StampRallySearchScreen.Event.FavoriteToggle ->

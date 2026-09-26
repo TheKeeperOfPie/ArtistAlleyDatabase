@@ -86,9 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
@@ -155,7 +153,6 @@ object FavoritesScreen {
         },
     ) {
         val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        val showOutdatedCatalogs by viewModel.showOutdatedCatalogs.collectAsStateWithLifecycle()
         val seriesAutocompleteResults by viewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
         FavoritesScreen(
             state = remember(viewModel) {
@@ -180,8 +177,6 @@ object FavoritesScreen {
             ralliesScrollStateSaver = ralliesScrollStateSaver,
             seriesScrollStateSaver = seriesScrollStateSaver,
             merchScrollStateSaver = merchScrollStateSaver,
-            seriesImage = viewModel::seriesImage,
-            seriesImageInfo = viewModel::seriesImageInfo,
             seriesAutocompleteResults = { seriesAutocompleteResults },
             eventSink = {
                 viewModel.onEvent(
@@ -190,14 +185,8 @@ object FavoritesScreen {
                     onNavigateToRallies = onNavigateToRallies,
                     onNavigateToSeries = onNavigateToSeries,
                     onNavigateToMerch = onNavigateToMerch,
-                    onOpenArtist = onOpenArtist,
-                    onOpenArtistImageFullscreen = { entry, imageIndex ->
-                        onOpenArtistImageFullscreen(entry, imageIndex, showOutdatedCatalogs)
-                    },
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
-                    onOpenStampRally = onOpenStampRally,
-                    onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                     onOpenExport = onOpenExport,
                     onOpenFavoriteArtistsChangelog = onOpenFavoriteArtistsChangelog,
                     onOpenFavoriteStampRalliesChangelog = onOpenFavoriteStampRalliesChangelog,
@@ -217,8 +206,6 @@ object FavoritesScreen {
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,
         merchScrollStateSaver: ScrollStateSaver,
-        seriesImage: (SeriesInfo) -> String?,
-        seriesImageInfo: (SeriesImageInfo) -> String?,
         seriesAutocompleteResults: () -> List<SeriesInfo>,
         eventSink: (Event) -> Unit,
     ) {
@@ -269,14 +256,12 @@ object FavoritesScreen {
                             EntryTab.ARTISTS -> ArtistSortFilterSheetContent(
                                 state = state.artistsSortFilterState,
                                 sheetState = scaffoldState.bottomSheetState,
-                                seriesImage = seriesImage,
                                 seriesAutocompleteResults = seriesAutocompleteResults,
                                 showHideFavorited = false,
                             )
                             EntryTab.RALLIES -> StampRallySortFilterSheetContent(
                                 state = state.ralliesSortFilterState,
                                 sheetState = scaffoldState.bottomSheetState,
-                                seriesImage = seriesImage,
                                 seriesAutocompleteResults = seriesAutocompleteResults,
                                 showHideFavorited = false,
                             )
@@ -320,7 +305,6 @@ object FavoritesScreen {
                                 gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
                                 sortFilterState = state.ralliesSortFilterState,
                                 entries = ralliesEntries,
-                                seriesImage = seriesImageInfo,
                                 eventSink = eventSink,
                                 header = {
                                     Header(
@@ -344,7 +328,6 @@ object FavoritesScreen {
                     dataYearHeaderState = dataYearHeaderState,
                     seriesScrollStateSaver = seriesScrollStateSaver,
                     merchScrollStateSaver = merchScrollStateSaver,
-                    seriesImageInfo = seriesImageInfo,
                     eventSink = eventSink,
                 )
             }
@@ -358,7 +341,6 @@ object FavoritesScreen {
         dataYearHeaderState: DataYearHeaderState,
         seriesScrollStateSaver: ScrollStateSaver,
         merchScrollStateSaver: ScrollStateSaver,
-        seriesImageInfo: (SeriesImageInfo) -> String?,
         eventSink: (Event) -> Unit,
     ) {
         var tab by state.tab.collectAsMutableStateWithLifecycle()
@@ -413,7 +395,6 @@ object FavoritesScreen {
                     EntryTab.SERIES -> SeriesContent(
                         listState = seriesScrollStateSaver.lazyListState(),
                         series = seriesEntries,
-                        getSeriesImage = seriesImageInfo,
                         header = {
                             Header(
                                 tab = { tab },
@@ -486,7 +467,6 @@ object FavoritesScreen {
         sortFilterState: StampRallySortFilterState,
         gridState: LazyStaggeredGridState,
         entries: LazyPagingItems<StampRallyWithUserData>,
-        seriesImage: (SeriesImageInfo) -> String?,
         eventSink: (Event) -> Unit,
         header: @Composable () -> Unit,
         noResultsItem: @Composable () -> Unit,
@@ -499,7 +479,6 @@ object FavoritesScreen {
             gridState = gridState,
             header = header,
             entries = entries,
-            seriesImage = seriesImage,
             unfilteredCount = { unfilteredCount },
             displayType = { displayType },
             eventSink = { eventSink(Event.StampRallySearchEvent(it)) },
@@ -512,7 +491,6 @@ object FavoritesScreen {
     private fun SeriesContent(
         listState: LazyListState,
         series: LazyPagingItems<SeriesWithUserData>,
-        getSeriesImage: (SeriesImageInfo) -> String?,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
@@ -567,9 +545,6 @@ object FavoritesScreen {
                         ) {
                             SeriesRow(
                                 data = data,
-                                image = {
-                                    data?.let { getSeriesImage(it.series.toImageInfo()) }
-                                },
                                 textStyle = LocalTextStyle.current,
                                 onFavoriteToggle = {
                                     if (data != null) {

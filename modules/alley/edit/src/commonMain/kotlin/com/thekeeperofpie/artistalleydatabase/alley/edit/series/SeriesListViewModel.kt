@@ -8,8 +8,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.PagingData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
@@ -28,7 +26,6 @@ import kotlin.time.Duration.Companion.seconds
 class SeriesListViewModel(
     editDatabase: AlleyEditDatabase,
     dispatchers: CustomDispatchers,
-    private val seriesImageLoader: SeriesImageLoader,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
@@ -66,8 +63,7 @@ class SeriesListViewModel(
 
     fun refresh() = refresh.refresh()
 
-    // Force read by ID so that edit save can invalidate
-    fun loadImage(series: SeriesInfo) = seriesImageLoader.getSeriesImage(series.id)
+    // TODO: Removed "Force read by ID so that edit save can invalidate"
 
     @AssistedFactory
     interface Factory {

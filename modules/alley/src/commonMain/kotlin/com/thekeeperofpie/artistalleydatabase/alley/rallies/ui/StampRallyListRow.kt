@@ -30,7 +30,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDa
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.startTableOrDefault
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
@@ -43,7 +42,6 @@ import org.jetbrains.compose.resources.stringResource
 fun StampRallyListRow(
     stampRallyWithUserData: StampRallyWithUserData,
     onFavoriteToggle: (Boolean) -> Unit,
-    seriesImage: (SeriesImageInfo) -> String?,
     modifier: Modifier = Modifier,
 ) {
     val stampRally = stampRallyWithUserData.stampRally
@@ -58,7 +56,7 @@ fun StampRallyListRow(
             stampRallyId = stampRally.id,
             seriesId = series?.id,
             startTable = stampRally.startTableOrDefault,
-            image = { series?.let(seriesImage) }
+            image = series,
         )
 
         Spacer(Modifier.width(16.dp))
@@ -202,6 +200,5 @@ private fun StampRallyListRowPreview() {
     StampRallyListRow(
         stampRallyWithUserData = stampRally,
         onFavoriteToggle = {},
-        seriesImage = { it.id },
     )
 }

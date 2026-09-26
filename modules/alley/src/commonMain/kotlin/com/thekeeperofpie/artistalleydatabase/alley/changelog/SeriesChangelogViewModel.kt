@@ -36,5 +36,4 @@ class SeriesChangelogViewModel(
         .stateInForCompose(emptyList())
 
     fun seriesImage(seriesId: String) = seriesImageLoader.getSeriesImage(seriesId)
-
 }

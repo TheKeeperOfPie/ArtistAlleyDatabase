@@ -59,7 +59,6 @@ internal object StampRallyFormHistoryScreen {
             seriesById = { seriesById },
             merchById = { merchById },
             tablesByBooth = { tablesByBooth },
-            seriesImage = viewModel::seriesImage,
             inferRallies = { _, _ -> emptyFlow() },
             onClickBack = onClickBack,
             onClickSave = { images, updated ->

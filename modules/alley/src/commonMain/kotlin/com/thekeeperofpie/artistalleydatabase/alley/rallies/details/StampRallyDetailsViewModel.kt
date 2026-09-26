@@ -22,9 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -54,7 +52,6 @@ import kotlin.time.Duration.Companion.milliseconds
 class StampRallyDetailsViewModel(
     private val dispatchers: CustomDispatchers,
     private val seriesEntryDao: SeriesEntryDao,
-    private val seriesImagesStore: SeriesImagesStore,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userNotesDao: UserNotesDao,
     private val userEntryDao: UserEntryDao,
@@ -118,18 +115,6 @@ class StampRallyDetailsViewModel(
     val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver.Fixed) {
         mutableStateOf(TextFieldState())
     }
-
-    val seriesImages = series.filterNotNull()
-        .flatMapLatest {
-            flow {
-                val series = it.map { it.series.toImageInfo() }
-                val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
-                emit(seriesImagesCacheResult.seriesIdsToImages)
-                emit(seriesImagesStore.getAllImages(series, seriesImagesCacheResult))
-            }
-        }
-        .flowOn(dispatchers.io)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     private val mutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
 

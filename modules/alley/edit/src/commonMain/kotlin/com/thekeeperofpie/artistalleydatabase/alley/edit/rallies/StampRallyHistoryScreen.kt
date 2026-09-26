@@ -131,7 +131,6 @@ object StampRallyHistoryScreen {
             merchById = { merchById },
             tablesByBooth = { tablesByBooth },
             saveProgress = viewModel.saveProgress,
-            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickRefresh = viewModel::onClickRefresh,
             onApplied = viewModel::onApplied,
@@ -148,7 +147,6 @@ object StampRallyHistoryScreen {
         merchById: () -> Map<String, MerchInfo>,
         tablesByBooth: () -> Map<String, ArtistTable>,
         saveProgress: MutableStateFlow<JobProgress<BackendRequest.StampRallySave.Response>>,
-        seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickRefresh: () -> Unit,
         onApplied: (StampRallyHistoryEntry) -> Unit,
@@ -249,7 +247,6 @@ object StampRallyHistoryScreen {
                             stampRally = { stampRally },
                             seriesById = seriesById(),
                             merchById = merchById(),
-                            seriesImage = seriesImage,
                             tablesByBooth = tablesByBooth(),
                             modifier = Modifier.weight(1f)
                         )
@@ -279,7 +276,6 @@ object StampRallyHistoryScreen {
                             seriesById = seriesById(),
                             merchById = merchById(),
                             tablesByBooth = tablesByBooth(),
-                            seriesImage = seriesImage,
                             modifier = Modifier.weight(1f)
                         )
 
@@ -304,7 +300,6 @@ object StampRallyHistoryScreen {
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
         tablesByBooth: Map<String, ArtistTable>,
-        seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
         Column(modifier = modifier) {
@@ -344,7 +339,6 @@ object StampRallyHistoryScreen {
                         merchById = { merchById },
                         merchPredictions = { emptyFlow() },
                         tablePredictions = { emptyFlow() },
-                        seriesImage = seriesImage,
                         forceLocked = true,
                         modifier = Modifier.fillMaxWidth(),
                     )

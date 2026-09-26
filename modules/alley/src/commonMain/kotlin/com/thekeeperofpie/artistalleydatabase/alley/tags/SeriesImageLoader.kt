@@ -115,8 +115,6 @@ class SeriesImageLoader(
         return (cached as? Request.Done)?.url
     }
 
-    fun getCachedSeriesImage(seriesId: String) = (requests[seriesId] as? Request.Done)?.url
-
     suspend fun invalidateImage(info: SeriesImageInfo) {
         val images = seriesImagesStore.getAllImages(
             listOf(info), SeriesImagesStore.CacheResult(

@@ -134,7 +134,6 @@ internal fun SeriesRow(
 @Composable
 fun SeriesRow(
     data: com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData?,
-    image: () -> String?,
     onFavoriteToggle: (Boolean) -> Unit,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -144,7 +143,6 @@ fun SeriesRow(
 ) {
     SeriesRow(
         series = data?.series,
-        image = image,
         favoritesButton = {
             val languageOptionMedia = LocalLanguageOptionMedia.current
             FavoriteIconButton(
@@ -164,7 +162,6 @@ fun SeriesRow(
 @Composable
 fun SeriesRow(
     series: SeriesInfo?,
-    image: () -> String?,
     favoritesButton: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -183,7 +180,7 @@ fun SeriesRow(
 
         Box {
             AsyncImage(
-                model = image(),
+                model = series,
                 null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxHeight()

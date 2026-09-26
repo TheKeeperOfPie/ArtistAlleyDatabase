@@ -82,6 +82,8 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
     val remoteArtistDataMergeViewModelFactory: RemoteArtistDataMergeViewModel.Factory
     val remoteArtistDataHistoryMergeViewModelFactory: RemoteArtistDataHistoryMergeViewModel.Factory
 
+    val alleyEditCoilInit: AlleyEditCoilInit
+
     @Provides
     fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient
 
