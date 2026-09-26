@@ -102,7 +102,6 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.BROWSE ->
                         BrowseScreen(
-                            graph = graph,
                             seriesScrollStateSaver  = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.BROWSE.name + "_series",
                                 scrollPositions,
@@ -121,7 +120,6 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.FAVORITES ->
                         FavoritesScreen(
-                            graph = graph,
                             artistsScrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.FAVORITES.name + "artists",
                                 scrollPositions,
@@ -165,7 +163,6 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.MAP ->
                         FavoritesMapScreen(
-                            graph = graph,
                             mapTransformState = mapTransformState,
                             onArtistClick = { entry, imageIndex ->
                                 onOpenArtist(entry.artist, imageIndex)

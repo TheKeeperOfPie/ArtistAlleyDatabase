@@ -11,12 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_end_table_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_start_table_explanation
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
@@ -25,24 +23,24 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Start
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 object StampRallyMapScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.StampRallyMap,
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
-        viewModel: StampRallyMapViewModel = viewModel {
-            graph.stampRallyMapViewModelFactory.create(
+        viewModel: StampRallyMapViewModel = assistedMetroViewModel<StampRallyMapViewModel, StampRallyMapViewModel.Factory> {
+            create(
                 route = route,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
-        mapViewModel: MapViewModel = viewModel {
-            graph.mapViewModelFactory.create(createSavedStateHandle())
+        mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         Scaffold(

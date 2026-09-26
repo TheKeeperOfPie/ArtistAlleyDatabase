@@ -33,7 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_close_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_export_notes_warning
@@ -48,7 +48,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_cod
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_type_label
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_type_qr_code
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_url_label
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ImportExportUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
@@ -60,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
@@ -70,9 +70,10 @@ private val DataYearSaver = StateUtils.jsonSaver<DataYear>()
 
 @Composable
 internal fun QrCodeScreen(
-    graph: ArtistAlleyGraph,
     onNavigateBack: () -> Unit,
-    viewModel: QrCodeViewModel = viewModel { graph.qrCodeViewModel() },
+    viewModel: QrCodeViewModel = assistedMetroViewModel<QrCodeViewModel, QrCodeViewModel.Factory> {
+        create(it.createSavedStateHandle())
+    },
 ) {
     QrCodeScreen(
         exportPartialForYear = viewModel::exportPartialForYear,

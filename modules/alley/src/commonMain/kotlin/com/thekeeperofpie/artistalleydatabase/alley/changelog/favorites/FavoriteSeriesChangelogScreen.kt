@@ -6,22 +6,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_series_changelog_title
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 object FavoriteSeriesChangelogScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         dataYear: DataYear,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistChangelogEntry) -> Unit,
@@ -30,10 +28,10 @@ object FavoriteSeriesChangelogScreen {
         onClickMerch: (String) -> Unit,
         onClickArtistImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
         onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
-        viewModel: FavoriteSeriesChangelogViewModel = viewModel {
-            graph.favoriteSeriesChangelogViewModelFactory.create(
+        viewModel: FavoriteSeriesChangelogViewModel = assistedMetroViewModel<FavoriteSeriesChangelogViewModel, FavoriteSeriesChangelogViewModel.Factory> {
+            create(
                 dataYear = dataYear,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

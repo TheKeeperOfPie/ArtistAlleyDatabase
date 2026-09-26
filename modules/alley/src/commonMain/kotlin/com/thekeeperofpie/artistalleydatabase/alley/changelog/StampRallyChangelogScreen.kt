@@ -17,17 +17,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
@@ -35,16 +34,14 @@ internal object StampRallyChangelogScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         dataYear: DataYear,
         onClickBack: () -> Unit,
         onClickStampRally: (StampRallyChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
         onClickImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
-        viewModel: StampRallyChangelogViewModel = viewModel {
-            graph.stampRallyChangelogViewModelFactory
-                .create(dataYear, createSavedStateHandle())
+        viewModel: StampRallyChangelogViewModel = assistedMetroViewModel<StampRallyChangelogViewModel, StampRallyChangelogViewModel.Factory> {
+            create(dataYear = dataYear, savedStateHandle = it.createSavedStateHandle())
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()

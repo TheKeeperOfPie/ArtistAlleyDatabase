@@ -15,12 +15,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
@@ -105,10 +110,22 @@ class TagChangelogViewModel(
                 TagChangelogScreen.DayChange(
                     date = it.first,
                     addedArtists = addedArtists
-                        .map { it.artist.toChangelogEntry(dataYear, randomSeed, showOnlyConfirmedTags) }
+                        .map {
+                            it.artist.toChangelogEntry(
+                                dataYear,
+                                randomSeed,
+                                showOnlyConfirmedTags
+                            )
+                        }
                         .sortArtistsForChangelog(),
                     updatedArtists = updatedArtists
-                        .map { it.artist.toChangelogEntry(dataYear, randomSeed, showOnlyConfirmedTags) }
+                        .map {
+                            it.artist.toChangelogEntry(
+                                dataYear,
+                                randomSeed,
+                                showOnlyConfirmedTags
+                            )
+                        }
                         .sortArtistsForChangelog(),
                     addedRallies = addedRallies.sortRalliesForChangelog(),
                     updatedRallies = updatedRallies.sortRalliesForChangelog(),
@@ -162,4 +179,16 @@ class TagChangelogViewModel(
         merchMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
     }
 
+
+    @AssistedFactory
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
+        fun create(
+            dataYear: DataYear,
+            seriesId: String?,
+            merchId: String?,
+            savedStateHandle: SavedStateHandle,
+        ): TagChangelogViewModel
+    }
 }

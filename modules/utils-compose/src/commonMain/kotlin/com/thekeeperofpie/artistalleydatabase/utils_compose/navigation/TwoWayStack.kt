@@ -3,11 +3,15 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.RetainedValuesStoreRegistry
 import androidx.compose.runtime.retain.retain
+import androidx.compose.runtime.retain.retainRetainedValuesStoreRegistry
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -40,12 +44,33 @@ fun rememberDecoratedNavEntries(
                 backStack = listOf(it),
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator()
+                    rememberViewModelStoreNavEntryDecorator(),
+                    rememberRetainedValuesStoreNavEntryDecorator(),
                 ),
                 entryProvider = entryProvider,
             )
         }
     }
+
+@Composable
+private fun <T : Any> rememberRetainedValuesStoreNavEntryDecorator(
+    registry: RetainedValuesStoreRegistry = retainRetainedValuesStoreRegistry()
+): RetainedValuesStoreNavEntryDecorator<T> {
+    return remember(registry) {
+        RetainedValuesStoreNavEntryDecorator(registry)
+    }
+}
+
+private class RetainedValuesStoreNavEntryDecorator<T : Any>(
+    registry: RetainedValuesStoreRegistry,
+) : NavEntryDecorator<T>(
+    onPop = { key ->
+        registry.clearChild(key)
+    },
+    decorate = { entry ->
+        registry.LocalRetainedValuesStoreProvider(entry.contentKey) { entry.Content() }
+    },
+)
 
 @Stable
 class TwoWayStack internal constructor(

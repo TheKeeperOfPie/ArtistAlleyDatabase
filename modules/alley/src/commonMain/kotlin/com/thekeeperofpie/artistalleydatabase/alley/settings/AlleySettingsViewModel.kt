@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -11,13 +12,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter
 import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textWithExplanation
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import dev.whyoleg.cryptography.CryptographyProvider
 import dev.whyoleg.cryptography.algorithms.SHA512
-import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -27,12 +34,13 @@ import kotlinx.io.bytestring.toHexString
 import kotlinx.io.writeString
 import org.jetbrains.compose.resources.stringResource
 
-@Inject
+@AssistedInject
 class AlleySettingsViewModel(
     private val dispatchers: CustomDispatchers,
     private val settings: ArtistAlleySettings,
     private val exporter: AlleyExporter,
     private val importExportDao: ImportExportDao,
+    @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val themeSection = SettingsSection.Dropdown(
@@ -127,5 +135,12 @@ class AlleySettingsViewModel(
                 importExportDao.deleteUserData()
             }
         }
+    }
+
+    @AssistedFactory
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
+        fun create(savedStateHandle: SavedStateHandle): AlleySettingsViewModel
     }
 }

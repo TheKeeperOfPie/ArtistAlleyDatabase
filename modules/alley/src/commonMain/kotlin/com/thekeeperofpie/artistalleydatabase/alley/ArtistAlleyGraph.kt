@@ -1,37 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.lifecycle.ViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.SeriesChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.TagChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteArtistsChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteMerchChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteRalliesChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteSeriesChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoritesChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.import.ImportViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.metrics.MetricsViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AboutLibrariesProvider
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleyAboutLibrariesProvider
-import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import dev.zacsweers.metro.ContributesBinding
@@ -47,34 +21,8 @@ import kotlin.reflect.KClass
 
 interface ArtistAlleyGraph {
 
-    val artistDetailsViewModelFactory: ArtistDetailsViewModel.Factory
-    val artistMapViewModelFactory: ArtistMapViewModel.Factory
-    val artistMerchViewModelFactory: ArtistMerchViewModel.Factory
-    val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
-    val artistChangelogViewModelFactory: ArtistChangelogViewModel.Factory
     val buildConfig: BuildConfig
-    val favoritesChangelogViewModelFactory: FavoritesChangelogViewModel.Factory
-    val favoriteArtistsChangelogViewModelFactory: FavoriteArtistsChangelogViewModel.Factory
-    val favoriteSeriesChangelogViewModelFactory: FavoriteSeriesChangelogViewModel.Factory
-    val favoriteMerchChangelogViewModelFactory: FavoriteMerchChangelogViewModel.Factory
-    val favoriteRalliesChangelogViewModelFactory: FavoriteRalliesChangelogViewModel.Factory
-    val favoritesMapViewModelFactory: FavoritesMapViewModel.Factory
-    val imagesViewModel: () -> ImagesViewModel
-    val importViewModelFactory: ImportViewModel.Factory
-    val mapViewModelFactory: MapViewModel.Factory
-    val merchChangelogViewModelFactory: () -> MerchChangelogViewModel
-    val seriesChangelogViewModelFactory: () -> SeriesChangelogViewModel
     val seriesEntryCache: SeriesEntryCache
-    val stampRallyChangelogViewModelFactory: StampRallyChangelogViewModel.Factory
-    val stampRallyDetailsViewModelFactory: StampRallyDetailsViewModel.Factory
-    val stampRallyMapViewModelFactory: StampRallyMapViewModel.Factory
-    val tagChangelogViewModelFactory: TagChangelogViewModel.Factory
-    val tagMapViewModelFactory: TagMapViewModel.Factory
-    val tagsViewModelFactory: TagsViewModel.Factory
-
-    val metricsViewModel: () -> MetricsViewModel
-    val alleySettingsViewModel: () -> AlleySettingsViewModel
-    val qrCodeViewModel: () -> QrCodeViewModel
 
     val alleyCoilInit: AlleyCoilInit
 

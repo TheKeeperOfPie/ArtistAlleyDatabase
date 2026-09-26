@@ -15,12 +15,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_rallies
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ShowOnlyConfirmedTagsSection
@@ -42,7 +40,6 @@ object ArtistSeriesScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.Series,
         onClickBack: (() -> Unit)?,
         scrollStateSaver: ScrollStateSaver,
@@ -66,10 +63,10 @@ object ArtistSeriesScreen {
                 savedStateHandle = it.createSavedStateHandle(),
             )
         },
-        artistSeriesViewModel: ArtistSeriesViewModel = viewModel {
-            graph.artistSeriesViewModelFactory.create(
+        artistSeriesViewModel: ArtistSeriesViewModel = assistedMetroViewModel<ArtistSeriesViewModel, ArtistSeriesViewModel.Factory> {
+            create(
                 series = route.series,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

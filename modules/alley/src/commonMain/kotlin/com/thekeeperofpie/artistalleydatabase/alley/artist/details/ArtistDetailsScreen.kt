@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_explanation
@@ -77,7 +76,6 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
@@ -125,6 +123,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoTe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
@@ -133,7 +132,6 @@ object ArtistDetailsScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.ArtistDetails,
         onOpenArtist: (DataYear, artistId: String) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
@@ -143,10 +141,10 @@ object ArtistDetailsScreen {
         onOpenMap: (artistId: String) -> Unit,
         onOpenImages: (DataYear, artistId: String, booth: String, name: String, showingFallback: Boolean, images: List<CatalogImage>, imageIndex: Int, profileImage: CatalogImage?) -> Unit,
         onNavigateUp: () -> Unit,
-        viewModel: ArtistDetailsViewModel = viewModel {
-            graph.artistDetailsViewModelFactory.create(
+        viewModel: ArtistDetailsViewModel = assistedMetroViewModel<ArtistDetailsViewModel, ArtistDetailsViewModel.Factory> {
+            create(
                 route = route,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

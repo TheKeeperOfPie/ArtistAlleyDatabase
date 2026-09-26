@@ -21,18 +21,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_series_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SmallSeriesCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
@@ -40,11 +40,10 @@ object SeriesChangelogScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         onClickBack: () -> Unit,
         onClickSeries: (String) -> Unit,
-        viewModel: SeriesChangelogViewModel = viewModel {
-            graph.seriesChangelogViewModelFactory()
+        viewModel: SeriesChangelogViewModel = assistedMetroViewModel<SeriesChangelogViewModel, SeriesChangelogViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()

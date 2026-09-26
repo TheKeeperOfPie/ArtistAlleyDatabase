@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_artist_most_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_artist_most_rallies
@@ -42,7 +42,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_metrics_popul
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_popular_series
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_title
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesId
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
@@ -55,17 +54,19 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun MetricsScreen(
-    graph: ArtistAlleyGraph,
     onNavigateBack: () -> Unit,
     onClickArtist: (MetricsDao.ArtistData) -> Unit,
     onClickSeries: (MetricsDao.SeriesData) -> Unit,
     onClickMerch: (MetricsDao.MerchData) -> Unit,
-    viewModel: MetricsViewModel = viewModel { graph.metricsViewModel() },
+    viewModel: MetricsViewModel = assistedMetroViewModel<MetricsViewModel, MetricsViewModel.Factory> {
+        create(it.createSavedStateHandle())
+    },
 ) {
     val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, null)
     val data by viewModel.data.collectAsStateWithLifecycle()

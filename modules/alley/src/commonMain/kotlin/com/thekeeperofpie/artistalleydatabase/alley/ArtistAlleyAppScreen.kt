@@ -290,7 +290,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.ArtistDetails> { route ->
                 ArtistDetailsScreen(
-                    graph = graph,
                     route = route,
                     onOpenArtist = { year, artistId ->
                         navStack.navigate(
@@ -356,7 +355,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.ArtistMap> {
                 ArtistMapScreen(
-                    graph = graph,
                     route = it,
                     onClickBack = navStack::onBack,
                     onArtistClick = { entry, imageIndex ->
@@ -368,7 +366,6 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.ArtistChangelog> {
                 val year = it.year
                 ArtistChangelogScreen(
-                    graph = graph,
                     route = it,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
@@ -383,7 +380,6 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.FavoritesChangelog> { route ->
                 val year = route.dataYear
                 FavoritesChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
@@ -402,7 +398,6 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.FavoriteArtistsChangelog> { route ->
                 val year = route.dataYear
                 FavoriteArtistsChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
@@ -421,7 +416,6 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.FavoriteSeriesChangelog> { route ->
                 val year = route.dataYear
                 FavoriteSeriesChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
@@ -440,7 +434,6 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.FavoriteMerchChangelog> { route ->
                 val year = route.dataYear
                 FavoriteMerchChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
@@ -459,7 +452,6 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.FavoriteRalliesChangelog> { route ->
                 val year = route.dataYear
                 FavoriteRalliesChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
@@ -473,7 +465,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.Images> { route ->
                 ImagesScreen(
-                    graph = graph,
                     route = route,
                     onNavigateBack = navStack::onBack,
                     onClickOpen = { imageIndex ->
@@ -501,7 +492,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.Metrics> {
                 MetricsScreen(
-                    graph = graph,
                     onNavigateBack = navStack::onBack,
                     onClickArtist = {
                         navStack.navigate(
@@ -520,7 +510,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.Settings> {
                 AlleySettingsScreen(
-                    graph = graph,
                     onNavigateBack = navStack::onBack,
                     onOpenExport = {
                         // TODO: Is it worth proxying the DataYear that opened Settings?
@@ -553,7 +542,6 @@ object ArtistAlleyAppScreen {
             sharedElementEntry<AlleyDestination.StampRallyChangelog> {
                 val year = it.year
                 StampRallyChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(year, it) },
@@ -567,7 +555,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.StampRallyDetails> { route ->
                 StampRallyDetailsScreen(
-                    graph = graph,
                     route = route,
                     onNavigateUp = navStack::onBack,
                     onOpenImages = { rallyId, hostTable, fandom, images, imageIndex ->
@@ -602,7 +589,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.StampRallyMap> {
                 StampRallyMapScreen(
-                    graph = graph,
                     route = it,
                     onClickBack = navStack::onBack,
                     onArtistClick = { entry, imageIndex ->
@@ -615,7 +601,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.Series> { route ->
                 ArtistSeriesScreen(
-                    graph = graph,
                     route = route,
                     onClickBack = navStack::onBack,
                     scrollStateSaver = ScrollStateSaver(),
@@ -640,7 +625,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.SeriesChangelog> { route ->
                 SeriesChangelogScreen(
-                    graph = graph,
                     onClickBack = navStack::onBack,
                     onClickSeries = { onOpenSeries(route.year, it) },
                 )
@@ -650,7 +634,6 @@ object ArtistAlleyAppScreen {
                 // TODO: Series tags are not inherently per-year, what should this link to?
                 val year = DataYear.LATEST
                 TagChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     seriesId = route.series,
                     merchId = null,
@@ -670,7 +653,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.Merch> { route ->
                 ArtistMerchScreen(
-                    graph = graph,
                     route = route,
                     onClickBack = navStack::onBack,
                     scrollStateSaver = ScrollStateSaver(),
@@ -690,7 +672,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.MerchChangelog> { route ->
                 MerchChangelogScreen(
-                    graph = graph,
                     onClickBack = navStack::onBack,
                     onClickMerch = { onOpenMerch(route.year, it) },
                 )
@@ -700,7 +681,6 @@ object ArtistAlleyAppScreen {
                 // TODO: Merch tags are not inherently per-year, what should this link to?
                 val year = DataYear.LATEST
                 TagChangelogScreen(
-                    graph = graph,
                     dataYear = year,
                     seriesId = null,
                     merchId = route.merch,
@@ -720,7 +700,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.SeriesMap> {
                 TagMapScreen(
-                    graph = graph,
                     year = it.year,
                     series = it.series,
                     merch = null,
@@ -733,7 +712,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.MerchMap> {
                 TagMapScreen(
-                    graph = graph,
                     year = it.year,
                     series = null,
                     merch = it.merch,
@@ -746,17 +724,13 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.Import> {
                 ImportScreen(
-                    graph = graph,
                     route = it,
                     onDismiss = navStack::onBack,
                 )
             }
 
             sharedElementDialog<AlleyDestination.Export> {
-                QrCodeScreen(
-                    graph = graph,
-                    onNavigateBack = navStack::onBack,
-                )
+                QrCodeScreen(onNavigateBack = navStack::onBack)
             }
         }
     }

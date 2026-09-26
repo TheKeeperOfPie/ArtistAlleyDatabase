@@ -8,12 +8,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import dev.zacsweers.metro.Named
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -28,8 +31,8 @@ class TagMapViewModel(
     private val tagEntryDao: TagEntryDao,
     settings: ArtistAlleySettings,
     @Assisted year: DataYear?,
-    @Assisted @Named("series") series: String?,
-    @Assisted @Named("merch") merch: String?,
+    @Assisted series: String?,
+    @Assisted merch: String?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -60,12 +63,15 @@ class TagMapViewModel(
         }
     }
 
+
     @AssistedFactory
-    interface Factory {
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
         fun create(
             year: DataYear?,
-            @Named("series") series: String?,
-            @Named("merch") merch: String?,
+            series: String?,
+            merch: String?,
             savedStateHandle: SavedStateHandle,
         ): TagMapViewModel
     }

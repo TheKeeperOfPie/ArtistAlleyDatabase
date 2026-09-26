@@ -123,7 +123,6 @@ object FavoritesScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         artistsScrollStateSaver: ScrollStateSaver,
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,

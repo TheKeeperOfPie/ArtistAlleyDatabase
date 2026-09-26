@@ -7,7 +7,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_prompt_cancel
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_prompt_close
@@ -15,22 +14,21 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_prompt_title
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 internal object ImportScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.Import,
         onDismiss: () -> Unit,
-        viewModel: ImportViewModel = viewModel {
-            graph.importViewModelFactory.create(
+        viewModel: ImportViewModel = assistedMetroViewModel<ImportViewModel, ImportViewModel.Factory> {
+            create(
                 route = route,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

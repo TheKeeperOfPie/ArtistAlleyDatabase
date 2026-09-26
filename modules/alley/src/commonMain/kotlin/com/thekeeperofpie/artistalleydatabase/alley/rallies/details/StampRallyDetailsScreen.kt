@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_explanation
@@ -67,7 +66,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_start_table_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_fandom_merch_warning
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistProfileImage
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
@@ -107,13 +105,13 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoTe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 object StampRallyDetailsScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.StampRallyDetails,
         onNavigateUp: () -> Unit,
         onOpenImages: (rallyId: String, hostTable: String, fandom: String, images: List<CatalogImage>, imageIndex: Int) -> Unit,
@@ -121,13 +119,13 @@ object StampRallyDetailsScreen {
         onOpenArtist: (ArtistEntry, Int?) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
-    ) {
-        val viewModel = viewModel {
-            graph.stampRallyDetailsViewModelFactory.create(
+        viewModel: StampRallyDetailsViewModel = assistedMetroViewModel<StampRallyDetailsViewModel, StampRallyDetailsViewModel.Factory> {
+            create(
                 route = route,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
-        }
+        },
+    ) {
         val imagesResult by viewModel.images.collectAsStateWithLifecycle()
         // TODO: Loading indicator
         val images = imagesResult.result.orEmpty()

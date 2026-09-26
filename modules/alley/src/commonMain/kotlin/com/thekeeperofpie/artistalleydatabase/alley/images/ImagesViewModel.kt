@@ -1,17 +1,25 @@
 package com.thekeeperofpie.artistalleydatabase.alley.images
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.catalogImages
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
-import dev.zacsweers.metro.Inject
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlin.uuid.Uuid
 
-@Inject
+@AssistedInject
 class ImagesViewModel(
     private val artistEntryDao: ArtistEntryDao,
     private val stampRallyEntryDao: StampRallyEntryDao,
+    @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     suspend fun load(
@@ -59,4 +67,11 @@ class ImagesViewModel(
                 ) to AlleyImageUtils.getRallyImages(stampRally.year, stampRally.images)
             }
         }
+
+    @AssistedFactory
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
+        fun create(savedStateHandle: SavedStateHandle): ImagesViewModel
+    }
 }

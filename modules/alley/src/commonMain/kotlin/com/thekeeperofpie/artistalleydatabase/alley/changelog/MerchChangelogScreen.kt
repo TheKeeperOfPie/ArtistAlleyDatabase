@@ -19,15 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
@@ -35,11 +35,10 @@ object MerchChangelogScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         onClickBack: () -> Unit,
         onClickMerch: (String) -> Unit,
-        viewModel: MerchChangelogViewModel = viewModel {
-            graph.merchChangelogViewModelFactory()
+        viewModel: MerchChangelogViewModel = assistedMetroViewModel<MerchChangelogViewModel, MerchChangelogViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()

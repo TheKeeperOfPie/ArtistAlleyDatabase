@@ -44,7 +44,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_author_link
 import artistalleydatabase.modules.alley.generated.resources.alley_server_link
@@ -66,7 +66,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.markdownPadding
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
@@ -86,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.delay
@@ -110,13 +110,14 @@ object AlleySettingsScreen {
 
 @Composable
 internal fun AlleySettingsScreen(
-    graph: ArtistAlleyGraph,
     onNavigateBack: () -> Unit,
     onOpenExport: () -> Unit,
     onOpenLibraries: () -> Unit,
     onOpenMetrics: () -> Unit,
+    viewModel: AlleySettingsViewModel = assistedMetroViewModel<AlleySettingsViewModel, AlleySettingsViewModel.Factory> {
+        create(it.createSavedStateHandle())
+    },
 ) {
-    val viewModel = viewModel { graph.alleySettingsViewModel() }
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
         SettingsScreen(
             sections = viewModel.state.sections,

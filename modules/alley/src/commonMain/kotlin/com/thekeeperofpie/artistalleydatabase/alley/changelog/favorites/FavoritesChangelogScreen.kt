@@ -18,13 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
@@ -37,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
@@ -44,7 +43,6 @@ object FavoritesChangelogScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         dataYear: DataYear,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistChangelogEntry) -> Unit,
@@ -53,10 +51,10 @@ object FavoritesChangelogScreen {
         onClickMerch: (String) -> Unit,
         onClickArtistImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
         onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
-        viewModel: FavoritesChangelogViewModel = viewModel {
-            graph.favoritesChangelogViewModelFactory.create(
+        viewModel: FavoritesChangelogViewModel = assistedMetroViewModel<FavoritesChangelogViewModel, FavoritesChangelogViewModel.Factory> {
+            create(
                 dataYear = dataYear,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

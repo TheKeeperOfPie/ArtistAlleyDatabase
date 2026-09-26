@@ -10,11 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
@@ -28,24 +26,24 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 object ArtistMapScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.ArtistMap,
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
-        viewModel: ArtistMapViewModel = viewModel {
-            graph.artistMapViewModelFactory.create(
+        viewModel: ArtistMapViewModel = assistedMetroViewModel<ArtistMapViewModel, ArtistMapViewModel.Factory> {
+            create(
                 route = route,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
-        mapViewModel: MapViewModel = viewModel {
-            graph.mapViewModelFactory.create(createSavedStateHandle())
+        mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val artist by viewModel.artist.collectAsStateWithLifecycle()

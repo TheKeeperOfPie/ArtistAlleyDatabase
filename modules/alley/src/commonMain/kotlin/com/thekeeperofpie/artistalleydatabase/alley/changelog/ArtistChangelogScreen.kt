@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_catalogs_only
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_catalogs_only_warning
@@ -32,12 +31,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_changelog_tit
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
@@ -45,15 +44,14 @@ internal object ArtistChangelogScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.ArtistChangelog,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistChangelogEntry) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
         onClickImage: (ArtistChangelogEntry, CatalogImage) -> Unit,
-        viewModel: ArtistChangelogViewModel = viewModel {
-            graph.artistChangelogViewModelFactory.create(route.year, createSavedStateHandle())
+        viewModel: ArtistChangelogViewModel = assistedMetroViewModel<ArtistChangelogViewModel, ArtistChangelogViewModel.Factory> {
+            create(route.year, it.createSavedStateHandle())
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()

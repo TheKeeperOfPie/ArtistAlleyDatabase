@@ -56,7 +56,6 @@ fun main() {
                             options: Options,
                             imageLoader: ImageLoader,
                         ): Fetcher? {
-                            println("fetching $data")
                             if (data.scheme != "jar") {
                                 return networkFactory.create(
                                     data.toString().toUri(),

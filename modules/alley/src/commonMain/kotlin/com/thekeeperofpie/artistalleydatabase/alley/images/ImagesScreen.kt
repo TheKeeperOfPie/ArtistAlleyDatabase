@@ -18,13 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
 import artistalleydatabase.modules.alley.generated.resources.alley_images_open_artist
 import artistalleydatabase.modules.alley.generated.resources.alley_images_open_rally
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
@@ -38,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 
@@ -47,11 +47,12 @@ object ImagesScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         route: AlleyDestination.Images,
         onNavigateBack: () -> Unit,
         onClickOpen: (imageIndex: Int?) -> Unit,
-        viewModel: ImagesViewModel = viewModel { graph.imagesViewModel() },
+        viewModel: ImagesViewModel = assistedMetroViewModel<ImagesViewModel, ImagesViewModel.Factory> {
+            create(it.createSavedStateHandle())
+        },
     ) {
         val data by produceState(route.type to route.images.orEmpty(), route, viewModel) {
             if (route.images.isNullOrEmpty()) {

@@ -8,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
@@ -16,27 +15,27 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
 object TagMapScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         year: DataYear?,
         series: String?,
         merch: String?,
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
-        viewModel: TagMapViewModel = viewModel {
-            graph.tagMapViewModelFactory.create(
+        viewModel: TagMapViewModel = assistedMetroViewModel<TagMapViewModel, TagMapViewModel.Factory> {
+            create(
                 year = year,
                 series = series,
                 merch = merch,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
-        mapViewModel: MapViewModel = viewModel {
-            graph.mapViewModelFactory.create(createSavedStateHandle())
+        mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         TagMapScreen(

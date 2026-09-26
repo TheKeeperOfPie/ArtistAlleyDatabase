@@ -78,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -91,7 +92,6 @@ object BrowseScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         seriesScrollStateSaver: ScrollStateSaver,
         merchScrollStateSaver: ScrollStateSaver,
         selectedTabIndex: () -> Int,
@@ -101,8 +101,8 @@ object BrowseScreen {
         onOpenSeriesChangelog: (DataYear) -> Unit,
         onOpenMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
-        tagsViewModel: TagsViewModel = viewModel {
-            graph.tagsViewModelFactory.create(createSavedStateHandle())
+        tagsViewModel: TagsViewModel = assistedMetroViewModel<TagsViewModel, TagsViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val dataYearHeaderState =

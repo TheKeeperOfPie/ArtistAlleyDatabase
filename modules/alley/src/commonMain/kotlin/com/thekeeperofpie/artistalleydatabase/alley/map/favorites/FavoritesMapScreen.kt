@@ -48,12 +48,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_map_search
 import artistalleydatabase.modules.alley.generated.resources.alley_map_search_close
 import artistalleydatabase.modules.alley.generated.resources.alley_map_search_tags_clear
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
@@ -70,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Search
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -78,16 +77,13 @@ object FavoritesMapScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyGraph,
         mapTransformState: MapScreen.TransformState,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
-        viewModel: FavoritesMapViewModel = viewModel {
-            graph.favoritesMapViewModelFactory.create(
-                createSavedStateHandle()
-            )
+        viewModel: FavoritesMapViewModel = assistedMetroViewModel<FavoritesMapViewModel, FavoritesMapViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
-        mapViewModel: MapViewModel = viewModel {
-            graph.mapViewModelFactory.create(createSavedStateHandle())
+        mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val tagResults by viewModel.tagResults.collectAsStateWithLifecycle()
