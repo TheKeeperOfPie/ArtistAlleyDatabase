@@ -14,22 +14,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_resolution_title
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
 object MerchResolutionScreen {
 
     @Composable
     operator fun invoke(
         merchId: String,
-        graph: ArtistAlleyEditGraph,
         onClickBack: () -> Unit,
-        viewModel: MerchResolutionViewModel = viewModel {
-            graph.merchResolutionViewModelFactory.create(merchId, createSavedStateHandle())
+        viewModel: MerchResolutionViewModel = assistedMetroViewModel<MerchResolutionViewModel, MerchResolutionViewModel.Factory> {
+            create(merchId, it.createSavedStateHandle())
         },
     ) {
         val artists by viewModel.artists.collectAsStateWithLifecycle(emptyList())

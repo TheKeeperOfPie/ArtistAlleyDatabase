@@ -93,6 +93,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -112,10 +113,9 @@ object ArtistHistoryScreen {
     operator fun invoke(
         dataYear: DataYear,
         artistId: Uuid,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: ArtistHistoryViewModel = viewModel {
-            graph.artistHistoryViewModelFactory.create(dataYear, artistId)
+        viewModel: ArtistHistoryViewModel = assistedMetroViewModel<ArtistHistoryViewModel, ArtistHistoryViewModel.Factory> {
+            create(dataYear, artistId)
         },
     ) {
         val history by viewModel.history.collectAsStateWithLifecycle()

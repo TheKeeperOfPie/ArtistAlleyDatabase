@@ -8,14 +8,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_outdated
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -31,16 +30,15 @@ internal object StampRallyFormHistoryScreen {
         artistId: Uuid,
         stampRallyId: String,
         formTimestamp: Instant,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickBackAndEdit: (stampRallyId: Uuid) -> Unit,
-        viewModel: StampRallyFormHistoryViewModel = viewModel {
-            graph.stampRallyFormHistoryViewModelFactory.create(
+        viewModel: StampRallyFormHistoryViewModel = assistedMetroViewModel<StampRallyFormHistoryViewModel, StampRallyFormHistoryViewModel.Factory> {
+            create(
                 dataYear = dataYear,
                 artistId = artistId,
                 stampRallyId = stampRallyId,
                 formTimestamp = formTimestamp,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

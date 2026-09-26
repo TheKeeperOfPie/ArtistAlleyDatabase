@@ -1,50 +1,27 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
-import com.thekeeperofpie.artistalleydatabase.alley.edit.admin.AdminViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormHistoryViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormQueueViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.catalog.ArtistCatalogsQueueViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.lastviewed.LastViewedConnection
-import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchResolutionViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyAddViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyEditViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyHistoryViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormHistoryViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormMergeViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormQueueViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.links.StampRallyLinksQueueViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataHistoryMergeViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataMergeViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataQueueViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.AlleyEditNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.GraphExtension
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
+import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -52,35 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 interface ArtistAlleyEditGraph : ArtistAlleyGraph {
 
     val appFileSystem: AppFileSystem
-    val adminViewModel: AdminViewModel
-    val artistAddViewModelFactory: ArtistAddViewModel.Factory
-    val artistCatalogsQueueViewModelFactory: ArtistCatalogsQueueViewModel.Factory
-    val artistEditViewModelFactory: ArtistEditViewModel.Factory
-    val artistFormHistoryViewModelFactory: ArtistFormHistoryViewModel.Factory
-    val artistFormMergeViewModelFactory: ArtistFormMergeViewModel.Factory
-    val artistFormQueueViewModelFactory: ArtistFormQueueViewModel.Factory
-    val artistHistoryViewModelFactory: ArtistHistoryViewModel.Factory
-    val artistListViewModelFactory: ArtistListViewModel.Factory
-    val imagesEditViewModelFactory: ImagesEditViewModel.Factory
     val lastViewedConnection: LastViewedConnection
-    val merchEditViewModelFactory: MerchEditViewModel.Factory
-    val merchListViewModelFactory: MerchListViewModel.Factory
-    val seriesEditViewModelFactory: SeriesEditViewModel.Factory
-    val seriesListViewModelFactory: SeriesListViewModel.Factory
-    val tagResolutionViewModelFactory: TagResolutionViewModel.Factory
-    val seriesResolutionViewModelFactory: SeriesResolutionViewModel.Factory
-    val merchResolutionViewModelFactory: MerchResolutionViewModel.Factory
-    val stampRallyListViewModelFactory: StampRallyListViewModel.Factory
-    val stampRallyAddViewModelFactory: StampRallyAddViewModel.Factory
-    val stampRallyEditViewModelFactory: StampRallyEditViewModel.Factory
-    val stampRallyHistoryViewModelFactory: StampRallyHistoryViewModel.Factory
-    val stampRallyLinksQueueViewModelFactory: StampRallyLinksQueueViewModel.Factory
-    val stampRallyFormQueueViewModelFactory: StampRallyFormQueueViewModel.Factory
-    val stampRallyFormMergeViewModelFactory: StampRallyFormMergeViewModel.Factory
-    val stampRallyFormHistoryViewModelFactory: StampRallyFormHistoryViewModel.Factory
-    val remoteArtistDataQueueViewModel: RemoteArtistDataQueueViewModel
-    val remoteArtistDataMergeViewModelFactory: RemoteArtistDataMergeViewModel.Factory
-    val remoteArtistDataHistoryMergeViewModelFactory: RemoteArtistDataHistoryMergeViewModel.Factory
 
     val alleyEditCoilInit: AlleyEditCoilInit
 
@@ -111,5 +60,19 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
         override val artistTagsIn = MutableStateFlow(emptySet<ArtistTag>())
         override val artistTagsNotIn = MutableStateFlow(emptySet<ArtistTag>())
         override val rootDestination = MutableStateFlow(AlleyRootDestination.ARTISTS)
+    }
+
+    val editNavigatorGraphFactory: ArtistAlleyEditNavigatorGraph.Factory
+}
+
+@GraphExtension(NavigatorScope::class)
+interface ArtistAlleyEditNavigatorGraph : ViewModelGraph {
+
+    @GraphExtension.Factory
+    interface Factory {
+        fun create(
+            @Provides editNavStack: AlleyEditNavStack,
+            @Provides alleyNavStack: AlleyNavStack,
+        ): ArtistAlleyEditNavigatorGraph
     }
 }

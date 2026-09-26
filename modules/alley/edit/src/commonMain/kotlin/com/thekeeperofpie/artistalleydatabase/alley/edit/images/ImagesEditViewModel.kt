@@ -4,10 +4,14 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 
 @AssistedInject
 class ImagesEditViewModel(
@@ -19,7 +23,9 @@ class ImagesEditViewModel(
     }
 
     @AssistedFactory
-    interface Factory {
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
         fun create(
             images: List<EditImage>,
             savedStateHandle: SavedStateHandle,

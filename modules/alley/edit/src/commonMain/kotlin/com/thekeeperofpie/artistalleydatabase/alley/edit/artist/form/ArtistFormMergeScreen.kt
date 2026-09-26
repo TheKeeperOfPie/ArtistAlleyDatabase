@@ -36,7 +36,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
@@ -89,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -106,11 +106,10 @@ internal object ArtistFormMergeScreen {
     operator fun invoke(
         dataYear: DataYear,
         artistId: Uuid,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickBackAndEditArtist: (artistId: Uuid) -> Unit,
-        viewModel: ArtistFormMergeViewModel = viewModel {
-            graph.artistFormMergeViewModelFactory.create(dataYear, artistId)
+        viewModel: ArtistFormMergeViewModel = assistedMetroViewModel<ArtistFormMergeViewModel, ArtistFormMergeViewModel.Factory> {
+            create(dataYear, artistId)
         },
     ) {
         val artistWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()

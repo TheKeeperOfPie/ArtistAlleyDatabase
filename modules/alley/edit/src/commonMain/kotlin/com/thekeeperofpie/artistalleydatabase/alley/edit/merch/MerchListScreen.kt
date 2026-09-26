@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
@@ -35,13 +34,13 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_mer
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_categories
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_uuid
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -49,11 +48,10 @@ object MerchListScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyEditGraph,
         onClickEditMerch: (MerchInfo) -> Unit,
         onClickAddMerch: () -> Unit,
-        viewModel: MerchListViewModel = viewModel {
-            graph.merchListViewModelFactory.create(createSavedStateHandle())
+        viewModel: MerchListViewModel = assistedMetroViewModel<MerchListViewModel, MerchListViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         MerchListScreen(

@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -54,7 +53,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_list_search_placeholder
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_list_sort_content_description
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
@@ -67,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.TimeZone
@@ -79,11 +78,10 @@ internal object StampRallyListScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyEditGraph,
         onAddStampRally: (dataYear: DataYear) -> Unit,
         onEditStampRally: (dataYear: DataYear, id: String) -> Unit,
-        viewModel: StampRallyListViewModel = viewModel {
-            graph.stampRallyListViewModelFactory.create(createSavedStateHandle())
+        viewModel: StampRallyListViewModel = assistedMetroViewModel<StampRallyListViewModel, StampRallyListViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()

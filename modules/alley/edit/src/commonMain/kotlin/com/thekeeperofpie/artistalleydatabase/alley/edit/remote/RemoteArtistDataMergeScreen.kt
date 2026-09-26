@@ -101,6 +101,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.StringResource
@@ -115,14 +116,13 @@ internal object RemoteArtistDataMergeScreen {
     operator fun invoke(
         dataYear: DataYear,
         id: ArtistRemoteEntry.Id,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickBackAndEditArtist: (artistId: Uuid) -> Unit,
-        viewModel: RemoteArtistDataMergeViewModel = viewModel {
-            graph.remoteArtistDataMergeViewModelFactory.create(
+        viewModel: RemoteArtistDataMergeViewModel = assistedMetroViewModel<RemoteArtistDataMergeViewModel, RemoteArtistDataMergeViewModel.Factory> {
+            create(
                 dataYear = dataYear,
                 id = id,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

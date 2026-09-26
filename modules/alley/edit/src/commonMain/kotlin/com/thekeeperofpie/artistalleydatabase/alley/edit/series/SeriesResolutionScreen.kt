@@ -10,24 +10,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_resolution_title
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
 object SeriesResolutionScreen {
 
     @Composable
     operator fun invoke(
         seriesId: String,
-        graph: ArtistAlleyEditGraph,
         onClickBack: () -> Unit,
-        viewModel: SeriesResolutionViewModel = viewModel {
-            graph.seriesResolutionViewModelFactory.create(seriesId, createSavedStateHandle())
+        viewModel: SeriesResolutionViewModel = assistedMetroViewModel<SeriesResolutionViewModel, SeriesResolutionViewModel.Factory> {
+            create(seriesId, it.createSavedStateHandle())
         },
     ) {
         val artists by viewModel.artists.collectAsStateWithLifecycle(emptyList())

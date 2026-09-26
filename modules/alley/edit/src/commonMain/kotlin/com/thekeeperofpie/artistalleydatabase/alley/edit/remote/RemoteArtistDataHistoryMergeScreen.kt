@@ -7,16 +7,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.getString
@@ -29,10 +28,9 @@ internal object RemoteArtistDataHistoryMergeScreen {
         dataYear: DataYear,
         id: ArtistRemoteEntry.Id,
         timestamp: Instant,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: RemoteArtistDataHistoryMergeViewModel = viewModel {
-            graph.remoteArtistDataHistoryMergeViewModelFactory.create(
+        viewModel: RemoteArtistDataHistoryMergeViewModel = assistedMetroViewModel<RemoteArtistDataHistoryMergeViewModel, RemoteArtistDataHistoryMergeViewModel.Factory> {
+            create(
                 dataYear = dataYear,
                 id = id,
                 timestamp = timestamp,

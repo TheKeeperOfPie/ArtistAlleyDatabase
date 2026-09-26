@@ -63,7 +63,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -95,7 +94,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
@@ -148,6 +146,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -173,18 +172,17 @@ object ArtistEditScreen {
         dataYear: DataYear,
         artistId: Uuid,
         catalogLink: String?,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
         onClickMerge: () -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
-        viewModel: ArtistEditViewModel = viewModel {
-            graph.artistEditViewModelFactory.create(
+        viewModel: ArtistEditViewModel = assistedMetroViewModel<ArtistEditViewModel, ArtistEditViewModel.Factory> {
+            create(
                 dataYear = dataYear,
                 artistId = artistId,
                 catalogLink = catalogLink,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {
@@ -205,12 +203,11 @@ object ArtistEditScreen {
         }
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
-        val lastViewedConnection = graph.lastViewedConnection
         ArtistEditScreen(
             dataYear = dataYear,
             artistId = artistId,
             state = viewModel.state,
-            usersToVisits = { lastViewedConnection.usersToVisits },
+            usersToVisits = { viewModel.usersToVisits },
             seriesById = { seriesById },
             seriesPredictions = viewModel::seriesPredictions,
             merchById = { merchById },

@@ -38,7 +38,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save_and_edit
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_end_tables
@@ -95,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -114,15 +114,14 @@ internal object StampRallyFormMergeScreen {
         dataYear: DataYear,
         artistId: Uuid,
         stampRallyId: String,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickBackAndEdit: (stampRallyId: Uuid) -> Unit,
-        viewModel: StampRallyFormMergeViewModel = viewModel {
-            graph.stampRallyFormMergeViewModelFactory.create(
-                dataYear,
-                artistId,
-                stampRallyId,
-                createSavedStateHandle()
+        viewModel: StampRallyFormMergeViewModel = assistedMetroViewModel<StampRallyFormMergeViewModel, StampRallyFormMergeViewModel.Factory> {
+            create(
+                dataYear = dataYear,
+                artistId = artistId,
+                stampRallyId = stampRallyId,
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

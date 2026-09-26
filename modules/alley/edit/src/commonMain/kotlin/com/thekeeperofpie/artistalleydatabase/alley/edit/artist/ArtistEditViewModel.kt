@@ -16,10 +16,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
+import com.thekeeperofpie.artistalleydatabase.alley.edit.lastviewed.LastViewedConnection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.EditTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -30,7 +32,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -48,6 +54,7 @@ class ArtistEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     private val imageUploader: ImageUploader,
+    private val lastViewedConnection: LastViewedConnection,
     val tagAutocomplete: EditTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
@@ -90,6 +97,8 @@ class ArtistEditViewModel(
     private val deleteJob = ExclusiveProgressJob(viewModelScope, ::delete)
 
     private var consumedCatalogLink by savedStateHandle.saved { false }
+
+    val usersToVisits get() = lastViewedConnection.usersToVisits
 
     val state = ArtistEditScreen.State(
         artistProgress = artistJob.state,
@@ -286,4 +295,16 @@ class ArtistEditViewModel(
                 }
             }
         }
+
+    @AssistedFactory
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
+        fun create(
+            dataYear: DataYear,
+            artistId: Uuid,
+            catalogLink: String?,
+            savedStateHandle: SavedStateHandle,
+        ): ArtistEditViewModel
+    }
 }

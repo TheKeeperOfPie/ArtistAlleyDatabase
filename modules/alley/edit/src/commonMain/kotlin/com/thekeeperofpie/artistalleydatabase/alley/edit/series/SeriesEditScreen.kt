@@ -38,7 +38,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_open_link_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_save_content_description
@@ -70,7 +69,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_uuid
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_wikipedia_id
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
@@ -94,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OneTimeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -109,13 +108,12 @@ object SeriesEditScreen {
     operator fun invoke(
         seriesId: Uuid,
         initialInfo: AlleyEditDestination.SeriesEdit?,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: SeriesEditViewModel = viewModel {
-            graph.seriesEditViewModelFactory.create(
+        viewModel: SeriesEditViewModel = assistedMetroViewModel<SeriesEditViewModel, SeriesEditViewModel.Factory> {
+            create(
                 seriesId = seriesId,
                 editInfo = initialInfo,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

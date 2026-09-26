@@ -27,19 +27,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_resolution_action_refresh
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_resolution_tab_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_resolution_tab_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_resolution_title
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ShoppingBag
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Tv
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -47,11 +46,10 @@ object TagResolutionQueueScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyEditGraph,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
-        viewModel: TagResolutionViewModel = viewModel {
-            graph.tagResolutionViewModelFactory.create(createSavedStateHandle())
+        viewModel: TagResolutionViewModel = assistedMetroViewModel<TagResolutionViewModel, TagResolutionViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val unknownSeriesAndArtists by viewModel.unknownSeriesAndArtists.collectAsStateWithLifecycle()

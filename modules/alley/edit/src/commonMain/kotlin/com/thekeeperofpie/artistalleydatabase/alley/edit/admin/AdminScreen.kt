@@ -13,11 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import androidx.lifecycle.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 
@@ -25,9 +25,10 @@ object AdminScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyEditGraph,
         onDebugOpenForm: (formLink: String) -> Unit,
-        viewModel: AdminViewModel = viewModel { graph.adminViewModel },
+        viewModel: AdminViewModel = assistedMetroViewModel<AdminViewModel, AdminViewModel.Factory> {
+            create(it.createSavedStateHandle())
+        },
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Column(

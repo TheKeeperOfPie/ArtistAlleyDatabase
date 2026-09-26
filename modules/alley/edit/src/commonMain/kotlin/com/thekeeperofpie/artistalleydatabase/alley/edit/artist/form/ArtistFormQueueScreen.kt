@@ -33,13 +33,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_action_refresh
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_tab_history
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_tab_queue
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_title
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -48,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.History
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
@@ -57,11 +56,10 @@ internal object ArtistFormQueueScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyEditGraph,
         onSelectEntry: (artistId: Uuid) -> Unit,
         onSelectHistoryEntry: (artistId: Uuid, formTimestamp: Instant) -> Unit,
-        viewModel: ArtistFormQueueViewModel = viewModel {
-            graph.artistFormQueueViewModelFactory.create(createSavedStateHandle())
+        viewModel: ArtistFormQueueViewModel = assistedMetroViewModel<ArtistFormQueueViewModel, ArtistFormQueueViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         val queue by viewModel.queue.collectAsStateWithLifecycle()

@@ -63,7 +63,7 @@ private val SavedStateConfig = SavedStateConfiguration {
 }
 
 @Composable
-fun rememberArtistAlleyEditTopLevelStacks(): ArtistAlleyEditTopLevelStacks {
+fun rememberArtistAlleyEditTopLevelStacks(): AlleyEditNavStack {
     val stacks = TopLevelStackKey.entries.map {
         key(it) {
             rememberTwoWayStack(it.initialDestination, savedStateConfiguration = SavedStateConfig)
@@ -71,13 +71,13 @@ fun rememberArtistAlleyEditTopLevelStacks(): ArtistAlleyEditTopLevelStacks {
     }
     val topLevelStackIndex = rememberSaveable { mutableIntStateOf(0) }
     return remember(stacks, topLevelStackIndex) {
-        ArtistAlleyEditTopLevelStacks(stacks, topLevelStackIndex)
+        AlleyEditNavStack(stacks, topLevelStackIndex)
     }
 }
 
 @Composable
 fun rememberDecoratedNavEntries(
-    stacks: ArtistAlleyEditTopLevelStacks,
+    stacks: AlleyEditNavStack,
     entryProvider: (key: NavKey) -> NavEntry<NavKey>,
 ) = TopLevelStackKey.entries.mapIndexed { index, key ->
     key(key) {
@@ -86,7 +86,7 @@ fun rememberDecoratedNavEntries(
 }
 
 @Stable
-class ArtistAlleyEditTopLevelStacks internal constructor(
+class AlleyEditNavStack internal constructor(
     internal val twoWayStacks: List<TwoWayStack>,
     topLevelStackIndex: MutableIntState,
 ) : NavigationEventHandler<NavigationEventInfo>(

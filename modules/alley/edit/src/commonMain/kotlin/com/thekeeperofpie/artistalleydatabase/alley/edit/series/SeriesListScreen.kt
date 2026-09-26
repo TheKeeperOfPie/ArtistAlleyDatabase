@@ -29,14 +29,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_add
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_refresh_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
@@ -44,17 +42,17 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 internal object SeriesListScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyEditGraph,
         onClickEditSeries: (SeriesInfo, SeriesColumn) -> Unit,
         onClickAddSeries: () -> Unit,
-        viewModel: SeriesListViewModel = viewModel {
-            graph.seriesListViewModelFactory.create(createSavedStateHandle())
+        viewModel: SeriesListViewModel = assistedMetroViewModel<SeriesListViewModel, SeriesListViewModel.Factory> {
+            create(it.createSavedStateHandle())
         },
     ) {
         SeriesListScreen(

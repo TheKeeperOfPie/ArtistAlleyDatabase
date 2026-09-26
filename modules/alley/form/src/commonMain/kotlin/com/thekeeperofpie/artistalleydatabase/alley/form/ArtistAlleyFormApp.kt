@@ -14,7 +14,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -25,6 +24,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -36,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberD
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberTwoWayStack
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -172,10 +173,10 @@ fun EntryProviderScope<NavKey>.addFormEntryProviders(
             displayName = route.displayName,
             initialImages = route.images,
             onClickBack = onClickBack,
-            viewModel = viewModel {
-                graph.imagesEditViewModelFactory.create(
+            viewModel = assistedMetroViewModel<ImagesEditViewModel, ImagesEditViewModel.Factory> {
+                create(
                     images = route.images,
-                    savedStateHandle = createSavedStateHandle(),
+                    savedStateHandle = it.createSavedStateHandle(),
                 )
             },
         )

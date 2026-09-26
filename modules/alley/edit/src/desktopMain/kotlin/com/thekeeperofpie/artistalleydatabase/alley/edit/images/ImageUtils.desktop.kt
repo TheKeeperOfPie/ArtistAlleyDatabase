@@ -1,20 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage
+import com.thekeeperofpie.artistalleydatabase.utils.Bits
 import com.thekeeperofpie.artistalleydatabase.utils.megabytes
 import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.extension
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
-@Inject
-actual class ImageUtils {
-    actual val maxUploadSize = 5.megabytes
+actual object ImageUtils {
+    actual fun maxUploadSize(isDebug: Boolean): Bits = 5.megabytes
 
-    actual fun toEditImage(catalogImage: DatabaseImage): EditImage {
+    actual fun toEditImage(isDebug: Boolean, catalogImage: DatabaseImage): EditImage {
         val id = Uuid.parseOrNull(catalogImage.name)
         val key = id?.let(::PlatformImageKey)
         val file = key?.let(PlatformImageCache::get)

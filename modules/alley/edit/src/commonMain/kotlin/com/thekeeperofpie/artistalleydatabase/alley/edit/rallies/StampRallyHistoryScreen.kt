@@ -43,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -93,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -111,10 +111,9 @@ object StampRallyHistoryScreen {
     operator fun invoke(
         dataYear: DataYear,
         stampRallyId: String,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: StampRallyHistoryViewModel = viewModel {
-            graph.stampRallyHistoryViewModelFactory.create(dataYear, stampRallyId)
+        viewModel: StampRallyHistoryViewModel = assistedMetroViewModel<StampRallyHistoryViewModel, StampRallyHistoryViewModel.Factory> {
+            create(dataYear, stampRallyId)
         },
     ) {
         val history by viewModel.history.collectAsStateWithLifecycle()

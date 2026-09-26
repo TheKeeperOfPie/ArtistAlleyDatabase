@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_action_save_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_edit_delete_action_cancel
@@ -48,7 +47,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_mer
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_categories
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_uuid
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -63,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Save
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -78,13 +77,12 @@ object MerchEditScreen {
     operator fun invoke(
         merchId: Uuid,
         initialInfo: MerchInfo?,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: MerchEditViewModel = viewModel {
-            graph.merchEditViewModelFactory.create(
+        viewModel: MerchEditViewModel = assistedMetroViewModel<MerchEditViewModel, MerchEditViewModel.Factory> {
+            create(
                 merchId = merchId,
                 initialMerch = initialInfo,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

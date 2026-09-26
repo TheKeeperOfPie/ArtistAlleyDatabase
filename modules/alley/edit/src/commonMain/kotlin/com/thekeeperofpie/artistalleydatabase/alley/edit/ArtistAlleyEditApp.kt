@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -41,7 +42,6 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -59,10 +59,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormM
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.catalog.ArtistCatalogsQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchResolutionScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.AlleyEditNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.TopLevelStackKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberDecoratedNavEntries
@@ -81,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionQueueScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -91,6 +93,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
+import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
 import org.jetbrains.compose.resources.stringResource
@@ -98,7 +102,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ArtistAlleyEditApp(
     graph: ArtistAlleyEditGraph,
-    navStack: ArtistAlleyEditTopLevelStacks = rememberArtistAlleyEditTopLevelStacks(),
+    navStack: AlleyEditNavStack = rememberArtistAlleyEditTopLevelStacks(),
     onDebugOpenForm: (formLink: String) -> Unit = {},
 ) {
     val lastViewedConnection = graph.lastViewedConnection
@@ -116,9 +120,15 @@ fun ArtistAlleyEditApp(
         }
     }) {
         SharedTransitionLayout {
+            // TODO: Merge or isolate graphs?
+            val alleyNavStack = rememberAlleyNavStack()
+            val navigatorGraph = retain(graph, navStack, alleyNavStack) {
+                graph.editNavigatorGraphFactory.create(navStack, alleyNavStack)
+            }
             CompositionLocalProvider(
                 LocalSharedTransitionScope provides this,
                 LocalNavigationResults provides rememberNavigationResults(),
+                LocalMetroViewModelFactory provides navigatorGraph.metroViewModelFactory,
             ) {
                 val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
                 val onClickBackInput = remember { DirectNavigationEventInput() }
@@ -142,7 +152,6 @@ fun ArtistAlleyEditApp(
                     }
                 }
                 val entryProvider = entryProvider(
-                    graph = graph,
                     navStack = navStack,
                     onClickBack = onClickBack,
                     onDebugOpenForm = onDebugOpenForm,
@@ -186,7 +195,7 @@ fun ArtistAlleyEditApp(
 
 private fun NavigationSuiteScope.navItems(
     layoutType: NavigationSuiteType,
-    navStack: ArtistAlleyEditTopLevelStacks,
+    navStack: AlleyEditNavStack,
     showOverflow: () -> Boolean,
     onChangeOverflow: (Boolean) -> Unit,
 ) {
@@ -295,14 +304,12 @@ private fun TopLevelStackKey.shouldShow(dataYear: DataYear) = when (this) {
 
 @Composable
 private fun entryProvider(
-    graph: ArtistAlleyEditGraph,
-    navStack: ArtistAlleyEditTopLevelStacks,
+    navStack: AlleyEditNavStack,
     onClickBack: (force: Boolean) -> Unit,
     onDebugOpenForm: (formLink: String) -> Unit,
 ) = entryProvider<NavKey> {
     sharedElementEntry<AlleyEditDestination.Home> {
         ArtistListScreen(
-            graph = graph,
             onAddArtist = {
                 navStack.navigate(AlleyEditDestination.ArtistAdd(it))
             },
@@ -317,13 +324,12 @@ private fun entryProvider(
         )
     }
     sharedElementEntry<AlleyEditDestination.Admin> {
-        AdminScreen(graph = graph, onDebugOpenForm = onDebugOpenForm)
+        AdminScreen(onDebugOpenForm = onDebugOpenForm)
     }
     sharedElementEntry<AlleyEditDestination.ArtistAdd> { route ->
         ArtistAddScreen(
             dataYear = route.dataYear,
             artistId = route.artistId,
-            graph = graph,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, displayName, images ->
                 navStack.navigate(
@@ -335,7 +341,6 @@ private fun entryProvider(
     sharedElementEntry<AlleyEditDestination.ArtistCatalogs> { route ->
         ArtistCatalogsQueueScreen(
             dataYear = route.dataYear,
-            graph = graph,
             onSelectEntry = {
                 navStack.navigate(
                     AlleyEditDestination.ArtistEdit(
@@ -352,7 +357,6 @@ private fun entryProvider(
             dataYear = route.dataYear,
             artistId = route.artistId,
             catalogLink = route.catalogLink,
-            graph = graph,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, displayName, images ->
                 navStack.navigate(
@@ -383,7 +387,6 @@ private fun entryProvider(
             dataYear = route.dataYear,
             artistId = route.artistId,
             formTimestamp = route.formTimestamp,
-            graph = graph,
             onClickBack = onClickBack,
             onClickBackAndEditArtist = { artistId ->
                 onClickBack(true)
@@ -395,7 +398,6 @@ private fun entryProvider(
         ArtistFormMergeScreen(
             dataYear = route.dataYear,
             artistId = route.artistId,
-            graph = graph,
             onClickBack = onClickBack,
             onClickBackAndEditArtist = { artistId ->
                 onClickBack(true)
@@ -405,7 +407,6 @@ private fun entryProvider(
     }
     sharedElementEntry<AlleyEditDestination.ArtistFormQueue> {
         ArtistFormQueueScreen(
-            graph = graph,
             onSelectEntry = {
                 // TODO: Support other conventions?
                 navStack.navigate(
@@ -431,7 +432,6 @@ private fun entryProvider(
         ArtistHistoryScreen(
             dataYear = route.dataYear,
             artistId = route.artistId,
-            graph = graph,
             onClickBack = onClickBack,
         )
     }
@@ -441,17 +441,16 @@ private fun entryProvider(
             displayName = route.displayName,
             initialImages = route.images,
             onClickBack = onClickBack,
-            viewModel = viewModel {
-                graph.imagesEditViewModelFactory.create(
+            viewModel = assistedMetroViewModel<ImagesEditViewModel, ImagesEditViewModel.Factory> {
+                create(
                     images = route.images,
-                    savedStateHandle = createSavedStateHandle(),
+                    savedStateHandle = it.createSavedStateHandle(),
                 )
             },
         )
     }
     sharedElementEntry<AlleyEditDestination.Series> {
         SeriesListScreen(
-            graph = graph,
             onClickEditSeries = { seriesInfo, seriesColumn ->
                 navStack.navigate(AlleyEditDestination.SeriesEdit(seriesInfo, seriesColumn))
             },
@@ -464,7 +463,6 @@ private fun entryProvider(
         SeriesEditScreen(
             seriesId = it.seriesId,
             initialInfo = null,
-            graph = graph,
             onClickBack = onClickBack,
         )
     }
@@ -472,13 +470,11 @@ private fun entryProvider(
         SeriesEditScreen(
             seriesId = it.series.uuid,
             initialInfo = it,
-            graph = graph,
             onClickBack = onClickBack,
         )
     }
     sharedElementEntry<AlleyEditDestination.Merch> {
         MerchListScreen(
-            graph = graph,
             onClickEditMerch = {
                 navStack.navigate(AlleyEditDestination.MerchEdit(it))
             },
@@ -491,7 +487,6 @@ private fun entryProvider(
         MerchEditScreen(
             merchId = it.merchId,
             initialInfo = null,
-            graph = graph,
             onClickBack = onClickBack,
         )
     }
@@ -499,13 +494,11 @@ private fun entryProvider(
         MerchEditScreen(
             merchId = it.merch.uuid,
             initialInfo = it.merch,
-            graph = graph,
             onClickBack = onClickBack,
         )
     }
     sharedElementEntry<AlleyEditDestination.TagResolution> {
         TagResolutionQueueScreen(
-            graph = graph,
             onClickSeries = {
                 navStack.navigate(AlleyEditDestination.SeriesResolution(it))
             },
@@ -517,20 +510,17 @@ private fun entryProvider(
     sharedElementEntry<AlleyEditDestination.SeriesResolution> {
         SeriesResolutionScreen(
             seriesId = it.seriesId,
-            graph = graph,
             onClickBack = { onClickBack(true) },
         )
     }
     sharedElementEntry<AlleyEditDestination.MerchResolution> {
         MerchResolutionScreen(
             merchId = it.merchId,
-            graph = graph,
             onClickBack = { onClickBack(true) },
         )
     }
     sharedElementEntry<AlleyEditDestination.StampRallies> {
         StampRallyListScreen(
-            graph = graph,
             onAddStampRally = {
                 navStack.navigate(AlleyEditDestination.StampRallyAdd(it))
             },
@@ -545,7 +535,6 @@ private fun entryProvider(
             stampRallyId = route.stampRallyId,
             booths = route.booths,
             link = route.link,
-            graph = graph,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, displayName, images ->
                 navStack.navigate(
@@ -558,7 +547,6 @@ private fun entryProvider(
         StampRallyEditScreen(
             dataYear = route.dataYear,
             stampRallyId = route.stampRallyId,
-            graph = graph,
             onClickBack = onClickBack,
             onClickEditImages = { requestKey, displayName, images ->
                 navStack.navigate(
@@ -579,14 +567,12 @@ private fun entryProvider(
         StampRallyHistoryScreen(
             dataYear = route.dataYear,
             stampRallyId = route.stampRallyId,
-            graph = graph,
             onClickBack = onClickBack,
         )
     }
     sharedElementEntry<AlleyEditDestination.StampRalliesQueue> { route ->
         StampRallyLinksQueueScreen(
             dataYear = route.dataYear,
-            graph = graph,
             onSelectEntry = {
                 navStack.navigate(
                     AlleyEditDestination.StampRallyAdd(
@@ -600,7 +586,6 @@ private fun entryProvider(
     }
     sharedElementEntry<AlleyEditDestination.StampRallyFormQueue> {
         StampRallyFormQueueScreen(
-            graph = graph,
             onSelectEntry = { artistId, stampRallyId ->
                 navStack.navigate(
                     AlleyEditDestination.StampRallyFormMerge(
@@ -627,7 +612,6 @@ private fun entryProvider(
             dataYear = route.dataYear,
             artistId = route.artistId,
             stampRallyId = route.stampRallyId,
-            graph = graph,
             onClickBack = onClickBack,
             onClickBackAndEdit = { rallyId ->
                 onClickBack(true)
@@ -646,7 +630,6 @@ private fun entryProvider(
             artistId = route.artistId,
             stampRallyId = route.stampRallyId,
             formTimestamp = route.formTimestamp,
-            graph = graph,
             onClickBack = onClickBack,
             onClickBackAndEdit = { rallyId ->
                 onClickBack(true)
@@ -662,7 +645,6 @@ private fun entryProvider(
 
     sharedElementEntry<AlleyEditDestination.RemoteArtistDataQueue> {
         RemoteArtistDataQueueScreen(
-            graph = graph,
             onSelectEntry = {
                 // TODO: Support other years?
                 navStack.navigate(
@@ -687,7 +669,6 @@ private fun entryProvider(
         RemoteArtistDataMergeScreen(
             dataYear = route.dataYear,
             id = route.id,
-            graph = graph,
             onClickBack = onClickBack,
             onClickBackAndEditArtist = { artistId ->
                 onClickBack(true)
@@ -700,7 +681,6 @@ private fun entryProvider(
             dataYear = it.dataYear,
             id = it.id,
             timestamp = it.timestamp,
-            graph = graph,
             onClickBack = onClickBack,
         )
     }

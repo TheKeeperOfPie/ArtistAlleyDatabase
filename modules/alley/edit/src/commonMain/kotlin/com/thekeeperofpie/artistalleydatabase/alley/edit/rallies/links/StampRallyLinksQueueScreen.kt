@@ -32,31 +32,29 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rallies_queue_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rallies_queue_action_confirm_delete_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rallies_queue_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rallies_queue_action_refresh
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rallies_queue_title
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Delete
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 object StampRallyLinksQueueScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyEditGraph,
         dataYear: DataYear,
         onSelectEntry: (Entry) -> Unit,
-        viewModel: StampRallyLinksQueueViewModel = viewModel {
-            graph.stampRallyLinksQueueViewModelFactory.create(dataYear)
+        viewModel: StampRallyLinksQueueViewModel = assistedMetroViewModel<StampRallyLinksQueueViewModel, StampRallyLinksQueueViewModel.Factory> {
+            create(dataYear)
         },
     ) {
         val queue by viewModel.queue.collectAsStateWithLifecycle()

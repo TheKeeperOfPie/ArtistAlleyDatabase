@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TmdbType
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -26,6 +27,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.withContext
 import kotlin.uuid.Uuid
 
@@ -373,7 +377,9 @@ class SeriesEditViewModel(
     }
 
     @AssistedFactory
-    interface Factory {
+    @ManualViewModelAssistedFactoryKey
+    @ContributesIntoMap(NavigatorScope::class)
+    interface Factory : ManualViewModelAssistedFactory {
         fun create(
             seriesId: Uuid,
             editInfo: AlleyEditDestination.SeriesEdit?,
