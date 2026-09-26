@@ -27,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallyFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -187,7 +186,6 @@ class FavoritesViewModel(
                     )
                 }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
             }
-            .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
             .flowOn(dispatchers.io)
             .cachedIn(viewModelScope)
 
@@ -350,29 +348,29 @@ class FavoritesViewModel(
         }
         is FavoritesScreen.Event.StampRallySearchEvent -> when (val searchEvent = event.event) {
             is StampRallySearchScreen.Event.FavoriteToggle -> rallyMutationUpdates.tryEmit(
-                searchEvent.entry.stampRallyWithUserData.userEntry.copy(favorite = searchEvent.favorite)
+                searchEvent.stampRally.userEntry.copy(favorite = searchEvent.favorite)
             )
             is StampRallySearchScreen.Event.IgnoreToggle -> rallyMutationUpdates.tryEmit(
-                searchEvent.entry.stampRallyWithUserData.userEntry.copy(ignored = searchEvent.ignored)
+                searchEvent.stampRally.userEntry.copy(ignored = searchEvent.ignored)
             )
             is StampRallySearchScreen.Event.OpenEntry ->
                 navStack.navigate(
                     StampRallyDetails(
-                        searchEvent.entry.stampRallyWithUserData.stampRally,
+                        searchEvent.stampRally.stampRally,
                         searchEvent.imageIndex
                     )
                 )
             is StampRallySearchScreen.Event.OpenImageFullscreen ->
                 navStack.navigate(
                     AlleyDestination.Images.fromStampRally(
-                        stampRallyWithUserData = searchEvent.entry.stampRallyWithUserData,
+                        stampRallyWithUserData = searchEvent.stampRally,
                         imageIndex = searchEvent.imageIndex,
                     )
                 )
             is StampRallySearchScreen.Event.ClearFilters -> stampRallySortFilterController.clear()
             StampRallySearchScreen.Event.Back -> navStack.onBack()
             StampRallySearchScreen.Event.OpenChangelog ->
-                navStack.navigate(AlleyDestination.ArtistChangelog(year.value))
+                navStack.navigate(AlleyDestination.StampRallyChangelog(year.value))
             StampRallySearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
         }
     }

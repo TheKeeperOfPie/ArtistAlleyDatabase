@@ -80,7 +80,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreenContent
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterSheetContent
@@ -485,7 +485,7 @@ object FavoritesScreen {
         state: State,
         sortFilterState: StampRallySortFilterState,
         gridState: LazyStaggeredGridState,
-        entries: LazyPagingItems<StampRallyEntryGridModel>,
+        entries: LazyPagingItems<StampRallyWithUserData>,
         seriesImage: (SeriesImageInfo) -> String?,
         eventSink: (Event) -> Unit,
         header: @Composable () -> Unit,
@@ -767,7 +767,7 @@ object FavoritesScreen {
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
         val artistsSortFilterState: ArtistSortFilterState,
         val artistsUnfilteredCount: StateFlow<Int>,
-        val ralliesEntries: Flow<PagingData<StampRallyEntryGridModel>>,
+        val ralliesEntries: Flow<PagingData<StampRallyWithUserData>>,
         val ralliesSortFilterState: StampRallySortFilterState,
         val ralliesUnfilteredCount: StateFlow<Int>,
         val seriesEntries: Flow<PagingData<SeriesWithUserData>>,

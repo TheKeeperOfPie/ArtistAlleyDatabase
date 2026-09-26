@@ -586,7 +586,6 @@ object ArtistSearchScreen {
         val unfilteredCount: StateFlow<Int>,
         val sortFilterState: ArtistSortFilterState,
         val displayType: MutableStateFlow<SearchDisplayType>,
-        val forceOneDisplayColumn: MutableStateFlow<Boolean>,
     ) {
         constructor(
             viewModel: ArtistSearchViewModel,
@@ -602,7 +601,6 @@ object ArtistSearchScreen {
             unfilteredCount = viewModel.unfilteredCount,
             sortFilterState = sortFilterController.state,
             displayType = viewModel.displayType,
-            forceOneDisplayColumn = viewModel.forceOneDisplayColumn,
         )
     }
 
@@ -644,7 +642,6 @@ private fun Preview() = PreviewDark {
         unfilteredCount = MutableStateFlow(1000),
         sortFilterState = ArtistSortFilterState.rememberForPreview(),
         displayType = MutableStateFlow(SearchDisplayType.CARD),
-        forceOneDisplayColumn = MutableStateFlow(false),
     )
 
     val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)

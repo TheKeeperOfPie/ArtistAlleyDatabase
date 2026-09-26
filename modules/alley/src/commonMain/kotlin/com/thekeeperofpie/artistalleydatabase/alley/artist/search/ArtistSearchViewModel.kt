@@ -116,7 +116,6 @@ class ArtistSearchViewModel(
     val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
 
     val displayType = settings.displayType
-    val forceOneDisplayColumn = settings.forceOneDisplayColumn
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 

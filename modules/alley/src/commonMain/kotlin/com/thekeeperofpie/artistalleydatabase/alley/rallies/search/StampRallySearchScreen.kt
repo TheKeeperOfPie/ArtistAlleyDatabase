@@ -30,7 +30,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_search_title_results_suffix
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen.Event
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
@@ -187,7 +187,7 @@ fun StampRallySearchScreen(
 internal fun StampRallySearchScreenContent(
     sortFilterState: StampRallySortFilterState,
     header: @Composable () -> Unit,
-    entries: LazyPagingItems<StampRallyEntryGridModel>,
+    entries: LazyPagingItems<StampRallyWithUserData>,
     seriesImage: (SeriesImageInfo) -> String?,
     unfilteredCount: () -> Int,
     displayType: () -> SearchDisplayType,
@@ -225,7 +225,7 @@ internal fun StampRallySearchScreenContent(
         val forceOneDisplayColumn by sortFilterState.persistentState.forceOneDisplayColumn.collectAsStateWithLifecycle()
         SearchList(
             entries = entries,
-            itemToId = { it.id.scopedId },
+            itemToId = { it.stampRally.id },
             displayType = { displayType },
             forceOneDisplayColumn = { forceOneDisplayColumn },
             unfilteredCount = unfilteredCount,
@@ -234,7 +234,7 @@ internal fun StampRallySearchScreenContent(
             itemRow = { entry ->
                 StampRallySearchItem(
                     displayType = displayType,
-                    stampRallyWithUserData = entry.stampRallyWithUserData,
+                    stampRallyWithUserData = entry,
                     showGridByDefault = showGridByDefault,
                     showRandomCatalogImage = showRandomCatalogImage,
                     blockCrossAxisScrolling = { gridState.isScrollInProgress },
@@ -280,15 +280,15 @@ object StampRallySearchScreen {
     }
 
     @Composable
-    fun TableCell(row: StampRallyEntryGridModel?, column: StampRallySearchColumn) {
+    fun TableCell(row: StampRallyWithUserData?, column: StampRallySearchColumn) {
         when (column) {
             StampRallySearchColumn.BOOTH -> AutoSizeText(
-                text = row?.stampRallyWithUserData?.stampRally?.hostTable.orEmpty(),
+                text = row?.stampRally?.hostTable.orEmpty(),
                 modifier = Modifier.requiredSize(column.size)
                     .then(TwoWayGrid.DefaultCellPaddingModifier)
             )
             StampRallySearchColumn.FANDOM -> Text(
-                text = row?.stampRallyWithUserData?.stampRally?.fandom.orEmpty(),
+                text = row?.stampRally?.fandom.orEmpty(),
                 modifier = TwoWayGrid.DefaultCellPaddingModifier
             )
         }
@@ -301,11 +301,10 @@ object StampRallySearchScreen {
         val randomSeed: Int,
         val year: MutableStateFlow<DataYear>,
         val query: MutableStateFlow<String>,
-        val results: StateFlow<PagingData<StampRallyEntryGridModel>>,
+        val results: StateFlow<PagingData<StampRallyWithUserData>>,
         val unfilteredCount: StateFlow<Int>,
         val sortFilterState: StampRallySortFilterState,
         val displayType: MutableStateFlow<SearchDisplayType>,
-        val forceOneDisplayColumn: MutableStateFlow<Boolean>,
     ) {
         constructor(
             viewModel: StampRallySearchViewModel,
@@ -320,17 +319,16 @@ object StampRallySearchScreen {
             unfilteredCount = viewModel.unfilteredCount,
             sortFilterState = sortFilterController.state,
             displayType = viewModel.displayType,
-            forceOneDisplayColumn = viewModel.forceOneDisplayColumn,
         )
     }
 
     sealed interface Event {
-        data class FavoriteToggle(val entry: StampRallyEntryGridModel, val favorite: Boolean) :
+        data class FavoriteToggle(val stampRally: StampRallyWithUserData, val favorite: Boolean) :
             Event
 
-        data class IgnoreToggle(val entry: StampRallyEntryGridModel, val ignored: Boolean) : Event
-        data class OpenEntry(val entry: StampRallyEntryGridModel, val imageIndex: Int) : Event
-        data class OpenImageFullscreen(val entry: StampRallyEntryGridModel, val imageIndex: Int) :
+        data class IgnoreToggle(val stampRally: StampRallyWithUserData, val ignored: Boolean) : Event
+        data class OpenEntry(val stampRally: StampRallyWithUserData, val imageIndex: Int) : Event
+        data class OpenImageFullscreen(val stampRally: StampRallyWithUserData, val imageIndex: Int) :
             Event
 
         data object Back : Event
