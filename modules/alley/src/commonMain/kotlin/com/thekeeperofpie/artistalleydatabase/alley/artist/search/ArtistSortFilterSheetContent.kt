@@ -458,6 +458,7 @@ class ArtistSortFilterPersistentState(
     fun clear() {
         artistTagsIn.value = emptySet()
         artistTagsNotIn.value = emptySet()
+        showOnlyConfirmedTags.value = false
     }
 
     companion object {
