@@ -67,9 +67,9 @@ fun <T : Any> SearchList(
                 }
             }
 
-            val showMoreResultsItem =
-                moreResultsItem != null && unfilteredCount() > entries.itemCount
-            if (entries.loadState.refresh !is LoadState.Loading && !showMoreResultsItem && entries.itemCount == 0) {
+            val showMoreResultsItem = entries.loadState.refresh !is LoadState.Loading
+                    && moreResultsItem != null && unfilteredCount() > entries.itemCount
+            if (!showMoreResultsItem && entries.itemCount == 0) {
                 item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
                     if (noResultsItem != null) {
                         noResultsItem()
