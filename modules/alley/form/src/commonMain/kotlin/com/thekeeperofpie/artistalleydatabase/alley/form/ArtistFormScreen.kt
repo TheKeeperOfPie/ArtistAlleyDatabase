@@ -55,7 +55,6 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_end_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_notes
@@ -170,6 +169,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -186,14 +186,13 @@ object ArtistFormScreen {
 
     @Composable
     operator fun invoke(
-        graph: ArtistAlleyFormGraph,
         dataYear: DataYear,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
-        viewModel: ArtistFormViewModel = viewModel {
-            graph.artistFormViewModelFactory.create(
+        viewModel: ArtistFormViewModel = assistedMetroViewModel<ArtistFormViewModel, ArtistFormViewModel.Factory> {
+            create(
                 dataYear = dataYear,
-                savedStateHandle = createSavedStateHandle(),
+                savedStateHandle = it.createSavedStateHandle(),
             )
         },
     ) {

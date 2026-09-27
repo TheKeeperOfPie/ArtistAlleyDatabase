@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.createSavedStateHandle
 import androidx.navigation3.runtime.EntryProviderScope
@@ -25,6 +26,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -36,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberD
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberTwoWayStack
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
+import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -68,9 +71,15 @@ fun ArtistAlleyFormApp(
         }
     }) {
         SharedTransitionLayout {
+            // TODO: Merge or isolate graphs?
+            val alleyNavStack = rememberAlleyNavStack()
+            val navigatorGraph = retain(graph, alleyNavStack) {
+                graph.formNavigatorGraphFactory.create(alleyNavStack)
+            }
             CompositionLocalProvider(
                 LocalSharedTransitionScope provides this,
                 LocalNavigationResults provides rememberNavigationResults(),
+                LocalMetroViewModelFactory provides navigatorGraph.metroViewModelFactory,
             ) {
                 // TODO: Unify all of this somewhere
                 val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
@@ -105,7 +114,6 @@ fun ArtistAlleyFormApp(
                 }
                 val entryProvider = entryProvider {
                     addFormEntryProviders(
-                        graph = graph,
                         onNavigate = navStack::navigate,
                         onClickBack = onClickBack,
                     )
@@ -138,7 +146,6 @@ fun ArtistAlleyFormApp(
 }
 
 fun EntryProviderScope<NavKey>.addFormEntryProviders(
-    graph: ArtistAlleyFormGraph,
     onNavigate: (NavKey) -> Unit,
     onClickBack: (force: Boolean) -> Unit,
 ) {
@@ -153,7 +160,6 @@ fun EntryProviderScope<NavKey>.addFormEntryProviders(
     }
     sharedElementEntry<AlleyFormDestination.ArtistForm> { route ->
         ArtistFormScreen(
-            graph = graph,
             dataYear = route.dataYear,
             onClickBack = onClickBack,
             onClickEditImages = { displayName, key, images ->
