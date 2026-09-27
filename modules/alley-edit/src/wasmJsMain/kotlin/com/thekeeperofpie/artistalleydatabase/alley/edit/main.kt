@@ -21,16 +21,19 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
+import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.network.DeDupeConcurrentRequestStrategy
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
-import com.eygraber.uri.Uri
+import coil3.toUri
+import coil3.util.DebugLogger
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
+import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -40,6 +43,7 @@ import dev.zacsweers.metro.createGraphFactory
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.jetbrains.compose.resources.WebResourcesConfiguration
+import com.eygraber.uri.Uri as KmpUri
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
 fun main() {
@@ -66,8 +70,16 @@ fun main() {
                             concurrentRequestStrategy = { concurrentRequestStrategy },
                         )
                     )
+                    // TODO: Why is declaring this here required instead of relying on AlleyCoilInit?
+                    add(Mapper<ImageWithDimensions, KmpUri> { data, _ ->
+                        data.coilImageModel as? KmpUri
+                    })
+                    add(Mapper<KmpUri, coil3.Uri> { data, _ ->
+                        data.toString().toUri()
+                    })
                     graph.alleyEditCoilInit.addComponents()
                 }
+                .logger(DebugLogger())
                 .memoryCache {
                     MemoryCache.Builder()
                         .maxSizeBytes(1000 * 1024 * 1024)
@@ -108,7 +120,7 @@ private fun Content(graph: ArtistAlleyEditGraph) {
             val navStack = rememberArtistAlleyEditTopLevelStacks()
             LaunchedEffect(Unit) {
                 ConsoleLogger.log("path = ${window.location.href}")
-                val path = Uri.parseOrNull(window.location.href)
+                val path = KmpUri.parseOrNull(window.location.href)
                     ?.path
                     ?.removePrefix("/edit/")
                     ?: return@LaunchedEffect
