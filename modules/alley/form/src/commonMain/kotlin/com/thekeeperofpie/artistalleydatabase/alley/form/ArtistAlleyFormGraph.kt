@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditCoilInit
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope

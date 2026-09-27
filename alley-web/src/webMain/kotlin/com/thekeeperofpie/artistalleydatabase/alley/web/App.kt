@@ -43,7 +43,7 @@ import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
-import com.thekeeperofpie.artistalleydatabase.alley.rememberAlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions

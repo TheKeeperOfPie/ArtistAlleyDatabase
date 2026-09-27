@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.lifecycle.ViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AboutLibrariesProvider
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleyAboutLibrariesProvider

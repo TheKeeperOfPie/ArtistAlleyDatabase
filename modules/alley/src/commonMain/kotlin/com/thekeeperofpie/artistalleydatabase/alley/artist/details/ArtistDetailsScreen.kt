@@ -84,15 +84,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataPro
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
-import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.isAdult
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.LocalAlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.rememberSeriesDisplayInfo
@@ -133,14 +132,6 @@ object ArtistDetailsScreen {
     @Composable
     operator fun invoke(
         route: AlleyDestination.ArtistDetails,
-        onOpenArtist: (DataYear, artistId: String) -> Unit,
-        onOpenMerch: (DataYear, String) -> Unit,
-        onOpenSeries: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyDatabaseEntry) -> Unit,
-        onOpenOtherYear: (DataYear) -> Unit,
-        onOpenMap: (artistId: String) -> Unit,
-        onOpenImages: (DataYear, artistId: String, booth: String, name: String, showingFallback: Boolean, images: List<CatalogImage>, imageIndex: Int, profileImage: CatalogImage?) -> Unit,
-        onNavigateUp: () -> Unit,
         viewModel: ArtistDetailsViewModel = assistedMetroViewModel<ArtistDetailsViewModel, ArtistDetailsViewModel.Factory> {
             create(
                 route = route,
@@ -165,6 +156,7 @@ object ArtistDetailsScreen {
         val seriesInferred by viewModel.seriesInferred.collectAsStateWithLifecycle()
         val seriesConfirmed by viewModel.seriesConfirmed.collectAsStateWithLifecycle()
         val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
+        val navigator = LocalAlleyNavigator.current
         ArtistDetailsScreen(
             route = route,
             entry = { entry },
@@ -178,11 +170,6 @@ object ArtistDetailsScreen {
             otherYears = viewModel::otherYears,
             eventSink = {
                 when (it) {
-                    is Event.OpenArtist -> onOpenArtist(route.year, it.artistId)
-                    is Event.OpenMerch -> onOpenMerch(route.year, it.merch)
-                    is Event.OpenSeries -> onOpenSeries(route.year, it.series)
-                    is Event.OpenStampRally -> onOpenStampRally(it.entry)
-                    is Event.OpenOtherYear -> onOpenOtherYear(it.year)
                     is Event.SeriesFavoriteToggle ->
                         viewModel.onSeriesFavoriteToggle(
                             data = it.series,
@@ -192,32 +179,21 @@ object ArtistDetailsScreen {
                         when (val event = it.event) {
                             is DetailsScreen.Event.FavoriteToggle ->
                                 viewModel.onFavoriteToggle(event.favorite)
-                            DetailsScreen.Event.NavigateUp -> onNavigateUp()
+                            DetailsScreen.Event.NavigateUp -> navigator.goUp()
                             is DetailsScreen.Event.OpenImage -> {
-                                val artist = viewModel.entry.value?.artist
-                                val booth = artist?.booth
-                                if (artist != null) {
-                                    val showingOutdatedCatalogs =
-                                        catalog.result?.showOutdatedCatalogs == true
-                                    val year = catalog.result?.fallbackYear
-                                        ?.takeIf { showingOutdatedCatalogs }
-                                        ?: route.year
-                                    onOpenImages(
-                                        year,
-                                        artist.id,
-                                        booth
-                                            .takeUnless { showingOutdatedCatalogs }
-                                            .orEmpty(),
-                                        artist.name,
-                                        showingOutdatedCatalogs,
-                                        catalog.result?.images.orEmpty(),
-                                        event.imageIndex,
-                                        viewModel.entry.value?.data?.profileImage,
+                                val showingOutdatedCatalogs =
+                                    catalog.result?.showOutdatedCatalogs == true
+                                val artistWithUserData = viewModel.entry.value?.data
+                                if (artistWithUserData != null) {
+                                    navigator.navigate(
+                                        AlleyDestination.Images.fromArtist(artistWithUserData, showingOutdatedCatalogs, event.imageIndex)
                                     )
                                 }
                             }
                             DetailsScreen.Event.OpenMap ->
-                                viewModel.entry.value?.artist?.id?.run(onOpenMap)
+                                viewModel.entry.value?.artist?.id?.let {
+                                    navigator.navigate(AlleyDestination.ArtistMap(it))
+                                }
                             DetailsScreen.Event.ShowFallback ->
                                 viewModel.onShowFallback()
                             DetailsScreen.Event.AlwaysShowFallback ->
@@ -274,6 +250,7 @@ object ArtistDetailsScreen {
         val merchInferredUnsorted = entry()?.artist?.merchInferred.orEmpty()
         val merchInferred = remember(merchInferredUnsorted) { merchInferredUnsorted.sorted() }
 
+        val navigator = LocalAlleyNavigator.current
         DetailsScreen(
             title = {
                 val entry = entry()
@@ -449,7 +426,11 @@ object ArtistDetailsScreen {
                                 contentDescriptionTextRes = null,
                                 values = stampRallies,
                                 valueToText = { it.fandom },
-                                onClick = { eventSink(Event.OpenStampRally(it)) },
+                                onClick = {
+                                    navigator.navigate(
+                                        AlleyDestination.StampRallyDetails(it)
+                                    )
+                                },
                                 allowExpand = false,
                                 showDividerAbove = false,
                             )
@@ -482,7 +463,14 @@ object ArtistDetailsScreen {
                                 contentDescriptionTextRes = null,
                                 values = otherArtists,
                                 valueToText = { it.name },
-                                onClick = { eventSink(Event.OpenArtist(it.id)) },
+                                onClick = {
+                                    navigator.navigate(
+                                        AlleyDestination.ArtistDetails(
+                                            year = route.year,
+                                            id = it.id,
+                                        )
+                                    )
+                                },
                                 allowExpand = false,
                                 showDividerAbove = false,
                             )
@@ -511,7 +499,14 @@ object ArtistDetailsScreen {
                         randomizedIndexes = seriesConfirmedRandomizedIndexes,
                         expanded = { seriesConfirmedExpanded },
                         onExpanded = { seriesConfirmedExpanded = true },
-                        onClick = { eventSink(Event.OpenSeries(it.id)) },
+                        onClick = {
+                            navigator.navigate(
+                                AlleyDestination.Series(
+                                    year = route.year,
+                                    series = it.id,
+                                )
+                            )
+                        },
                     )
                 }
 
@@ -529,7 +524,17 @@ object ArtistDetailsScreen {
                         )
                     }
                     item("artistMerchConfirmed", GridUtils.maxSpanFunction) {
-                        MerchChips(merchConfirmed, onClick = { eventSink(Event.OpenMerch(it)) })
+                        MerchChips(
+                            merch = merchConfirmed,
+                            onClick = {
+                                navigator.navigate(
+                                    AlleyDestination.Merch(
+                                        year = route.year,
+                                        merch = it,
+                                    )
+                                )
+                            },
+                        )
                     }
                 }
 
@@ -553,7 +558,14 @@ object ArtistDetailsScreen {
                             randomizedIndexes = seriesInferredRandomizedIndexes,
                             expanded = { seriesInferredExpanded },
                             onExpanded = { seriesInferredExpanded = true },
-                            onClick = { eventSink(Event.OpenSeries(it.id)) },
+                            onClick = {
+                                navigator.navigate(
+                                    AlleyDestination.Series(
+                                        year = route.year,
+                                        series = it.id,
+                                    )
+                                )
+                            },
                         )
                     }
 
@@ -569,7 +581,17 @@ object ArtistDetailsScreen {
                             )
                         }
                         item("artistMerchInferred", GridUtils.maxSpanFunction) {
-                            MerchChips(merchInferred, onClick = { eventSink(Event.OpenMerch(it)) })
+                            MerchChips(
+                                merch = merchInferred,
+                                onClick = {
+                                    navigator.navigate(
+                                        AlleyDestination.Merch(
+                                            year = route.year,
+                                            merch = it,
+                                        )
+                                    )
+                                },
+                            )
                         }
                     }
                 } else if (seriesInferred.isNotEmpty() || merchInferred.isNotEmpty()) {
@@ -667,7 +689,9 @@ object ArtistDetailsScreen {
                         )
 
                         otherYears().forEach {
-                            FilledTonalButton(onClick = { eventSink(Event.OpenOtherYear(it)) }) {
+                            FilledTonalButton(onClick = {
+                                navigator.navigate(route.copy(year = it))
+                            }) {
                                 Text(
                                     stringResource(
                                         Res.string.alley_open_year,
@@ -827,11 +851,6 @@ object ArtistDetailsScreen {
 
     sealed interface Event {
         data class DetailsEvent(val event: DetailsScreen.Event) : Event
-        data class OpenArtist(val artistId: String) : Event
-        data class OpenMerch(val merch: String) : Event
-        data class OpenOtherYear(val year: DataYear) : Event
-        data class OpenSeries(val series: String) : Event
-        data class OpenStampRally(val entry: StampRallyDatabaseEntry) : Event
         data class SeriesFavoriteToggle(
             val series: SeriesWithUserData,
             val favorite: Boolean,

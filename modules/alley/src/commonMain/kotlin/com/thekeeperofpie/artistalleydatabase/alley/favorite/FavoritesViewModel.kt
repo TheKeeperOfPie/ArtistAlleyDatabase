@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetai
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel

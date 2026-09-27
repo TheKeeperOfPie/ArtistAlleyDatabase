@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -9,6 +9,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigationevent.NavigationEventHandler
 import androidx.navigationevent.NavigationEventInfo
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRouteHistory
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack

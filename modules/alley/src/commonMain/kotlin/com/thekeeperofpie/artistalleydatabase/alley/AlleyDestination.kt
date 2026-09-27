@@ -26,8 +26,8 @@ sealed interface AlleyDestination : NavKey {
     data class ArtistDetails(
         val year: DataYear,
         val id: String?,
-        val booth: String?,
-        val name: String?,
+        val booth: String? = null,
+        val name: String? = null,
         val images: List<DatabaseImage>? = null,
         val fallbackImages: List<DatabaseImage>? = null,
         val fallbackImageYear: DataYear? = null,
@@ -106,7 +106,7 @@ sealed interface AlleyDestination : NavKey {
                     id = artist.id,
                     type = Type.Artist(
                         id = artist.id,
-                        booth = artist.booth,
+                        booth = artist.booth.takeUnless { showingFallback },
                         profileImage = artistWithUserData.profileImage,
                         name = artist.name,
                         showingFallback = showingFallback,

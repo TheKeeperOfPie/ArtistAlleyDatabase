@@ -47,6 +47,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.alley.metrics.MetricsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.LocalAlleyNavigator
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.rememberAlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.rememberAlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -87,6 +91,7 @@ object ArtistAlleyAppScreen {
                 LocalNavigationResults provides rememberNavigationResults(),
                 LocalLanguageOptionMedia provides languageOption,
                 LocalMetroViewModelFactory provides navigatorGraph.metroViewModelFactory,
+                LocalAlleyNavigator provides rememberAlleyNavigator(navStack),
             ) {
                 val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
                 DisposableEffect(navigationEventDispatcherOwner, navStack) {
@@ -289,59 +294,7 @@ object ArtistAlleyAppScreen {
             }
 
             sharedElementEntry<AlleyDestination.ArtistDetails> { route ->
-                ArtistDetailsScreen(
-                    route = route,
-                    onOpenArtist = { year, artistId ->
-                        navStack.navigate(
-                            AlleyDestination.ArtistDetails(
-                                year = year,
-                                id = artistId,
-                                booth = null,
-                                name = null,
-                                images = null,
-                                imageIndex = null,
-                            )
-                        )
-                    },
-                    onOpenMerch = onOpenMerch,
-                    onOpenSeries = onOpenSeries,
-                    onOpenStampRally = { onOpenStampRally(it, null) },
-                    onOpenOtherYear = {
-                        navStack.navigate(
-                            route.copy(
-                                year = it,
-                                booth = null,
-                                name = null,
-                                images = null,
-                            )
-                        )
-                    },
-                    onOpenMap = { artistId ->
-                        navStack.navigate(
-                            AlleyDestination.ArtistMap(artistId)
-                        )
-                    },
-                    onOpenImages = { year, artistId, booth, name, showingFallback, images, imageIndex, profileImage ->
-                        navStack.navigate(
-                            AlleyDestination.Images(
-                                year = year,
-                                id = artistId,
-                                type = AlleyDestination.Images.Type.Artist(
-                                    // TODO: Does this have to be passed in separately?
-                                    id = artistId,
-                                    booth = booth,
-                                    profileImage = profileImage,
-                                    name = name,
-                                    showingFallback = showingFallback,
-                                ),
-                                images = images,
-                                initialImageIndex = imageIndex,
-                                showOpenButton = false,
-                            )
-                        )
-                    },
-                    onNavigateUp = navigateUp,
-                )
+                ArtistDetailsScreen(route = route)
             }
 
             sharedElementEntry<AlleyDestination.ArtistsList> {

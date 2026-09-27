@@ -82,7 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionQueueScreen
-import com.thekeeperofpie.artistalleydatabase.alley.rememberAlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.MoreVert
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
