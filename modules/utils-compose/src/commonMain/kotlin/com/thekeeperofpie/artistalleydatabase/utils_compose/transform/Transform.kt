@@ -11,18 +11,25 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.ObserverHandle
 import androidx.compose.runtime.snapshots.Snapshot
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.resume
 import kotlin.time.TimeSource
 
 // Copied from https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:appstate/transform/transform/src/commonMain/kotlin/androidx/appstate/transform/Transform.kt;drc=f2565e217827ef68cfc80160661f0aa6cd38cd2f
@@ -35,14 +42,41 @@ fun <T> transform(
     onUpdate: @Composable () -> T,
 ): State<T> {
     var state: MutableState<T>? = null
-    transformInternal(scope, context, onUpdate) {
-        if (state == null) {
-            state = mutableStateOf(it)
-        } else {
-            state.value = it
-        }
-    }
+    transformInternal(
+        scope = scope,
+        context = context,
+        applyCompositionContent = {
+            it.setContent {
+                val newValue = onUpdate()
+                val mutableState = state
+                if (mutableState == null) {
+                    state = mutableStateOf(newValue)
+                } else {
+                    mutableState.value = newValue
+                }
+            }
+        },
+    )
     return state!!
+}
+
+fun <T> transform(
+    scope: CoroutineScope,
+    initialValue: T,
+    context: CoroutineContext = Dispatchers.Main,
+    onUpdate: @Composable (T) -> T,
+): State<T> {
+    val state = mutableStateOf(initialValue)
+    transformInternal(
+        scope = scope,
+        context = context,
+        applyCompositionContent = {
+            it.setContent {
+                state.value = onUpdate(state.value)
+            }
+        },
+    )
+    return state
 }
 
 fun <T> transformFlow(
@@ -51,35 +85,45 @@ fun <T> transformFlow(
     onUpdate: @Composable () -> T,
 ): StateFlow<T> {
     var state: MutableStateFlow<T>? = null
-    transformInternal(scope, context, onUpdate) {
-        if (state == null) {
-            state = MutableStateFlow(it)
-        } else {
-            state.value = it
-        }
-    }
+    transformInternal(
+        scope = scope,
+        context = context,
+        applyCompositionContent = {
+            it.setContent {
+                val newValue = onUpdate()
+                val stateFlow = state
+                if (stateFlow == null) {
+                    state = MutableStateFlow(newValue)
+                } else {
+                    @Suppress("StateFlowValueCalledInComposition")
+                    stateFlow.value = newValue
+                }
+            }
+        },
+    )
     return state!!
 }
 
-fun <T> transformInternal(
+fun transformInternal(
     scope: CoroutineScope,
     context: CoroutineContext = Dispatchers.Main,
-    onUpdate: @Composable () -> T,
-    onValue: (T) -> Unit,
+    applyCompositionContent: (Composition) -> Unit,
 ) {
     GlobalSnapshotManager.ensureStarted()
-    val clockContext = GatedFrameClock(scope, context)
-    val finalContext = context + clockContext
+    val clock = HeadlessTransformClock()
+    val finalContext = context + clock
 
     val recomposer = Recomposer(finalContext)
     val composition = Composition(UnitApplier, recomposer)
     var snapshotHandle: ObserverHandle? = null
+    scope.launch(context, start = CoroutineStart.UNDISPATCHED) { clock.runClock() }
     scope.launch(finalContext, start = CoroutineStart.UNDISPATCHED) {
         try {
             recomposer.runRecomposeAndApplyChanges()
         } finally {
             composition.dispose()
             snapshotHandle?.dispose()
+            clock.cancel()
         }
     }
 
@@ -94,9 +138,7 @@ fun <T> transformInternal(
         }
     }
 
-    composition.setContent {
-        onValue(onUpdate())
-    }
+    applyCompositionContent(composition)
 }
 
 private object UnitApplier : AbstractApplier<Unit>(Unit) {
@@ -134,42 +176,113 @@ internal object GlobalSnapshotManager {
     }
 }
 
-internal class GatedFrameClock(scope: CoroutineScope, context: CoroutineContext) :
+private val NotStarted = Any()
+private val NotStartedFrameRequested = Any()
+private val Idle = Any()
+private val FrameRequested = Any()
+private val Cancelled = Any()
+
+@OptIn(ExperimentalAtomicApi::class)
+private class HeadlessTransformClock(timeSource: TimeSource = TimeSource.Monotonic) :
     MonotonicFrameClock {
 
-    var isRunning: Boolean = true
-        set(value) {
-            val started = value && !field
-            field = value
-            if (started) {
-                sendFrame()
+    private val state = AtomicReference(NotStarted)
+    private val startMark = timeSource.markNow()
+    private val broadcast = BroadcastFrameClock(::requestFrame)
+
+    private var lastFrameTimeNanos = 0L
+    private var lastOffsetNanos = 0
+
+    override suspend fun <R> withFrameNanos(onFrame: (frameTimeNanos: Long) -> R): R =
+        broadcast.withFrameNanos(onFrame)
+
+    suspend fun runClock() {
+        if (!claimPump()) return
+        try {
+            pumpFrames()
+        } finally {
+            cancel()
+        }
+    }
+
+    fun cancel() {
+        val previous = state.exchange(Cancelled)
+        if (previous === Cancelled) return
+        broadcast.cancel(CancellationException("HeadlessTransformClock was cancelled"))
+        @Suppress("UNCHECKED_CAST")
+        (previous as? CancellableContinuation<Unit>)?.resume(Unit)
+    }
+
+    private fun claimPump(): Boolean {
+        while (true) {
+            when (val current = state.load()) {
+                NotStarted -> if (state.compareAndSet(current, Idle)) return true
+                NotStartedFrameRequested ->
+                    if (state.compareAndSet(current, FrameRequested)) return true
+                Cancelled -> return false
+                else ->
+                    error(
+                        "runClock() is already running; one clock per composition should be used."
+                    )
             }
         }
+    }
 
-    private val markedTime = TimeSource.Monotonic.markNow()
-    private var lastNanos = 0L
-    private var lastOffset = 0
+    private suspend fun pumpFrames(): Nothing {
+        while (true) {
+            currentCoroutineContext().ensureActive()
+            when (val current = state.load()) {
+                FrameRequested ->
+                    if (state.compareAndSet(current, Idle)) {
+                        broadcast.sendFrame(nextFrameTimeNanos())
+                    }
+                Idle -> park()
+                Cancelled -> throw CancellationException("HeadlessTransformClock was cancelled")
+                else -> error("Unexpected state while pumping frames: $current")
+            }
+        }
+    }
 
-    private fun sendFrame() {
-        val timeNanos = markedTime.elapsedNow().inWholeNanoseconds
-        val offset =
-            if (timeNanos == lastNanos) {
-                lastOffset + 1
+    private suspend fun park() {
+        suspendCancellableCoroutine { continuation ->
+            if (state.compareAndSet(Idle, continuation)) {
+                continuation.invokeOnCancellation { state.compareAndSet(continuation, Cancelled) }
             } else {
-                lastNanos = timeNanos
+                continuation.resume(Unit)
+            }
+        }
+    }
+
+    private fun nextFrameTimeNanos(): Long {
+        val elapsedNanos = startMark.elapsedNow().inWholeNanoseconds
+        val offset =
+            if (elapsedNanos == lastFrameTimeNanos) {
+                lastOffsetNanos + 1
+            } else {
+                lastFrameTimeNanos = elapsedNanos
                 0
             }
-        lastOffset = offset
+        lastOffsetNanos = offset
 
-        clock.sendFrame(timeNanos + offset)
+        return elapsedNanos + offset
     }
 
-    private val clock = BroadcastFrameClock {
-        if (isRunning) {
-            scope.launch(context) { sendFrame() }
+    private fun requestFrame() {
+        while (true) {
+            when (val current = state.load()) {
+                FrameRequested,
+                NotStartedFrameRequested,
+                Cancelled,
+                    -> return
+                NotStarted -> if (state.compareAndSet(current, NotStartedFrameRequested)) return
+                Idle -> if (state.compareAndSet(current, FrameRequested)) return
+                else ->
+                    if (state.compareAndSet(current, FrameRequested)) {
+                        @Suppress("UNCHECKED_CAST")
+                        (current as CancellableContinuation<Unit>).resume(Unit)
+                        return
+                    }
+            }
         }
     }
-
-    override suspend fun <R> withFrameNanos(onFrame: (frameTimeNanos: Long) -> R) =
-        clock.withFrameNanos(onFrame)
 }
