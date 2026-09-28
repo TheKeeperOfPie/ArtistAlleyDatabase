@@ -287,7 +287,7 @@ interface ArtistFormScope : EntryFormScope {
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesPredictions: (String) -> Flow<List<SeriesInfo>>,
         initiallyHide: Boolean = false,
         showUnknownIndicator: Boolean = true,
     )
@@ -297,7 +297,7 @@ interface ArtistFormScope : EntryFormScope {
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesPredictions: (String) -> Flow<List<SeriesInfo>>,
         showItems: () -> Boolean,
         onShowItems: (Boolean) -> Unit,
         initiallyHide: Boolean,
@@ -309,7 +309,7 @@ interface ArtistFormScope : EntryFormScope {
         state: EntryForm2.SingleTextState,
         confirmed: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesPredictions: (String) -> Flow<List<SeriesInfo>>,
         showUnknownIndicator: Boolean = true,
     )
 
@@ -318,7 +318,7 @@ interface ArtistFormScope : EntryFormScope {
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        merchPredictions: (String) -> Flow<List<MerchInfo>>,
         initiallyHide: Boolean,
         showUnknownIndicator: Boolean = true,
     )
@@ -328,7 +328,7 @@ interface ArtistFormScope : EntryFormScope {
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        merchPredictions: (String) -> Flow<List<MerchInfo>>,
         showItems: () -> Boolean,
         onShowItems: (Boolean) -> Unit,
         initiallyHide: Boolean,
@@ -340,7 +340,7 @@ interface ArtistFormScope : EntryFormScope {
         state: EntryForm2.SingleTextState,
         confirmed: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        merchPredictions: (String) -> Flow<List<MerchInfo>>,
         showUnknownIndicator: Boolean = true,
     )
 
@@ -743,7 +743,7 @@ private abstract class ArtistFormScopeImpl(
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesPredictions: (String) -> Flow<List<SeriesInfo>>,
         initiallyHide: Boolean,
         showUnknownIndicator: Boolean,
     ) {
@@ -765,7 +765,7 @@ private abstract class ArtistFormScopeImpl(
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesPredictions: (String) -> Flow<List<SeriesInfo>>,
         showItems: () -> Boolean,
         onShowItems: (Boolean) -> Unit,
         initiallyHide: Boolean,
@@ -809,7 +809,7 @@ private abstract class ArtistFormScopeImpl(
         state: EntryForm2.SingleTextState,
         confirmed: SnapshotStateList<SeriesInfo>,
         seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesPredictions: (String) -> Flow<List<SeriesInfo>>,
         showUnknownIndicator: Boolean,
     ) {
         val seriesById = seriesById()
@@ -840,7 +840,7 @@ private abstract class ArtistFormScopeImpl(
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        merchPredictions: (String) -> Flow<List<MerchInfo>>,
         initiallyHide: Boolean,
         showUnknownIndicator: Boolean,
     ) {
@@ -862,7 +862,7 @@ private abstract class ArtistFormScopeImpl(
         state: EntryForm2.SingleTextState,
         inferred: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        merchPredictions: (String) -> Flow<List<MerchInfo>>,
         showItems: () -> Boolean,
         onShowItems: (Boolean) -> Unit,
         initiallyHide: Boolean,
@@ -926,7 +926,7 @@ private abstract class ArtistFormScopeImpl(
         state: EntryForm2.SingleTextState,
         confirmed: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        merchPredictions: (String) -> Flow<List<MerchInfo>>,
         showUnknownIndicator: Boolean,
     ) {
         val merchById = merchById()
@@ -1002,9 +1002,9 @@ object ArtistForm {
         errorState: ArtistErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         seriesById: () -> Map<String, SeriesInfo>,
-        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesPredictions: (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        merchPredictions: (String) -> Flow<List<MerchInfo>>,
         modifier: Modifier = Modifier,
         forceLockId: Boolean = false,
         showStatus: Boolean = true,
