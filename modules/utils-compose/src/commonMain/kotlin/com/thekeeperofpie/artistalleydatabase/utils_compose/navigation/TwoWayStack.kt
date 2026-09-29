@@ -5,33 +5,35 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.RetainedValuesStoreRegistry
-import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.retain.retainRetainedValuesStoreRegistry
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.serialization.saved
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.runtime.serialization.NavBackStackSerializer
 import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.serialization.PolymorphicSerializer
 
 @Composable
 fun rememberTwoWayStack(
     vararg initialDestinations: NavKey,
     savedStateConfiguration: SavedStateConfiguration,
-): TwoWayStack {
-    val backStack = rememberNavBackStack(
-        savedStateConfiguration,
-        *initialDestinations,
+): TwoWayStack = viewModel {
+    ViewModelHolder(
+        initialDestinations = initialDestinations,
+        savedStateConfiguration = savedStateConfiguration,
+        savedStateHandle = createSavedStateHandle(),
     )
-    val forwardStack = rememberNavBackStack(savedStateConfiguration)
-    return retain(backStack, forwardStack) {
-        TwoWayStack(backStack, forwardStack)
-    }
-}
+}.twoWayStack
 
 @Composable
 fun rememberDecoratedNavEntries(
@@ -54,7 +56,7 @@ fun rememberDecoratedNavEntries(
 
 @Composable
 private fun <T : Any> rememberRetainedValuesStoreNavEntryDecorator(
-    registry: RetainedValuesStoreRegistry = retainRetainedValuesStoreRegistry()
+    registry: RetainedValuesStoreRegistry = retainRetainedValuesStoreRegistry(),
 ): RetainedValuesStoreNavEntryDecorator<T> {
     return remember(registry) {
         RetainedValuesStoreNavEntryDecorator(registry)
@@ -126,4 +128,27 @@ class TwoWayStack internal constructor(
         }
         return false
     }
+}
+
+private class ViewModelHolder(
+    initialDestinations: Array<out NavKey>,
+    savedStateConfiguration: SavedStateConfiguration,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
+    private val serializer = NavBackStackSerializer(PolymorphicSerializer(NavKey::class))
+    val backStack by savedStateHandle.saved(
+        serializer = serializer,
+        configuration = savedStateConfiguration,
+    ) {
+        NavBackStack(*initialDestinations)
+    }
+
+    val frontStack by savedStateHandle.saved(
+        serializer = serializer,
+        configuration = savedStateConfiguration,
+    ) {
+        NavBackStack()
+    }
+
+    val twoWayStack = TwoWayStack(navBackStack = backStack, navForwardStack = frontStack)
 }
