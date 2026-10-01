@@ -66,7 +66,11 @@ private val SavedStateConfig = SavedStateConfiguration {
 fun rememberArtistAlleyEditTopLevelStacks(): AlleyEditNavStack {
     val stacks = TopLevelStackKey.entries.map {
         key(it) {
-            rememberTwoWayStack(it.initialDestination, savedStateConfiguration = SavedStateConfig)
+            rememberTwoWayStack(
+                it.initialDestination,
+                savedStateConfiguration = SavedStateConfig,
+                encode = { AlleyEditDestination.toEncodedRoute(it).orEmpty() }
+            )
         }
     }
     val topLevelStackIndex = rememberSaveable { mutableIntStateOf(0) }
@@ -78,7 +82,7 @@ fun rememberArtistAlleyEditTopLevelStacks(): AlleyEditNavStack {
 @Composable
 fun rememberDecoratedNavEntries(
     stacks: AlleyEditNavStack,
-    entryProvider: (key: NavKey) -> NavEntry<NavKey>,
+    entryProvider: (key: AlleyEditDestination) -> NavEntry<AlleyEditDestination>,
 ) = TopLevelStackKey.entries.mapIndexed { index, key ->
     key(key) {
         rememberDecoratedNavEntries(stacks.twoWayStacks[index], entryProvider)
@@ -87,7 +91,7 @@ fun rememberDecoratedNavEntries(
 
 @Stable
 class AlleyEditNavStack internal constructor(
-    internal val twoWayStacks: List<TwoWayStack>,
+    internal val twoWayStacks: List<TwoWayStack<AlleyEditDestination>>,
     topLevelStackIndex: MutableIntState,
 ) : NavigationEventHandler<NavigationEventInfo>(
     initialInfo = NavigationEventInfo.None,
@@ -107,7 +111,7 @@ class AlleyEditNavStack internal constructor(
             )
         )
 
-    fun calculateBackStack(navEntries: List<List<NavEntry<NavKey>>>) =
+    fun calculateBackStack(navEntries: List<List<NavEntry<AlleyEditDestination>>>) =
         navEntries[topLevelStackIndex].take(twoWayStacks[topLevelStackIndex].navBackStack.size)
 
     fun navBackStack() = twoWayStacks[topLevelStackIndex].navBackStack
@@ -121,7 +125,7 @@ class AlleyEditNavStack internal constructor(
         }
     }
 
-    fun navigate(destination: NavKey) {
+    fun navigate(destination: AlleyEditDestination) {
         val resetIndex =
             TopLevelStackKey.entries.indexOfFirst { it.initialDestination == destination }
         if (resetIndex > 0) {
@@ -132,7 +136,7 @@ class AlleyEditNavStack internal constructor(
         updateInfo()
     }
 
-    fun <T : NavKey> navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) {
+    fun navigateOnBrowserPop(destination: AlleyEditDestination, toRoute: (NavKey) -> String?) {
         val resetIndex = twoWayStacks.indexOfFirst {
             it.navBackStack.map(toRoute).find { it == toRoute(destination) } != null
         }

@@ -69,10 +69,12 @@ kotlin {
             implementation(libs.human.readable)
             implementation(libs.material.kolor.palette.core)
         }
-        webMain {
-            dependencies {
-                implementation(libs.coil3.coil.network.ktor3)
-            }
+        webMain.dependencies {
+            implementation(libs.coil3.coil.network.ktor3)
+        }
+        webTest.dependencies {
+            implementation(projects.modules.testUtils)
+            implementation(libs.jetBrainsAndroidX.navigationevent.compose)
         }
     }
 }

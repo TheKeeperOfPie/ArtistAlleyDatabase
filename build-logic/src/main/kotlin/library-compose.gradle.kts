@@ -27,6 +27,7 @@ kotlin {
             ).forEach(::implementation)
         }
         commonTest.dependencies {
+            implementation(project(":modules:test-utils-compose"))
             resolveLibraries("libs.jetBrainsCompose.ui.test")
                 .forEach(::implementation)
         }

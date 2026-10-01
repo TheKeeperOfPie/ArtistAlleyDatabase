@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.RetainedValuesStoreRegistry
 import androidx.compose.runtime.retain.retainRetainedValuesStoreRegistry
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.util.fastForEachReversed
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
@@ -20,25 +21,33 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.runtime.serialization.NavBackStackSerializer
+import androidx.navigationevent.NavigationEventHandler
+import androidx.navigationevent.NavigationEventInfo
 import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.PolymorphicSerializer
+import kotlin.math.absoluteValue
+import kotlin.reflect.KClass
 
 @Composable
-fun rememberTwoWayStack(
-    vararg initialDestinations: NavKey,
+inline fun <reified T : NavKey> rememberTwoWayStack(
+    vararg initialDestinations: T,
     savedStateConfiguration: SavedStateConfiguration,
-): TwoWayStack = viewModel {
-    ViewModelHolder(
+    noinline encode: (T) -> String,
+): TwoWayStack<T> = viewModel {
+    TwoWayStackViewModelHolder(
+        navKeyClass = T::class,
         initialDestinations = initialDestinations,
         savedStateConfiguration = savedStateConfiguration,
         savedStateHandle = createSavedStateHandle(),
+        encode = encode,
     )
 }.twoWayStack
 
 @Composable
-fun rememberDecoratedNavEntries(
-    twoWayStack: TwoWayStack,
-    entryProvider: (key: NavKey) -> NavEntry<NavKey>,
+fun <T: NavKey> rememberDecoratedNavEntries(
+    twoWayStack: TwoWayStack<T>,
+    entryProvider: (key: T) -> NavEntry<T>,
 ) = (twoWayStack.navBackStack + twoWayStack.navForwardStack)
     .flatMap {
         key(it.toString()) {
@@ -75,20 +84,39 @@ private class RetainedValuesStoreNavEntryDecorator<T : Any>(
 )
 
 @Stable
-class TwoWayStack internal constructor(
-    val navBackStack: NavBackStack<NavKey>,
-    val navForwardStack: NavBackStack<NavKey>,
+class TwoWayStack<T : NavKey>(
+    val navBackStack: NavBackStack<T>,
+    val navForwardStack: NavBackStack<T>,
+    val encode: (T) -> String,
+) : NavigationEventHandler<NavigationEventInfo>(
+    initialInfo = NavigationEventInfo.None,
+    isBackEnabled = true,
+    isForwardEnabled = true,
 ) {
-    fun navigate(destination: NavKey) {
+    val routeHistory =
+        MutableStateFlow(
+            NavigationRouteHistory(
+                current = NavigationRoute(""),
+                back = emptyList(),
+                forward = emptyList(),
+            )
+        )
+
+    init {
+        updateInfo()
+    }
+
+    fun navigate(destination: T) {
         if (destination == navForwardStack.lastOrNull()) {
             onForward()
         } else {
             navForwardStack.clear()
             navBackStack += destination
         }
+        updateInfo()
     }
 
-    fun <T : NavKey> navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) {
+    fun navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) {
         if (destination == navForwardStack.lastOrNull()) {
             onForward()
         } else {
@@ -113,29 +141,65 @@ class TwoWayStack internal constructor(
         }
     }
 
+    fun calculateBackStack(navEntries: List<NavEntry<T>>) =
+        navEntries.take(navBackStack.size)
+
     fun onBack(): Boolean {
-        if (navBackStack.size > 1) {
-            navForwardStack += navBackStack.removeLast()
-            return true
-        }
-        return false
+        val canGoBack = navBackStack.size > 1
+        if (canGoBack) navForwardStack += navBackStack.removeLast()
+        updateInfo()
+        return canGoBack
     }
 
     fun onForward(): Boolean {
-        if (navForwardStack.isNotEmpty()) {
-            navBackStack += navForwardStack.removeLast()
-            return true
+        val canGoForward = navForwardStack.isNotEmpty()
+        if (canGoForward) navBackStack += navForwardStack.removeLast()
+        updateInfo()
+        return canGoForward
+    }
+
+    override fun onBackCompleted() {
+        onBack()
+    }
+
+    override fun onForwardCompleted() {
+        onForward()
+    }
+
+    fun navigateBy(target: Int) {
+        when {
+            target < 0 -> repeat(target.absoluteValue) { onBack() }
+            target > 0 -> repeat(target) { onForward() }
         }
-        return false
+    }
+
+    private fun updateInfo() {
+        val backInfo = mutableListOf<NavigationRoute>()
+        navBackStack.dropLast(1).forEach {
+            backInfo += NavigationRoute(encode(it))
+        }
+
+        val currentInfo =
+            NavigationRoute(encode(navBackStack.last()))
+
+        val forwardInfo = mutableListOf<NavigationRoute>()
+        navForwardStack.fastForEachReversed {
+            forwardInfo += NavigationRoute(encode(it))
+        }
+
+        routeHistory.value = NavigationRouteHistory(currentInfo, backInfo, forwardInfo)
+        setInfo(currentInfo = currentInfo, backInfo = backInfo, forwardInfo = forwardInfo)
     }
 }
 
-private class ViewModelHolder(
-    initialDestinations: Array<out NavKey>,
+class TwoWayStackViewModelHolder<T : NavKey>(
+    navKeyClass: KClass<T>,
+    initialDestinations: Array<out T>,
     savedStateConfiguration: SavedStateConfiguration,
     savedStateHandle: SavedStateHandle,
+    encode: (T) -> String,
 ) : ViewModel() {
-    private val serializer = NavBackStackSerializer(PolymorphicSerializer(NavKey::class))
+    private val serializer = NavBackStackSerializer(PolymorphicSerializer(navKeyClass))
     val backStack by savedStateHandle.saved(
         serializer = serializer,
         configuration = savedStateConfiguration,
@@ -150,5 +214,9 @@ private class ViewModelHolder(
         NavBackStack()
     }
 
-    val twoWayStack = TwoWayStack(navBackStack = backStack, navForwardStack = frontStack)
+    val twoWayStack = TwoWayStack(
+        navBackStack = backStack,
+        navForwardStack = frontStack,
+        encode = encode,
+    )
 }

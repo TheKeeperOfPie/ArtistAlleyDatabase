@@ -22,7 +22,7 @@ import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
-import com.thekeeperofpie.artistalleydatabase.test_utils.ComposeTestRoot
+import com.thekeeperofpie.artistalleydatabase.test_utils_compose.ComposeTestRoot
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)

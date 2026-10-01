@@ -2,7 +2,6 @@
 
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
-
 plugins {
     id("library-kotlin")
 }

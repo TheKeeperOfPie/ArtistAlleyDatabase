@@ -10,9 +10,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.google.truth)
-            implementation(projects.modules.utilsCompose)
+            implementation(kotlin("test"))
+            implementation(projects.modules.utils)
             implementation(libs.turbine)
-            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlinx.coroutines.test)
         }
     }

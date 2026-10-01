@@ -140,7 +140,7 @@ private fun Content(graph: ArtistAlleyFormGraph) {
     }
 }
 
-class BrowserInput(scope: CoroutineScope, navStack: TwoWayStack) :
+class BrowserInput(scope: CoroutineScope, navStack: TwoWayStack<AlleyFormDestination>) :
     NavigationEventInput() {
     init {
         scope.launch {

@@ -28,8 +28,14 @@ private object NoOpNavigator : AlleyNavigator {
 
 private class AlleyNavigatorImpl(private val navStack: AlleyNavStack) : AlleyNavigator {
     // TODO: Handle up vs back
-    override fun goBack() = navStack.onBack()
-    override fun goUp() = navStack.onBack()
+    override fun goBack() {
+        navStack.onBack()
+    }
+
+    override fun goUp() {
+        navStack.onBack()
+    }
+
     override fun navigate(destination: AlleyDestination) = navStack.navigate(destination)
 }
 

@@ -15,7 +15,6 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.SinglePaneSceneStrategy
@@ -103,9 +102,9 @@ object ArtistAlleyAppScreen {
                 val entryProvider = entryProvider(graph = graph, navStack = navStack)
 
                 val decoratedNavEntries =
-                    rememberDecoratedNavEntries(navStack.twoWayStack, entryProvider)
+                    rememberDecoratedNavEntries(navStack, entryProvider)
                 val sceneStrategies = remember {
-                    listOf(DialogSceneStrategy<NavKey>(), SinglePaneSceneStrategy())
+                    listOf(DialogSceneStrategy<AlleyDestination>(), SinglePaneSceneStrategy())
                 }
                 NavDisplay(
                     entries = navStack.calculateBackStack(decoratedNavEntries),
@@ -123,7 +122,7 @@ object ArtistAlleyAppScreen {
     private fun entryProvider(
         graph: ArtistAlleyGraph,
         navStack: AlleyNavStack,
-    ): (NavKey) -> NavEntry<NavKey> {
+    ): (AlleyDestination) -> NavEntry<AlleyDestination> {
         val onOpenArtist = { entry: ArtistEntry, imageIndex: Int? ->
             navStack.navigate(
                 AlleyDestination.ArtistDetails(entry, imageIndex)
@@ -256,8 +255,6 @@ object ArtistAlleyAppScreen {
             }
 
         val onOpenSettings = { navStack.navigate(AlleyDestination.Settings) }
-        // Real navigate up doesn't work
-        val navigateUp = navStack::onBack
         return entryProvider {
             sharedElementEntry<AlleyDestination.Home> {
                 AlleyRootScreen(

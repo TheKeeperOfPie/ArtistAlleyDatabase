@@ -50,7 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput2
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.delay
@@ -200,14 +200,10 @@ private fun Content(graph: ArtistAlleyWebGraph) {
             // TODO: Translate legacy fragments
             val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
             val browserInput = remember(navStack) {
-                BrowserInput(
-                    routeHistory = navStack.routeHistory,
-                    parseRoute = AlleyDestination::parseRoute,
-                    onPopNavigate = {
-                        navStack.navigateOnBrowserPop(it) {
-                            (it as? AlleyDestination)?.toEncodedRoute()
-                        }
-                    },
+                BrowserInput2(
+                    navHistory = navStack.routeHistory,
+                    navigateTo = { AlleyDestination.parseRoute(it.route)?.let(navStack::navigate) },
+                    navigateBy = navStack::navigateBy
                 )
             }
             DisposableEffect(navigationEventDispatcherOwner, browserInput) {

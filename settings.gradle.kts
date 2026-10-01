@@ -165,6 +165,7 @@ include(
     ":modules:settings",
     ":modules:settings:ui",
     ":modules:test-utils",
+    ":modules:test-utils-compose",
     ":modules:utils",
     ":modules:utils-build-config",
     ":modules:utils-compose",

@@ -107,6 +107,7 @@
             <option value="$PROJECT_DIR$/modules/settings" />
             <option value="$PROJECT_DIR$/modules/settings/ui" />
             <option value="$PROJECT_DIR$/modules/test-utils" />
+            <option value="$PROJECT_DIR$/modules/test-utils-compose" />
             <option value="$PROJECT_DIR$/modules/utils" />
             <option value="$PROJECT_DIR$/modules/utils-build-config" />
             <option value="$PROJECT_DIR$/modules/utils-compose" />

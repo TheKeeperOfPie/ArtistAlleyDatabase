@@ -36,7 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
-import com.thekeeperofpie.artistalleydatabase.test_utils.ComposeTestRoot
+import com.thekeeperofpie.artistalleydatabase.test_utils_compose.ComposeTestRoot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver

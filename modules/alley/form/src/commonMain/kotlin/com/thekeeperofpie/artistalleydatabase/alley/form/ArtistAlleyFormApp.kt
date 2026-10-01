@@ -55,12 +55,16 @@ private val SavedStateConfig = SavedStateConfiguration {
 
 @Composable
 fun rememberFormTwoWayStack() =
-    rememberTwoWayStack(AlleyFormDestination.Home, savedStateConfiguration = SavedStateConfig)
+    rememberTwoWayStack<AlleyFormDestination>(
+        AlleyFormDestination.Home,
+        savedStateConfiguration = SavedStateConfig,
+        encode = { AlleyFormDestination.toEncodedRoute(it) },
+    )
 
 @Composable
 fun ArtistAlleyFormApp(
     graph: ArtistAlleyFormGraph,
-    navStack: TwoWayStack = rememberFormTwoWayStack(),
+    navStack: TwoWayStack<AlleyFormDestination> = rememberFormTwoWayStack(),
 ) {
     CompositionLocalProvider(LocalNavigationController provides remember {
         object : NavigationController {
@@ -145,8 +149,8 @@ fun ArtistAlleyFormApp(
     }
 }
 
-fun EntryProviderScope<NavKey>.addFormEntryProviders(
-    onNavigate: (NavKey) -> Unit,
+fun EntryProviderScope<AlleyFormDestination>.addFormEntryProviders(
+    onNavigate: (AlleyFormDestination) -> Unit,
     onClickBack: (force: Boolean) -> Unit,
 ) {
     sharedElementEntry<AlleyFormDestination.Home> {

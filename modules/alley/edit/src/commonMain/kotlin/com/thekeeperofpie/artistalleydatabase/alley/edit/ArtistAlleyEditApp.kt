@@ -42,7 +42,6 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.createSavedStateHandle
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
@@ -307,7 +306,7 @@ private fun entryProvider(
     navStack: AlleyEditNavStack,
     onClickBack: (force: Boolean) -> Unit,
     onDebugOpenForm: (formLink: String) -> Unit,
-) = entryProvider<NavKey> {
+) = entryProvider {
     sharedElementEntry<AlleyEditDestination.Home> {
         ArtistListScreen(
             onAddArtist = {

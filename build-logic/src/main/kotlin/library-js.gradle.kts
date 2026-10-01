@@ -1,8 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-
-
 plugins {
     id("library-kotlin")
 }
@@ -12,6 +9,10 @@ kotlin {
         browser {
             commonWebpackConfig {
                 sourceMaps = false
+            }
+            testTask {
+                // CMP is wasmJs first, and regular js tests don't bundle Skiko correctly
+                enabled = false
             }
         }
         binaries.executable()
