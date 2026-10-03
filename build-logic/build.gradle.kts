@@ -1,7 +1,3 @@
-import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
-import java.lang.module.ModuleFinder.compose
-
-
 repositories {
     google()
     gradlePluginPortal()
@@ -14,8 +10,8 @@ plugins {
     `kotlin-dsl`
     alias(libs.plugins.app.cash.sqldelight).version("2.2.1")
     alias(libs.plugins.org.jetbrains.compose)
-    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.compose)
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
 sqldelight {
@@ -68,6 +64,7 @@ dependencies {
     implementation(libs.ksoup.network)
     implementation(libs.material.kolor.palette.core)
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
+    implementation(libs.org.jetbrains.kotlin.plugin.power.assert.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
     implementation(libs.roborazzi.gradle.plugin)
     implementation(libs.scrimage.core)

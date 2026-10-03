@@ -3,9 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.alley.navigation
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
@@ -16,6 +20,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.cash.burst.Burst
+import com.eygraber.uri.decodeUri
 import com.eygraber.uri.encodeUri
 import com.thekeeperofpie.artistalleydatabase.alley.navigation.BrowserInput2Test.Destination.Companion.SavedStateConfig
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestRootRoute
@@ -30,12 +35,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberT
 import kotlinx.browser.window
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
 import kotlin.uuid.Uuid
 
 @Burst
@@ -50,44 +57,7 @@ class BrowserInput2Test {
     fun simulateUserJourney(gesture: NavGesture = NavGesture.COMPOSE) =
         runComposeUiTest(runTestContext = runTestDispatcher) {
             withHistoryChanges {
-                var twoWayStack: TwoWayStack<Destination>? = null
-
-                setContent {
-                    val navStack = rememberTwoWayStack<Destination>(
-                        initialDestinations = arrayOf(Destination.Home),
-                        savedStateConfiguration = SavedStateConfig,
-                        encode = { it.toEncodedRoute() },
-                    )
-                    twoWayStack = navStack
-
-                    val browserInput = remember(navStack) {
-                        BrowserInput2(
-                            navHistory = navStack.routeHistory,
-                            navigateTo = { TODO() },
-                            navigateBy = navStack::navigateBy,
-                            routePrefix = TestRootRoute,
-                            coroutineContext = runTestDispatcher,
-                        )
-                    }
-                    val dispatcherOwner = LocalNavigationEventDispatcherOwner.current
-                    DisposableEffect(dispatcherOwner, browserInput) {
-                        val dispatcher = dispatcherOwner!!.navigationEventDispatcher
-                        dispatcher.addInput(browserInput)
-                        onDispose { dispatcher.removeInput(browserInput) }
-                    }
-
-                    NavigationTestHost(navStack = navStack)
-                }
-
-                val navStack = assertNotNull(twoWayStack)
-
-                suspend fun assertDestination(destination: Destination) {
-                    onNodeWithText(destination.toString()).assertIsDisplayed()
-                    val expected = "/$TestRootRoute/${destination.toEncodedRoute()}".removeSuffix("/")
-                    runTestDispatcher.yieldingWaitUntil {
-                        expected == window.location.pathname.removeSuffix("/")
-                    }
-                }
+                val navStack by setUpNavStack()
 
                 // 1. Home page
                 println("\nStep 1\n")
@@ -97,7 +67,6 @@ class BrowserInput2Test {
                 println("\nStep 2\n")
                 val artistOne = Destination.ArtistDetails()
                 runOnUiThread { navStack.navigate(artistOne) }
-
                 assertDestination(artistOne)
 
                 // 3. Navigate to Merch and a different artist
@@ -112,7 +81,13 @@ class BrowserInput2Test {
                 assertDestination(artistTwo)
 
                 assertEquals(
-                    expected = listOf(Destination.Home, artistOne, merch, artistTwo),
+                    expected = listOf(
+                        Destination.Home,
+                        Destination.Home,
+                        artistOne,
+                        merch,
+                        artistTwo
+                    ),
                     actual = navStack.navBackStack.toList(),
                 )
 
@@ -153,10 +128,96 @@ class BrowserInput2Test {
                 runOnUiThread { navStack.navigate(stampRallyDetails) }
                 assertDestination(stampRallyDetails)
 
-                assertEquals(2, navStack.navBackStack.size)
+                assertEquals(3, navStack.navBackStack.size)
                 assertEquals(0, navStack.navForwardStack.size)
             }
         }
+
+    @Test
+    fun simulateReload(gesture: NavGesture = NavGesture.COMPOSE) =
+        runComposeUiTest(runTestContext = runTestDispatcher) {
+            withHistoryChanges {
+                var navStackKey by mutableStateOf(false)
+                val navStack by setUpNavStack(navStackKey = { navStackKey })
+
+                // Save the reference for comparison later
+                val navStackOne = navStack
+                val artistDetails = Destination.ArtistDetails()
+                val merch = Destination.Merch()
+                runOnUiThread { navStackOne.navigate(artistDetails) }
+                assertDestination(artistDetails)
+                runOnUiThread { navStackOne.navigate(merch) }
+                assertDestination(merch)
+
+                goBack(gesture, navStackOne)
+                assertDestination(artistDetails)
+
+                // Simulate a reload by invalidating the nav stack, causing it to start from no
+                // history. Actually reloading the browser in the test is not supported.
+                runOnUiThread { navStackKey = true }
+                awaitIdle()
+
+                val navStackTwo = navStack
+                assertNotSame(navStackOne, navStackTwo)
+
+                // Drain the initial restoreStack handler
+                runTestDispatcher.scheduler.runCurrent()
+                runTestDispatcher.scheduler.advanceUntilIdle()
+
+                assertDestination(artistDetails)
+                assertEquals(
+                    listOf(Destination.Home, Destination.Home, artistDetails),
+                    navStackTwo.navBackStack.toList()
+                )
+                assertEquals(listOf(merch), navStackTwo.navForwardStack.toList())
+            }
+        }
+
+    private fun ComposeUiTest.setUpNavStack(
+        navStackKey: () -> Any = { false },
+    ): State<TwoWayStack<Destination>> {
+        var twoWayStack: State<TwoWayStack<Destination>?>? = null
+
+        setContent {
+            twoWayStack = remember { mutableStateOf(null) }
+            key(navStackKey()) {
+                val navStack = rememberTwoWayStack<Destination>(
+                    initialDestinations = arrayOf(Destination.Home, Destination.Home),
+                    savedStateConfiguration = SavedStateConfig,
+                    encode = { it.toEncodedRoute() },
+                )
+                twoWayStack.value = navStack
+
+                val browserInput = remember(navStack) {
+                    BrowserInput2(
+                        navHistory = navStack.routeHistory,
+                        restoreStack = {
+                            navStack.restore(
+                                back = it.back.map { Destination.parseRoute(it.route) } +
+                                        Destination.parseRoute(it.current.route),
+                                forward = it.forward.map { Destination.parseRoute(it.route) },
+                            )
+                        },
+                        navigateTo = { navStack.navigate(Destination.parseRoute(it.route)) },
+                        navigateBy = navStack::navigateBy,
+                        routePrefix = TestRootRoute,
+                        coroutineContext = runTestDispatcher,
+                    )
+                }
+                val dispatcherOwner = LocalNavigationEventDispatcherOwner.current
+                DisposableEffect(dispatcherOwner, browserInput) {
+                    val dispatcher = dispatcherOwner!!.navigationEventDispatcher
+                    dispatcher.addInput(browserInput)
+                    onDispose { dispatcher.removeInput(browserInput) }
+                }
+
+                NavigationTestHost(navStack = navStack)
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return assertNotNull(twoWayStack) as State<TwoWayStack<Destination>>
+    }
 
     @Composable
     private fun NavigationTestHost(navStack: TwoWayStack<Destination>) {
@@ -166,13 +227,20 @@ class BrowserInput2Test {
             onBack = { backStack.removeLastOrNull() },
             entryProvider = { it ->
                 NavEntry(it) {
-                    Text(
-                        text = it.toString(),
-                        modifier = Modifier.testTag("destination")
-                    )
+                    Text(text = it.toString())
                 }
             }
         )
+    }
+
+    context(test: ComposeUiTest)
+    private suspend fun assertDestination(destination: Destination) {
+        val expected =
+            "/$TestRootRoute/${destination.toEncodedRoute()}".removeSuffix("/")
+        test.onNodeWithText(destination.toString()).assertIsDisplayed()
+        runTestDispatcher.yieldingWaitUntil {
+            expected == window.location.pathname.removeSuffix("/")
+        }
     }
 
     private suspend fun goBack(gesture: NavGesture, navStack: TwoWayStack<Destination>) {
@@ -234,7 +302,7 @@ class BrowserInput2Test {
         fun toEncodedRoute() = if (this == Home) {
             "" // Home route must always be an empty string
         } else {
-            toString().encodeUri()
+            Json.encodeToString(this).encodeUri()
         }
 
         companion object {
@@ -247,6 +315,12 @@ class BrowserInput2Test {
                         subclass(serializer = StampRallyDetails.serializer())
                     }
                 }
+            }
+
+            fun parseRoute(route: String) = if (route.isEmpty()) {
+                Home
+            } else {
+                Json.decodeFromString<Destination>(route.decodeUri())
             }
         }
     }

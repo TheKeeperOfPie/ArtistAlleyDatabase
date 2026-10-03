@@ -202,6 +202,13 @@ private fun Content(graph: ArtistAlleyWebGraph) {
             val browserInput = remember(navStack) {
                 BrowserInput2(
                     navHistory = navStack.routeHistory,
+                    restoreStack = {
+                        navStack.restore(
+                            back = it.back.mapNotNull { AlleyDestination.parseRoute(it.route) } +
+                                    listOfNotNull(AlleyDestination.parseRoute(it.current.route)),
+                            forward = it.forward.mapNotNull { AlleyDestination.parseRoute(it.route) },
+                        )
+                    },
                     navigateTo = { AlleyDestination.parseRoute(it.route)?.let(navStack::navigate) },
                     navigateBy = navStack::navigateBy
                 )

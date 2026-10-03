@@ -2,11 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.RetainedValuesStoreRegistry
 import androidx.compose.runtime.retain.retainRetainedValuesStoreRegistry
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.toString
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -34,7 +36,7 @@ inline fun <reified T : NavKey> rememberTwoWayStack(
     vararg initialDestinations: T,
     savedStateConfiguration: SavedStateConfiguration,
     noinline encode: (T) -> String,
-): TwoWayStack<T> = viewModel {
+): TwoWayStack<T> = viewModel(key = currentCompositeKeyHashCode.toString(36)) {
     TwoWayStackViewModelHolder(
         navKeyClass = T::class,
         initialDestinations = initialDestinations,
@@ -45,7 +47,7 @@ inline fun <reified T : NavKey> rememberTwoWayStack(
 }.twoWayStack
 
 @Composable
-fun <T: NavKey> rememberDecoratedNavEntries(
+fun <T : NavKey> rememberDecoratedNavEntries(
     twoWayStack: TwoWayStack<T>,
     entryProvider: (key: T) -> NavEntry<T>,
 ) = (twoWayStack.navBackStack + twoWayStack.navForwardStack)
@@ -106,7 +108,18 @@ class TwoWayStack<T : NavKey>(
         updateInfo()
     }
 
-    fun navigate(destination: T) {
+    fun restore(
+        back: List<T>,
+        forward: List<T>,
+    ): Unit = Snapshot.withMutableSnapshot {
+        navBackStack.clear()
+        navBackStack.addAll(back)
+        navForwardStack.clear()
+        navForwardStack.addAll(forward)
+        updateInfo()
+    }
+
+    fun navigate(destination: T) = Snapshot.withMutableSnapshot {
         if (destination == navForwardStack.lastOrNull()) {
             onForward()
         } else {
@@ -116,11 +129,11 @@ class TwoWayStack<T : NavKey>(
         updateInfo()
     }
 
-    fun navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) {
-        if (destination == navForwardStack.lastOrNull()) {
-            onForward()
-        } else {
-            Snapshot.withMutableSnapshot {
+    fun navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) =
+        Snapshot.withMutableSnapshot {
+            if (destination == navForwardStack.lastOrNull()) {
+                onForward()
+            } else {
                 val lastIndex = navBackStack.map(toRoute).lastIndexOf(toRoute(destination))
                 if (lastIndex >= 0) {
                     repeat(navBackStack.lastIndex - lastIndex) {
@@ -139,19 +152,18 @@ class TwoWayStack<T : NavKey>(
                 }
             }
         }
-    }
 
     fun calculateBackStack(navEntries: List<NavEntry<T>>) =
         navEntries.take(navBackStack.size)
 
-    fun onBack(): Boolean {
+    fun onBack(): Boolean = Snapshot.withMutableSnapshot {
         val canGoBack = navBackStack.size > 1
         if (canGoBack) navForwardStack += navBackStack.removeLast()
         updateInfo()
         return canGoBack
     }
 
-    fun onForward(): Boolean {
+    fun onForward(): Boolean = Snapshot.withMutableSnapshot {
         val canGoForward = navForwardStack.isNotEmpty()
         if (canGoForward) navBackStack += navForwardStack.removeLast()
         updateInfo()

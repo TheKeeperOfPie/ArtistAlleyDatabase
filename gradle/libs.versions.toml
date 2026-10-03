@@ -206,6 +206,7 @@ multiplatform-markdown-renderer-m3 = { group = "com.mikepenz", name = "multiplat
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp3-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 org-jetbrains-kotlin-android-gradle-plugin = { group = "org.jetbrains.kotlin.android", name = "org.jetbrains.kotlin.android.gradle.plugin", version.ref = "kotlin-core" }
+org-jetbrains-kotlin-plugin-power-assert-gradle-plugin = { group = "org.jetbrains.kotlin.plugin.power-assert", name = "org.jetbrains.kotlin.plugin.power-assert.gradle.plugin", version.ref = "kotlin-core" }
 org-jetbrains-kotlin-plugin-serialization-gradle-plugin = { group = "org.jetbrains.kotlin.plugin.serialization", name = "org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin-core" }
 paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "androidx-paging" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidx-paging" }

@@ -1,9 +1,13 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
+
 plugins {
     id("app.cash.burst")
-    id("org.jetbrains.kotlin.multiplatform")
-    id("org.jetbrains.kotlin.plugin.serialization")
+    kotlin("multiplatform")
+    kotlin("plugin.serialization")
+    kotlin("plugin.power-assert")
 }
 
 kotlin {
@@ -55,4 +59,9 @@ kotlin {
             ).forEach(::implementation)
         }
     }
+}
+
+@OptIn(ExperimentalKotlinGradlePluginApi::class)
+powerAssert {
+    functions = listOf("kotlin.assert", "kotlin.test.assertTrue", "kotlin.test.assertEquals", "kotlin.test.assertNull")
 }

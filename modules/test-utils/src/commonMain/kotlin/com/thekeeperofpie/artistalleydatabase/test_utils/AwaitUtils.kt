@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.seconds
 suspend fun TestDispatcher.yieldingWaitUntil(
     timeout: Duration = 5.seconds,
     step: Duration = 10.milliseconds,
-    predicate: () -> Boolean,
+    predicate: suspend () -> Boolean,
 ) {
     var succeeded = false
     repeat((timeout / step).toInt()) {

@@ -21,7 +21,8 @@ external class Navigation {
     fun entries(): JsArray<NavigationHistoryEntry>
     fun back(options: NavigationOptions? = definedExternally): NavigationResult
     fun forward(options: NavigationOptions? = definedExternally): NavigationResult
-    fun navigate(url: String): NavigationResult
+    fun navigate(url: String, options: NavigationOptions? = definedExternally): NavigationResult
+    fun reload(options: NavigationOptions? = definedExternally): NavigationResult
     fun traverseTo(key: String): NavigationResult
     fun traverseTo(key: String, options: NavigationOptions): NavigationResult
 }
@@ -36,13 +37,22 @@ private fun navigationOptions(): NavigationOptions = js("({})")
 
 external interface NavigationOptions : JsAny {
     var info: JsAny?
+    var history: String?
 }
 
-fun NavigationOptions(info: JsAny?): NavigationOptions =
-    navigationOptions().apply { this.info = info }
+object NavigationOptionsHistory {
+    const val PUSH = "push"
+    const val REPLACE = "replace"
+}
+
+fun NavigationOptions(info: JsAny? = null, history: String? = null): NavigationOptions =
+    navigationOptions().apply {
+        this.info = info
+        this.history = history
+    }
 
 // TODO: Companion val when 2.5.0+
-val TestNavigationOptions = NavigationOptions("IN_TEST".toJsString())
+val TestNavigationOptions = NavigationOptions(info = "IN_TEST".toJsString())
 
 val Window.navigation: Navigation?
     get() = try {

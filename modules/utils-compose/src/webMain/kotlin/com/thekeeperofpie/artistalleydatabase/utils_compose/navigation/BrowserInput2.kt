@@ -6,9 +6,10 @@ import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.await
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -20,6 +21,7 @@ private const val DEBUG = false
 
 class BrowserInput2(
     private val navHistory: StateFlow<NavigationRouteHistory>,
+    private val restoreStack: (NavigationRouteHistory) -> Unit,
     private val navigateTo: (NavigationRoute) -> Unit,
     private val navigateBy: (Int) -> Unit,
     private val routePrefix: String = "",
@@ -50,33 +52,45 @@ class BrowserInput2(
                 if (event.destination.index == currentIndex) {
                     event.intercept()
                 } else {
-                    // TODO: This doesn't work if a previous page is reloaded and
-                    //  then user navigates forward. The nav stack will only include the reloaded
-                    //  page. There needs to be a bi-directional sync where all user initiated
-                    //  events sync the navigation history to the nav stack, and any non-user
-                    //  initiated changes sync the nav stack to the navigation history.
                     val target = event.destination.index - currentIndex
                     event.intercept(InterceptOptions { navigateBy(target) })
                 }
             }
             userOrTestInitiated && event.navigationType == NavigationType.PUSH -> {
-                // TODO: Untested
                 val route = URL(event.destination.url).pathname.toNavRoute()
                 event.intercept(InterceptOptions { navigateTo(NavigationRoute(route)) })
             }
-            event.navigationType != NavigationType.RELOAD -> {
+            userOrTestInitiated && event.navigationType == NavigationType.REPLACE ->
                 event.intercept()
-            }
+            event.navigationType != NavigationType.RELOAD -> event.intercept()
         }
     }
 
     override fun onAdded(dispatcher: NavigationEventDispatcher) {
         super.onAdded(dispatcher)
+        // TODO: Verify that the stack is empty/default before restoring?
+        val currentHistory = currentHistory()
+        if (currentHistory.back.isNotEmpty() || currentHistory.forward.isNotEmpty()) {
+            try {
+                restoreStack(currentHistory)
+            } catch (t: Throwable) {
+                ConsoleLogger.log("Failed to restore history ${t.message}")
+                t.printStackTrace()
+            }
+        }
         // TODO: Handle API unavailable?
         window.navigation?.addEventListener("navigate", navigateListener)
-        coroutineScope = CoroutineScope(Job() + coroutineContext).apply {
+        coroutineScope = CoroutineScope(coroutineContext).apply {
             launch {
-                navHistory.collectLatest(::handleUpdate)
+                navHistory.collectLatest {
+                    try {
+                        handleUpdate(it)
+                    } catch (t: Throwable) {
+                        currentCoroutineContext().ensureActive()
+                        ConsoleLogger.log("Failed to update history ${t.message}")
+                        t.printStackTrace()
+                    }
+                }
             }
         }
     }
@@ -126,11 +140,13 @@ class BrowserInput2(
             is Update.Push -> navigate(update.route)
             is Update.Traverse -> navigation.traverseTo(update.key).committed.await()
             is Update.Truncate -> {
-                navigation.traverseTo(update.key).committed.await()
+                if (update.key != null) {
+                    navigation.traverseTo(update.key).committed.await()
+                }
                 update.pushRoutes.forEach { navigate(it) }
             }
             Update.DoNothing -> Unit
-            null -> println("Unknown navigation update")
+            null -> ConsoleLogger.log("Unknown navigation update")
         }
     }
 
@@ -139,7 +155,7 @@ class BrowserInput2(
         data object Backward : Update
         data class Push(val route: NavigationRoute) : Update
         data class Traverse(val key: String) : Update
-        data class Truncate(val key: String, val pushRoutes: List<NavigationRoute>) : Update
+        data class Truncate(val key: String?, val pushRoutes: List<NavigationRoute>) : Update
         data object DoNothing : Update
 
         companion object {
@@ -202,14 +218,11 @@ class BrowserInput2(
                 ) {
                     lastCommonIndex--
                 }
-                if (lastCommonIndex > 0) {
-                    val key =
-                        window.navigation?.entries()?.toArray()?.getOrNull(lastCommonIndex)?.key
-
-                    if (key != null) {
-                        // TODO: Untested
-                        return Truncate(key, updatedEntries.drop(lastCommonIndex + 1))
-                    }
+                if (lastCommonIndex >= 0) {
+                    val navigation = window.navigation
+                    val key = navigation?.entries()?.toArray()?.getOrNull(lastCommonIndex)?.key
+                            ?.takeIf { it != navigation.currentEntry?.key }
+                    return Truncate(key, updatedEntries.drop(lastCommonIndex + 1))
                 }
 
                 return null
