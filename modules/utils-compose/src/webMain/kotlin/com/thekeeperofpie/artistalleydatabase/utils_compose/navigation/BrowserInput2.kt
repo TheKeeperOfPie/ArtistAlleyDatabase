@@ -46,6 +46,14 @@ class BrowserInput2(
         if (!event.canIntercept) return@onEvent
 
         val destinationPath = URL(event.destination.url).pathname
+
+        // TODO: Generalize this
+        if ((destinationPath.startsWith("form") && routePrefix != "form") ||
+            (destinationPath.startsWith("edit") && routePrefix != "edit")) {
+            event.intercept(InterceptOptions { window.open(event.destination.url) })
+            return@onEvent
+        }
+
         if (!destinationPath.removePrefix("/").startsWith(routePrefix)) return@onEvent
 
         val userOrTestInitiated = event.userInitiated || event.info == TestNavigationOptions.info
