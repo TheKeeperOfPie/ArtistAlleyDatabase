@@ -36,7 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
 import dev.zacsweers.metro.createGraphFactory
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -120,7 +120,7 @@ private fun Content(graph: ArtistAlleyFormGraph) {
 
             val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
             val browserInput = remember(navStack) {
-                BrowserInput2(
+                BrowserInput(
                     navHistory = navStack.routeHistory,
                     restoreStack = {
                         navStack.restore(

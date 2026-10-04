@@ -19,7 +19,7 @@ import kotlin.coroutines.CoroutineContext
 
 private const val DEBUG = false
 
-class BrowserInput2(
+class BrowserInput(
     private val navHistory: StateFlow<NavigationRouteHistory>,
     private val restoreStack: (NavigationRouteHistory) -> Unit,
     private val navigateTo: (NavigationRoute) -> Unit,

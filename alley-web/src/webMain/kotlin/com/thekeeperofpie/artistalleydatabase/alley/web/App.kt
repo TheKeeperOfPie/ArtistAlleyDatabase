@@ -50,7 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.delay
@@ -200,7 +200,7 @@ private fun Content(graph: ArtistAlleyWebGraph) {
             // TODO: Translate legacy fragments
             val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
             val browserInput = remember(navStack) {
-                BrowserInput2(
+                BrowserInput(
                     navHistory = navStack.routeHistory,
                     restoreStack = {
                         navStack.restore(

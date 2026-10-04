@@ -22,12 +22,12 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import app.cash.burst.Burst
 import com.eygraber.uri.decodeUri
 import com.eygraber.uri.encodeUri
-import com.thekeeperofpie.artistalleydatabase.alley.navigation.BrowserInput2Test.Destination.Companion.SavedStateConfig
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.BrowserInputTest.Destination.Companion.SavedStateConfig
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestRootRoute
 import com.thekeeperofpie.artistalleydatabase.test_utils.withHistoryChanges
 import com.thekeeperofpie.artistalleydatabase.test_utils.yieldingWaitUntil
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.await
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TestNavigationOptions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.navigation
@@ -47,7 +47,7 @@ import kotlin.uuid.Uuid
 
 @Burst
 @OptIn(ExperimentalTestApi::class)
-class BrowserInput2Test {
+class BrowserInputTest {
 
     private val runTestDispatcher = StandardTestDispatcher()
 
@@ -189,7 +189,7 @@ class BrowserInput2Test {
                 twoWayStack.value = navStack
 
                 val browserInput = remember(navStack) {
-                    BrowserInput2(
+                    BrowserInput(
                         navHistory = navStack.routeHistory,
                         restoreStack = {
                             navStack.restore(
