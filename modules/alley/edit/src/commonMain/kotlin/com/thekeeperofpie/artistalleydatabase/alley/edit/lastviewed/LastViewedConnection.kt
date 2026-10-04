@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditRemoteDat
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedEvent
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LastViewedPage
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PageVisibility
 import dev.zacsweers.metro.AppScope
@@ -29,6 +30,7 @@ import kotlin.uuid.Uuid
 @Inject
 class LastViewedConnection(
     appScope: ApplicationScope,
+    private val buildConfig: BuildConfig,
     remoteDatabase: AlleyEditRemoteDatabase,
     pageVisibility: PageVisibility,
 ) {
@@ -45,6 +47,10 @@ class LastViewedConnection(
 
     init {
         appScope.launch {
+            if (buildConfig.isDebug) {
+                ConsoleLogger.log("Skipping web socket setup on debug")
+                return@launch
+            }
             pageVisibility.isVisible.flatMapLatest {
                 ConsoleLogger.log("Page visibility changed $it")
                 if (!it) return@flatMapLatest emptyFlow()

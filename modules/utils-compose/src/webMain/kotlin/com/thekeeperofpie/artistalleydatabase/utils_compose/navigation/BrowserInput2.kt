@@ -45,6 +45,9 @@ class BrowserInput2(
         }
         if (!event.canIntercept) return@onEvent
 
+        val destinationPath = URL(event.destination.url).pathname
+        if (!destinationPath.removePrefix("/").startsWith(routePrefix)) return@onEvent
+
         val userOrTestInitiated = event.userInitiated || event.info == TestNavigationOptions.info
         when {
             userOrTestInitiated && event.navigationType == NavigationType.TRAVERSE -> {
@@ -57,7 +60,7 @@ class BrowserInput2(
                 }
             }
             userOrTestInitiated && event.navigationType == NavigationType.PUSH -> {
-                val route = URL(event.destination.url).pathname.toNavRoute()
+                val route = destinationPath.toNavRoute()
                 event.intercept(InterceptOptions { navigateTo(NavigationRoute(route)) })
             }
             userOrTestInitiated && event.navigationType == NavigationType.REPLACE ->
@@ -102,8 +105,7 @@ class BrowserInput2(
     }
 
     private suspend fun navigate(route: NavigationRoute) {
-        val prefix = routePrefix.removePrefix("/")
-        val path = if (prefix.isEmpty()) "/${route.route}" else "/$prefix/${route.route}"
+        val path = if (routePrefix.isEmpty()) "/${route.route}" else "/$routePrefix/${route.route}"
         window.navigation?.navigate("${window.location.origin}$path")?.committed?.await()
     }
 

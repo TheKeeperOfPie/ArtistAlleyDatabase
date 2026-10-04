@@ -197,4 +197,11 @@ class AlleyEditNavStack internal constructor(
             updateInfo()
         }
     }
+
+    fun restore(
+        back: List<AlleyEditDestination>,
+        forward: List<AlleyEditDestination>,
+    ) = twoWayStacks[topLevelStackIndex].restore(back, forward)
+
+    fun navigateBy(target: Int) = twoWayStacks[topLevelStackIndex].navigateBy(target)
 }

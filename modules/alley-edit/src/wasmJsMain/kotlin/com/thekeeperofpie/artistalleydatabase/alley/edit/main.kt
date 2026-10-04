@@ -27,18 +27,16 @@ import coil3.network.DeDupeConcurrentRequestStrategy
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.toUri
-import coil3.util.DebugLogger
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
-import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput2
 import dev.zacsweers.metro.createGraphFactory
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -79,7 +77,6 @@ fun main() {
                     })
                     graph.alleyEditCoilInit.addComponents()
                 }
-                .logger(DebugLogger())
                 .memoryCache {
                     MemoryCache.Builder()
                         .maxSizeBytes(1000 * 1024 * 1024)
@@ -119,7 +116,6 @@ private fun Content(graph: ArtistAlleyEditGraph) {
         ) {
             val navStack = rememberArtistAlleyEditTopLevelStacks()
             LaunchedEffect(Unit) {
-                ConsoleLogger.log("path = ${window.location.href}")
                 val path = KmpUri.parseOrNull(window.location.href)
                     ?.path
                     ?.removePrefix("/edit/")
@@ -135,17 +131,20 @@ private fun Content(graph: ArtistAlleyEditGraph) {
 
             val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
             val browserInput = remember(navStack) {
-                BrowserInput(
-                    routeHistory = navStack.routeHistory,
-                    parseRoute = AlleyEditDestination::parseRoute,
-                    onPopNavigate = {
-                        navStack.navigateOnBrowserPop(it) {
-                            (it as? AlleyEditDestination)?.let {
-                                AlleyEditDestination.toEncodedRoute(it)
-                            }
-                        }
+                BrowserInput2(
+                    navHistory = navStack.routeHistory,
+                    restoreStack = {
+                        navStack.restore(
+                            back = it.back.mapNotNull { AlleyEditDestination.parseRoute(it.route) } +
+                                    listOfNotNull(AlleyEditDestination.parseRoute(it.current.route)),
+                            forward = it.forward.mapNotNull { AlleyEditDestination.parseRoute(it.route) },
+                        )
                     },
-                    routePrefix = "/edit",
+                    navigateTo = {
+                        AlleyEditDestination.parseRoute(it.route)?.let(navStack::navigate)
+                    },
+                    navigateBy = navStack::navigateBy,
+                    routePrefix = "edit",
                 )
             }
             DisposableEffect(navigationEventDispatcherOwner, browserInput) {
