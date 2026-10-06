@@ -58,7 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
-import com.thekeeperofpie.artistalleydatabase.alley.ui.assertInPreview
+import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory

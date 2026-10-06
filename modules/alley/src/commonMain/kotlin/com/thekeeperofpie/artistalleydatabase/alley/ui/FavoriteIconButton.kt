@@ -12,9 +12,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_icon_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_no
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text
+import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text_generic
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_yes
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
@@ -47,14 +48,17 @@ fun FavoriteIconButton(
             } else {
                 Icons.Filled.FavoriteBorder
             },
-            contentDescription = stringResource(
-                Res.string.alley_stamp_rally_favorite_icon_content_description
-            ),
+            contentDescription = stringResource(Res.string.alley_favorite_icon_content_description),
         )
     }
 
     if (showDialog) {
-        val text = stringResource(Res.string.alley_unfavorite_dialog_text, entryText().orEmpty())
+        val entryText = entryText()
+        val text = if (entryText.isNullOrEmpty()) {
+            stringResource(Res.string.alley_unfavorite_dialog_text_generic)
+        } else {
+            stringResource(Res.string.alley_unfavorite_dialog_text, entryText)
+        }
         UnfavoriteDialog(
             text = text,
             onDismissRequest = { showDialog = false },

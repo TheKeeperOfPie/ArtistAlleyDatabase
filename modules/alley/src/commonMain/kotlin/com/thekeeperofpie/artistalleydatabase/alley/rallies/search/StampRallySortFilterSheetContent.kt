@@ -52,7 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.assertInPreview
+import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData

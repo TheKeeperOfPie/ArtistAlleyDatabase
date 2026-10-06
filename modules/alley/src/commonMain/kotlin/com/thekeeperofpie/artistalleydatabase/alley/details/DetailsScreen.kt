@@ -1,8 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.details
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,10 +30,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
@@ -48,24 +42,19 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_always_show
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_show
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_none
-import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
-import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text_generic
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ImageFallbackBanner
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
-import com.thekeeperofpie.artistalleydatabase.alley.ui.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.BrokenImage
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
-import com.thekeeperofpie.artistalleydatabase.icons.filled.FavoriteBorder
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -95,29 +84,31 @@ object DetailsScreen {
     ) {
         Scaffold(
             topBar = {
-                var showUnfavoriteDialog by remember { mutableStateOf(false) }
-                TopBar(
-                    sharedElementId = sharedElementId,
+                TopAppBar(
                     title = title,
-                    favorite = favorite,
-                    onFavoriteToggle = {
-                        if (it) {
-                            eventSink(Event.FavoriteToggle(true))
-                        } else {
-                            showUnfavoriteDialog = true
-                        }
+                    navigationIcon = {
+                        ArrowBackIconButton(onClick = { eventSink(Event.NavigateUp) })
                     },
-                    onClickBack = { eventSink(Event.NavigateUp) },
-                    onClickOpenInMap = { eventSink(Event.OpenMap) },
-                )
+                    actions = {
+                        IconButton(
+                            onClick = { eventSink(Event.OpenMap) },
+                            modifier = Modifier.animateEnterExit()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Map,
+                                contentDescription = stringResource(Res.string.alley_open_in_map),
+                            )
+                        }
 
-                if (showUnfavoriteDialog) {
-                    UnfavoriteDialog(
-                        text = stringResource(Res.string.alley_unfavorite_dialog_text_generic),
-                        onDismissRequest = { showUnfavoriteDialog = false },
-                        onRemoveFavorite = { eventSink(Event.FavoriteToggle(false)) },
-                    )
-                }
+                        FavoriteIconButton(
+                            entryText = { null },
+                            favorite = favorite,
+                            onFavoriteToggle = { eventSink(Event.FavoriteToggle(it)) },
+                            modifier = Modifier.sharedElement("favorite", sharedElementId)
+                        )
+                    },
+                    modifier = Modifier.sharedBounds("container", sharedElementId)
+                )
             },
             modifier = Modifier.sharedBounds("itemContainer", sharedElementId)
         ) {
@@ -314,53 +305,6 @@ object DetailsScreen {
     }
 
     @Composable
-    private fun TopBar(
-        sharedElementId: Any,
-        title: @Composable () -> Unit,
-        favorite: () -> Boolean?,
-        onFavoriteToggle: (Boolean) -> Unit,
-        onClickBack: () -> Unit,
-        onClickOpenInMap: () -> Unit,
-    ) {
-        TopAppBar(
-            title = title,
-            navigationIcon = { ArrowBackIconButton(onClickBack) },
-            actions = {
-                IconButton(
-                    onClick = onClickOpenInMap,
-                    modifier = Modifier.animateEnterExit()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Map,
-                        contentDescription = stringResource(Res.string.alley_open_in_map),
-                    )
-                }
-
-                val favorite = favorite()
-                AnimatedVisibility(favorite != null, enter = fadeIn(), exit = fadeOut()) {
-                    val favoriteNotNull = favorite == true
-                    IconButton(
-                        onClick = { onFavoriteToggle(!favoriteNotNull) },
-                        modifier = Modifier.sharedElement("favorite", sharedElementId)
-                    ) {
-                        Icon(
-                            imageVector = if (favoriteNotNull) {
-                                Icons.Filled.Favorite
-                            } else {
-                                Icons.Filled.FavoriteBorder
-                            },
-                            contentDescription = stringResource(
-                                Res.string.alley_favorite_icon_content_description
-                            ),
-                        )
-                    }
-                }
-            },
-            modifier = Modifier.sharedBounds("container", sharedElementId)
-        )
-    }
-
-    @Composable
     private fun SmallImageHeader(
         sharedElementId: Any,
         catalog: () -> LoadingResult<DetailsScreenCatalog>,
@@ -536,7 +480,7 @@ object DetailsScreen {
 
 @AlleyPreview
 @Composable
-private fun DetailsScreen() = PreviewDark {
+private fun DetailsScreen() {
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     DetailsScreen(
         title = { Text("Details title") },
@@ -559,7 +503,7 @@ private fun DetailsScreen() = PreviewDark {
 
 @AlleyPreview
 @Composable
-private fun ImagePagerGrid() = PreviewDark {
+private fun ImagePagerGrid() {
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     ImagePager(
         sharedElementId = "sharedElementId",

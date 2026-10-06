@@ -101,7 +101,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserDa
 import com.thekeeperofpie.artistalleydatabase.alley.tags.series
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ClickableIconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
@@ -860,7 +859,7 @@ object ArtistDetailsScreen {
 
 @AlleyPreview
 @Composable
-private fun PhoneLayout() = PreviewDark {
+private fun PhoneLayout() {
     val artist = ArtistWithUserDataProvider.values.first()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     val entry = ArtistDetailsViewModel.Entry(

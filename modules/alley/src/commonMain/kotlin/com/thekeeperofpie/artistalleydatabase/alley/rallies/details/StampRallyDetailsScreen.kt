@@ -86,7 +86,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ClickableIconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.HandPackage
@@ -664,22 +663,20 @@ private fun PhoneLayout() {
     val stampRally = StampRallyWithUserDataProvider.values.first()
     val artists = ArtistWithUserDataProvider.values.take(3).map { it.artist }.toList()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
-    PreviewDark {
-        StampRallyDetailsScreen(
-            route = AlleyDestination.StampRallyDetails(stampRally.stampRally),
-            entry = {
-                StampRallyDetailsViewModel.Entry(
-                    stampRally = stampRally.stampRally,
-                    userEntry = stampRally.userEntry,
-                    artists = artists.map { it to null },
-                    otherTables = listOf("ANX-101"),
-                )
-            },
-            series = { emptyList() },
-            userNotesTextState = rememberTextFieldState(),
-            images = { images },
-            imagePagerState = rememberImagePagerState(images, 1),
-            eventSink = {},
-        )
-    }
+    StampRallyDetailsScreen(
+        route = AlleyDestination.StampRallyDetails(stampRally.stampRally),
+        entry = {
+            StampRallyDetailsViewModel.Entry(
+                stampRally = stampRally.stampRally,
+                userEntry = stampRally.userEntry,
+                artists = artists.map { it to null },
+                otherTables = listOf("ANX-101"),
+            )
+        },
+        series = { emptyList() },
+        userNotesTextState = rememberTextFieldState(),
+        images = { images },
+        imagePagerState = rememberImagePagerState(images, 1),
+        eventSink = {},
+    )
 }

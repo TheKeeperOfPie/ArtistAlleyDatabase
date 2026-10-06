@@ -74,7 +74,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FeedbackHeader
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -618,7 +617,7 @@ object ArtistSearchScreen {
 
 @AlleyPreview
 @Composable
-private fun Preview() = PreviewDark {
+private fun Preview() {
     val results = ArtistWithUserDataProvider.values.take(5)
         .toList()
         .map {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -32,7 +33,7 @@ private class AlleyPreviewWrapper : PreviewWrapperProvider {
     @Composable
     override fun Wrap(content: @Composable () -> Unit) {
         CompositionLocalProvider(LocalAsyncImagePreviewHandler provides CoilPreviewHandler) {
-            MaterialTheme {
+            MaterialTheme(colorScheme = darkColorScheme()) {
                 Surface {
                     content()
                 }

@@ -71,7 +71,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Description
@@ -651,25 +650,25 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
 
 @AlleyPreview
 @Composable
-private fun HeaderPreview() = PreviewDark {
+private fun HeaderPreview() {
     Header(onOpenLibraries = {}, onOpenMetrics = {})
 }
 
 @AlleyPreview
 @Composable
-private fun FooterPreview() = PreviewDark {
+private fun FooterPreview() {
     Footer()
 }
 
 @AlleyPreview
 @Composable
-private fun ExportPreview() = PreviewDark {
+private fun ExportPreview() {
     ExportSection(onOpenExport = {})
 }
 
 @AlleyPreview
 @Composable
-private fun ImportPreview() = PreviewDark {
+private fun ImportPreview() {
     var state by remember { mutableStateOf(LoadingResult.empty<Unit>()) }
     val scope = rememberCoroutineScope()
     ImportSection(
@@ -688,6 +687,6 @@ private fun ImportPreview() = PreviewDark {
 
 @AlleyPreview
 @Composable
-private fun FaqPreview() = PreviewDark {
+private fun FaqPreview() {
     FaqSection(onInstallClick = {}, onOpenExport = {})
 }
