@@ -1,12 +1,9 @@
-@file:OptIn(ExperimentalFlexBoxApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
 import androidx.compose.foundation.layout.FlexBox
 import androidx.compose.foundation.layout.FlexBoxConfig
 import androidx.compose.foundation.layout.FlexWrap
@@ -457,8 +454,8 @@ abstract class StampRallyFormScope(
         )
     }
 
-    context(scope: EntryFormScope)
     @Composable
+    context(scope: EntryFormScope)
     fun TableCheckboxesSection(
         state: EntryForm2.EmptyState,
         tables: SnapshotStateList<ArtistTable>,

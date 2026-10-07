@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
 import androidx.compose.foundation.layout.FlexBox
 import androidx.compose.foundation.layout.FlexBoxConfig
 import androidx.compose.foundation.layout.FlexWrap
@@ -205,7 +204,6 @@ fun LazyGridScope.series(
     }
 }
 
-@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 fun MerchChips(
     merch: List<String>,

@@ -6,7 +6,6 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version libs.versions.kotlin.core
     `kotlin-dsl`
     alias(libs.plugins.app.cash.sqldelight).version("2.2.1")
     alias(libs.plugins.org.jetbrains.compose)
@@ -44,7 +43,6 @@ sqldelight {
 }
 
 dependencies {
-    implementation(compose.desktop.currentOs)
     implementation(libs.androidx.annotation)
     implementation(libs.apache.commons.csv)
     implementation(libs.apache.commons.io)

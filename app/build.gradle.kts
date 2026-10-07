@@ -71,7 +71,6 @@ kotlin {
         }
         named("desktopMain") {
             dependencies {
-                implementation(compose.desktop.currentOs)
                 implementation(libs.androidx.sqlite.bundled)
                 implementation(libs.coil3.coil.network.ktor3)
                 implementation(libs.kotlinx.coroutines.swing)

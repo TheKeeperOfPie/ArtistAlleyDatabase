@@ -14,6 +14,18 @@ pluginManagement {
     }
 }
 
+gradle.beforeProject {
+    buildscript {
+        configurations.all {
+            resolutionStrategy.dependencySubstitution {
+                // Fix sync error where embedded Kotlin forces 13.0
+                substitute(module("org.jetbrains:annotations"))
+                    .using(module("org.jetbrains:annotations:23.0.0"))
+            }
+        }
+    }
+}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
@@ -77,8 +89,8 @@ dependencyResolutionManagement {
 plugins {
     id("com.autonomousapps.build-health").version("3.16.1")
     id("com.android.application").version("9.5.0-alpha08").apply(false)
-    id("org.jetbrains.kotlin.android").version("2.4.20").apply(false)
-    id("org.jetbrains.kotlin.jvm").version("2.4.20").apply(false)
+    id("org.jetbrains.kotlin.android").version("2.5.0-Beta1").apply(false)
+    id("org.jetbrains.kotlin.jvm").version("2.5.0-Beta1").apply(false)
     id("com.apollographql.apollo.external").version("4.4.3").apply(false)
 }
 

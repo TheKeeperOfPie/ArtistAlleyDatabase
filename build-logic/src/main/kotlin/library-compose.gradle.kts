@@ -37,7 +37,6 @@ kotlin {
             ).forEach(::implementation)
         }
         getByName("desktopMain").dependencies {
-            implementation(compose.desktop.currentOs)
             resolveLibraries(
                 "libs.jetBrainsCompose.ui.tooling",
             ).forEach(::implementation)

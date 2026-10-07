@@ -1,11 +1,8 @@
-@file:OptIn(ExperimentalFlexBoxApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
 import androidx.compose.foundation.layout.FlexAlignItems
 import androidx.compose.foundation.layout.FlexAlignSelf
 import androidx.compose.foundation.layout.FlexBox
@@ -73,7 +70,6 @@ fun StampRallySummaryRow(
     seriesById: () -> Map<String, SeriesInfo>,
     modifier: Modifier = Modifier,
 ) {
-    @OptIn(ExperimentalFlexBoxApi::class)
     FlexBox(
         config = FlexBoxConfig {
             wrap(FlexWrap.Wrap)

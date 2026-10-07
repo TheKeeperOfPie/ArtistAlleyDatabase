@@ -26,7 +26,6 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.desktop.currentOs)
             implementation(libs.jetBrainsCompose.components.resources)
             implementation(libs.jetBrainsCompose.foundation)
             implementation(libs.jetBrainsCompose.material3)

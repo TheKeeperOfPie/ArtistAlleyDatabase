@@ -53,7 +53,6 @@ kotlin {
         implementation(libs.jetBrainsAndroidX.navigation3.ui)
         implementation(libs.jetBrainsAndroidX.navigationevent.compose)
         implementation(libs.kermit)
-        implementation(this@kotlin.compose.desktop.currentOs)
         implementation(libs.kotlinx.coroutines.swing)
         implementation(libs.ktor.client.java)
     }

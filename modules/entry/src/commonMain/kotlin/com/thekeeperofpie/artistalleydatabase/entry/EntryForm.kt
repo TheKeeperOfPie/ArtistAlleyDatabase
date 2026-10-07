@@ -52,13 +52,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -406,7 +407,7 @@ private fun MultiTextSection(
                     focused = it
                     onFocusChanged(it)
                 },
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable),
+                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
             )
         }
     }
@@ -858,7 +859,7 @@ private fun DropdownSection(
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
                     .onFocusChanged { onFocusChanged(it.isFocused) }
-                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
             )
             ExposedDropdownMenu(
                 expanded = section.expanded,
