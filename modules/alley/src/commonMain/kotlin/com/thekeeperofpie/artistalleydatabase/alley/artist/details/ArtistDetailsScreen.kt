@@ -41,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_content_description
@@ -81,9 +80,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ui.AvailableFallbackPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -100,6 +101,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchChips
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.series
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ClickableIconWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.ImageFallbackBanner
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -114,13 +116,12 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
-import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreviewSizes
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -138,11 +139,9 @@ object ArtistDetailsScreen {
             )
         },
     ) {
-        val catalog by viewModel.catalog.collectAsStateWithLifecycle()
-        val images = catalog.result?.images.orEmpty()
         val imagePagerState = rememberImagePagerState(
-            images,
-            viewModel.initialImageIndex
+            viewModel.catalog.images,
+            viewModel.initialImageIndex,
         )
 
         NavigationResultEffect(ImagesScreen.REQUEST_KEY) {
@@ -150,56 +149,18 @@ object ArtistDetailsScreen {
                 imagePagerState.scrollToPage(it)
             }
         }
-        val entry by viewModel.entry.collectAsStateWithLifecycle()
-        val otherArtists by viewModel.otherArtists.collectAsStateWithLifecycle()
-        val seriesInferred by viewModel.seriesInferred.collectAsStateWithLifecycle()
-        val seriesConfirmed by viewModel.seriesConfirmed.collectAsStateWithLifecycle()
-        val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
-        val navigator = LocalAlleyNavigator.current
         ArtistDetailsScreen(
             route = route,
-            entry = { entry },
-            otherArtists = { otherArtists },
-            seriesInferred = { seriesInferred },
-            seriesConfirmed = { seriesConfirmed },
+            entry = { viewModel.entry },
+            otherArtists = { viewModel.otherArtists },
+            seriesInferred = { viewModel.seriesInferred },
+            seriesConfirmed = { viewModel.seriesConfirmed },
             userNotesTextState = viewModel.userNotes,
             imagePagerState = imagePagerState,
-            catalog = { catalog },
-            seriesImages = { seriesImages },
+            catalog = { viewModel.catalog },
+            seriesImages = { viewModel.seriesImages },
             otherYears = viewModel::otherYears,
-            eventSink = {
-                when (it) {
-                    is Event.SeriesFavoriteToggle ->
-                        viewModel.onSeriesFavoriteToggle(
-                            data = it.series,
-                            favorite = it.favorite,
-                        )
-                    is Event.DetailsEvent ->
-                        when (val event = it.event) {
-                            is DetailsScreen.Event.FavoriteToggle ->
-                                viewModel.onFavoriteToggle(event.favorite)
-                            DetailsScreen.Event.NavigateUp -> navigator.goUp()
-                            is DetailsScreen.Event.OpenImage -> {
-                                val showingOutdatedCatalogs =
-                                    catalog.result?.showOutdatedCatalogs == true
-                                val artistWithUserData = viewModel.entry.value?.data
-                                if (artistWithUserData != null) {
-                                    navigator.navigate(
-                                        AlleyDestination.Images.fromArtist(artistWithUserData, showingOutdatedCatalogs, event.imageIndex)
-                                    )
-                                }
-                            }
-                            DetailsScreen.Event.OpenMap ->
-                                viewModel.entry.value?.artist?.id?.let {
-                                    navigator.navigate(AlleyDestination.ArtistMap(it))
-                                }
-                            DetailsScreen.Event.ShowFallback ->
-                                viewModel.onShowFallback()
-                            DetailsScreen.Event.AlwaysShowFallback ->
-                                viewModel.onAlwaysShowFallback()
-                        }
-                }
-            },
+            eventSink = viewModel::onEvent,
         )
     }
 
@@ -212,7 +173,7 @@ object ArtistDetailsScreen {
         seriesConfirmed: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
         imagePagerState: PagerState,
-        catalog: () -> LoadingResult<DetailsScreenCatalog>,
+        catalog: () -> DetailsScreenCatalog,
         seriesImages: () -> Map<String, String>,
         otherYears: () -> List<DataYear>,
         eventSink: (Event) -> Unit,
@@ -269,7 +230,23 @@ object ArtistDetailsScreen {
             favorite = { entry()?.favorite },
             catalog = catalog,
             imagePagerState = imagePagerState,
-            eventSink = { eventSink(Event.DetailsEvent(it)) }
+            eventSink = { eventSink(Event.DetailsEvent(it)) },
+            fallbackHeader = {
+                val catalog = catalog()
+                val fallbackYear = catalog.fallbackYear
+                val showFallbackImages = catalog.showOutdatedCatalogs
+                if (fallbackYear != null) {
+                    if (showFallbackImages == true) {
+                        ImageFallbackBanner(route.id.orEmpty(), fallbackYear)
+                    } else if (catalog.images.isEmpty() && showFallbackImages == false) {
+                        AvailableFallbackPrompt(
+                            fallbackYear = fallbackYear,
+                            onShowFallback = { eventSink(Event.ShowFallback) },
+                            onAlwaysShowFallback = { eventSink(Event.AlwaysShowFallback) },
+                        )
+                    }
+                }
+            }
         ) { columnCount ->
             val artist = entry()?.artist
             val summary = artist?.summary
@@ -854,14 +831,18 @@ object ArtistDetailsScreen {
             val series: SeriesWithUserData,
             val favorite: Boolean,
         ) : Event
+
+        data object ShowFallback : Event
+        data object AlwaysShowFallback : Event
     }
 }
 
-@AlleyPreview
 @Composable
-private fun PhoneLayout() {
-    val artist = ArtistWithUserDataProvider.values.first()
-    val images = CatalogImagePreviewProvider.values.take(4).toList()
+private fun ArtistDetailsScreenPreview(
+    artist: ArtistWithUserData,
+    images: List<CatalogImage> = CatalogImagePreviewProvider.values.take(4).toList(),
+    catalog: DetailsScreenCatalog = DetailsScreenCatalog(images, null, null),
+) {
     val entry = ArtistDetailsViewModel.Entry(
         data = ArtistWithUserData(
             artist = artist.artist,
@@ -881,8 +862,58 @@ private fun PhoneLayout() {
         userNotesTextState = rememberTextFieldState(),
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
-        catalog = { LoadingResult.success(DetailsScreenCatalog(images, null, null)) },
+        catalog = { catalog },
         seriesImages = { emptyMap() },
         otherYears = { listOf(DataYear.ANIME_EXPO_2024) },
+    )
+}
+
+@AlleyPreviewSizes
+@Composable
+private fun PhoneLayout() {
+    ArtistDetailsScreenPreview(ArtistWithUserDataProvider.values.first())
+}
+
+@AlleyPreviewSizes
+@Composable
+private fun FallbackPromptPreview() {
+    val artist = remember {
+        ArtistWithUserDataProvider.values.first().let {
+            it.copy(
+                artist = it.artist.copy(
+                    databaseEntry = it.artist.databaseEntry.copy(
+                        fallbackImageYear = DataYear.ANIME_EXPO_2025,
+                    ),
+                ),
+            )
+        }
+    }
+    val images = emptyList<CatalogImage>()
+    ArtistDetailsScreenPreview(
+        artist = artist,
+        images = images,
+        catalog = DetailsScreenCatalog(images, false, DataYear.ANIME_EXPO_2025),
+    )
+}
+
+@AlleyPreviewSizes
+@Composable
+private fun FallbackBannerPreview() {
+    val artist = remember {
+        ArtistWithUserDataProvider.values.first().let {
+            it.copy(
+                artist = it.artist.copy(
+                    databaseEntry = it.artist.databaseEntry.copy(
+                        fallbackImageYear = DataYear.ANIME_EXPO_2025,
+                    ),
+                ),
+            )
+        }
+    }
+    val images = CatalogImagePreviewProvider.values.take(4).toList()
+    ArtistDetailsScreenPreview(
+        artist = artist,
+        images = images,
+        catalog = DetailsScreenCatalog(images, true, DataYear.ANIME_EXPO_2025),
     )
 }

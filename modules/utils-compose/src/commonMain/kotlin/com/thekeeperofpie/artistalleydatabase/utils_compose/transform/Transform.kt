@@ -4,6 +4,7 @@ import androidx.compose.runtime.AbstractApplier
 import androidx.compose.runtime.BroadcastFrameClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composition
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Recomposer
@@ -11,6 +12,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.ObserverHandle
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -45,15 +50,13 @@ fun <T> transform(
     transformInternal(
         scope = scope,
         context = context,
-        applyCompositionContent = {
-            it.setContent {
-                val newValue = onUpdate()
-                val mutableState = state
-                if (mutableState == null) {
-                    state = mutableStateOf(newValue)
-                } else {
-                    mutableState.value = newValue
-                }
+        content = {
+            val newValue = onUpdate()
+            val mutableState = state
+            if (mutableState == null) {
+                state = mutableStateOf(newValue)
+            } else {
+                mutableState.value = newValue
             }
         },
     )
@@ -70,11 +73,7 @@ fun <T> transform(
     transformInternal(
         scope = scope,
         context = context,
-        applyCompositionContent = {
-            it.setContent {
-                state.value = onUpdate(state.value)
-            }
-        },
+        content = { state.value = onUpdate(state.value) },
     )
     return state
 }
@@ -88,16 +87,14 @@ fun <T> transformFlow(
     transformInternal(
         scope = scope,
         context = context,
-        applyCompositionContent = {
-            it.setContent {
-                val newValue = onUpdate()
-                val stateFlow = state
-                if (stateFlow == null) {
-                    state = MutableStateFlow(newValue)
-                } else {
-                    @Suppress("StateFlowValueCalledInComposition")
-                    stateFlow.value = newValue
-                }
+        content = {
+            val newValue = onUpdate()
+            val stateFlow = state
+            if (stateFlow == null) {
+                state = MutableStateFlow(newValue)
+            } else {
+                @Suppress("StateFlowValueCalledInComposition")
+                stateFlow.value = newValue
             }
         },
     )
@@ -107,7 +104,7 @@ fun <T> transformFlow(
 fun transformInternal(
     scope: CoroutineScope,
     context: CoroutineContext = Dispatchers.Main,
-    applyCompositionContent: (Composition) -> Unit,
+    content: @Composable () -> Unit,
 ) {
     GlobalSnapshotManager.ensureStarted()
     val clock = HeadlessTransformClock()
@@ -138,7 +135,26 @@ fun transformInternal(
         }
     }
 
-    applyCompositionContent(composition)
+    composition.setContent {
+        CompositionLocalProvider(LocalLifecycleOwner provides AlwaysActiveLifecycleOwner) {
+            content()
+        }
+    }
+}
+
+private object AlwaysActiveLifecycleOwner : LifecycleOwner {
+    override val lifecycle: Lifecycle
+        get() = AlwaysActiveLifecycle
+
+    private object AlwaysActiveLifecycle : Lifecycle() {
+        override val currentState: Lifecycle.State
+            get() = Lifecycle.State.CREATED
+
+        override fun addObserver(observer: LifecycleObserver) = Unit
+
+        override fun removeObserver(observer: LifecycleObserver) = Unit
+
+    }
 }
 
 private object UnitApplier : AbstractApplier<Unit>(Unit) {

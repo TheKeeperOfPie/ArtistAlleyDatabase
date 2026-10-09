@@ -12,6 +12,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.hsl
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.tooling.preview.Devices.DESKTOP
+import androidx.compose.ui.tooling.preview.Devices.PHONE
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
@@ -61,9 +63,18 @@ private object CoilPreviewHandler : AsyncImagePreviewHandler {
     }
 }
 
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @Preview
 @PreviewWrapper(wrapper = AlleyPreviewWrapper::class)
 annotation class AlleyPreview
+
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
+@Preview(name = "Phone", device = PHONE, showSystemUi = true)
+@Preview(name = "Desktop", device = DESKTOP, showSystemUi = true)
+@PreviewWrapper(wrapper = AlleyPreviewWrapper::class)
+annotation class AlleyPreviewSizes
 
 @AlleyPreview
 @Composable

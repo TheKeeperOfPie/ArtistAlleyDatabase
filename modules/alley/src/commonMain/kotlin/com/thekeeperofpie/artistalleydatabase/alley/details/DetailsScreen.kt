@@ -5,24 +5,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,28 +34,20 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_always_show
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_show
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_none
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
-import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
-import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FavoriteIconButton
-import com.thekeeperofpie.artistalleydatabase.alley.ui.ImageFallbackBanner
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.BrokenImage
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -77,9 +65,10 @@ object DetailsScreen {
         title: @Composable () -> Unit,
         sharedElementId: Any,
         favorite: () -> Boolean?,
-        catalog: () -> LoadingResult<DetailsScreenCatalog>,
+        catalog: () -> DetailsScreenCatalog,
         imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
+        fallbackHeader: (@Composable () -> Unit)? = null,
         content: LazyGridScope.(columnCount: Int) -> Unit,
     ) {
         Scaffold(
@@ -124,12 +113,10 @@ object DetailsScreen {
                 }
                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     ExpandedLayout(
-                        sharedElementId = sharedElementId,
                         catalog = catalog,
                         gridCells = gridCells,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
-                        onShowFallback = { eventSink(Event.ShowFallback) },
-                        onAlwaysShowFallback = { eventSink(Event.AlwaysShowFallback) },
+                        fallbackHeader = fallbackHeader,
                         content = content,
                     )
                 } else {
@@ -139,8 +126,7 @@ object DetailsScreen {
                         gridCells = gridCells,
                         imagePagerState = imagePagerState,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
-                        onShowFallback = { eventSink(Event.ShowFallback) },
-                        onAlwaysShowFallback = { eventSink(Event.AlwaysShowFallback) },
+                        fallbackHeader = fallbackHeader,
                         content = content,
                     )
                 }
@@ -150,12 +136,10 @@ object DetailsScreen {
 
     @Composable
     private fun ExpandedLayout(
-        sharedElementId: Any,
-        catalog: () -> LoadingResult<DetailsScreenCatalog>,
+        catalog: () -> DetailsScreenCatalog,
         gridCells: GridCells,
         onClickImage: (imageIndex: Int) -> Unit,
-        onShowFallback: () -> Unit,
-        onAlwaysShowFallback: () -> Unit,
+        fallbackHeader: (@Composable () -> Unit)? = null,
         content: LazyGridScope.(columnCount: Int) -> Unit,
     ) {
         Row(
@@ -163,7 +147,7 @@ object DetailsScreen {
             modifier = Modifier.fillMaxSize()
         ) {
             val catalog = catalog()
-            val images = catalog.result?.images.orEmpty()
+            val images = catalog.images
             val hasImages = images.isNotEmpty()
             val width = LocalWindowConfiguration.current.screenWidthDp
             val horizontalContentPadding = if (!hasImages && width > 800.dp) {
@@ -171,10 +155,6 @@ object DetailsScreen {
             } else {
                 0.dp
             }.coerceAtLeast(16.dp)
-            val fallbackYear = catalog.result?.fallbackYear
-            val showFallbackImages = catalog.result?.showOutdatedCatalogs
-            val showFallbackPrompt = !hasImages && showFallbackImages == false &&
-                    fallbackYear != null
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -207,15 +187,9 @@ object DetailsScreen {
                     columns = gridCells,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    item("availableFallbackPrompt", GridUtils.maxSpanFunction) {
-                        if (catalog.loading) {
-                            LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth())
-                        } else if (showFallbackPrompt) {
-                            LargeAvailableFallbackPrompt(
-                                fallbackYear = fallbackYear,
-                                onShowFallback = onShowFallback,
-                                onAlwaysShowFallback = onAlwaysShowFallback,
-                            )
+                    if (!hasImages && fallbackHeader != null) {
+                        item("availableFallbackPrompt", GridUtils.maxSpanFunction) {
+                            fallbackHeader()
                         }
                     }
                     content(columnCount)
@@ -223,18 +197,7 @@ object DetailsScreen {
             }
             if (hasImages) {
                 Column {
-                    if (fallbackYear != null) {
-                        if (showFallbackImages == true) {
-                            ImageFallbackBanner(sharedElementId, fallbackYear)
-                        } else if (showFallbackImages == false) {
-                            SmallAvailableFallbackPrompt(
-                                fallbackYear = fallbackYear,
-                                onShowFallback = onShowFallback,
-                                onAlwaysShowFallback = onAlwaysShowFallback,
-                            )
-                        }
-                    }
-
+                    fallbackHeader?.invoke()
                     ImageGrid(
                         images = images,
                         onClickImage = {
@@ -251,12 +214,11 @@ object DetailsScreen {
     @Composable
     private fun CompactLayout(
         sharedElementId: Any,
-        catalog: () -> LoadingResult<DetailsScreenCatalog>,
+        catalog: () -> DetailsScreenCatalog,
         gridCells: GridCells,
         imagePagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
-        onShowFallback: () -> Unit,
-        onAlwaysShowFallback: () -> Unit,
+        fallbackHeader: (@Composable () -> Unit)?,
         content: LazyGridScope.(columnCount: Int) -> Unit,
     ) {
         BoxWithConstraints {
@@ -286,8 +248,7 @@ object DetailsScreen {
                         catalog = catalog,
                         headerPagerState = imagePagerState,
                         onClickImage = onClickImage,
-                        onShowFallback = onShowFallback,
-                        onAlwaysShowFallback = onAlwaysShowFallback,
+                        fallbackHeader = fallbackHeader,
                         // Offset to remove content padding since the header is full width
                         modifier = Modifier.layout { measurable, constraints ->
                             val newConstraints = constraints.offset(32.dp.roundToPx())
@@ -307,25 +268,19 @@ object DetailsScreen {
     @Composable
     private fun SmallImageHeader(
         sharedElementId: Any,
-        catalog: () -> LoadingResult<DetailsScreenCatalog>,
+        catalog: () -> DetailsScreenCatalog,
         headerPagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
-        onShowFallback: () -> Unit,
-        onAlwaysShowFallback: () -> Unit,
         modifier: Modifier = Modifier,
+        fallbackHeader: (@Composable () -> Unit)?,
     ) {
         val catalog = catalog()
-        val images = catalog.result?.images
-        val fallbackYear = catalog.result?.fallbackYear
-        val showFallbackImages = catalog.result?.showOutdatedCatalogs
-        if (images.isNullOrEmpty()) {
+        val images = catalog.images
+        val fallbackYear = catalog.fallbackYear
+        val showFallbackImages = catalog.showOutdatedCatalogs
+        if (images.isEmpty()) {
             if (showFallbackImages == false && fallbackYear != null) {
-                LargeAvailableFallbackPrompt(
-                    fallbackYear = fallbackYear,
-                    onShowFallback = onShowFallback,
-                    onAlwaysShowFallback = onAlwaysShowFallback,
-                    modifier = modifier,
-                )
+                fallbackHeader?.invoke()
             } else {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -351,118 +306,8 @@ object DetailsScreen {
                     onClickPage = onClickImage,
                     onClickFullscreen = null,
                 )
-                if (fallbackYear != null) {
-                    if (showFallbackImages == true) {
-                        ImageFallbackBanner(sharedElementId, fallbackYear)
-                    } else if (showFallbackImages == false) {
-                        SmallAvailableFallbackPrompt(
-                            fallbackYear = fallbackYear,
-                            onShowFallback = onShowFallback,
-                            onAlwaysShowFallback = onAlwaysShowFallback,
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun LargeAvailableFallbackPrompt(
-        fallbackYear: DataYear,
-        onShowFallback: () -> Unit,
-        onAlwaysShowFallback: () -> Unit,
-        modifier: Modifier = Modifier,
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = modifier
-                .heightIn(min = 200.dp)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(16.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.BrokenImage,
-                    contentDescription = stringResource(
-                        Res.string.alley_artist_catalog_image_none
-                    )
-                )
-                Text(
-                    text = stringResource(
-                        Res.string.alley_artist_catalog_available_fallback_prompt,
-                        stringResource(fallbackYear.fullName),
-                    )
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Button(onClick = onShowFallback) {
-                        Text(
-                            text = stringResource(
-                                Res.string.alley_artist_catalog_available_fallback_prompt_show,
-                                stringResource(fallbackYear.shortName),
-                            )
-                        )
-                    }
-                    Button(onClick = onAlwaysShowFallback) {
-                        Text(
-                            text = stringResource(
-                                Res.string.alley_artist_catalog_available_fallback_prompt_always_show
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun SmallAvailableFallbackPrompt(
-        fallbackYear: DataYear,
-        onShowFallback: () -> Unit,
-        onAlwaysShowFallback: () -> Unit,
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(
-                        Res.string.alley_artist_catalog_available_fallback_prompt,
-                        stringResource(fallbackYear.fullName),
-                    )
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Button(onClick = onShowFallback) {
-                        Text(
-                            text = stringResource(
-                                Res.string.alley_artist_catalog_available_fallback_prompt_show,
-                                stringResource(fallbackYear.shortName),
-                            )
-                        )
-                    }
-                    Button(onClick = onAlwaysShowFallback) {
-                        Text(
-                            text = stringResource(
-                                Res.string.alley_artist_catalog_available_fallback_prompt_always_show
-                            )
-                        )
-                    }
+                if (fallbackHeader != null) {
+                    fallbackHeader()
                 }
             }
         }
@@ -473,8 +318,6 @@ object DetailsScreen {
         data object NavigateUp : Event
         data class OpenImage(val imageIndex: Int) : Event
         data object OpenMap : Event
-        data object ShowFallback : Event
-        data object AlwaysShowFallback : Event
     }
 }
 
@@ -486,14 +329,13 @@ private fun DetailsScreen() {
         title = { Text("Details title") },
         sharedElementId = "sharedElementId",
         favorite = { true },
-        catalog = { LoadingResult.success(DetailsScreenCatalog(images, false, null)) },
+        catalog = { DetailsScreenCatalog(images, false, null) },
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
     ) {
-        item {
+        item(span = GridUtils.maxSpanFunction) {
             Box(
-                Modifier.fillMaxSize()
-                    .padding(16.dp)
+                Modifier.fillMaxWidth()
                     .height(400.dp)
                     .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
             )

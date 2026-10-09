@@ -360,7 +360,9 @@ internal fun <Image : ImageWithDimensions> SmallImageGrid(
     ) {
         itemsIndexed(images) { index, image ->
             AsyncImage(
-                model = image,
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(image)
+                    .build(),
                 contentScale = ContentScale.FillWidth,
                 contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                 modifier = Modifier
@@ -530,7 +532,7 @@ fun ImageGrid(
                     AsyncImage(
                         model = ImageRequest.Builder(LocalPlatformContext.current)
                             .data(imageModel)
-                            .placeholderMemoryCacheKey(imageModel.toString())
+                            .placeholderMemoryCacheKey("$imageModel")
                             .apply {
                                 if (zoomed) {
                                     size(SizeResolver.ORIGINAL)

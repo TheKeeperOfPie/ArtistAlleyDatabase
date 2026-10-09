@@ -5,6 +5,8 @@ import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.platform.LocalInspectionMode
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
+import dev.zacsweers.metro.ContributesBinding
 
 val LocalAlleyNavigator = compositionLocalWithComputedDefaultOf<AlleyNavigator> {
     if (LocalInspectionMode.currentValue) {
@@ -26,7 +28,8 @@ private object NoOpNavigator : AlleyNavigator {
     override fun navigate(destination: AlleyDestination) {}
 }
 
-private class AlleyNavigatorImpl(private val navStack: AlleyNavStack) : AlleyNavigator {
+@ContributesBinding(NavigatorScope::class)
+internal class AlleyNavigatorImpl(private val navStack: AlleyNavStack) : AlleyNavigator {
     // TODO: Handle up vs back
     override fun goBack() {
         navStack.onBack()

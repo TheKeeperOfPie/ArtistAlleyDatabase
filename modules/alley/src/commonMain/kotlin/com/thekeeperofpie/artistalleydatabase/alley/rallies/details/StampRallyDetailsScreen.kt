@@ -98,7 +98,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
@@ -166,8 +165,6 @@ object StampRallyDetailsScreen {
                                 }
                             }
                             DetailsScreen.Event.OpenMap -> onOpenMap()
-                            DetailsScreen.Event.ShowFallback -> Unit
-                            DetailsScreen.Event.AlwaysShowFallback -> Unit
                         }
                     is Event.OpenArtist -> onOpenArtist(it.artist, null)
                     is Event.OpenSeries -> onOpenSeries(route.year, it.series)
@@ -203,7 +200,7 @@ object StampRallyDetailsScreen {
             },
             sharedElementId = route.id,
             favorite = { entry()?.favorite },
-            catalog = { LoadingResult.success(DetailsScreenCatalog(images(), null, null)) },
+            catalog = { DetailsScreenCatalog(images(), null, null) },
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {
