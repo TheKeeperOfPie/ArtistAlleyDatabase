@@ -56,7 +56,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
@@ -508,9 +507,6 @@ fun ImageGrid(
         }
     }
 
-    val placeholderColor = MaterialTheme.colorScheme.surfaceVariant
-    val placeholder = remember { ColorPainter(placeholderColor) }
-
     val gridState = rememberLazyStaggeredGridState()
     val scrollAreaState = rememberScrollAreaState(gridState)
     ScrollArea(state = scrollAreaState, modifier = modifier) {
@@ -541,7 +537,6 @@ fun ImageGrid(
                             .build(),
                         contentScale = ContentScale.FillWidth,
                         contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                        placeholder = placeholder,
                         onSuccess = {
                             val width = it.result.image.width
                             val height = it.result.image.height
@@ -572,6 +567,7 @@ fun ImageGrid(
                             .conditionallyNonNull(size) {
                                 aspectRatio(it.width.toFloat() / it.height)
                             }
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     )
 
                     val isZoomed = zoomableState.zoomFraction.let { it != null && it > 0f }

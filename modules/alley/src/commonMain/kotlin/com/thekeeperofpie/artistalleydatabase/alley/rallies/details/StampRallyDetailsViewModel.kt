@@ -5,6 +5,8 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
@@ -12,7 +14,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -21,37 +22,30 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithArtistsEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @AssistedInject
 class StampRallyDetailsViewModel(
     private val dispatchers: CustomDispatchers,
@@ -66,55 +60,56 @@ class StampRallyDetailsViewModel(
     val id = route.id
     val initialImageIndex = route.initialImageIndex
 
-    internal val images = flow {
-        if (route.images.isNullOrEmpty()) {
-            val entry = stampRallyEntryDao.getEntry(route.year, route.id)
-            emit(
-                LoadingResult.success(
-                    entry?.stampRally?.images
-                        ?.let { AlleyImageUtils.getRallyImages(year = route.year, images = it) }
-                        .orEmpty()
-                )
-            )
+    internal val images by transform(viewModelScope) {
+        if (!route.images.isNullOrEmpty()) {
+            return@transform AlleyImageUtils.getRallyImages(route.year, route.images)
         }
-    }.stateInForCompose(
-        if (route.images == null) {
-            LoadingResult.loading()
-        } else {
-            LoadingResult.success(AlleyImageUtils.getRallyImages(route.year, route.images))
-        }
-    )
 
-    val entry = flowFromSuspend {
-        val entryWithArtists =
-            stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@flowFromSuspend null
-        val stampRallyWithUserData = entryWithArtists.stampRally
-        val stampRally = stampRallyWithUserData.stampRally
-        val artists = entryWithArtists.artists
-            .sortedBy { it.booth }
-            .map { it to AlleyImageUtils.getProfileImage(it.year, it.profileImage) }
+        produceState(emptyList()) {
+            val entry = stampRallyEntryDao.getEntry(route.year, route.id)
+            value = entry?.stampRally?.images
+                ?.let { AlleyImageUtils.getRallyImages(year = route.year, images = it) }
+                .orEmpty()
+        }.value
+    }
+
+    internal val entry by transform(viewModelScope) {
+        val entryWithArtists by produceState<StampRallyWithArtistsEntry?>(null) {
+            value = stampRallyEntryDao.getEntryWithArtists(year, id)
+        }
+        val (stampRallyWithUserData, artists) = entryWithArtists ?: return@transform null
+        val sortedArtists = remember(artists) {
+            artists
+                .sortedBy { it.booth }
+                .map { it to AlleyImageUtils.getProfileImage(it.year, it.profileImage) }
+        }
 
         // Some stamp rallies have artists in non-AA regions, try and show those
-        val otherTables = stampRally.tables
-            .filter { table ->
-                artists.none { artist ->
+        val stampRally = stampRallyWithUserData.stampRally
+        val tables = stampRally.tables
+        val otherTables = remember(tables) {
+            tables.filter { table ->
+                sortedArtists.none { artist ->
                     artist.first.booth == table.substringBefore("-").trim()
                 }
             }
+        }
 
         Entry(
             stampRally = stampRally,
             userEntry = stampRallyWithUserData.userEntry,
-            artists = artists,
+            artists = sortedArtists,
             otherTables = otherTables,
         )
-    }.flowOn(dispatchers.io)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    }
 
-    val series = entry.filterNotNull()
-        .flatMapLatest { seriesEntryDao.observeSeriesByIdsWithUserData(it.stampRally.series) }
-        .flowOn(dispatchers.io)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    val series by transform(viewModelScope) {
+        val entry = entry ?: return@transform null
+        produceState<List<SeriesWithUserData>?>(null, entry) {
+            seriesEntryDao.observeSeriesByIdsWithUserData(entry.stampRally.series)
+                .collectLatest { value = it }
+        }.value
+    }
 
     val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver.Fixed) {
         mutableStateOf(TextFieldState())
@@ -142,7 +137,7 @@ class StampRallyDetailsViewModel(
     }
 
     fun onFavoriteToggle(favorite: Boolean) {
-        val entry = entry.value ?: return
+        val entry = entry ?: return
         entry.favorite = favorite
         viewModelScope.launch(dispatchers.io) {
             userEntryDao.insertStampRallyUserEntry(entry.userEntry.copy(favorite = favorite))

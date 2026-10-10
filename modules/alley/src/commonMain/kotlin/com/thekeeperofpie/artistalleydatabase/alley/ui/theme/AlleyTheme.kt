@@ -11,7 +11,10 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
@@ -154,16 +157,29 @@ fun AlleyTheme(appTheme: () -> AppThemeSetting, graph: ArtistAlleyGraph, content
 
     val buildConfig = remember(graph) { graph.buildConfig }
     val imageColorsState = rememberImageColorsState()
+    val currentUriHandler = LocalUriHandler.current
+    val uriHandler = remember(currentUriHandler) {
+        object : UriHandler {
+            override fun openUri(uri: String) {
+                try {
+                    currentUriHandler.openUri(uri)
+                } catch (t: Throwable) {
+                    ConsoleLogger.log("Failed to open URI: ${t.message}")
+                }
+            }
+        }
+    }
 
     CompositionLocalProvider(
         LocalAppTheme provides appTheme,
         LocalBuildConfig provides buildConfig,
         LocalAlleyColorScheme provides alleyColorScheme,
         LocalImageColorsState provides imageColorsState,
+        LocalUriHandler provides uriHandler,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            content = content
+            content = content,
         )
     }
 }

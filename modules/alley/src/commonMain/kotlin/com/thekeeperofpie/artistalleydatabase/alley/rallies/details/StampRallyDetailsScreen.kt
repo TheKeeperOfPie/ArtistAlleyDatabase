@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_adult_content_description
@@ -124,12 +123,11 @@ object StampRallyDetailsScreen {
             )
         },
     ) {
-        val imagesResult by viewModel.images.collectAsStateWithLifecycle()
         // TODO: Loading indicator
-        val images = imagesResult.result.orEmpty()
+        val images = viewModel.images
         val imagePagerState = rememberImagePagerState(
-            images,
-            viewModel.initialImageIndex
+            images = images,
+            initialImageIndex = viewModel.initialImageIndex
         )
 
         NavigationResultEffect(ImagesScreen.REQUEST_KEY) {
@@ -137,14 +135,12 @@ object StampRallyDetailsScreen {
                 imagePagerState.scrollToPage(it)
             }
         }
-        val entry by viewModel.entry.collectAsStateWithLifecycle()
-        val series by viewModel.series.collectAsStateWithLifecycle()
         StampRallyDetailsScreen(
             route = route,
-            entry = { entry },
-            series = { series },
+            entry = viewModel::entry,
+            series = viewModel::series,
             userNotesTextState = viewModel.userNotes,
-            images = { images },
+            images = viewModel::images,
             imagePagerState = imagePagerState,
             eventSink = {
                 when (it) {
@@ -154,7 +150,7 @@ object StampRallyDetailsScreen {
                                 viewModel.onFavoriteToggle(event.favorite)
                             DetailsScreen.Event.NavigateUp -> onNavigateUp()
                             is DetailsScreen.Event.OpenImage -> {
-                                viewModel.entry.value?.stampRally?.let {
+                                viewModel.entry?.stampRally?.let {
                                     onOpenImages(
                                         it.id,
                                         it.hostTable,

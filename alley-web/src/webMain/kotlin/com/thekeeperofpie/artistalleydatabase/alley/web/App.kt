@@ -72,7 +72,7 @@ fun App(graph: ArtistAlleyWebGraph) {
 
     SingletonImageLoader.setSafe { context ->
         ImageLoader.Builder(context)
-            .crossfade(false)
+            .crossfade(true)
             .precision(Precision.INEXACT)
             .components {
                 val concurrentRequestStrategy = DeDupeConcurrentRequestStrategy()

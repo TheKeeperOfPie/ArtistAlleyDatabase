@@ -6,7 +6,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -29,7 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -41,9 +39,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
@@ -52,7 +48,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @AssistedInject
 class ArtistDetailsViewModel(
     private val artistEntryDao: ArtistEntryDao,
@@ -87,9 +83,9 @@ class ArtistDetailsViewModel(
                 else -> null
             }
         }
-        val (artist, stampRallies) = entryWithStampRallies ?: return@transform null
+        val (artistWithUserData, stampRallies) = entryWithStampRallies ?: return@transform null
         Entry(
-            data = ArtistWithUserData(artist = artist.artist, userEntry = artist.userEntry),
+            artistWithUserData = artistWithUserData,
             stampRallies = stampRallies,
         )
     }
@@ -179,7 +175,7 @@ class ArtistDetailsViewModel(
     val seriesImages by transform(viewModelScope) {
         val seriesInferred = seriesInferred ?: return@transform emptyMap()
         val seriesConfirmed = seriesConfirmed ?: return@transform emptyMap()
-        produceState(emptyMap<String, String>(), seriesInferred, seriesConfirmed) {
+        produceState(emptyMap(), seriesInferred, seriesConfirmed) {
             val series = (seriesInferred + seriesConfirmed).map { it.series.toImageInfo() }
             val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
             value = seriesImagesCacheResult.seriesIdsToImages
@@ -190,8 +186,6 @@ class ArtistDetailsViewModel(
     val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver.Fixed) {
         mutableStateOf(TextFieldState())
     }
-
-    private val mutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
 
     init {
         viewModelScope.launch(dispatchers.io) {
@@ -205,18 +199,10 @@ class ArtistDetailsViewModel(
                     userNotesDao.updateArtistNotes(id, year, it.toString())
                 }
         }
-
-        viewModelScope.launch(dispatchers.io) {
-            mutationUpdates.collectLatest {
-                userEntryDao.insertSeriesUserEntry(it)
-            }
-        }
     }
 
     fun onEvent(event: ArtistDetailsScreen.Event) {
         when (event) {
-            is ArtistDetailsScreen.Event.SeriesFavoriteToggle ->
-                mutationUpdates.tryEmit(event.series.userEntry.copy(favorite = event.favorite))
             is ArtistDetailsScreen.Event.DetailsEvent ->
                 when (val detailsEvent = event.event) {
                     is DetailsScreen.Event.FavoriteToggle ->
@@ -225,7 +211,7 @@ class ArtistDetailsViewModel(
                     is DetailsScreen.Event.OpenImage -> {
                         val showingOutdatedCatalogs =
                             catalog.showOutdatedCatalogs == true
-                        val artistWithUserData = entry?.data
+                        val artistWithUserData = entry?.artistWithUserData
                         if (artistWithUserData != null) {
                             navigator.navigate(
                                 AlleyDestination.Images.fromArtist(
@@ -249,7 +235,6 @@ class ArtistDetailsViewModel(
 
     private fun onFavoriteToggle(favorite: Boolean) {
         val entry = entry ?: return
-        entry.favorite = favorite
         viewModelScope.launch(dispatchers.io) {
             userEntryDao.insertArtistUserEntry(entry.userEntry.copy(favorite = favorite))
         }
@@ -257,12 +242,11 @@ class ArtistDetailsViewModel(
 
     @Stable
     class Entry(
-        val data: ArtistWithUserData,
+        val artistWithUserData: ArtistWithUserData,
         val stampRallies: List<StampRallyDatabaseEntry>,
     ) {
-        val artist get() = data.artist
-        val userEntry get() = data.userEntry
-        var favorite by mutableStateOf(userEntry.favorite)
+        val artist get() = artistWithUserData.artist
+        val userEntry get() = artistWithUserData.userEntry
     }
 
     @AssistedFactory

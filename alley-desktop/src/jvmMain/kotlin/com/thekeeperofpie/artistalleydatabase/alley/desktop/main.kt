@@ -1,12 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.alley.desktop
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.PointerMatcher
+import androidx.compose.foundation.onClick
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
@@ -27,6 +30,7 @@ import coil3.request.crossfade
 import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeInit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -38,6 +42,7 @@ import okio.FileSystem
 import okio.buffer
 import okio.source
 
+@OptIn(ExperimentalFoundationApi::class)
 fun main() {
     ComposeInit.init()
     application {
@@ -110,8 +115,21 @@ fun main() {
                 CompositionLocalProvider(
                     LocalWindowConfiguration provides windowConfiguration,
                 ) {
-                    Scaffold {
-                        ArtistAlleyAppScreen(graph = graph, modifier = Modifier.padding(it))
+                    Surface {
+                        val navStack = rememberAlleyNavStack()
+                        ArtistAlleyAppScreen(
+                            graph = graph,
+                            navStack = navStack,
+                            modifier = Modifier
+                                .onClick(
+                                    matcher = PointerMatcher.mouse(PointerButton.Forward),
+                                    onClick = navStack::onForward,
+                                )
+                                .onClick(
+                                    matcher = PointerMatcher.mouse(PointerButton.Back),
+                                    onClick = navStack::onBack,
+                                )
+                        )
                     }
                 }
             }

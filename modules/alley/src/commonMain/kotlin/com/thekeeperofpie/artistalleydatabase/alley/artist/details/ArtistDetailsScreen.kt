@@ -151,14 +151,14 @@ object ArtistDetailsScreen {
         }
         ArtistDetailsScreen(
             route = route,
-            entry = { viewModel.entry },
-            otherArtists = { viewModel.otherArtists },
-            seriesInferred = { viewModel.seriesInferred },
-            seriesConfirmed = { viewModel.seriesConfirmed },
+            entry = viewModel::entry,
+            otherArtists = viewModel::otherArtists,
+            seriesInferred = viewModel::seriesInferred,
+            seriesConfirmed = viewModel::seriesConfirmed,
             userNotesTextState = viewModel.userNotes,
             imagePagerState = imagePagerState,
-            catalog = { viewModel.catalog },
-            seriesImages = { viewModel.seriesImages },
+            catalog = viewModel::catalog,
+            seriesImages = viewModel::seriesImages,
             otherYears = viewModel::otherYears,
             eventSink = viewModel::onEvent,
         )
@@ -178,14 +178,6 @@ object ArtistDetailsScreen {
         otherYears: () -> List<DataYear>,
         eventSink: (Event) -> Unit,
     ) {
-        val uriHandler = LocalUriHandler.current
-        val onClickOpenUri: (String) -> Unit = {
-            try {
-                uriHandler.openUri(it)
-            } catch (_: Throwable) {
-            }
-        }
-
         val randomSeed = LocalStableRandomSeed.current
 
         val languageOptionMedia = LocalLanguageOptionMedia.current
@@ -222,12 +214,12 @@ object ArtistDetailsScreen {
                     year = route.year,
                     id = id,
                     booth = booth,
-                    profileImage = entry?.data?.profileImage,
+                    profileImage = entry?.artistWithUserData?.profileImage,
                     name = name,
                 )
             },
             sharedElementId = route.id.orEmpty(),
-            favorite = { entry()?.favorite },
+            favorite = { entry()?.userEntry?.favorite },
             catalog = catalog,
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
@@ -362,13 +354,14 @@ object ArtistDetailsScreen {
                 val portfolioLinks = artist.portfolioLinks
                 if (portfolioLinks.isNotEmpty()) {
                     item("artistPortfolioLinks", GridUtils.maxSpanFunction) {
+                        val uriHandler = LocalUriHandler.current
                         ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_portfolio,
                                 contentDescriptionTextRes = null,
                                 values = portfolioLinks,
                                 valueToText = { it },
-                                onClick = onClickOpenUri,
+                                onClick = uriHandler::openUri,
                                 allowExpand = false,
                                 showDividerAbove = false,
                             )
@@ -379,13 +372,14 @@ object ArtistDetailsScreen {
                 val catalogLinks = artist.catalogLinks
                 if (catalogLinks.isNotEmpty()) {
                     item("artistCatalogLinks", GridUtils.maxSpanFunction) {
+                        val uriHandler = LocalUriHandler.current
                         ThemeAwareElevatedCard {
                             expandableListInfoText(
                                 labelTextRes = Res.string.alley_artist_details_catalog,
                                 contentDescriptionTextRes = null,
                                 values = catalogLinks,
                                 valueToText = { it },
-                                onClick = onClickOpenUri,
+                                onClick = uriHandler::openUri,
                                 allowExpand = false,
                                 showDividerAbove = false,
                             )
@@ -827,11 +821,6 @@ object ArtistDetailsScreen {
 
     sealed interface Event {
         data class DetailsEvent(val event: DetailsScreen.Event) : Event
-        data class SeriesFavoriteToggle(
-            val series: SeriesWithUserData,
-            val favorite: Boolean,
-        ) : Event
-
         data object ShowFallback : Event
         data object AlwaysShowFallback : Event
     }
@@ -839,22 +828,20 @@ object ArtistDetailsScreen {
 
 @Composable
 private fun ArtistDetailsScreenPreview(
-    artist: ArtistWithUserData,
+    artistWithUserData: ArtistWithUserData,
     images: List<CatalogImage> = CatalogImagePreviewProvider.values.take(4).toList(),
     catalog: DetailsScreenCatalog = DetailsScreenCatalog(images, null, null),
 ) {
     val entry = ArtistDetailsViewModel.Entry(
-        data = ArtistWithUserData(
-            artist = artist.artist,
-            userEntry = artist.userEntry,
-        ),
+        artistWithUserData = artistWithUserData,
         stampRallies = emptyList(),
     )
-    val seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed.toSet())
+    val artist = artistWithUserData.artist
+    val seriesInferred = (artist.seriesInferred - artist.seriesConfirmed.toSet())
         .map { previewSeriesWithUserData(it) }
-    val seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesWithUserData(it) }
+    val seriesConfirmed = artist.seriesConfirmed.map { previewSeriesWithUserData(it) }
     ArtistDetailsScreen(
-        route = AlleyDestination.ArtistDetails(artist.artist),
+        route = AlleyDestination.ArtistDetails(artist),
         entry = { entry },
         otherArtists = { emptyList() },
         seriesInferred = { seriesInferred },
@@ -877,7 +864,7 @@ private fun PhoneLayout() {
 @AlleyPreviewSizes
 @Composable
 private fun FallbackPromptPreview() {
-    val artist = remember {
+    val artistWithUserData = remember {
         ArtistWithUserDataProvider.values.first().let {
             it.copy(
                 artist = it.artist.copy(
@@ -890,7 +877,7 @@ private fun FallbackPromptPreview() {
     }
     val images = emptyList<CatalogImage>()
     ArtistDetailsScreenPreview(
-        artist = artist,
+        artistWithUserData = artistWithUserData,
         images = images,
         catalog = DetailsScreenCatalog(images, false, DataYear.ANIME_EXPO_2025),
     )
@@ -899,7 +886,7 @@ private fun FallbackPromptPreview() {
 @AlleyPreviewSizes
 @Composable
 private fun FallbackBannerPreview() {
-    val artist = remember {
+    val artistWithUserData = remember {
         ArtistWithUserDataProvider.values.first().let {
             it.copy(
                 artist = it.artist.copy(
@@ -912,7 +899,7 @@ private fun FallbackBannerPreview() {
     }
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     ArtistDetailsScreenPreview(
-        artist = artist,
+        artistWithUserData = artistWithUserData,
         images = images,
         catalog = DetailsScreenCatalog(images, true, DataYear.ANIME_EXPO_2025),
     )
