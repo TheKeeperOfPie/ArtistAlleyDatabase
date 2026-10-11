@@ -40,10 +40,7 @@ val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlle
     // Writing the cache is more expensive than running the task incrementally
     outputs.cacheIf { false }
 }
-val changelogTask = tasks.register<ArtistAlleyChangelogTask>("generateArtistAlleyChangelog") {
-    legacySeriesFile.set(project.file("inputs/tags/seriesLegacy.sql"))
-    legacyMerchFile.set(project.file("inputs/tags/merchLegacy.sql"))
-}
+val changelogTask = tasks.register<ArtistAlleyChangelogTask>("generateArtistAlleyChangelog")
 val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase") {
     inputImagesAnimeExpo2023.set(inputsTask.flatMap { it.outputImagesAnimeExpo2023 })
     inputImagesAnimeExpo2024.set(inputsTask.flatMap { it.outputImagesAnimeExpo2024 })

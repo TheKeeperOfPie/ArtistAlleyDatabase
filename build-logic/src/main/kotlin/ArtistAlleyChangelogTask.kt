@@ -69,6 +69,9 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     abstract val outputFile: RegularFileProperty
 
     init {
+        // TODO: Convert legacy tags into snapshots?
+        legacySeriesFile.convention(layout.projectDirectory.file("inputs/legacy/tags/seriesLegacy.sql"))
+        legacyMerchFile.convention(layout.projectDirectory.file("inputs/legacy/tags/merchLegacy.sql"))
         animeExpo2026SnapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/animeExpo2026/edit"))
         animeNyc2026SnapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/animeNyc2026/edit"))
         outputFile.convention(layout.buildDirectory.file("generated/changelog.json"))
