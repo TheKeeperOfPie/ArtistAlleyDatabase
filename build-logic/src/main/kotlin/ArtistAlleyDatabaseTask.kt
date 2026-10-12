@@ -485,7 +485,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     ) {
                         logger.error("Duplicate failure for artist ${artist.booth} - ${artist.name}")
                     }
-                    val inference = ArtistInferenceProvider(database, artist.id.toString())
+                    val inference = ArtistInferenceProvider(database, artist.id.toString(), dataYear)
                     val socialLinks = artist.socialLinks.ifEmpty { inference.socialLinks }
                     val storeLinks = artist.storeLinks.ifEmpty { inference.storeLinks }
                     val seriesInferred = artist.seriesInferred
@@ -1553,21 +1553,28 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     private class ArtistInferenceProvider(
         private val database: BuildLogicEditDatabase,
         private val artistId: String,
+        private val dataYear: DataYear,
     ) {
-        private fun getEntry(dataYear: DataYear) =
-            database.artistEntryQueries.getEntry(dataYear, Uuid.parse(artistId))
-                .executeAsOneOrNull()
 
-        private fun cascadeAll(
-            value: GetEntry.() -> List<String>,
-        ): List<String> = listOf(
+        private val DataYear.Dates.start
+            get() = LocalDate(year = year, month = month, day = startDay)
+
+        private val years = listOf(
             DataYear.ANIME_EXPO_2026,
             DataYear.ANIME_NYC_2026,
             DataYear.ANIME_EXPO_2025,
             DataYear.ANIME_EXPO_2024,
             DataYear.ANIME_NYC_2025,
             DataYear.ANIME_NYC_2024,
-        ).firstNotNullOfOrNull {
+        ).filter { it.dates.start < dataYear.dates.start }
+
+        private fun getEntry(dataYear: DataYear) =
+            database.artistEntryQueries.getEntry(dataYear, Uuid.parse(artistId))
+                .executeAsOneOrNull()
+
+        private fun cascadeAll(
+            value: GetEntry.() -> List<String>,
+        ): List<String> = years.firstNotNullOfOrNull {
             getEntry(it)?.value()?.ifEmpty { null }
         }.orEmpty()
 

@@ -7,6 +7,7 @@ import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.atStartOfDayIn
 import kotlin.time.Clock
 
+// TODO: Can these be moved next to DataYear now?
 val DataYear.Dates.start
     get() = LocalDate(year = year, month = month, day = startDay)
 
