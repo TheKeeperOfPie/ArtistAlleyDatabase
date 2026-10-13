@@ -180,6 +180,7 @@ object DetailsScreen {
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalArrangement = DETAILS_HORIZONTAL_ARRANGEMENT,
                     contentPadding = PaddingValues(
+                        top = 16.dp,
                         start = horizontalContentPadding,
                         end = horizontalContentPadding,
                         bottom = 64.dp,
@@ -276,11 +277,9 @@ object DetailsScreen {
     ) {
         val catalog = catalog()
         val images = catalog.images
-        val fallbackYear = catalog.fallbackYear
-        val showFallbackImages = catalog.showOutdatedCatalogs
         if (images.isEmpty()) {
-            if (showFallbackImages == false && fallbackYear != null) {
-                fallbackHeader?.invoke()
+            if (fallbackHeader != null) {
+                fallbackHeader()
             } else {
                 Box(
                     contentAlignment = Alignment.Center,

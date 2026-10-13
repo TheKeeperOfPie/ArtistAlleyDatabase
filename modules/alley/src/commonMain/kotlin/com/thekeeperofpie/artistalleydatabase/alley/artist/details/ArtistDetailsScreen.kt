@@ -203,6 +203,9 @@ object ArtistDetailsScreen {
         val merchInferred = remember(merchInferredUnsorted) { merchInferredUnsorted.sorted() }
 
         val navigator = LocalAlleyNavigator.current
+        val catalog = catalog()
+        val fallbackYear = catalog.fallbackYear
+        val showFallbackImages = catalog.showOutdatedCatalogs
         DetailsScreen(
             title = {
                 val entry = entry()
@@ -220,17 +223,15 @@ object ArtistDetailsScreen {
             },
             sharedElementId = route.id.orEmpty(),
             favorite = { entry()?.userEntry?.favorite },
-            catalog = catalog,
+            catalog = { catalog },
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
-            fallbackHeader = {
-                val catalog = catalog()
-                val fallbackYear = catalog.fallbackYear
-                val showFallbackImages = catalog.showOutdatedCatalogs
-                if (fallbackYear != null) {
-                    if (showFallbackImages == true) {
-                        ImageFallbackBanner(route.id.orEmpty(), fallbackYear)
-                    } else if (catalog.images.isEmpty() && showFallbackImages == false) {
+            fallbackHeader = when {
+                fallbackYear != null && showFallbackImages == true -> {
+                    { ImageFallbackBanner(route.id.orEmpty(), fallbackYear) }
+                }
+                fallbackYear != null && showFallbackImages == false -> {
+                    {
                         AvailableFallbackPrompt(
                             fallbackYear = fallbackYear,
                             onShowFallback = { eventSink(Event.ShowFallback) },
@@ -238,6 +239,7 @@ object ArtistDetailsScreen {
                         )
                     }
                 }
+                else -> null
             }
         ) { columnCount ->
             val artist = entry()?.artist
