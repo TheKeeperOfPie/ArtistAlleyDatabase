@@ -67,9 +67,9 @@ fun main() {
                         !supportsWasm || it.key != "originJsAlley-web.js"
                     }
                     .map {
-                    console.log("Cache input ${it.key}-${it.value}")
-                    "/${it.key}?__REVISION__=${it.value}"
-                }.toTypedArray()
+                        console.log("Cache input ${it.key}-${it.value}")
+                        "/${it.key}?__REVISION__=${it.value}"
+                    }.toTypedArray()
 
                 self.caches.open(APP_CACHE.name).await()
                     .addAll(urlsToCache)
@@ -111,15 +111,14 @@ fun main() {
                         fetchCacheFirst(
                             "/index.html?__REVISION__=$cachedRevision",
                             request,
-                            urlPath
                         )
                     } else {
                         val cachedRevision = filesToCacheAndRevisions[urlPathWithoutSlash]
                         if (cachedRevision != null) {
                             url.searchParams.set("__REVISION__", cachedRevision)
-                            fetchCacheFirst(url.href, request, urlPath)
+                            fetchCacheFirst(url.href, request)
                         } else {
-                            fetchCacheFirst(request, request, urlPath)
+                            fetchCacheFirst(request, request)
                         }
                     }
 
@@ -152,22 +151,33 @@ fun main() {
 private suspend fun fetchCacheFirst(
     cacheRequest: dynamic,
     remoteRequest: Request,
-    path: String,
 ): Response {
-    val cached = self.caches.match(cacheRequest).await()
-    return if (cached is Response) {
-        if (cached.redirected) {
-            Response(cached.body, object : ResponseInit {
-                override var headers = cached.headers
-                override var status: Short? = cached.status
-                override var statusText: String? = cached.statusText
-            })
-        } else {
-            cached
+    val cached = readCachedResponse(cacheRequest)
+    if (cached != null) return cached
+
+    val requestUrl = URL(remoteRequest.url)
+    return if (requestUrl.origin == self.location.origin) {
+        try {
+            self.fetch(remoteRequest).await()
+        } catch (t: Throwable) {
+            // Redirect offline requests for deep linked, non-root URLs to index.html
+            val cachedRevision = filesToCacheAndRevisions["index.html"]
+            readCachedResponse("/index.html?__REVISION__=$cachedRevision")
+                ?: throw t
         }
     } else {
         self.fetch(remoteRequest).await()
     }
+}
+
+private suspend fun readCachedResponse(cacheRequest: dynamic): Response? {
+    val cached = self.caches.match(cacheRequest).await() as? Response ?: return null
+    if (!cached.redirected) return cached
+    return Response(cached.body, object : ResponseInit {
+        override var headers = cached.headers
+        override var status: Short? = cached.status
+        override var statusText: String? = cached.statusText
+    })
 }
 
 private suspend fun cleanUpCaches() = coroutineScope {
