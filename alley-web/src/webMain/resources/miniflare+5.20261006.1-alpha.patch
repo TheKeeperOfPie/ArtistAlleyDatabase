@@ -1,0 +1,28 @@
+diff --git a/node_modules/miniflare/dist/src/index.js b/node_modules/miniflare/dist/src/index.js
+index 2f88777..e50e835 100644
+--- a/node_modules/miniflare/dist/src/index.js
++++ b/node_modules/miniflare/dist/src/index.js
+@@ -124281,23 +124281,6 @@ var walk = async (dir2) => {
+       if (filestat.isSymbolicLink() || filestat.isDirectory()) {
+         return;
+       } else {
+-        if (filestat.size > MAX_ASSET_SIZE) {
+-          throw new Error(
+-            `Asset too large.
+-Cloudflare Workers supports assets with sizes of up to ${prettyBytes(
+-              MAX_ASSET_SIZE,
+-              {
+-                binary: true
+-              }
+-            )}. We found a file ${filepath} with a size of ${prettyBytes(
+-              filestat.size,
+-              {
+-                binary: true
+-              }
+-            )}.
+-Ensure all assets in your assets directory "${dir2}" conform with the Workers maximum size requirement.`
+-          );
+-        }
+         const [pathHash, contentHash] = await Promise.all([
+           hashPath(normalizeFilePath(relativeFilepath)),
+           // used absolute filepath here so that changes to the enclosing asset folder will be registered

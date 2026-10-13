@@ -1,7 +1,10 @@
 {
+  "type": "module",
   "dependencies": {
-    "@cloudflare/pages-plugin-cloudflare-access" : "^1.0.5",
-    "@noble/curves" : "^2.0.1",
-    "aws4fetch" : "^1.0.20"
+    "patch-package": "^8.0.1",
+    "wrangler": "4.149.0"
+  },
+  "scripts": {
+    "postinstall": "patch-package"
   }
 }

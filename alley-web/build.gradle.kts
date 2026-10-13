@@ -1,7 +1,5 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec
-import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
-import dev.zacsweers.metro.gradle.ExperimentalMetroGradleApi
-import dev.zacsweers.metro.gradle.RequiresIdeSupport
+import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import java.nio.file.Files
@@ -261,7 +259,8 @@ val syncAlleyDataResources = tasks.register<Sync>("syncAlleyDataResources") {
     val syncTask = project(":modules:alley:data").tasks.named<Sync>("syncAlleyResources").get()
     dependsOn(syncTask)
     from(alleyDataOutput)
-    val destDir = layout.buildDirectory.dir("$outputDir/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files")
+    val destDir =
+        layout.buildDirectory.dir("$outputDir/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files")
     into(destDir)
 }
 
@@ -271,54 +270,31 @@ val copyAlleyFunctions = tasks.register<Copy>("copyAlleyFunctions") {
     from(alleyFunctionsOutput)
     include("*.mjs")
     rename {
-        "/functions/" + if (it.contains("alley-functions")) {
-            "[[catchall]].mjs"
+        if (it.contains("alley-functions")) {
+            "alley-functions.mjs"
         } else {
             it
         }
     }
-    into(layout.buildDirectory.dir(outputDir))
+    into(layout.buildDirectory.dir("$outputDir/functions/backend"))
     duplicatesStrategy = DuplicatesStrategy.FAIL
-
-    val outputDir = project.layout.buildDirectory.dir(outputDir)
-    doLast {
-        // TODO: Expose onRequest directly and see if that just works
-        outputDir.get().asFile
-            .resolve("functions/[[catchall]].mjs")
-            .appendText(
-                """
-                export async function onRequest(context) {
-                  return Worker.request(context)
-                }
-            """.trimIndent()
-            )
-    }
 }
 
 val copyAlleyFunctionsMiddleware = tasks.register<Copy>("copyAlleyFunctionsMiddleware") {
     outputs.upToDateWhen { false }
     mustRunAfter(copyAlleyFunctions)
 
-    // TODO: Does this need to manually dedupe with copyAlleyFunctions similar to copyAlleyEdit?
     from(alleyFunctionsMiddlewareOutput)
-    include("*middleware.mjs")
-    rename { "/functions/_middleware.mjs" }
-    into(layout.buildDirectory.dir(outputDir))
-    duplicatesStrategy = DuplicatesStrategy.FAIL
-
-    val outputDir = project.layout.buildDirectory.dir(outputDir)
-    doLast {
-        // TODO: Expose onRequest directly and see if that just works
-        outputDir.get().asFile
-            .resolve("functions/_middleware.mjs")
-            .appendText(
-                """
-                export async function onRequest(context) {
-                  return Middleware.request(context)
-                }
-            """.trimIndent()
-            )
+    include("*.mjs")
+    rename {
+        if (it.contains("middleware")) {
+            "alley-functions-middleware.mjs"
+        } else {
+            it
+        }
     }
+    into(layout.buildDirectory.dir("$outputDir/functions/middleware"))
+    duplicatesStrategy = DuplicatesStrategy.FAIL
 }
 
 configurations.all {
@@ -352,6 +328,7 @@ tasks.register("buildSite") {
             .filter { it.extension == "map" }
             .forEach { it.delete() }
 
+        val miniflarePatchFileName = "miniflare+5.20261006.1-alpha.patch"
         val excludedFileNames = setOf(
             ".gitignore",
             "_headers",
@@ -359,6 +336,7 @@ tasks.register("buildSite") {
             "package.json",
             "serviceWorker.js",
             "wrangler.toml",
+            miniflarePatchFileName,
         )
         val rootFiles = folder.listFiles()!!
             .filter { it.isFile }
@@ -454,13 +432,56 @@ tasks.register("buildSite") {
             .replace("\"originJsAlley-web.js\"", "\"/originJsAlley-web.js\"")
         webJs.writeText(webJsEdited)
 
+        val functionsFolder = folder.resolve("functions").apply { mkdir() }
+
+        // TODO: Move this to a source file?
+        val workerJs = functionsFolder.resolve("worker.mjs")
+
+        @Language("javascript")
+        val workerSourceCode = """
+            import { Worker } from "./backend/alley-functions.mjs";
+            import { Middleware } from "./middleware/alley-functions-middleware.mjs";
+
+            export default {
+                async fetch(request, env, ctx) {
+                    const url = new URL(request.url);
+                    if (url.pathname.startsWith("/edit/api") || url.pathname.startsWith("/form/api")) {
+                        // Simulate the Pages Functions context
+                        const context = {
+                            request: request,
+                            env: env,
+                            functionPath: url.pathname,
+                            data: ctx.data,
+                            next: async (nextRequest) => {
+                              const innerContext = {
+                                request: nextRequest || request,
+                                env: env,
+                                functionPath: url.pathname,
+                                data: context.data,
+                              };
+                              return Worker.request(innerContext);
+                            }
+                        };
+                        return Middleware.request(context);
+                    }
+                    
+                    return env.ASSETS.fetch(request);
+                }
+            };
+            """
+        workerJs.writeText(workerSourceCode.trimIndent())
+
         val publicPath = folder.resolve("public").apply { mkdir() }.toPath()
+        // TODO: Merge excludes with above
         val filesToKeepInRoot = setOf(
             ".gitignore",
             ".wrangler",
             "public",
             "functions",
             "wrangler",
+            "package.json",
+            "node_modules",
+            miniflarePatchFileName,
         )
         folder.listFiles()!!
             .filter { it.nameWithoutExtension !in filesToKeepInRoot && it.name !in filesToKeepInRoot }
@@ -473,6 +494,12 @@ tasks.register("buildSite") {
                     it.delete()
                 }
             }
+
+        // Patch out the 25 MiB asset limit so that dev builds can avoid optimizing .wasm
+        val patchesDir = folder.resolve("patches").apply { mkdir() }
+        val targetPatchFile = patchesDir.resolve(miniflarePatchFileName)
+        val patchFile = folder.resolve(miniflarePatchFileName)
+        patchFile.renameTo(targetPatchFile)
     }
 }
 

@@ -92,14 +92,15 @@ fun InterceptOptions(
 }
 
 fun <T : JsAny?> promise(block: suspend () -> T) =
-    Promise { resolve, reject ->
+    Promise { resolve, reject: (JsPromiseError) -> Unit ->
         block.startCoroutine(completion = object : Continuation<T> {
             override val context: CoroutineContext = EmptyCoroutineContext
             override fun resumeWith(result: Result<T>) {
                 result.fold(
                     onSuccess = resolve,
                     onFailure = {
-                        reject((it.message ?: "Error").toJsString().unsafeCast())
+                        @Suppress("RemoveExplicitTypeArguments")
+                        reject((it.message ?: "Error").toJsString().unsafeCast<JsPromiseError>())
                     },
                 )
             }
