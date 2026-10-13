@@ -5,9 +5,10 @@ name = "artistalley-worker"
 main = "functions/worker.mjs"
 compatibility_date = "2026-10-12"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = false
 
 [build]
-command = "npm install @noble/curves aws4fetch"
+command = "npm install @noble/curves aws4fetch @cloudflare/pages-plugin-cloudflare-access"
 cwd = "./functions/"
 
 [assets]
