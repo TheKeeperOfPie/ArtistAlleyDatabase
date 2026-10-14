@@ -430,9 +430,7 @@
   integrity sha512-jDRWfcPYmOsJGN1GplXbw5ZlB+PSzihw1EDElzqkenSI+yK7QYOfwhzYnBR9H8Bv5MHi6EUMb4t3CnLfXCSA8A==
 
 "@thekeeperofpie/alley-sqldelight-worker@file:../../modules/alley/sqldelight-worker":
-  version "0.0.1"
-  dependencies:
-    "@sqlite.org/sqlite-wasm" "^3.47.2-build1"
+  version "0.0.0"
 
 "@types/body-parser@*":
   version "1.19.5"

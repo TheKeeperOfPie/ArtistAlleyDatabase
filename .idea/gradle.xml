@@ -48,6 +48,7 @@
             <option value="$PROJECT_DIR$/modules/alley/form/data" />
             <option value="$PROJECT_DIR$/modules/alley/models" />
             <option value="$PROJECT_DIR$/modules/alley/service-worker" />
+            <option value="$PROJECT_DIR$/modules/alley/sqldelight-worker" />
             <option value="$PROJECT_DIR$/modules/alley/user" />
             <option value="$PROJECT_DIR$/modules/anilist" />
             <option value="$PROJECT_DIR$/modules/anilist/data" />

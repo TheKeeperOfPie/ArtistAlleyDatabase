@@ -1,8 +1,0 @@
-{
-  "name": "@thekeeperofpie/alley-sqldelight-worker",
-  "version": "0.0.1",
-  "description": "Custom SQLDelight driver to pre-load database",
-  "dependencies": {
-    "@sqlite.org/sqlite-wasm" : "^3.47.2-build1"
-  }
-}

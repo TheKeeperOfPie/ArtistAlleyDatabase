@@ -5,12 +5,11 @@ import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import dev.zacsweers.metro.Inject
 import org.w3c.dom.Worker
-import kotlin.js.js
 
 expect fun createWebWorkerDriver(worker: Worker): SqlDriver
 
 private fun createCustomWorker(): Worker =
-    js("""new Worker(new URL("@thekeeperofpie/alley-sqldelight-worker/sqldelight-worker.js", import.meta.url))""")
+    js("""new Worker(new URL("/sqlDelightWorker.js", self.location.origin))""")
 
 private const val pragmaUserVersion = "user_version"
 

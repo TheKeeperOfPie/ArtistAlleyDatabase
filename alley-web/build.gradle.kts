@@ -80,6 +80,11 @@ val serviceWorkerOutput = configurations.create("serviceWorkerOutput") {
     isCanBeResolved = true
 }
 
+val sqlDelightWorkerOutput = configurations.create("sqlDelightWorkerOutput") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 val alleyEditOutput = configurations.create("alleyEditOutput") {
     isCanBeConsumed = false
     isCanBeResolved = true
@@ -107,6 +112,9 @@ val alleyDataOutput = configurations.create("alleyDataOutput") {
 
 dependencies {
     serviceWorkerOutput(project(":modules:alley:service-worker")) {
+        targetConfiguration = "distribution"
+    }
+    sqlDelightWorkerOutput(project(":modules:alley:sqldelight-worker")) {
         targetConfiguration = "distribution"
     }
     alleyEditOutput(project(":modules:alley-edit")) {
@@ -174,6 +182,14 @@ val copyServiceWorkerOutput = tasks.register<Copy>("copyServiceWorkerOutput") {
     outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
     from(serviceWorkerOutput)
+    into(layout.buildDirectory.dir(outputDir))
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+val copySqlDelightWorkerOutput = tasks.register<Copy>("copySqlDelightWorkerOutput") {
+    outputs.upToDateWhen { false }
+    mustRunAfter(buildBothWebVariants)
+    from(sqlDelightWorkerOutput)
     into(layout.buildDirectory.dir(outputDir))
     duplicatesStrategy = DuplicatesStrategy.FAIL
 }
@@ -313,6 +329,7 @@ tasks.register("buildSite") {
     dependsOn(
         buildBothWebVariants,
         copyServiceWorkerOutput,
+        copySqlDelightWorkerOutput,
         copyAlleyEdit,
         copyAlleyForm,
         syncAlleyDataResources,
