@@ -5,17 +5,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.ComposeViewport
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import coil3.ImageLoader
@@ -27,7 +21,6 @@ import coil3.network.DeDupeConcurrentRequestStrategy
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.toUri
-import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
@@ -86,16 +79,7 @@ fun main() {
                 .build()
         }
 
-        var fontFamilyResolver by rememberSaveable { mutableStateOf<FontFamily.Resolver?>(null) }
-        VariableFontEffect(
-            seriesEntryCache = graph.seriesEntryCache,
-            onLoaded = { fontFamilyResolver = it },
-        )
-        CompositionLocalProvider(
-            LocalFontFamilyResolver provides (fontFamilyResolver ?: LocalFontFamilyResolver.current)
-        ) {
-            Content(graph)
-        }
+        Content(graph)
     }
 }
 

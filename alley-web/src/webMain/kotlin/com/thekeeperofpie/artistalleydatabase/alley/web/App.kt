@@ -14,15 +14,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import artistalleydatabase.alley_web.generated.resources.Res
@@ -42,7 +37,6 @@ import coil3.size.Precision
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
-import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.navigation.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
@@ -98,16 +92,7 @@ fun App(graph: ArtistAlleyWebGraph) {
             .build()
     }
 
-    var fontFamilyResolver by rememberSaveable { mutableStateOf<FontFamily.Resolver?>(null) }
-    VariableFontEffect(
-        seriesEntryCache = graph.seriesEntryCache,
-        onLoaded = { fontFamilyResolver = it },
-    )
-    CompositionLocalProvider(
-        LocalFontFamilyResolver provides (fontFamilyResolver ?: LocalFontFamilyResolver.current)
-    ) {
-        Content(graph)
-    }
+    Content(graph)
 }
 
 @Composable
