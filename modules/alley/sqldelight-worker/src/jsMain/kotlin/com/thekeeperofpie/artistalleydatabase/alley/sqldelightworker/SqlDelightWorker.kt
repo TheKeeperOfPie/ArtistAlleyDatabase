@@ -4,6 +4,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.sqldelightworker
 
 import kotlinx.browser.localStorage
 import kotlinx.coroutines.await
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.DataView
 import org.khronos.webgl.Uint8Array
@@ -38,6 +40,7 @@ private const val READ_ONLY_DATABASE_PATH = "alleyArtist.sqlite"
 private const val READ_ONLY_DATABASE_HASH_PATH = "alleyArtistHash.txt"
 
 private lateinit var database: Sqlite3Db
+private val mutex = Mutex()
 
 fun main() {
     if (js("typeof importScripts === 'function'").unsafeCast<Boolean>()) {
@@ -50,7 +53,8 @@ fun main() {
     }
 }
 
-private suspend fun createDatabase() {
+private suspend fun createDatabase(): Unit = mutex.withLock {
+    if (::database.isInitialized) return@withLock
     val initOptions = Sqlite3InitOptions(print = console::log, printErr = console::error)
     val sqlite3 = sqlite3InitModule(initOptions).await()
     var opfsRoot: FileSystemDirectoryHandle? = null
