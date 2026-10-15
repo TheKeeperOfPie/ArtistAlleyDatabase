@@ -397,14 +397,104 @@ tasks.register("buildSite") {
             return crc32.value
         }
 
-        val fileNamesAndHashes = filesToCache
-            .joinToString(separator = "\\n") {
-                val relativePath = it.relativeTo(folder).path.replace(File.separatorChar, '/')
-                "$relativePath-${hash(it)}"
+        // Map key changes from webpackChunkalley_app to webpackChunkalley_edit and needs to be
+        // manually consolidated into the same key
+        val editJs = folder.resolve("alley-edit.js")
+        val editJsEdited = editJs.readText()
+            .replace("webpackChunkalley_edit", "webpackChunkalley_app")
+        editJs.writeText(editJsEdited)
+
+        listOf("alley-form.js", "originJsAlley-form.js", "originWasmAlley-form.js")
+            .map(folder::resolve)
+            .filter(File::exists)
+            .forEach {
+                val edited = it.readText()
+                    .replace("webpackChunkalley_form", "webpackChunkalley_app")
+                it.writeText(edited)
+            }
+
+        // Suffix with hash to avoid tracking revisions for immutable files that can be renamed
+        val filesToCacheWithHashes = filesToCache
+            .map { oldFile ->
+                val hash = hash(oldFile)
+                val (newFile, revision) = when {
+                    // TODO: Can use immutable reference for worker when the hash is injected into
+                    //  the Kotlin source file that references it
+                    oldFile.name == "sqlDelightWorker.js" -> oldFile to hash
+                    // Wasm file names are already hashes
+                    oldFile.extension == "wasm" -> oldFile to null
+                    // The 3 number js files fail to load when hashed
+                    oldFile.nameWithoutExtension.length == 3 -> oldFile to hash
+                    oldFile.extension == "js" ->
+                        oldFile.resolveSibling("${oldFile.nameWithoutExtension}-$hash.${oldFile.extension}") to null
+                    else -> oldFile to hash
+                }
+                Triple(oldFile, newFile, revision)
+            }
+
+        // Ensure scripts are read from site root
+        val webJs = folder.resolve("alley-web.js")
+        val webJsEdited = webJs.readText()
+            .replace("\"originWasmAlley-web.js\"", "\"/originWasmAlley-web.js\"")
+            .replace("\"originJsAlley-web.js\"", "\"/originJsAlley-web.js\"")
+        webJs.writeText(webJsEdited)
+
+        fun replaceFileContentWithHashedName(file: File) {
+            var fileContent = file.readText()
+            filesToCacheWithHashes.forEach { (oldFile, newFile, revision) ->
+                if (revision == null) {
+                    fileContent = if (oldFile.nameWithoutExtension.length == 3) {
+                        // The 3 number .js files don't have .js in the source
+                        fileContent.replace(
+                            "(${oldFile.nameWithoutExtension})",
+                            newFile.nameWithoutExtension
+                        )
+                    } else {
+                        fileContent.replace(oldFile.name, newFile.name)
+                    }
+                }
+            }
+            file.writeText(fileContent)
+        }
+
+        listOfNotNull(
+            "index.html",
+            "sqlDelightWorker.js",
+            "alley-web.js",
+            "originWasmAlley-web.js",
+            "originJsAlley-web.js",
+            "alley-edit.js",
+            "originWasmAlley-edit.js",
+            "originJsAlley-edit.js",
+            "alley-form.js",
+            "originWasmAlley-form.js",
+            "originJsAlley-form.js",
+        )
+            .map(folder::resolve)
+            .filter(File::exists)
+            .forEach(::replaceFileContentWithHashedName)
+
+        // Rename after so that list above can use original file names
+        filesToCacheWithHashes.forEach { (oldFile, newFile, revision) ->
+            if (revision == null) {
+                oldFile.renameTo(newFile)
+            }
+        }
+
+        val cacheInput = filesToCacheWithHashes
+            .filter { it.third == null }
+            .joinToString(separator = "\\n") { (_, newFile) ->
+                newFile.relativeTo(folder).path.replace(File.separatorChar, '/')
+            }
+        val cacheRevisionsInput = filesToCacheWithHashes
+            .filter { it.third != null }
+            .joinToString(separator = "\\n") { (_, newFile, revision) ->
+                newFile.relativeTo(folder).path.replace(File.separatorChar, '/') + "-$revision"
             }
         val serviceWorker = folder.resolve("serviceWorker.js")
         val serviceWorkerEdited = serviceWorker.readText()
-            .replace("CACHE_INPUT", fileNamesAndHashes)
+            .replace("CACHE_INPUT", cacheInput)
+            .replace("CACHE_REVISIONS_INPUT", cacheRevisionsInput)
         serviceWorker.writeText(serviceWorkerEdited)
 
         val properties = Properties().apply { load(propertiesFile.asFile.reader()) }
@@ -426,28 +516,6 @@ tasks.register("buildSite") {
         val txtFiles = folder.listFiles { it.extension == "txt" }!!.map { it.name }
         folder.resolve(".gitignore")
             .writeText(txtFiles.joinToString("\n") + "\n.wrangler")
-
-        // Map key changes from webpackChunkalley_app to webpackChunkalley_edit and needs to be
-        // manually consolidated into the same key
-        val editJs = folder.resolve("alley-edit.js")
-        val editJsEdited = editJs.readText()
-            .replace("webpackChunkalley_edit", "webpackChunkalley_app")
-        editJs.writeText(editJsEdited)
-
-        listOf("alley-form.js", "originJsAlley-form.js", "originWasmAlley-form.js")
-            .map(folder::resolve)
-            .filter(File::exists)
-            .forEach {
-                val edited = it.readText()
-                    .replace("webpackChunkalley_form", "webpackChunkalley_app")
-                it.writeText(edited)
-            }
-
-        val webJs = folder.resolve("alley-web.js")
-        val webJsEdited = webJs.readText()
-            .replace("\"originWasmAlley-web.js\"", "\"/originWasmAlley-web.js\"")
-            .replace("\"originJsAlley-web.js\"", "\"/originJsAlley-web.js\"")
-        webJs.writeText(webJsEdited)
 
         val functionsFolder = folder.resolve("functions").apply { mkdir() }
 
@@ -487,6 +555,9 @@ tasks.register("buildSite") {
             };
             """
         workerJs.writeText(workerSourceCode.trimIndent())
+
+        // TODO: Find better solution for this
+        folder.resolve("form.html").copyTo(folder.resolve("form/artist.html"))
 
         val publicPath = folder.resolve("public").apply { mkdir() }.toPath()
         // TODO: Merge excludes with above

@@ -30,8 +30,13 @@ private val CACHES = setOf(APP_CACHE, IMAGE_CACHE, MEDIA_IMAGE_CACHE)
 value class CacheName(val name: String)
 
 private const val filesToCacheInput = "CACHE_INPUT"
-private val filesToCacheAndRevisions = filesToCacheInput.lineSequence()
-    .associate { it.substringBeforeLast("-") to it.substringAfterLast("-") }
+private const val filesToCacheWithRevisionsInput = "CACHE_REVISIONS_INPUT"
+private val filesToCacheAndRevisions = filesToCacheInput.lines()
+    .associateWith { null }
+    .plus(
+        filesToCacheWithRevisionsInput.lines()
+            .associate { it.substringBeforeLast("-") to it.substringAfterLast("-") }
+    )
 
 private fun supportsWasm(): Boolean = js(
     """
@@ -68,7 +73,7 @@ fun main() {
                     }
                     .map {
                         console.log("Cache input ${it.key}-${it.value}")
-                        "/${it.key}?__REVISION__=${it.value}"
+                        buildPathWithRevision(it.key, it.value)
                     }.toTypedArray()
 
                 self.caches.open(APP_CACHE.name).await()
@@ -109,7 +114,7 @@ fun main() {
                     val response = if (urlPath == "/") {
                         val cachedRevision = filesToCacheAndRevisions["index.html"]
                         fetchCacheFirst(
-                            "/index.html?__REVISION__=$cachedRevision",
+                            buildPathWithRevision("index.html", cachedRevision),
                             request,
                         )
                     } else {
@@ -162,7 +167,7 @@ private suspend fun fetchCacheFirst(
         } catch (t: Throwable) {
             // Redirect offline requests for deep linked, non-root URLs to index.html
             val cachedRevision = filesToCacheAndRevisions["index.html"]
-            readCachedResponse("/index.html?__REVISION__=$cachedRevision")
+            readCachedResponse(buildPathWithRevision("index.html", cachedRevision))
                 ?: throw t
         }
     } else {
@@ -197,12 +202,19 @@ private suspend fun cleanUpCaches() = coroutineScope {
     appCacheKeys.filter {
         val url = it.url
         filesToCacheAndRevisions.none {
-            url.contains(it.key) && url.contains(it.value)
+            val revision = it.value
+            url.contains(it.key) && (revision == null || url.contains(revision))
         }
     }.forEach {
         console.log("Deleting old cache request", it.url)
         appCache.delete(it)
     }
+}
+
+private fun buildPathWithRevision(path: String, revision: String?) = if (revision == null) {
+    "/$path"
+} else {
+    "/$path?__REVISION__=$revision"
 }
 
 private fun <T> promise(block: suspend () -> T) =
