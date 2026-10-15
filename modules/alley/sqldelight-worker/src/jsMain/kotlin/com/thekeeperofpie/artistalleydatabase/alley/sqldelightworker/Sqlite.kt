@@ -45,16 +45,14 @@ fun Sqlite3Oo1.createOpfsDb(path: String, mode: String = "c"): Sqlite3Db {
 }
 
 @Suppress("UNUSED_PARAMETER", "UnusedVariable")
-fun Sqlite3Oo1.createDb(path: String? = null, mode: String? = null): Sqlite3Db {
+fun Sqlite3Oo1.createDb(): Sqlite3Db {
     val oo1 = this
-    return js("new oo1.DB(path, mode)").unsafeCast<Sqlite3Db>()
+    return js("new oo1.DB()").unsafeCast<Sqlite3Db>()
 }
 
 external interface Sqlite3OpfsDbClass {
     fun importDb(path: String, buffer: ArrayBuffer): Promise<Unit>
 }
-
-external interface Sqlite3DbClass
 
 external interface Sqlite3Db {
     val pointer: dynamic
