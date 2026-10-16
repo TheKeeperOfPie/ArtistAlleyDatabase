@@ -27,10 +27,10 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.TestRootRoute
 import com.thekeeperofpie.artistalleydatabase.test_utils.withHistoryChanges
 import com.thekeeperofpie.artistalleydatabase.test_utils.yieldingWaitUntil
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.await
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationOptionsTest
+import com.thekeeperofpie.artistalleydatabase.utils.web.navigation
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TestNavigationOptions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.navigation
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberTwoWayStack
 import kotlinx.browser.window
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -246,14 +246,14 @@ class BrowserInputTest {
     private suspend fun goBack(gesture: NavGesture, navStack: TwoWayStack<Destination>) {
         when (gesture) {
             NavGesture.COMPOSE -> navStack.onBack()
-            NavGesture.BROWSER -> navigation.back(TestNavigationOptions).committed.await()
+            NavGesture.BROWSER -> navigation.back(NavigationOptionsTest).committed.await()
         }
     }
 
     private suspend fun goForward(gesture: NavGesture, navStack: TwoWayStack<Destination>) {
         when (gesture) {
             NavGesture.COMPOSE -> navStack.onForward()
-            NavGesture.BROWSER -> navigation.forward(TestNavigationOptions).committed.await()
+            NavGesture.BROWSER -> navigation.forward(NavigationOptionsTest).committed.await()
         }
     }
 
@@ -266,7 +266,7 @@ class BrowserInputTest {
             NavGesture.COMPOSE -> navStack.navigateBy(target)
             NavGesture.BROWSER -> {
                 val key = navigation.entries()[navigation.currentEntry!!.index + target]!!.key!!
-                window.navigation!!.traverseTo(key, TestNavigationOptions).committed.await()
+                window.navigation!!.traverseTo(key, NavigationOptionsTest).committed.await()
             }
         }
     }

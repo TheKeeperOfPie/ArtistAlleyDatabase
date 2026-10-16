@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
+package com.thekeeperofpie.artistalleydatabase.utils.web
 
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import org.w3c.dom.Window
@@ -37,7 +37,7 @@ private fun navigationOptions(): NavigationOptions = js("({})")
 
 external interface NavigationOptions : JsAny {
     var info: JsAny?
-    var history: String?
+    var history: String
 }
 
 object NavigationOptionsHistory {
@@ -45,14 +45,21 @@ object NavigationOptionsHistory {
     const val REPLACE = "replace"
 }
 
-fun NavigationOptions(info: JsAny? = null, history: String? = null): NavigationOptions =
+fun NavigationOptions(info: JsAny? = null, history: String = "auto"): NavigationOptions =
     navigationOptions().apply {
         this.info = info
         this.history = history
     }
 
 // TODO: Companion val when 2.5.0+
-val TestNavigationOptions = NavigationOptions(info = "IN_TEST".toJsString())
+/** Simulates a userInitiated event as the test harness cannot inject it */
+val NavigationOptionsTest = NavigationOptions(info = "IN_TEST".toJsString())
+
+/**
+ * Signals that an event came from Compose programmatically. Alternative to userInitiated on
+ * Firefox due to https://bugzilla.mozilla.org/show_bug.cgi?id=2062328
+ */
+val NavigationOptionsFromCompose = NavigationOptions(info = "FROM_COMPOSE".toJsString())
 
 val Window.navigation: Navigation?
     get() = try {

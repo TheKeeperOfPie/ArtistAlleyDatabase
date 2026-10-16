@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.test_utils
 
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigateEvent
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationOptions
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationOptionsHistory
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TestNavigationOptions
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.navigation
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigateEvent
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationOptions
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationOptionsHistory
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationOptionsTest
+import com.thekeeperofpie.artistalleydatabase.utils.web.navigation
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.w3c.dom.events.Event
@@ -31,10 +31,13 @@ private suspend fun resetLocation() {
     // replacing it again with [TestRootRoute]. This leaves 2 URLs in the history, both set to
     // [TestRootRoute], and all tests will just assume that the first route entry is duplicated.
     val firstKey = entries.first().key
-    if (firstKey != null) navigation.traverseTo(firstKey, TestNavigationOptions).finished.await()
+    if (firstKey != null) navigation.traverseTo(firstKey, NavigationOptionsTest).finished.await()
     val url = "${window.location.origin}/$TestRootRoute"
     val fakeUrl = "${window.location.origin}/test.html"
-    navigation.navigate(url, NavigationOptions(history = NavigationOptionsHistory.REPLACE)).finished.await()
+    navigation.navigate(
+        url,
+        NavigationOptions(history = NavigationOptionsHistory.REPLACE)
+    ).finished.await()
     navigation.navigate(fakeUrl).finished.await()
     navigation.navigate(url, NavigationOptions(history = NavigationOptionsHistory.REPLACE))
         .finished.await()

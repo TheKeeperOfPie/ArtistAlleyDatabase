@@ -3,6 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventInput
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
+import com.thekeeperofpie.artistalleydatabase.utils.web.InterceptOptions
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigateEvent
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationDestination
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationOptionsFromCompose
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationOptionsTest
+import com.thekeeperofpie.artistalleydatabase.utils.web.NavigationType
+import com.thekeeperofpie.artistalleydatabase.utils.web.navigation
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +24,7 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 import kotlin.coroutines.CoroutineContext
 
-private const val DEBUG = false
+private const val DEBUG = true
 
 class BrowserInput(
     private val navHistory: StateFlow<NavigationRouteHistory>,
@@ -49,16 +56,29 @@ class BrowserInput(
 
         // TODO: Generalize this
         if ((destinationPath.startsWith("form") && routePrefix != "form") ||
-            (destinationPath.startsWith("edit") && routePrefix != "edit")) {
+            (destinationPath.startsWith("edit") && routePrefix != "edit")
+        ) {
             event.intercept(InterceptOptions { window.open(event.destination.url) })
             return@onEvent
         }
 
         if (!destinationPath.removePrefix("/").startsWith(routePrefix)) return@onEvent
 
-        val userOrTestInitiated = event.userInitiated || event.info == TestNavigationOptions.info
+
+        // NavigateEvent userInitiated is broken on Firefox:
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=2062328
+        val userAgent = window.navigator.userAgent
+        val isFirefox = userAgent.contains("Firefox", ignoreCase = true) ||
+                userAgent.contains("FxiOS", ignoreCase = true)
+        val fromCompose = event.info == NavigationOptionsFromCompose.info
+        val userInitiatedFromFirefox = (isFirefox && !fromCompose)
+
+        val userInitiatedFromTest = event.info == NavigationOptionsTest.info
+
+        val userInitiated = event.userInitiated || userInitiatedFromTest ||
+                userInitiatedFromFirefox
         when {
-            userOrTestInitiated && event.navigationType == NavigationType.TRAVERSE -> {
+            userInitiated && event.navigationType == NavigationType.TRAVERSE -> {
                 val currentIndex = window.navigation!!.currentEntry?.index ?: 0
                 if (event.destination.index == currentIndex) {
                     event.intercept()
@@ -67,11 +87,11 @@ class BrowserInput(
                     event.intercept(InterceptOptions { navigateBy(target) })
                 }
             }
-            userOrTestInitiated && event.navigationType == NavigationType.PUSH -> {
+            userInitiated && event.navigationType == NavigationType.PUSH -> {
                 val route = destinationPath.toNavRoute()
                 event.intercept(InterceptOptions { navigateTo(NavigationRoute(route)) })
             }
-            userOrTestInitiated && event.navigationType == NavigationType.REPLACE ->
+            userInitiated && event.navigationType == NavigationType.REPLACE ->
                 event.intercept()
             event.navigationType != NavigationType.RELOAD -> event.intercept()
         }
@@ -114,7 +134,10 @@ class BrowserInput(
 
     private suspend fun navigate(route: NavigationRoute) {
         val path = if (routePrefix.isEmpty()) "/${route.route}" else "/$routePrefix/${route.route}"
-        window.navigation?.navigate("${window.location.origin}$path")?.committed?.await()
+        window.navigation?.navigate(
+            url = "${window.location.origin}$path",
+            options = NavigationOptionsFromCompose,
+        )?.committed?.await()
     }
 
     private fun currentHistory(): NavigationRouteHistory {
@@ -145,13 +168,19 @@ class BrowserInput(
         if (DEBUG) ConsoleLogger.log("Handling update $current -> $updated: $update")
         val navigation = window.navigation!!
         when (update) {
-            Update.Backward -> navigation.back().committed.await()
-            Update.Forward -> navigation.forward().committed.await()
+            Update.Backward -> navigation.back(NavigationOptionsFromCompose).committed.await()
+            Update.Forward -> navigation.forward(NavigationOptionsFromCompose).committed.await()
             is Update.Push -> navigate(update.route)
-            is Update.Traverse -> navigation.traverseTo(update.key).committed.await()
+            is Update.Traverse -> navigation.traverseTo(
+                update.key,
+                NavigationOptionsFromCompose,
+            ).committed.await()
             is Update.Truncate -> {
                 if (update.key != null) {
-                    navigation.traverseTo(update.key).committed.await()
+                    navigation.traverseTo(
+                        update.key,
+                        NavigationOptionsFromCompose,
+                    ).committed.await()
                 }
                 update.pushRoutes.forEach { navigate(it) }
             }
@@ -231,7 +260,7 @@ class BrowserInput(
                 if (lastCommonIndex >= 0) {
                     val navigation = window.navigation
                     val key = navigation?.entries()?.toArray()?.getOrNull(lastCommonIndex)?.key
-                            ?.takeIf { it != navigation.currentEntry?.key }
+                        ?.takeIf { it != navigation.currentEntry?.key }
                     return Truncate(key, updatedEntries.drop(lastCommonIndex + 1))
                 }
 
