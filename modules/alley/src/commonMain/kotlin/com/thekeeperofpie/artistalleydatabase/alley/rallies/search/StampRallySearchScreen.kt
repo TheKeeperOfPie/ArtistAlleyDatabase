@@ -50,8 +50,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -292,7 +292,7 @@ object StampRallySearchScreen {
         val randomSeed: Int,
         val year: MutableStateFlow<DataYear>,
         val query: TextFieldState,
-        val results: StateFlow<PagingData<StampRallyWithUserData>>,
+        val results: Flow<PagingData<StampRallyWithUserData>>,
         val unfilteredCount: () -> Int,
         val sortFilterState: StampRallySortFilterState,
         val displayType: MutableStateFlow<SearchDisplayType>,

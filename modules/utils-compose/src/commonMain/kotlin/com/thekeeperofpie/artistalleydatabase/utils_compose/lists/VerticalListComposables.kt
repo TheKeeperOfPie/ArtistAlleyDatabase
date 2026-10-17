@@ -194,16 +194,15 @@ object VerticalList {
                         )
                     }
                 }
-                val refreshState = refreshState()
-                when {
-                    refreshState is LoadState.Error && itemCount() == 0 ->
+                when (val refreshState = refreshState()) {
+                    is LoadState.Error if itemCount() == 0 ->
                         item(key = "errorLoading", span = GridUtils.maxSpanFunction) {
                             ErrorContent(
                                 errorText = stringResource(Res.string.error_loading),
                                 exception = refreshState.error,
                             )
                         }
-                    refreshState is LoadState.NotLoading && itemCount() == 0 ->
+                    is LoadState.NotLoading if itemCount() == 0 ->
                         item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
                             NoResults()
                         }

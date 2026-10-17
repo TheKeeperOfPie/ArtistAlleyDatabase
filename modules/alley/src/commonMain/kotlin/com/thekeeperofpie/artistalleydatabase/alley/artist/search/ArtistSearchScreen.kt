@@ -95,8 +95,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -578,7 +578,7 @@ object ArtistSearchScreen {
         val randomSeed: Int,
         val year: MutableStateFlow<DataYear>,
         val query: TextFieldState,
-        val results: StateFlow<PagingData<ArtistEntryGridModel>>,
+        val results: Flow<PagingData<ArtistEntryGridModel>>,
         val unfilteredCount: () -> Int,
         val sortFilterState: ArtistSortFilterState,
         val displayType: MutableStateFlow<SearchDisplayType>,
