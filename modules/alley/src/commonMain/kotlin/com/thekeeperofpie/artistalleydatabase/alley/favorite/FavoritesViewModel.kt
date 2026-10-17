@@ -13,7 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetai
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
-import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -23,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallyFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
@@ -40,11 +40,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
@@ -92,14 +90,14 @@ class FavoritesViewModel(
         savedStateHandle = savedStateHandle,
         dataYear = year,
         lockedMerchId = null,
-        lockedSeriesEntry = ReadOnlyStateFlow(null),
+        lockedSeries = { null },
     )
 
     val seriesAutocompleteResults get() = artistSortFilterController.seriesAutocompleteResults
 
     val stampRallySortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
-        lockedSeriesEntry = ReadOnlyStateFlow(null),
+        lockedSeries = { null },
         dataYear = year,
         savedStateHandle = savedStateHandle,
     )
@@ -112,11 +110,11 @@ class FavoritesViewModel(
     private val inputs = combineStates(query, year, settings.showOnlyConfirmedTags, ::Triple)
 
     val artistsUnfilteredCount = combine(year, query, ::Pair)
-        .flatMapLatest { (year, query) ->
+        .flatMapLatest { [year, query] ->
             artistEntryDao.searchCount(
                 year = year,
-                query = query,
                 searchQuery = ArtistSearchQuery(
+                    query = query,
                     ArtistSortFilterParams.unfiltered(),
                     randomSeed = randomSeed,
                 ),
@@ -129,17 +127,15 @@ class FavoritesViewModel(
         inputs,
         snapshotFlow { artistSortFilterController.filterParams },
         ::Pair,
-    ).flatMapLatest { (inputs, filterParams) ->
-        val (query, year, showOnlyConfirmedTags) = inputs
+    ).flatMapLatest { [inputs, filterParams] ->
+        val [query, year, showOnlyConfirmedTags] = inputs
         Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
             artistEntryDao.searchPagingSource(
                 year = year,
-                query = query,
-                searchQuery = ArtistSearchQuery(filterParams, randomSeed),
+                searchQuery = ArtistSearchQuery(query = query, filterParams, randomSeed),
                 onlyFavorites = true,
             )
         }.flow
-            .map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
             .map {
                 it.mapOnIO {
                     ArtistEntryGridModel.buildFromEntry(
@@ -154,11 +150,11 @@ class FavoritesViewModel(
         .cachedIn(viewModelScope)
 
     val stampRallyUnfilteredCount = combine(year, query, ::Pair)
-        .flatMapLatest { (year, query) ->
+        .flatMapLatest { [year, query] ->
             stampRallyEntryDao.searchCount(
                 year = year,
-                query = query,
                 searchQuery = StampRallySearchQuery(
+                    query = query,
                     filterParams = StampRallyFilterParams.unfiltered(),
                     randomSeed = randomSeed,
                 ),
@@ -169,16 +165,15 @@ class FavoritesViewModel(
 
     val stampRallyEntries =
         combine(inputs, snapshotFlow { stampRallySortFilterController.filterParams }, ::Pair)
-            .flatMapLatest { (inputs, filterParams) ->
-                val (query, year, showOnlyConfirmedTags) = inputs
+            .flatMapLatest { [inputs, filterParams] ->
+                val [query, year, showOnlyConfirmedTags] = inputs
                 Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                     stampRallyEntryDao.searchPagingSource(
                         year = year,
-                        query = query,
-                        searchQuery = StampRallySearchQuery(filterParams, randomSeed),
+                        searchQuery = StampRallySearchQuery(query, filterParams, randomSeed),
                         onlyFavorites = true,
                     )
-                }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
+                }.flow
             }
             .flowOn(dispatchers.io)
             .cachedIn(viewModelScope)
@@ -221,7 +216,7 @@ class FavoritesViewModel(
         .cachedIn(viewModelScope)
 
     val merchEntries = combine(query, year, ::Pair)
-        .flatMapLatest { (query, year) ->
+        .flatMapLatest { [query, year] ->
             if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
             } else {

@@ -1,9 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -11,11 +16,12 @@ import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
-import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -25,9 +31,10 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -41,7 +48,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -94,19 +100,21 @@ class ArtistSearchViewModel(
         savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
     }
 
-    val lockedSeriesEntry = flowOf(lockedSeries)
-        .flatMapLatest {
-            if (it == null) flowOf(null) else seriesEntryDao.getSeriesById(it)
-        }
-        .flowOn(dispatchers.io)
-        .stateInForCompose(this, null)
+    val lockedSeriesEntry by transform(viewModelScope) {
+        produceState<SeriesInfo?>(null, lockedSeries) {
+            if (lockedSeries != null) {
+                seriesEntryDao.getSeriesById(lockedSeries)
+                    .collectLatest { value = it }
+            }
+        }.value
+    }
 
     val sortFilterController = artistSortFilterControllerFactory.create(
         scope = viewModelScope,
         savedStateHandle = savedStateHandle,
         dataYear = year,
         lockedMerchId = lockedMerch,
-        lockedSeriesEntry = lockedSeriesEntry,
+        lockedSeries = ::lockedSeriesEntry,
         allowSettingsBasedToggles = lockedMerch == null && lockedSeries == null,
     )
 
@@ -116,51 +124,47 @@ class ArtistSearchViewModel(
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
-    val query = savedStateHandle.getMutableStateFlow("query", "")
+    val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
-    val unfilteredCount = combine(lockedSeriesEntry, year, query, ::Triple)
-        .flatMapLatest { (seriesInfo, year, query) ->
+    val unfilteredCount by transform(viewModelScope) {
+        val year by year.collectAsStateWithLifecycle()
+        val query = query.text.toString()
+        val lockedSeriesEntry = lockedSeriesEntry
+        produceState(0, year, query) {
             artistEntryDao.searchCount(
                 year = year,
-                query = query,
                 searchQuery = ArtistSearchQuery(
+                    query = "",
                     ArtistSortFilterParams.unfiltered(
-                        lockedSeriesIn = seriesInfo?.rowid,
+                        lockedSeriesIn = lockedSeriesEntry?.rowid,
                         lockedMerchIn = lockedMerch,
                     ),
                     randomSeed = randomSeed,
                 ),
                 lockedBooths = lockedBooths,
-            )
-        }
-        .stateInForCompose(0)
+            ).collectLatest { value = it }
+        }.value
+    }
 
     val results = combine(
         year,
-        snapshotFlow { sortFilterController.filterParams }.mapLatest {
-            ArtistSearchQuery(filterParams = it, randomSeed = randomSeed)
+        snapshotFlow {
+            ArtistSearchQuery(
+                query = query.text.toString(),
+                filterParams = sortFilterController.filterParams,
+                randomSeed = randomSeed,
+            )
         },
-        query,
         ::SearchParams
     )
-        .flatMapLatest { (year, searchQuery, query) ->
+        .flatMapLatest { (year, searchQuery) ->
             Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 artistEntryDao.searchPagingSource(
                     year = year,
-                    query = query,
                     searchQuery = searchQuery,
                     lockedBooths = lockedBooths,
                 )
             }.flow
-                .map {
-                    it.filterOnIO {
-                        val passesFavorite =
-                            !it.userEntry.favorite || !searchQuery.filterParams.hideFavorited
-                        val passesIgnore =
-                            !it.userEntry.ignored || !searchQuery.filterParams.hideIgnored
-                        passesFavorite && passesIgnore
-                    }
-                }
                 .map {
                     it.mapOnIO {
                         ArtistEntryGridModel.buildFromEntry(
@@ -203,7 +207,6 @@ class ArtistSearchViewModel(
     private data class SearchParams(
         val year: DataYear,
         val searchQuery: ArtistSearchQuery,
-        val query: String,
     )
 
     fun toggleFavorite(entry: ArtistEntryGridModel, favorite: Boolean) {

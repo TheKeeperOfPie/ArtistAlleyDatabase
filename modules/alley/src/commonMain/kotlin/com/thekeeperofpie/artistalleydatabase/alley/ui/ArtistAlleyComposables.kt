@@ -40,6 +40,8 @@ import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -606,6 +608,113 @@ private fun YearDropdown(
     }
 }
 
+@Composable
+fun DisplayTypeSearchBar(
+    onClickBack: (() -> Unit)?,
+    query: TextFieldState,
+    displayType: MutableStateFlow<SearchDisplayType>,
+    itemCount: () -> Int,
+    title: () -> String?,
+    modifier: Modifier = Modifier,
+    actions: (@Composable RowScope.() -> Unit)? = null,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        val isNotEmpty by remember { derivedStateOf { query.text.isNotEmpty() } }
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = isNotEmpty,
+        ) {
+            query.clearText()
+        }
+
+        StaticSearchBar(
+            leadingIcon = if (onClickBack != null) {
+                { ArrowBackIconButton(onClickBack) }
+            } else null,
+            query = query,
+            placeholder = {
+                val title = title()
+                val text = if (title != null) {
+                    title
+                } else {
+                    val itemCount = itemCount()
+                    if (itemCount > 0) {
+                        stringResource(
+                            EntryRes.string.entry_search_hint_with_entry_count,
+                            itemCount,
+                        )
+                    } else {
+                        stringResource(EntryRes.string.entry_search_hint)
+                    }
+                }
+
+                Text(text = text, maxLines = 1, overflow = TextOverflow.MiddleEllipsis)
+            },
+            trailingIcon = {
+                Row {
+                    actions?.invoke(this)
+
+                    AnimatedVisibility(isNotEmpty) {
+                        IconButton(onClick = query::clearText) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(
+                                    EntryRes.string.entry_search_clear
+                                ),
+                            )
+                        }
+                    }
+                    Box {
+                        var displayType by displayType
+                            .collectAsMutableStateWithLifecycle()
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(
+                                imageVector = displayType.icon,
+                                contentDescription = stringResource(
+                                    Res.string.alley_display_type_icon_content_description,
+                                ),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                        ) {
+                            SearchDisplayType.entries.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(it.label)) },
+                                    leadingIcon = {
+                                        RadioButton(
+                                            selected = displayType == it,
+                                            onClick = {
+                                                displayType = it
+                                                expanded = false
+                                            },
+                                        )
+                                    },
+                                    onClick = {
+                                        displayType = it
+                                        expanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            onSearch = {},
+            modifier = Modifier
+                .widthIn(max = 1200.dp)
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+        )
+    }
+}
+
+@Deprecated("Use TextFieldState variant")
 @Composable
 fun DisplayTypeSearchBar(
     onClickBack: (() -> Unit)?,

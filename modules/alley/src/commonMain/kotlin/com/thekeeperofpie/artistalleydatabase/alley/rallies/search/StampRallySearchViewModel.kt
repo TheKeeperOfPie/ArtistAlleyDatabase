@@ -1,18 +1,24 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
-import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -20,8 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -35,10 +41,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -68,36 +71,40 @@ class StampRallySearchViewModel(
         savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
     }
 
-    val lockedSeriesEntry = flowOf(lockedSeries)
-        .flatMapLatest {
-            if (it == null) flowOf(null) else seriesEntryDao.getSeriesById(it)
-        }
-        .flowOn(dispatchers.io)
-        .stateInForCompose(this, null)
+    val lockedSeriesEntry by transform(viewModelScope) {
+        produceState<SeriesInfo?>(null, lockedSeries) {
+            if (lockedSeries != null) {
+                seriesEntryDao.getSeriesById(lockedSeries)
+                    .collectLatest { value = it }
+            }
+        }.value
+    }
 
     val sortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
-        lockedSeriesEntry = lockedSeriesEntry,
+        lockedSeries = ::lockedSeriesEntry,
         dataYear = dataYear,
         savedStateHandle = savedStateHandle,
     )
 
     val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
 
-    val query = savedStateHandle.getMutableStateFlow("query", "")
+    val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
-    val unfilteredCount = combine(dataYear, query, ::Pair)
-        .flatMapLatest { (year, query) ->
+    val unfilteredCount by transform(viewModelScope) {
+        val year by dataYear.collectAsStateWithLifecycle()
+        val query = query.text.toString()
+        produceState(0, year, query) {
             stampRallyEntryDao.searchCount(
                 year = year,
-                query = query,
                 searchQuery = StampRallySearchQuery(
+                    query = query,
                     filterParams = StampRallyFilterParams.unfiltered(lockedSeries),
                     randomSeed = randomSeed,
                 ),
-            )
-        }
-        .stateInForCompose(0)
+            ).collectLatest { value = it }
+        }.value
+    }
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -109,30 +116,22 @@ class StampRallySearchViewModel(
 
     val results = combine(
         dataYear,
-        snapshotFlow { sortFilterController.filterParams }.mapLatest {
+        snapshotFlow {
             StampRallySearchQuery(
-                filterParams = it,
+                query = query.text.toString(),
+                filterParams = sortFilterController.filterParams,
                 randomSeed = randomSeed,
             )
         },
-        query,
-        ::SearchParams
+        ::SearchParams,
     )
-        .flatMapLatest { (year, searchQuery, query) ->
+        .flatMapLatest { (year, searchQuery) ->
             Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 stampRallyEntryDao.searchPagingSource(
                     year = year,
-                    query = query,
                     searchQuery = searchQuery,
                 )
             }.flow
-                .map {
-                    it.filterOnIO {
-                        val passesFavorite = !it.userEntry.favorite || !searchQuery.filterParams.hideFavorited
-                        val passesIgnore = !it.userEntry.ignored || !searchQuery.filterParams.hideIgnored
-                        passesFavorite && passesIgnore
-                    }
-                }
         }
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
@@ -166,7 +165,6 @@ class StampRallySearchViewModel(
     private data class SearchParams(
         val year: DataYear,
         val searchQuery: StampRallySearchQuery,
-        val query: String,
     )
 
     @AssistedFactory

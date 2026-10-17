@@ -143,18 +143,16 @@ class ArtistEntryDao(
 
     fun search(
         year: DataYear,
-        query: String,
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
         lockedBooths: Set<String> = emptySet(),
     ): Pair<String, String> {
-        val tableName = "artistEntry"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
-            this += "$tableName.dataYear = '${year.serializedName}'"
+            this += "artistEntry.dataYear = '${year.serializedName}'"
             if (onlyFavorites) this += "artistUserEntry.favorite = 1"
             if (lockedBooths.isNotEmpty()) {
-                this += "$tableName.booth IN " +
+                this += "artistEntry.booth IN " +
                         lockedBooths.joinToString(
                             prefix = "(",
                             separator = ",",
@@ -164,23 +162,23 @@ class ArtistEntryDao(
 
             // TODO: This will include embeds
             if (ArtistTag.HAS_CATALOG in filterParams.artistTagsIn) {
-                this += "$tableName.images != '[]'"
+                this += "artistEntry.images != '[]'"
                 if (!filterParams.showOutdatedCatalogs) {
-                    this += "$tableName.fallbackImageYear IS NULL"
+                    this += "artistEntry.fallbackImageYear IS NULL"
                 }
             } else if (ArtistTag.HAS_CATALOG in filterParams.artistTagsNotIn) {
                 if (filterParams.showOutdatedCatalogs) {
-                    this += "$tableName.images = '[]'"
-                    this += "$tableName.fallbackImageYear IS NULL"
+                    this += "artistEntry.images = '[]'"
+                    this += "artistEntry.fallbackImageYear IS NULL"
                 } else {
-                    this += "($tableName.images = '[]' OR $tableName.fallbackImageYear IS NOT NULL)"
+                    this += "(artistEntry.images = '[]' OR artistEntry.fallbackImageYear IS NOT NULL)"
                 }
             }
 
             if (ArtistTag.VERIFIED in filterParams.artistTagsIn) {
-                this += "$tableName.verifiedArtist = 1"
+                this += "artistEntry.verifiedArtist = 1"
             } else if (ArtistTag.VERIFIED in filterParams.artistTagsNotIn) {
-                this += "$tableName.verifiedArtist = 0"
+                this += "artistEntry.verifiedArtist = 0"
             }
 
             when (year) {
@@ -188,9 +186,9 @@ class ArtistEntryDao(
                 DataYear.ANIME_NYC_2024,
                     -> Unit // First respective years, no data
                 else -> if (ArtistTag.NEW in filterParams.artistTagsIn) {
-                    this += "$tableName.newArtist = 1"
+                    this += "artistEntry.newArtist = 1"
                 } else if (ArtistTag.NEW in filterParams.artistTagsNotIn) {
-                    this += "$tableName.newArtist = 0"
+                    this += "artistEntry.newArtist = 0"
                 }
             }
 
@@ -200,7 +198,7 @@ class ArtistEntryDao(
             }
 
             if (commissionFlags != 0) {
-                this += "($tableName.commissionFlags & $commissionFlags) != 0"
+                this += "(artistEntry.commissionFlags & $commissionFlags) != 0"
             }
 
             val linkFlags = filterParams.linkTypesIn.fold(0) { flags, type ->
@@ -222,10 +220,10 @@ class ArtistEntryDao(
 
             val linkTypeStatements = mutableListOf<String>()
             if (linkFlags != 0) {
-                linkTypeStatements += "($tableName.linkFlags & $linkFlags) != 0"
+                linkTypeStatements += "(artistEntry.linkFlags & $linkFlags) != 0"
             }
             if (linkFlags2 != 0) {
-                linkTypeStatements += "($tableName.linkFlags2 & $linkFlags2) != 0"
+                linkTypeStatements += "(artistEntry.linkFlags2 & $linkFlags2) != 0"
             }
 
             if (linkTypeStatements.isNotEmpty()) {
@@ -237,7 +235,7 @@ class ArtistEntryDao(
 //                val exhibitorTagFlags =
 //                    AnimeNycExhibitorTags.parseFlags(filterParams.exhibitorTagsIn)
 //                if (exhibitorTagFlags != 0L) {
-//                    this += "($tableName.exhibitorTagFlags & $exhibitorTagFlags) != 0"
+//                    this += "(artistEntry.exhibitorTagFlags & $exhibitorTagFlags) != 0"
 //                }
 //            }
 
@@ -253,7 +251,7 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it.rowid.toString())
                 }
 
-                this += "$tableName.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
+                this += "artistEntry.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
                         yearFilter +
                         "artistSeriesConnection.seriesRowId IN ($seriesList))"
             }
@@ -269,17 +267,25 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.rowid IN (SELECT artistRowId from artistMerchConnection WHERE " +
+                this += "artistEntry.rowid IN (SELECT artistRowId from artistMerchConnection WHERE " +
                         yearFilter +
                         "artistMerchConnection.merchId IN ($merchList))"
+            }
+
+            if (!onlyFavorites && filterParams.hideFavorited) {
+                this += "(artistUserEntry.favorite IS NULL OR artistUserEntry.favorite = 0)"
+            }
+
+            if (filterParams.hideIgnored) {
+                this += "(artistUserEntry.ignored IS NULL OR artistUserEntry.ignored = 0)"
             }
         }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
-            ArtistSearchSortOption.BOOTH -> "ORDER BY $tableName.booth COLLATE NOCASE"
-            ArtistSearchSortOption.ARTIST -> "ORDER BY $tableName.name COLLATE NOCASE"
-            ArtistSearchSortOption.RANDOM -> "ORDER BY SIN($tableName.rowid + ${searchQuery.randomSeed})"
+            ArtistSearchSortOption.BOOTH -> "ORDER BY artistEntry.booth COLLATE NOCASE"
+            ArtistSearchSortOption.ARTIST -> "ORDER BY artistEntry.name COLLATE NOCASE"
+            ArtistSearchSortOption.RANDOM -> "ORDER BY SIN(artistEntry.rowid + ${searchQuery.randomSeed})"
         } + " $ascending" + " NULLS LAST"
         val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored"
 
@@ -322,19 +328,19 @@ class ArtistEntryDao(
             "lastEditTime",
             "verifiedArtist",
             "newArtist",
-        ).joinToString { "$tableName.$it" }
+        ).joinToString { "artistEntry.$it" }
 
-        if (query.isEmpty()) {
+        if (searchQuery.query.isEmpty()) {
             val countStatement = """
                 SELECT COUNT(*)
-                FROM $tableName
-                ${joinStatement.replace("idAsKey", "$tableName.id")}
+                FROM artistEntry
+                ${joinStatement.replace("idAsKey", "artistEntry.id")}
                 $andStatement
             """.trimIndent()
             val statement = """
                 SELECT $selectFields$selectSuffix
-                FROM $tableName
-                ${joinStatement.replace("idAsKey", "$tableName.id")}
+                FROM artistEntry
+                ${joinStatement.replace("idAsKey", "artistEntry.id")}
                 $andStatement
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
@@ -342,7 +348,7 @@ class ArtistEntryDao(
             return countStatement to statement
         }
 
-        val queries = query.split(Regex("\\s+"))
+        val queries = searchQuery.query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
         val targetColumns = listOfNotNull(
             "booth",
@@ -367,12 +373,12 @@ class ArtistEntryDao(
         }
 
         val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
-            "(${DaoUtils.makeLikeAndQuery("${tableName}_fts.$it", queries)})"
+            "(${DaoUtils.makeLikeAndQuery("artistEntry_fts.$it", queries)})"
         }
 
         val countStatement = DaoUtils.buildSearchCountStatement(
-            tableName = tableName,
-            ftsTableName = "${tableName}_fts",
+            tableName = "artistEntry",
+            ftsTableName = "artistEntry_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
@@ -381,8 +387,8 @@ class ArtistEntryDao(
         )
 
         val statement = DaoUtils.buildSearchStatement(
-            tableName = tableName,
-            ftsTableName = "${tableName}_fts",
+            tableName = "artistEntry",
+            ftsTableName = "artistEntry_fts",
             select = "$selectFields$selectSuffix",
             idField = "id",
             likeOrderBy = "",
@@ -398,12 +404,11 @@ class ArtistEntryDao(
 
     suspend fun searchCount(
         year: DataYear,
-        query: String,
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
         lockedBooths: Set<String> = emptySet(),
     ): Flow<Int> {
-        val (countStatement, _) = search(year, query, searchQuery, onlyFavorites, lockedBooths)
+        val [countStatement, _] = search(year, searchQuery, onlyFavorites, lockedBooths)
         return DaoUtils.makeQuery(
             driver(),
             statement = countStatement,
@@ -415,14 +420,12 @@ class ArtistEntryDao(
 
     fun searchPagingSource(
         year: DataYear,
-        query: String,
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
         lockedBooths: Set<String> = emptySet(),
     ): PagingSource<Int, ArtistWithUserData> {
-        val (countStatement, searchStatement) = search(
+        val [countStatement, searchStatement] = search(
             year = year,
-            query = query,
             searchQuery = searchQuery,
             onlyFavorites = onlyFavorites,
             lockedBooths = lockedBooths,
@@ -446,7 +449,7 @@ class ArtistEntryDao(
     ): Set<String> {
         val tableName = "artistEntry"
         val andClauses = mutableListOf<String>().apply {
-            this += "$tableName.dataYear = '${year.serializedName}'"
+            this += "artistEntry.dataYear = '${year.serializedName}'"
             if (seriesIds.isNotEmpty()) {
                 val flag = TagYearFlag.getFlag(
                     year,
@@ -458,7 +461,7 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it.rowid.toString())
                 }
 
-                this += "$tableName.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
+                this += "artistEntry.rowid IN (SELECT artistRowId from artistSeriesConnection WHERE " +
                         yearFilter +
                         "artistSeriesConnection.seriesRowId IN ($seriesList))"
             }
@@ -474,7 +477,7 @@ class ArtistEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.rowid IN (SELECT artistRowId from artistMerchConnection WHERE " +
+                this += "artistEntry.rowid IN (SELECT artistRowId from artistMerchConnection WHERE " +
                         yearFilter +
                         "artistMerchConnection.merchId IN ($merchList))"
             }
@@ -483,11 +486,11 @@ class ArtistEntryDao(
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
 
-        val selectFields = listOf("booth").joinToString { "$tableName.$it" }
+        val selectFields = listOf("booth").joinToString { "artistEntry.$it" }
 
         val statement = """
             SELECT $selectFields
-            FROM $tableName
+            FROM artistEntry
             $andStatement
         """.trimIndent()
         return DaoUtils.makeQuery(

@@ -1,6 +1,6 @@
 # Local build/dev commands
 # ./gradlew -Pdebug :modules:alley-app:webRelease
-# cd "./modules/alley-app/build/dist/web/developmentExecutable" && npm install && npx wrangler dev --ip 0.0.0.0 --local
+# cd "./modules/alley-app/build/dist/web/developmentExecutable" && npm install && npx wrangler dev --ip 0.0.0.0 --host 0.0.0.0 --local
 name = "artistalley-worker"
 main = "functions/worker.mjs"
 compatibility_date = "2026-10-12"

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -152,10 +153,9 @@ fun ArtistSearchScreen(
 //    sortFilterState.ImmediateScrollResetEffect(gridState)
 
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-        val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
         val entries = state.results.collectAsLazyPagingItems()
-        val unfilteredCount by state.unfilteredCount.collectAsStateWithLifecycle()
         val count = entries.itemCount
+        val lockedSeriesEntry = state.lockedSeriesEntry()
         val title = (lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
             ?: state.lockedMerch)
             ?.let {
@@ -212,7 +212,7 @@ fun ArtistSearchScreen(
                 header = header,
                 entries = entries,
                 series = series,
-                unfilteredCount = { unfilteredCount },
+                unfilteredCount = state.unfilteredCount,
                 displayType = { displayType },
                 eventSink = eventSink,
                 gridState = gridState,
@@ -572,14 +572,14 @@ object ArtistSearchScreen {
 
     @Stable
     class State(
-        val lockedSeriesEntry: StateFlow<SeriesInfo?>,
+        val lockedSeriesEntry: () -> SeriesInfo?,
         val lockedMerch: String?,
         val lockedYear: DataYear?,
         val randomSeed: Int,
         val year: MutableStateFlow<DataYear>,
-        val query: MutableStateFlow<String>,
+        val query: TextFieldState,
         val results: StateFlow<PagingData<ArtistEntryGridModel>>,
-        val unfilteredCount: StateFlow<Int>,
+        val unfilteredCount: () -> Int,
         val sortFilterState: ArtistSortFilterState,
         val displayType: MutableStateFlow<SearchDisplayType>,
     ) {
@@ -587,14 +587,14 @@ object ArtistSearchScreen {
             viewModel: ArtistSearchViewModel,
             sortFilterController: ArtistSortFilterController,
         ) : this(
-            lockedSeriesEntry = viewModel.lockedSeriesEntry,
+            lockedSeriesEntry = { viewModel.lockedSeriesEntry },
             lockedMerch = viewModel.lockedMerch,
             lockedYear = viewModel.lockedYear,
             randomSeed = viewModel.randomSeed,
             year = viewModel.year,
             query = viewModel.query,
             results = viewModel.results,
-            unfilteredCount = viewModel.unfilteredCount,
+            unfilteredCount = { viewModel.unfilteredCount },
             sortFilterState = sortFilterController.state,
             displayType = viewModel.displayType,
         )
@@ -627,18 +627,21 @@ private fun Preview() {
                 entry = it,
             )
         }
-    val state = State(
-        lockedSeriesEntry = MutableStateFlow(null),
-        lockedMerch = null,
-        lockedYear = null,
-        randomSeed = 1,
-        year = MutableStateFlow(DataYear.ANIME_EXPO_2025),
-        query = MutableStateFlow(""),
-        results = MutableStateFlow(PagingData.from(results)),
-        unfilteredCount = MutableStateFlow(1000),
-        sortFilterState = ArtistSortFilterState.rememberForPreview(),
-        displayType = MutableStateFlow(SearchDisplayType.CARD),
-    )
+    val sortFilterState = ArtistSortFilterState.rememberForPreview()
+    val state = remember(results) {
+        State(
+            lockedSeriesEntry = { null },
+            lockedMerch = null,
+            lockedYear = null,
+            randomSeed = 1,
+            year = MutableStateFlow(DataYear.ANIME_EXPO_2025),
+            query = TextFieldState(""),
+            results = MutableStateFlow(PagingData.from(results)),
+            unfilteredCount = { 1000 },
+            sortFilterState = sortFilterState,
+            displayType = MutableStateFlow(SearchDisplayType.CARD),
+        )
+    }
 
     val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
     val scaffoldState = rememberBottomSheetScaffoldState()

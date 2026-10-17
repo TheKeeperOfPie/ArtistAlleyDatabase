@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -108,9 +109,8 @@ fun StampRallySearchScreen(
 //    sortFilterState.ImmediateScrollResetEffect(gridState)
 
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-        val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
+        val lockedSeriesEntry = state.lockedSeriesEntry()
         val entries = state.results.collectAsLazyPagingItems()
-        val unfilteredCount by state.unfilteredCount.collectAsStateWithLifecycle()
         val count = entries.itemCount
         val title = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
             ?.let {
@@ -166,7 +166,7 @@ fun StampRallySearchScreen(
                 sortFilterState = state.sortFilterState,
                 header = header,
                 entries = entries,
-                unfilteredCount = { unfilteredCount },
+                unfilteredCount = state.unfilteredCount,
                 displayType = { displayType },
                 eventSink = eventSink,
                 gridState = gridState,
@@ -287,13 +287,13 @@ object StampRallySearchScreen {
 
     @Stable
     class State(
-        val lockedSeriesEntry: StateFlow<SeriesInfo?>,
+        val lockedSeriesEntry: () -> SeriesInfo?,
         val lockedYear: DataYear?,
         val randomSeed: Int,
         val year: MutableStateFlow<DataYear>,
-        val query: MutableStateFlow<String>,
+        val query: TextFieldState,
         val results: StateFlow<PagingData<StampRallyWithUserData>>,
-        val unfilteredCount: StateFlow<Int>,
+        val unfilteredCount: () -> Int,
         val sortFilterState: StampRallySortFilterState,
         val displayType: MutableStateFlow<SearchDisplayType>,
     ) {
@@ -301,13 +301,13 @@ object StampRallySearchScreen {
             viewModel: StampRallySearchViewModel,
             sortFilterController: StampRallySortFilterController,
         ) : this(
-            lockedSeriesEntry = viewModel.lockedSeriesEntry,
+            lockedSeriesEntry = { viewModel.lockedSeriesEntry },
             lockedYear = viewModel.lockedYear,
             randomSeed = viewModel.randomSeed,
             year = viewModel.dataYear,
             query = viewModel.query,
             results = viewModel.results,
-            unfilteredCount = viewModel.unfilteredCount,
+            unfilteredCount = { viewModel.unfilteredCount },
             sortFilterState = sortFilterController.state,
             displayType = viewModel.displayType,
         )

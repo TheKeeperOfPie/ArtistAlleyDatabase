@@ -35,7 +35,7 @@ class StampRallySortFilterController(
     val settings: ArtistAlleySettings,
     @Assisted scope: CoroutineScope,
     @Assisted dataYear: StateFlow<DataYear>,
-    @Assisted lockedSeriesEntry: StateFlow<SeriesInfo?>,
+    @Assisted lockedSeries: () -> SeriesInfo?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) {
 
@@ -44,10 +44,6 @@ class StampRallySortFilterController(
             dataYear.flatMapLatest(merchCache::merchTags)
                 .collectLatest { value = it }
         }.value
-    }
-
-    private val lockedSeries by transform(scope) {
-        lockedSeriesEntry.collectAsState().value
     }
 
     private val persistentState = StampRallySortFilterPersistentState(
@@ -63,7 +59,7 @@ class StampRallySortFilterController(
     val state = StampRallySortFilterState(
         persistentState = persistentState,
         saveableState = saveableState,
-        lockedSeries = { lockedSeries },
+        lockedSeries = lockedSeries,
         merchTagData = { merchTagData },
         merchIdsLockedIn = { emptySet() },
     )
@@ -78,7 +74,7 @@ class StampRallySortFilterController(
     internal val filterParams by transform(scope) {
         val sortOption by persistentState.sortOption.collectAsState()
         val sortAscending by persistentState.sortAscending.collectAsState()
-        val seriesIn = setOfNotNull(lockedSeriesEntry.collectAsState().value?.id) +
+        val seriesIn = setOfNotNull(lockedSeries()?.id) +
                 saveableState.series.seriesIn.toSet().map { it.id }
         StampRallyFilterParams(
             sortOption = sortOption,

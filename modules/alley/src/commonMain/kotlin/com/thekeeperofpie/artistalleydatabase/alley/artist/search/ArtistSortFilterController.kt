@@ -37,7 +37,7 @@ class ArtistSortFilterController(
     @Assisted scope: CoroutineScope,
     @Assisted dataYear: StateFlow<DataYear>,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted lockedSeriesEntry: StateFlow<SeriesInfo?>,
+    @Assisted lockedSeries: () -> SeriesInfo?,
     @Assisted private val lockedMerchId: String?,
     @Assisted allowSettingsBasedToggles: Boolean = true,
 ) {
@@ -57,10 +57,6 @@ class ArtistSortFilterController(
         }.value
     }
 
-    private val lockedSeries by transform(scope) {
-        lockedSeriesEntry.collectAsState().value
-    }
-
     private val persistentState = ArtistSortFilterPersistentState(
         sortOption = settings.artistsSortOption,
         sortAscending = settings.artistsSortAscending,
@@ -78,7 +74,7 @@ class ArtistSortFilterController(
     val state = ArtistSortFilterState(
         persistentState = persistentState,
         saveableState = saveableState,
-        lockedSeries = { lockedSeries },
+        lockedSeries = lockedSeries,
         merchTagData = { merchTagData },
         merchIdsLockedIn = { setOfNotNull(lockedMerchId) },
     )
@@ -93,7 +89,7 @@ class ArtistSortFilterController(
     internal val filterParams by transform(scope) {
         val sortOption by persistentState.sortOption.collectAsState()
         val sortAscending by persistentState.sortAscending.collectAsState()
-        val seriesIn = setOfNotNull(lockedSeriesEntry.collectAsState().value?.rowid) +
+        val seriesIn = setOfNotNull(lockedSeries()?.rowid) +
                 saveableState.series.seriesIn.toSet().map { it.rowid }
         val artistTagsIn by persistentState.artistTagsIn.collectAsState()
         val artistTagsNotIn by persistentState.artistTagsNotIn.collectAsState()

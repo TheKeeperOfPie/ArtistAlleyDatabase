@@ -172,32 +172,30 @@ class StampRallyEntryDao(
 
     fun search(
         year: DataYear,
-        query: String,
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
     ): Pair<String, String>? {
-        val tableName = "stampRallyEntry"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
-            this += "$tableName.dataYear = '${year.serializedName}'"
+            this += "stampRallyEntry.dataYear = '${year.serializedName}'"
             if (onlyFavorites) this += "stampRallyUserEntry.favorite = 1"
 
             val totalCost = filterParams.totalCost
             if (totalCost.isOnlyStart) {
-                this += "$tableName.totalCost = 0"
+                this += "stampRallyEntry.totalCost = 0"
             } else {
                 val totalCostMin = totalCost.startInt
                 if (totalCostMin != null) {
-                    this += "$tableName.totalCost IS NOT NULL"
-                    this += "$tableName.totalCost >= $totalCostMin"
+                    this += "stampRallyEntry.totalCost IS NOT NULL"
+                    this += "stampRallyEntry.totalCost >= $totalCostMin"
                 }
 
                 val totalCostMax = totalCost.endInt
                 if (totalCostMax != null) {
                     if (totalCostMin == null) {
-                        this += "($tableName.totalCost IS NULL OR $tableName.totalCost <= $totalCostMax)"
+                        this += "(stampRallyEntry.totalCost IS NULL OR stampRallyEntry.totalCost <= $totalCostMax)"
                     } else {
-                        this += "$tableName.totalCost <= $totalCostMax"
+                        this += "stampRallyEntry.totalCost <= $totalCostMax"
                     }
                 }
             }
@@ -205,16 +203,16 @@ class StampRallyEntryDao(
             val prizeLimit = filterParams.prizeLimit
             val prizeLimitMin = prizeLimit.startInt
             if (prizeLimitMin != null) {
-                this += "$tableName.prizeLimit IS NOT NULL"
-                this += "$tableName.prizeLimit >= $prizeLimitMin"
+                this += "stampRallyEntry.prizeLimit IS NOT NULL"
+                this += "stampRallyEntry.prizeLimit >= $prizeLimitMin"
             }
 
             val prizeLimitMax = prizeLimit.endInt
             if (prizeLimitMax != null) {
                 if (prizeLimitMin == null) {
-                    this += "($tableName.prizeLimit IS NULL OR $tableName.prizeLimit <= $prizeLimitMax)"
+                    this += "(stampRallyEntry.prizeLimit IS NULL OR stampRallyEntry.prizeLimit <= $prizeLimitMax)"
                 } else {
-                    this += "$tableName.prizeLimit <= $prizeLimitMax"
+                    this += "stampRallyEntry.prizeLimit <= $prizeLimitMax"
                 }
             }
 
@@ -224,7 +222,7 @@ class StampRallyEntryDao(
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
-                this += "$tableName.rowid IN (SELECT stampRallyRowId FROM stampRallySeriesConnection " +
+                this += "stampRallyEntry.rowid IN (SELECT stampRallyRowId FROM stampRallySeriesConnection " +
                         "WHERE stampRallySeriesConnection.seriesId IN ($seriesList) " +
                         "AND stampRallySeriesConnection.dataYear = '${year.serializedName}')"
             }
@@ -235,7 +233,7 @@ class StampRallyEntryDao(
                         DatabaseUtils.sqlEscapeString(it)
                     }
 
-                    this += "$tableName.rowid IN (SELECT stampRallyRowId FROM stampRallyMerchConnection " +
+                    this += "stampRallyEntry.rowid IN (SELECT stampRallyRowId FROM stampRallyMerchConnection " +
                             "WHERE stampRallyMerchConnection.merchId IN ($merchList) " +
                             "AND stampRallyMerchConnection.dataYear = '${year.serializedName}')"
                 }
@@ -244,42 +242,50 @@ class StampRallyEntryDao(
                         DatabaseUtils.sqlEscapeString(it)
                     }
 
-                    this += "$tableName.rowid IN (SELECT stampRallyRowId FROM stampRallyPrizeMerchConnection " +
+                    this += "stampRallyEntry.rowid IN (SELECT stampRallyRowId FROM stampRallyPrizeMerchConnection " +
                             "WHERE stampRallyPrizeMerchConnection.merchId IN ($prizeMerchList) " +
                             "AND stampRallyPrizeMerchConnection.dataYear = '${year.serializedName}')"
                 }
+            }
+
+            if (!onlyFavorites && filterParams.hideFavorited) {
+                this += "(stampRallyUserEntry.favorite IS NULL OR stampRallyUserEntry.favorite = 0)"
+            }
+
+            if (filterParams.hideIgnored) {
+                this += "(stampRallyUserEntry.ignored IS NULL OR stampRallyUserEntry.ignored = 0)"
             }
         }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
             StampRallySearchSortOption.FANDOM ->
-                "ORDER BY $tableName.fandom COLLATE NOCASE $ascending"
+                "ORDER BY stampRallyEntry.fandom COLLATE NOCASE $ascending"
             StampRallySearchSortOption.RANDOM ->
-                "ORDER BY SIN($tableName.rowid + ${searchQuery.randomSeed}) $ascending"
+                "ORDER BY SIN(stampRallyEntry.rowid + ${searchQuery.randomSeed}) $ascending"
             StampRallySearchSortOption.PRIZE_LIMIT ->
-                "ORDER BY $tableName.prizeLimit $ascending NULLS LAST"
+                "ORDER BY stampRallyEntry.prizeLimit $ascending NULLS LAST"
             StampRallySearchSortOption.TOTAL_COST ->
-                "ORDER BY $tableName.totalCost $ascending NULLS LAST"
+                "ORDER BY stampRallyEntry.totalCost $ascending NULLS LAST"
         }
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
-        val imageSubquery = StampRallyUtils.imageSubquery("$tableName.rowid", year)
+        val imageSubquery = StampRallyUtils.imageSubquery("stampRallyEntry.rowid", year)
         val selectFields = listOf(
-            "$tableName.id",
-            "$tableName.fandom",
-            "$tableName.tables",
-            "$tableName.startTables",
-            "$tableName.endTables",
-            "$tableName.links",
-            "$tableName.tableMin",
-            "$tableName.totalCost",
-            "$tableName.prize",
-            "$tableName.prizeLimit",
-            "$tableName.prizeMerch",
-            "$tableName.series",
-            "$tableName.merch",
-            "$tableName.notes",
-            "$tableName.images",
+            "stampRallyEntry.id",
+            "stampRallyEntry.fandom",
+            "stampRallyEntry.tables",
+            "stampRallyEntry.startTables",
+            "stampRallyEntry.endTables",
+            "stampRallyEntry.links",
+            "stampRallyEntry.tableMin",
+            "stampRallyEntry.totalCost",
+            "stampRallyEntry.prize",
+            "stampRallyEntry.prizeLimit",
+            "stampRallyEntry.prizeMerch",
+            "stampRallyEntry.series",
+            "stampRallyEntry.merch",
+            "stampRallyEntry.notes",
+            "stampRallyEntry.images",
             imageSubquery,
             """(
                     SELECT
@@ -290,26 +296,26 @@ class StampRallyEntryDao(
                         artistEntry
                         JOIN stampRallyArtistConnection ON stampRallyArtistConnection.artistRowId = artistEntry.rowid
                     WHERE
-                        stampRallyArtistConnection.stampRallyRowId = $tableName.rowid
+                        stampRallyArtistConnection.stampRallyRowId = stampRallyEntry.rowid
                  )""".trimMargin(),
         ).joinToString()
 
-        if (query.isEmpty()) {
+        if (searchQuery.query.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
                 ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
                 .orEmpty()
             val countStatement = """
                 SELECT COUNT(*)
-                FROM $tableName
+                FROM stampRallyEntry
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON $tableName.id = stampRallyUserEntry.stampRallyId
+                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
                 $andStatement
                 """.trimIndent()
             val statement = """
                 SELECT $selectFields$selectSuffix
-                FROM $tableName
+                FROM stampRallyEntry
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON $tableName.id = stampRallyUserEntry.stampRallyId
+                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
                 $andStatement
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
@@ -317,7 +323,7 @@ class StampRallyEntryDao(
             return countStatement to statement
         }
 
-        val queries = query.split(Regex("\\s+"))
+        val queries = searchQuery.query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
         val targetColumns = listOfNotNull(
             "fandom",
@@ -332,7 +338,7 @@ class StampRallyEntryDao(
         }
 
         val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
-            "(${DaoUtils.makeLikeAndQuery("${tableName}_fts.$it", queries)})"
+            "(${DaoUtils.makeLikeAndQuery("stampRallyEntry_fts.$it", queries)})"
         }
 
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
@@ -344,8 +350,8 @@ class StampRallyEntryDao(
         """.trimIndent()
 
         val countStatement = DaoUtils.buildSearchCountStatement(
-            tableName = tableName,
-            ftsTableName = "${tableName}_fts",
+            tableName = "stampRallyEntry",
+            ftsTableName = "stampRallyEntry_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
@@ -353,8 +359,8 @@ class StampRallyEntryDao(
             andStatement = andStatement,
         )
         val statement = DaoUtils.buildSearchStatement(
-            tableName = tableName,
-            ftsTableName = "${tableName}_fts",
+            tableName = "stampRallyEntry",
+            ftsTableName = "stampRallyEntry_fts",
             select = "$selectFields$selectSuffix",
             idField = "id",
             likeOrderBy = "",
@@ -370,11 +376,10 @@ class StampRallyEntryDao(
 
     suspend fun searchCount(
         year: DataYear,
-        query: String,
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
     ): Flow<Int> {
-        val statements = search(year, query, searchQuery, onlyFavorites)
+        val statements = search(year, searchQuery, onlyFavorites)
             ?: return flowOf(0)
         return DaoUtils.makeQuery(
             driver(),
@@ -387,11 +392,10 @@ class StampRallyEntryDao(
 
     fun searchPagingSource(
         year: DataYear,
-        query: String,
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
     ): PagingSource<Int, StampRallyWithUserData> {
-        val statements = search(year, query, searchQuery, onlyFavorites)
+        val statements = search(year, searchQuery, onlyFavorites)
             ?: return object :
                 PagingSource<Int, StampRallyWithUserData>() {
                 override fun getRefreshKey(state: PagingState<Int, StampRallyWithUserData>) = null
@@ -405,7 +409,7 @@ class StampRallyEntryDao(
                 }
             }
 
-        val (countStatement, searchStatement) = statements
+        val [countStatement, searchStatement] = statements
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
