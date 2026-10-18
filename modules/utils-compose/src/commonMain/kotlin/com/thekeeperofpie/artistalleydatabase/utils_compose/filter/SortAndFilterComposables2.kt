@@ -42,6 +42,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -65,6 +68,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
@@ -617,6 +621,65 @@ fun RangeDataFilterSection2(
                     ),
                     modifier = Modifier.width(64.dp),
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun <T> DropdownFilterSection(
+    options: List<T>,
+    selected: T,
+    onSelectedChanged: (T) -> Unit,
+    label: @Composable (T) -> Unit,
+) {
+
+    var expanded by remember { mutableStateOf(false) }
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = true }
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .heightIn(min = 32.dp)
+                .wrapContentHeight(Alignment.CenterVertically)
+                .align(Alignment.CenterVertically)
+        ) {
+            ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+                label(selected)
+            }
+        }
+
+        Box {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            ) {
+                Box(modifier = Modifier.padding(vertical = 10.dp)) {
+                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                        label(selected)
+                    }
+                }
+
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                options.forEachIndexed { index, item ->
+                    DropdownMenuItem(
+                        text = { label(item) },
+                        onClick = {
+                            onSelectedChanged(options[index])
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
             }
         }
     }

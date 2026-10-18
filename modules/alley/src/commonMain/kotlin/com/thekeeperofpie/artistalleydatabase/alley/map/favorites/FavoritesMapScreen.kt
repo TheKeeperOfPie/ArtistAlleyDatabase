@@ -66,8 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMe
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Search
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -86,20 +84,16 @@ object FavoritesMapScreen {
             create(it.createSavedStateHandle())
         },
     ) {
-        val tagResults by viewModel.tagResults.collectAsStateWithLifecycle()
-        val seriesIdIn by viewModel.seriesRowIdIn.collectAsStateWithLifecycle()
-        val merchIdIn by viewModel.merchIdIn.collectAsStateWithLifecycle()
         val seriesByRowId by viewModel.tagAutocomplete.seriesByRowId.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
-        val highlightedBooths by viewModel.highlightedBooths.collectAsStateWithLifecycle()
         FavoritesMapScreen(
-            state = viewModel.state,
+            filterState = viewModel.filterState,
             query = viewModel.query,
-            tagResults = { tagResults },
+            tagResults = viewModel::tagResults,
             mapTransformState = mapTransformState,
-            highlightedBooths = { highlightedBooths },
-            seriesIdIn = { seriesIdIn },
-            merchIdIn = { merchIdIn },
+            highlightedBooths = viewModel::highlightedBooths,
+            seriesIdIn = viewModel::seriesRowIdIn,
+            merchIdIn = viewModel::merchIdIn,
             seriesByRowId = { seriesByRowId },
             merchById = { merchById },
             onArtistClick = onArtistClick,
@@ -112,7 +106,7 @@ object FavoritesMapScreen {
 
     @Composable
     operator fun invoke(
-        state: SortFilterState<FavoritesMapViewModel.FilterParams>,
+        filterState: FavoritesMapFilterState,
         query: TextFieldState,
         tagResults: () -> Pair<List<MerchInfo>, List<SeriesInfo>>,
         mapTransformState: MapScreen.TransformState,
@@ -153,10 +147,7 @@ object FavoritesMapScreen {
                 }
             },
             sheetContent = {
-                SortFilterOptionsPanel(
-                    state = state,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                FavoritesMapFilterSheetContent(filterState, scaffoldState.bottomSheetState)
             },
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
