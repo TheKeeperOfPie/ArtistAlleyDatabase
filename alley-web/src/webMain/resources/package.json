@@ -5,6 +5,8 @@
     "wrangler": "4.149.0"
   },
   "scripts": {
+    "predev": "npm install",
+    "dev": "wrangler dev --ip 0.0.0.0 --host 0.0.0.0 --local",
     "postinstall": "patch-package"
   }
 }

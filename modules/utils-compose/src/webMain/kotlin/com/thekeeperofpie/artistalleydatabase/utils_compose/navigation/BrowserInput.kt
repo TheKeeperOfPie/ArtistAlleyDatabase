@@ -24,7 +24,7 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 import kotlin.coroutines.CoroutineContext
 
-private const val DEBUG = true
+private const val DEBUG = false
 
 class BrowserInput(
     private val navHistory: StateFlow<NavigationRouteHistory>,
