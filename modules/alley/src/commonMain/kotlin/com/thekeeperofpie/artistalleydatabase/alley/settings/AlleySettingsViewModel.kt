@@ -56,7 +56,8 @@ class AlleySettingsViewModel(
             }
         },
         optionToText = { stringResource(it.textRes) },
-        property = settings.appTheme,
+        initialSelectedOption = settings.appTheme,
+        onItemSelected = { settings.appTheme = it },
     )
 
     private val seriesLanguageSection = SettingsSection.Dropdown(
@@ -98,7 +99,7 @@ class AlleySettingsViewModel(
                         .toHexString()
                     if (hash == "f944c691a9d2c3dc8de634e8c91ffb025d93aad2f050b94c8f2c39c7aac656cb5bb881d9600b18718120ca53f70227ae1db0d15eb93bff0927da1f6becd88b2b") {
                         settings.easterEggEnabled.value = true
-                        settings.appTheme.value = AppThemeSetting.MIKU
+                        settings.appTheme = AppThemeSetting.MIKU
                         state.importState = LoadingResult.success(Unit)
                         return@launch
                     }

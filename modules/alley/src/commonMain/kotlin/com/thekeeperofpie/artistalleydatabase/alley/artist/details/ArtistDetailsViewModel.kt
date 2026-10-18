@@ -3,13 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
@@ -66,9 +66,8 @@ class ArtistDetailsViewModel(
     val initialImageIndex = route.imageIndex ?: 0
 
     var requestedShowFallback by savedStateHandle.saveable { mutableStateOf(false) }
-    val showFallbackImages by transform(viewModelScope) {
-        val showOutdatedCatalogs by settings.showOutdatedCatalogs.collectAsStateWithLifecycle()
-        requestedShowFallback || showOutdatedCatalogs
+    val showFallbackImages by derivedStateOf {
+        requestedShowFallback or settings.showOutdatedCatalogs
     }
 
     val entry by transform(viewModelScope) {
@@ -228,8 +227,7 @@ class ArtistDetailsViewModel(
                         }
                 }
             ArtistDetailsScreen.Event.ShowFallback -> requestedShowFallback = true
-            ArtistDetailsScreen.Event.AlwaysShowFallback -> settings.showOutdatedCatalogs.value =
-                true
+            ArtistDetailsScreen.Event.AlwaysShowFallback -> settings.showOutdatedCatalogs = true
         }
     }
 

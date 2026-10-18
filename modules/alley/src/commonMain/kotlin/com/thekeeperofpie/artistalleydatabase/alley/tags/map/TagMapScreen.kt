@@ -4,11 +4,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.IntOffset
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
@@ -70,7 +67,6 @@ object TagMapScreen {
             val highlightedBooths = viewModel.booths
             val targetTable = gridData.tables.find { highlightedBooths.contains(it.booth) }
             val transformState = MapScreen.rememberTransformState(initialScale = 0.5f)
-            val showOutdatedCatalogs by mapViewModel.showOutdatedCatalogs.collectAsStateWithLifecycle()
             MapScreen(
                 viewModel = mapViewModel,
                 transformState = transformState,
@@ -84,7 +80,7 @@ object TagMapScreen {
                     showImages = { transformState.showImages },
                     showText = { transformState.showText },
                     showCatalogHighlight = false,
-                    showOutdatedCatalogs = { showOutdatedCatalogs },
+                    showOutdatedCatalogs = mapViewModel::showOutdatedCatalogs,
                     onArtistClick = onArtistClick,
                 )
             }

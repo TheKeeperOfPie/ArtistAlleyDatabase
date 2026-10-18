@@ -1,8 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSettings
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
@@ -11,14 +10,11 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.coroutines.flow.MutableStateFlow
 
-interface ArtistAlleySettings {
+interface ArtistAlleySettings : ArtistSortFilterSettings {
 
-    val appTheme: MutableStateFlow<AppThemeSetting>
-    val lastKnownArtistsCsvSize: MutableStateFlow<Long>
-    val lastKnownStampRalliesCsvSize: MutableStateFlow<Long>
-    val displayType: MutableStateFlow<SearchDisplayType>
-    val artistsSortOption: MutableStateFlow<ArtistSearchSortOption>
-    val artistsSortAscending: MutableStateFlow<Boolean>
+    var appTheme: AppThemeSetting
+    var displayType: SearchDisplayType
+
     val stampRalliesSortOption: MutableStateFlow<StampRallySearchSortOption>
     val stampRalliesSortAscending: MutableStateFlow<Boolean>
     val seriesSortOption: MutableStateFlow<SeriesSearchSortOption>
@@ -29,10 +25,7 @@ interface ArtistAlleySettings {
     val forceOneDisplayColumn: MutableStateFlow<Boolean>
     val dataYear: MutableStateFlow<DataYear>
     val languageOption: MutableStateFlow<AniListLanguageOption>
-    val showOutdatedCatalogs: MutableStateFlow<Boolean>
     val easterEggEnabled: MutableStateFlow<Boolean>
 
-    val artistTagsIn: MutableStateFlow<Set<ArtistTag>>
-    val artistTagsNotIn: MutableStateFlow<Set<ArtistTag>>
     val rootDestination: MutableStateFlow<AlleyRootDestination>
 }

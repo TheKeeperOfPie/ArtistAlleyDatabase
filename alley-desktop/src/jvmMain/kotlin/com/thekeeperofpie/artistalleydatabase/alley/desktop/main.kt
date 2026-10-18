@@ -5,7 +5,6 @@ import androidx.compose.foundation.PointerMatcher
 import androidx.compose.foundation.onClick
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -15,7 +14,6 @@ import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.decode.DataSource
@@ -102,8 +100,7 @@ fun main() {
             title = "Artist Alley",
             state = windowState,
         ) {
-            val appTheme by graph.settings.appTheme.collectAsStateWithLifecycle()
-            AlleyTheme(appTheme = { appTheme }, graph) {
+            AlleyTheme(appTheme = { graph.settings.appTheme }, graph) {
                 val windowSize = windowState.size
                 val windowConfiguration = remember(windowSize) {
                     WindowConfiguration(

@@ -13,12 +13,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import artistalleydatabase.alley_web.generated.resources.Res
 import artistalleydatabase.alley_web.generated.resources.legacy_domain_action
@@ -97,7 +95,7 @@ fun App(graph: ArtistAlleyWebGraph) {
 
 @Composable
 private fun Content(graph: ArtistAlleyWebGraph) {
-    val appTheme by graph.settings.appTheme.collectAsStateWithLifecycle()
+    val appTheme = graph.settings.appTheme
     LaunchedEffect(appTheme) {
         try {
             val themeColor = when (appTheme) {

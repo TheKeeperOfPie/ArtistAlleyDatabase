@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -28,8 +29,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -42,57 +42,48 @@ class MapViewModel(
     private val settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    var gridData by mutableStateOf(LoadingResult.loading<GridData>())
-    private val randomSeed =
-        savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
-    private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
-
-    val showOutdatedCatalogs = settings.showOutdatedCatalogs
-
-    init {
-        viewModelScope.launch(CustomDispatchers.Main) {
+    val gridData by transform(viewModelScope) {
+        val showOutdatedCatalogs = settings.showOutdatedCatalogs
+        val showRandomCatalogImage by settings.showRandomCatalogImage.collectAsStateWithLifecycle()
+        produceState(LoadingResult.loading(), showOutdatedCatalogs, showRandomCatalogImage) {
             // TODO: This is very inefficient to respond to favorites updates
             // TODO: Pass in DataYear
-            combine(
-                userEntryDao.getBoothsWithFavorites(),
-                settings.showOutdatedCatalogs,
-                settings.showRandomCatalogImage,
-            ) { boothsWithFavorites, showOutdatedCatalogs, showRandomCatalogImage ->
-                val (dataYear, booths) = boothsWithFavorites
-                when (dataYear) {
-                    DataYear.ANIME_EXPO_2023,
-                    DataYear.ANIME_EXPO_2024,
-                    DataYear.ANIME_EXPO_2025,
-                        -> mapBooths(
-                        booths = booths,
-                        showOutdatedCatalogs = showOutdatedCatalogs,
-                        showRandomCatalogImage = showRandomCatalogImage,
-                    )
-                    DataYear.ANIME_EXPO_2026 -> mapAnimeExpo2026Booths(
-                        booths = booths,
-                        showOutdatedCatalogs = showOutdatedCatalogs,
-                        showRandomCatalogImage = showRandomCatalogImage,
-                    )
-                    DataYear.ANIME_NYC_2024 -> mapAnimeNyc2024Booths(
-                        booths = booths,
-                        showOutdatedCatalogs = showOutdatedCatalogs,
-                        showRandomCatalogImage = showRandomCatalogImage,
-                    )
-                    DataYear.ANIME_NYC_2025 -> mapAnimeNyc2025Booths(
-                        booths = booths,
-                        showOutdatedCatalogs = showOutdatedCatalogs,
-                        showRandomCatalogImage = showRandomCatalogImage,
-                    )
-                    DataYear.ANIME_NYC_2026 -> mapAnimeNyc2026Booths(
-                        booths = booths,
-                        showOutdatedCatalogs = showOutdatedCatalogs,
-                        showRandomCatalogImage = showRandomCatalogImage,
-                    )
+            userEntryDao.getBoothsWithFavorites()
+                .mapLatest {
+                    val [dataYear, booths] = it
+                    when (dataYear) {
+                        DataYear.ANIME_EXPO_2023,
+                        DataYear.ANIME_EXPO_2024,
+                        DataYear.ANIME_EXPO_2025,
+                            -> mapBooths(
+                            booths = booths,
+                            showOutdatedCatalogs = showOutdatedCatalogs,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                        )
+                        DataYear.ANIME_EXPO_2026 -> mapAnimeExpo2026Booths(
+                            booths = booths,
+                            showOutdatedCatalogs = showOutdatedCatalogs,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                        )
+                        DataYear.ANIME_NYC_2024 -> mapAnimeNyc2024Booths(
+                            booths = booths,
+                            showOutdatedCatalogs = showOutdatedCatalogs,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                        )
+                        DataYear.ANIME_NYC_2025 -> mapAnimeNyc2025Booths(
+                            booths = booths,
+                            showOutdatedCatalogs = showOutdatedCatalogs,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                        )
+                        DataYear.ANIME_NYC_2026 -> mapAnimeNyc2026Booths(
+                            booths = booths,
+                            showOutdatedCatalogs = showOutdatedCatalogs,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                        )
+                    }
                 }
-            }
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { tables ->
-                    gridData = LoadingResult.success(
+                .mapLatest { tables ->
+                    LoadingResult.success(
                         GridData(
                             maxX = tables.maxOfOrNull { it.gridX } ?: 0,
                             maxY = tables.maxOfOrNull { it.gridY } ?: 0,
@@ -100,8 +91,16 @@ class MapViewModel(
                         )
                     )
                 }
-        }
+                .collectLatest { value = it }
+        }.value
+    }
+    private val randomSeed =
+        savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
+    private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
+    val showOutdatedCatalogs get() = settings.showOutdatedCatalogs
+
+    init {
         viewModelScope.launch(CustomDispatchers.IO) {
             mutationUpdates.collectLatest {
                 userEntryDao.insertArtistUserEntry(it)

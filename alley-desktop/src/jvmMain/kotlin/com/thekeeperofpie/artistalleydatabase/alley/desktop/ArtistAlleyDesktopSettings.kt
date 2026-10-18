@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.desktop
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
@@ -18,12 +21,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class ArtistAlleyDesktopSettings : ArtistAlleySettings {
-    override val appTheme = MutableStateFlow(AppThemeSetting.MIKU)
-    override val lastKnownArtistsCsvSize = MutableStateFlow(-1L)
-    override val lastKnownStampRalliesCsvSize = MutableStateFlow(-1L)
-    override val displayType = MutableStateFlow(SearchDisplayType.CARD)
-    override val artistsSortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM)
-    override val artistsSortAscending = MutableStateFlow(true)
+    override var appTheme by mutableStateOf(AppThemeSetting.MIKU)
+    override var displayType by mutableStateOf(SearchDisplayType.CARD)
+
+    override var artistsSortOption by mutableStateOf(ArtistSearchSortOption.RANDOM)
+    override var artistsSortAscending by mutableStateOf(true)
+    override var artistsTagsIn by mutableStateOf(emptySet<ArtistTag>())
+    override var artistsTagsNotIn by mutableStateOf(emptySet<ArtistTag>())
+    override var showOutdatedCatalogs by mutableStateOf(false)
+
     override val stampRalliesSortOption = MutableStateFlow(StampRallySearchSortOption.RANDOM)
     override val stampRalliesSortAscending = MutableStateFlow(true)
     override val seriesSortOption = MutableStateFlow(SeriesSearchSortOption.RANDOM)
@@ -34,10 +40,7 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val forceOneDisplayColumn = MutableStateFlow(false)
     override val dataYear = MutableStateFlow(DataYear.LATEST)
     override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
-    override val showOutdatedCatalogs = MutableStateFlow(false)
     override val easterEggEnabled = MutableStateFlow(true)
 
-    override val artistTagsIn = MutableStateFlow(emptySet<ArtistTag>())
-    override val artistTagsNotIn = MutableStateFlow(emptySet<ArtistTag>())
     override val rootDestination = MutableStateFlow(AlleyRootDestination.ARTISTS)
 }

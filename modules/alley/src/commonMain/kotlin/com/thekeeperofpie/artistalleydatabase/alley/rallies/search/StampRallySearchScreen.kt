@@ -140,6 +140,7 @@ fun StampRallySearchScreen(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
                     displayType = state.displayType,
+                    onDisplayTypeChange = state.onDisplayTypeChange,
                     itemCount = { entries.itemCount },
                     title = { title },
                     actions = actions,
@@ -161,13 +162,12 @@ fun StampRallySearchScreen(
             // TODO: This breaks vertical scrolling with 1.12.0-beta03+
 //                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
         ) {
-            val displayType by state.displayType.collectAsStateWithLifecycle()
             StampRallySearchScreenContent(
                 sortFilterState = state.sortFilterState,
                 header = header,
                 entries = entries,
                 unfilteredCount = state.unfilteredCount,
-                displayType = { displayType },
+                displayType = state.displayType,
                 eventSink = eventSink,
                 gridState = gridState,
             )
@@ -295,7 +295,8 @@ object StampRallySearchScreen {
         val results: Flow<PagingData<StampRallyWithUserData>>,
         val unfilteredCount: () -> Int,
         val sortFilterState: StampRallySortFilterState,
-        val displayType: MutableStateFlow<SearchDisplayType>,
+        val displayType: () -> SearchDisplayType,
+        val onDisplayTypeChange: (SearchDisplayType) -> Unit,
     ) {
         constructor(
             viewModel: StampRallySearchViewModel,
@@ -309,7 +310,8 @@ object StampRallySearchScreen {
             results = viewModel.results,
             unfilteredCount = { viewModel.unfilteredCount },
             sortFilterState = sortFilterController.state,
-            displayType = viewModel.displayType,
+            displayType = { viewModel.settings.displayType },
+            onDisplayTypeChange = { viewModel.settings.displayType = it },
         )
     }
 

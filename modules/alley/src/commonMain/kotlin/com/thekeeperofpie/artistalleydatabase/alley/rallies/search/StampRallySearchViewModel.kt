@@ -47,18 +47,16 @@ import kotlin.random.Random
 @OptIn(ExperimentalCoroutinesApi::class)
 @AssistedInject
 class StampRallySearchViewModel(
-    dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userEntryDao: UserEntryDao,
-    settings: ArtistAlleySettings,
+    internal val settings: ArtistAlleySettings,
     stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
     private val navStack: AlleyNavStack,
     @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
     @Assisted private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val displayType = settings.displayType
     val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 

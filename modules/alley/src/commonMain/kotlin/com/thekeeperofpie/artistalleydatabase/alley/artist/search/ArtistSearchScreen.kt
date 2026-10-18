@@ -37,7 +37,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
@@ -185,6 +184,7 @@ fun ArtistSearchScreen(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
                     displayType = state.displayType,
+                    onDisplayTypeChange = state.onDisplayTypeChange,
                     itemCount = { entries.itemCount },
                     title = { title },
                     actions = actions,
@@ -206,14 +206,13 @@ fun ArtistSearchScreen(
             // TODO: This breaks vertical scrolling with 1.12.0-beta03+
 //                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
         ) {
-            val displayType by state.displayType.collectAsStateWithLifecycle()
             ArtistSearchScreenContent(
                 sortFilterState = state.sortFilterState,
                 header = header,
                 entries = entries,
                 series = series,
                 unfilteredCount = state.unfilteredCount,
-                displayType = { displayType },
+                displayType = state.displayType,
                 eventSink = eventSink,
                 gridState = gridState,
             )
@@ -248,8 +247,8 @@ internal fun ArtistSearchScreenContent(
             columnHeader = {
                 ArtistSearchScreen.ColumnHeader(
                     column = it,
-                    sortOption = sortFilterState.persistentState.sortOption,
-                    sortAscending = sortFilterState.persistentState.sortAscending,
+                    sortOption = sortFilterState.persistentState.sortFilterSettings::artistsSortOption,
+                    sortAscending = sortFilterState.persistentState.sortFilterSettings::artistsSortAscending,
                 )
             },
             tableCell = { row, column ->
@@ -275,7 +274,6 @@ internal fun ArtistSearchScreenContent(
             modifier = modifier,
         )
     } else {
-        val showOutdatedCatalogs by sortFilterState.persistentState.showOutdatedCatalogs.collectAsStateWithLifecycle()
         val forceOneDisplayColumn by sortFilterState.persistentState.forceOneDisplayColumn.collectAsStateWithLifecycle()
         SearchList(
             entries = entries,
@@ -292,7 +290,7 @@ internal fun ArtistSearchScreenContent(
                     showGridByDefault = showGridByDefault,
                     showRandomCatalogImage = showRandomCatalogImage,
                     blockCrossAxisScrolling = { gridState.isScrollInProgress },
-                    showOutdatedCatalogs = { showOutdatedCatalogs },
+                    showOutdatedCatalogs = sortFilterState.persistentState.sortFilterSettings::showOutdatedCatalogs,
                     onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
                     onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },
                     onClick = { imageIndex ->
@@ -418,16 +416,16 @@ object ArtistSearchScreen {
     @Composable
     fun ColumnHeader(
         column: ArtistSearchColumn,
-        sortOption: MutableStateFlow<ArtistSearchSortOption>,
-        sortAscending: MutableStateFlow<Boolean>,
+        sortOption: () -> ArtistSearchSortOption,
+        sortAscending: () -> Boolean,
     ) {
         val columnSortOption = when (column) {
             ArtistSearchColumn.BOOTH -> ArtistSearchSortOption.BOOTH
             ArtistSearchColumn.NAME -> ArtistSearchSortOption.ARTIST
             else -> null
         }
-        var sortOption by sortOption.collectAsMutableStateWithLifecycle()
-        var sortAscending by sortAscending.collectAsMutableStateWithLifecycle()
+        var sortOption = sortOption()
+        var sortAscending = sortAscending()
         Row(
             modifier = Modifier.requiredWidth(column.size)
                 .clickable(enabled = columnSortOption != null) {
@@ -581,22 +579,24 @@ object ArtistSearchScreen {
         val results: Flow<PagingData<ArtistEntryGridModel>>,
         val unfilteredCount: () -> Int,
         val sortFilterState: ArtistSortFilterState,
-        val displayType: MutableStateFlow<SearchDisplayType>,
+        val displayType: () -> SearchDisplayType,
+        val onDisplayTypeChange: (SearchDisplayType) -> Unit,
     ) {
         constructor(
             viewModel: ArtistSearchViewModel,
             sortFilterController: ArtistSortFilterController,
         ) : this(
-            lockedSeriesEntry = { viewModel.lockedSeriesEntry },
+            lockedSeriesEntry = viewModel::lockedSeriesEntry,
             lockedMerch = viewModel.lockedMerch,
             lockedYear = viewModel.lockedYear,
             randomSeed = viewModel.randomSeed,
             year = viewModel.year,
             query = viewModel.query,
             results = viewModel.results,
-            unfilteredCount = { viewModel.unfilteredCount },
+            unfilteredCount = viewModel::unfilteredCount,
             sortFilterState = sortFilterController.state,
-            displayType = viewModel.displayType,
+            displayType = { viewModel.settings.displayType },
+            onDisplayTypeChange = { viewModel.settings.displayType = it },
         )
     }
 
@@ -639,7 +639,8 @@ private fun Preview() {
             results = MutableStateFlow(PagingData.from(results)),
             unfilteredCount = { 1000 },
             sortFilterState = sortFilterState,
-            displayType = MutableStateFlow(SearchDisplayType.CARD),
+            displayType = { SearchDisplayType.CARD },
+            onDisplayTypeChange = {},
         )
     }
 

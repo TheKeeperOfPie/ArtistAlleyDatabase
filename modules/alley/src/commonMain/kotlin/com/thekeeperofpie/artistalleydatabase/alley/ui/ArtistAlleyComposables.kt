@@ -612,7 +612,8 @@ private fun YearDropdown(
 fun DisplayTypeSearchBar(
     onClickBack: (() -> Unit)?,
     query: TextFieldState,
-    displayType: MutableStateFlow<SearchDisplayType>,
+    displayType: () -> SearchDisplayType,
+    onDisplayTypeChange: (SearchDisplayType) -> Unit,
     itemCount: () -> Int,
     title: () -> String?,
     modifier: Modifier = Modifier,
@@ -668,8 +669,7 @@ fun DisplayTypeSearchBar(
                         }
                     }
                     Box {
-                        var displayType by displayType
-                            .collectAsMutableStateWithLifecycle()
+                        val displayType = displayType()
                         var expanded by remember { mutableStateOf(false) }
                         IconButton(onClick = { expanded = true }) {
                             Icon(
@@ -690,13 +690,13 @@ fun DisplayTypeSearchBar(
                                         RadioButton(
                                             selected = displayType == it,
                                             onClick = {
-                                                displayType = it
+                                                onDisplayTypeChange(it)
                                                 expanded = false
                                             },
                                         )
                                     },
                                     onClick = {
-                                        displayType = it
+                                        onDisplayTypeChange(it)
                                         expanded = false
                                     },
                                 )

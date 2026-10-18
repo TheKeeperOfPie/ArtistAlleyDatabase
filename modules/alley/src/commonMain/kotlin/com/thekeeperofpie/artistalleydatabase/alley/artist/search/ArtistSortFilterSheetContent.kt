@@ -16,7 +16,6 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.annotation.RememberInComposition
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +57,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
-import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
@@ -81,6 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSectionSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
+import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
@@ -127,18 +126,16 @@ internal fun ArtistSortFilterSheetContent(
     ) {
         val saveableState = state.saveableState
         val persistentState = state.persistentState
-        var sortOption by persistentState.sortOption.collectAsMutableStateWithLifecycle()
-        var sortAscending by persistentState.sortAscending.collectAsMutableStateWithLifecycle()
         SortSection(
             header = { Text(stringResource(Res.string.alley_sort_label)) },
             expanded = { Section.SORT in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SORT) },
             sortOptions = { ArtistSearchSortOption.entries },
-            sortOption = { sortOption },
-            onSortChanged = { sortOption = it },
+            sortOption = { persistentState.sortFilterSettings.artistsSortOption },
+            onSortChanged = { persistentState.sortFilterSettings.artistsSortOption = it },
             sortOptionLabel = { Text(stringResource(it.textRes)) },
-            sortAscending = { sortAscending },
-            onSortAscendingChange = { sortAscending = it },
+            sortAscending = { persistentState.sortFilterSettings.artistsSortAscending },
+            onSortAscendingChange = { persistentState.sortFilterSettings.artistsSortAscending = it },
         )
 
         HorizontalDivider()
@@ -191,27 +188,25 @@ internal fun ArtistSortFilterSheetContent(
 
         HorizontalDivider()
 
-        var artistTagsIn by persistentState.artistTagsIn.collectAsMutableStateWithLifecycle()
-        var artistTagsNotIn by persistentState.artistTagsNotIn.collectAsMutableStateWithLifecycle()
         FilterSection2(
             expanded = { Section.ARTIST_TAGS in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.ARTIST_TAGS) },
             options = ArtistTag.entries,
-            filterIn = { artistTagsIn },
-            filterNotIn = { artistTagsNotIn },
+            filterIn = { persistentState.sortFilterSettings.artistsTagsIn },
+            filterNotIn = { persistentState.sortFilterSettings.artistsTagsNotIn },
             title = { Text(stringResource(Res.string.alley_artist_tags_filter_label)) },
             titleDropdownContentDescriptionRes = Res.string.alley_artist_tags_filter_content_description,
             onOptionClick = {
                 val (newFilterIn, newFilterNotIn) = FilterSectionState.onClick(
                     options = ArtistTag.entries,
                     selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ALLOW_EXCLUDE,
-                    filterIn = artistTagsIn,
-                    filterNotIn = artistTagsNotIn,
+                    filterIn = persistentState.sortFilterSettings.artistsTagsIn,
+                    filterNotIn = persistentState.sortFilterSettings.artistsTagsNotIn,
                     filter = it,
                 )
                 Snapshot.withMutableSnapshot {
-                    artistTagsIn = newFilterIn
-                    artistTagsNotIn = newFilterNotIn
+                    persistentState.sortFilterSettings.artistsTagsIn = newFilterIn
+                    persistentState.sortFilterSettings.artistsTagsNotIn = newFilterNotIn
                 }
             },
             optionLabel = { Text(stringResource(it.textRes)) },
@@ -286,11 +281,10 @@ private fun AdvancedSection(
 
             HorizontalDivider()
 
-            var showOutdatedCatalogs by persistentState.showOutdatedCatalogs.collectAsMutableStateWithLifecycle()
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_show_outdated_catalogs)) },
-                enabled = { showOutdatedCatalogs },
-                onEnabledChanged = { showOutdatedCatalogs = it },
+                enabled = { persistentState.sortFilterSettings.showOutdatedCatalogs },
+                onEnabledChanged = { persistentState.sortFilterSettings.showOutdatedCatalogs = it },
             )
 
             HorizontalDivider()
@@ -436,28 +430,24 @@ class ArtistSortFilterState(
 
 /** Everything backed by an externally owned source */
 class ArtistSortFilterPersistentState(
-    val sortOption: MutableStateFlow<ArtistSearchSortOption>,
-    val sortAscending: MutableStateFlow<Boolean>,
-    val artistTagsIn: MutableStateFlow<Set<ArtistTag>>,
-    val artistTagsNotIn: MutableStateFlow<Set<ArtistTag>>,
+    val sortFilterSettings: ArtistSortFilterSettings,
     val showGridByDefault: MutableStateFlow<Boolean>,
     val showRandomCatalogImage: MutableStateFlow<Boolean>,
     val showOnlyConfirmedTags: MutableStateFlow<Boolean>,
-    val showOutdatedCatalogs: MutableStateFlow<Boolean>,
     val forceOneDisplayColumn: MutableStateFlow<Boolean>,
 ) {
     val activeCount: Int
         @Composable get() {
             // Sort and advanced options are not reset on clear and thus don't count as active
             var count = 0
-            if (artistTagsIn.collectAsState().value.isNotEmpty()) count++
-            if (artistTagsNotIn.collectAsState().value.isNotEmpty()) count++
+            if (sortFilterSettings.artistsTagsIn.isNotEmpty()) count++
+            if (sortFilterSettings.artistsTagsNotIn.isNotEmpty()) count++
             return count
         }
 
     fun clear() {
-        artistTagsIn.value = emptySet()
-        artistTagsNotIn.value = emptySet()
+        sortFilterSettings.artistsTagsIn = emptySet()
+        sortFilterSettings.artistsTagsNotIn = emptySet()
         showOnlyConfirmedTags.value = false
     }
 
@@ -466,14 +456,10 @@ class ArtistSortFilterPersistentState(
         fun rememberForPreview(): ArtistSortFilterPersistentState {
             assertInPreview()
             return ArtistSortFilterPersistentState(
-                sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
-                sortAscending = MutableStateFlow(true),
-                artistTagsIn = MutableStateFlow(setOf(ArtistTag.HAS_CATALOG)),
-                artistTagsNotIn = MutableStateFlow(setOf(ArtistTag.VERIFIED)),
+                sortFilterSettings = ArtistSortFilterSettings.rememberForPreview(),
                 showGridByDefault = MutableStateFlow(false),
                 showRandomCatalogImage = MutableStateFlow(true),
                 showOnlyConfirmedTags = MutableStateFlow(false),
-                showOutdatedCatalogs = MutableStateFlow(true),
                 forceOneDisplayColumn = MutableStateFlow(false),
             )
         }

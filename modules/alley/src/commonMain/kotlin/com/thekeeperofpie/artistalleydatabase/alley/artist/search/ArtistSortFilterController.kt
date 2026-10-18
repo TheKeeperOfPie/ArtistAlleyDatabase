@@ -58,14 +58,10 @@ class ArtistSortFilterController(
     }
 
     private val persistentState = ArtistSortFilterPersistentState(
-        sortOption = settings.artistsSortOption,
-        sortAscending = settings.artistsSortAscending,
-        artistTagsIn = settings.artistTagsIn,
-        artistTagsNotIn = settings.artistTagsNotIn,
+        sortFilterSettings = settings,
         showGridByDefault = settings.showGridByDefault,
         showRandomCatalogImage = settings.showRandomCatalogImage,
         showOnlyConfirmedTags = showOnlyConfirmedTags,
-        showOutdatedCatalogs = settings.showOutdatedCatalogs,
         forceOneDisplayColumn = settings.forceOneDisplayColumn,
     )
 
@@ -87,26 +83,21 @@ class ArtistSortFilterController(
             .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     internal val filterParams by transform(scope) {
-        val sortOption by persistentState.sortOption.collectAsState()
-        val sortAscending by persistentState.sortAscending.collectAsState()
         val seriesIn = setOfNotNull(lockedSeries()?.rowid) +
                 saveableState.series.seriesIn.toSet().map { it.rowid }
-        val artistTagsIn by persistentState.artistTagsIn.collectAsState()
-        val artistTagsNotIn by persistentState.artistTagsNotIn.collectAsState()
         val showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsState()
-        val showOutdatedCatalogs by persistentState.showOutdatedCatalogs.collectAsState()
         ArtistSortFilterParams(
-            sortOption = sortOption,
-            sortAscending = sortAscending,
+            sortOption = persistentState.sortFilterSettings.artistsSortOption,
+            sortAscending = persistentState.sortFilterSettings.artistsSortAscending,
             seriesIn = seriesIn,
             merchIn = saveableState.merch.tagIdIn.toSet() + setOfNotNull(lockedMerchId),
             commissionsIn = saveableState.commissions.filterIn.toSet(),
             linkTypesIn = saveableState.links.tagIdIn.toSet().map(Link.Type::valueOf).toSet(),
             exhibitorTagsIn = emptySet(), // TODO
-            artistTagsIn = artistTagsIn,
-            artistTagsNotIn = artistTagsNotIn,
+            artistTagsIn = persistentState.sortFilterSettings.artistsTagsIn,
+            artistTagsNotIn = persistentState.sortFilterSettings.artistsTagsNotIn,
             showOnlyConfirmedTags = showOnlyConfirmedTags,
-            showOutdatedCatalogs = showOutdatedCatalogs,
+            showOutdatedCatalogs = persistentState.sortFilterSettings.showOutdatedCatalogs,
             hideFavorited = saveableState.hideFavorited,
             hideIgnored = saveableState.hideIgnored,
         )

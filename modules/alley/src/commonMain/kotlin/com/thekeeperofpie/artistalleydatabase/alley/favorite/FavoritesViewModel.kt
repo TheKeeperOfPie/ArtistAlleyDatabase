@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.favorite
 
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -40,10 +42,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -73,7 +75,7 @@ class FavoritesViewModel(
     val seriesEntryCache: SeriesEntryCache,
     seriesEntryDao: SeriesEntryDao,
     userEntryDao: UserEntryDao,
-    settings: ArtistAlleySettings,
+    internal val settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
     artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
     stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
@@ -82,7 +84,7 @@ class FavoritesViewModel(
 ) : ViewModel() {
 
     val year = settings.dataYear
-    
+
     val showOutdatedCatalogs = settings.showOutdatedCatalogs
 
     val artistSortFilterController = artistSortFilterControllerFactory.create(
@@ -103,13 +105,17 @@ class FavoritesViewModel(
     )
 
     val tab = MutableStateFlow(FavoritesScreen.EntryTab.ARTISTS)
-    val query = MutableStateFlow("")
-    val displayType = settings.displayType
+    val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    private val inputs = combineStates(query, year, settings.showOnlyConfirmedTags, ::Triple)
+    private val inputs = combine(
+        snapshotFlow { query.text.toString() },
+        year,
+        settings.showOnlyConfirmedTags,
+        ::Triple
+    )
 
-    val artistsUnfilteredCount = combine(year, query, ::Pair)
+    val artistsUnfilteredCount = combine(year, snapshotFlow { query.text.toString() }, ::Pair)
         .flatMapLatest { [year, query] ->
             artistEntryDao.searchCount(
                 year = year,
@@ -149,7 +155,7 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val stampRallyUnfilteredCount = combine(year, query, ::Pair)
+    val stampRallyUnfilteredCount = combine(year, snapshotFlow { query.text.toString() }, ::Pair)
         .flatMapLatest { [year, query] ->
             stampRallyEntryDao.searchCount(
                 year = year,
@@ -189,7 +195,7 @@ class FavoritesViewModel(
     )
 
     val seriesEntries = combine(
-        query,
+        snapshotFlow { query.text.toString() },
         year,
         settings.languageOption,
         seriesSortFilterController.state.filterParams,
@@ -215,7 +221,7 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val merchEntries = combine(query, year, ::Pair)
+    val merchEntries = combine(snapshotFlow { query.text.toString() }, year, ::Pair)
         .flatMapLatest { [query, year] ->
             if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
@@ -318,7 +324,7 @@ class FavoritesViewModel(
                     AlleyDestination.Images.fromArtist(
                         artistWithUserData = searchEvent.entry.data,
                         showOutdatedCatalogs =
-                            artistSortFilterController.state.persistentState.showOutdatedCatalogs.value,
+                            artistSortFilterController.state.persistentState.sortFilterSettings.showOutdatedCatalogs,
                         imageIndex = searchEvent.imageIndex,
                     )
                 )

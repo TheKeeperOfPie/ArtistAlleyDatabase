@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -67,7 +68,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_sea
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
@@ -159,7 +159,8 @@ object FavoritesScreen {
                     randomSeed = viewModel.randomSeed,
                     tab = viewModel.tab,
                     query = viewModel.query,
-                    displayType = viewModel.displayType,
+                    displayType = { viewModel.settings.displayType },
+                    onDisplayTypeChange = { viewModel.settings.displayType = it },
                     year = viewModel.year,
                     artistsEntries = viewModel.artistEntries,
                     artistsSortFilterState = viewModel.artistSortFilterController.state,
@@ -241,6 +242,7 @@ object FavoritesScreen {
                                 title = { title },
                                 itemCount = { entries.itemCount },
                                 displayType = state.displayType,
+                                onDisplayTypeChange = state.onDisplayTypeChange,
                                 modifier = Modifier
                                     .animateEnterExit(
                                         enter = slideInVertically { -it },
@@ -374,6 +376,7 @@ object FavoritesScreen {
                             title = { title },
                             itemCount = { entries.itemCount },
                             displayType = state.displayType,
+                            onDisplayTypeChange = state.onDisplayTypeChange,
                         )
                     }
                 },
@@ -445,7 +448,6 @@ object FavoritesScreen {
         modifier: Modifier = Modifier,
     ) {
         val unfilteredCount by state.artistsUnfilteredCount.collectAsStateWithLifecycle()
-        val displayType by state.displayType.collectAsStateWithLifecycle()
         ArtistSearchScreenContent(
             sortFilterState = sortFilterState,
             gridState = gridState,
@@ -453,7 +455,7 @@ object FavoritesScreen {
             entries = entries,
             series = series,
             unfilteredCount = { unfilteredCount },
-            displayType = { displayType },
+            displayType = state.displayType,
             eventSink = { eventSink(Event.ArtistSearchEvent(it)) },
             noResultsItem = noResultsItem,
             modifier = modifier,
@@ -472,14 +474,13 @@ object FavoritesScreen {
         modifier: Modifier = Modifier,
     ) {
         val unfilteredCount by state.ralliesUnfilteredCount.collectAsStateWithLifecycle()
-        val displayType by state.displayType.collectAsStateWithLifecycle()
         StampRallySearchScreenContent(
             sortFilterState = sortFilterState,
             gridState = gridState,
             header = header,
             entries = entries,
             unfilteredCount = { unfilteredCount },
-            displayType = { displayType },
+            displayType = state.displayType,
             eventSink = { eventSink(Event.StampRallySearchEvent(it)) },
             noResultsItem = noResultsItem,
             modifier = modifier,
@@ -735,8 +736,9 @@ object FavoritesScreen {
     class State(
         val randomSeed: Int,
         val tab: MutableStateFlow<EntryTab>,
-        val query: MutableStateFlow<String>,
-        val displayType: MutableStateFlow<SearchDisplayType>,
+        val query: TextFieldState,
+        val displayType: () -> SearchDisplayType,
+        val onDisplayTypeChange: (SearchDisplayType) -> Unit,
         val year: MutableStateFlow<DataYear>,
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
         val artistsSortFilterState: ArtistSortFilterState,

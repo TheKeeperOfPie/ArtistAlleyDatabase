@@ -117,7 +117,6 @@ class ArtistSearchViewModel(
 
     val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
 
-    val displayType = settings.displayType
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
@@ -232,7 +231,7 @@ class ArtistSearchViewModel(
                     AlleyDestination.Images.fromArtist(
                         artistWithUserData = event.entry.data,
                         showOutdatedCatalogs =
-                            sortFilterController.state.persistentState.showOutdatedCatalogs.value,
+                            sortFilterController.state.persistentState.sortFilterSettings.showOutdatedCatalogs,
                         imageIndex = event.imageIndex,
                     )
                 )

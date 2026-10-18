@@ -168,7 +168,6 @@ object FavoritesMapScreen {
                 }
                 val scope = rememberCoroutineScope()
                 var searchExpanded by rememberSaveable { mutableStateOf(false) }
-                val showOutdatedCatalogs by mapViewModel.showOutdatedCatalogs.collectAsStateWithLifecycle()
                 MapScreen(
                     viewModel = mapViewModel,
                     transformState = mapTransformState,
@@ -200,7 +199,7 @@ object FavoritesMapScreen {
                         },
                         showText = { mapTransformState.showText },
                         showCatalogHighlight = !isFiltered,
-                        showOutdatedCatalogs = { showOutdatedCatalogs },
+                        showOutdatedCatalogs = mapViewModel::showOutdatedCatalogs,
                         onArtistClick = onArtistClick,
                     )
                 }
