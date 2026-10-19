@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.map
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -22,9 +24,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -40,21 +40,22 @@ class ArtistMapViewModel(
 ) : ViewModel() {
     val id = route.id
 
-    val artist = settings.showOnlyConfirmedTags
-        .flatMapLatest { showOnlyConfirmedTags ->
+    val artist by transform(viewModelScope) {
+        val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
+        produceState<ArtistEntryGridModel?>(null, showOnlyConfirmedTags) {
             // Need to observe updates since it's possible to
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
-                .map {
+                .mapLatest {
                     ArtistEntryGridModel.buildFromEntry(
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
                     )
                 }
-        }
-        .flowOn(CustomDispatchers.IO)
-        .stateInForCompose(this, null)
+                .collectLatest { value = it }
+        }.value
+    }
 
     private val randomSeed =
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }

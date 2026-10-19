@@ -198,12 +198,13 @@ object BrowseScreen {
 
                                                 HorizontalDivider()
 
-                                                var showOnlyConfirmedTags by tagsViewModel.seriesSortFilterController.state.persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+                                                val displaySettings =
+                                                    tagsViewModel.seriesSortFilterController.state.persistentState.displaySettings
                                                 SwitchSection(
                                                     title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
-                                                    enabled = { showOnlyConfirmedTags },
+                                                    enabled = displaySettings::showOnlyConfirmedTags,
                                                     onEnabledChanged = {
-                                                        showOnlyConfirmedTags = it
+                                                        displaySettings.showOnlyConfirmedTags = it
                                                     },
                                                 )
                                             }

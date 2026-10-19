@@ -1,16 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.serialization.saved
+import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -39,15 +41,10 @@ class ArtistSortFilterController(
     @Assisted savedStateHandle: SavedStateHandle,
     @Assisted lockedSeries: () -> SeriesInfo?,
     @Assisted private val lockedMerchId: String?,
-    @Assisted allowSettingsBasedToggles: Boolean = true,
+    @Assisted private val allowSettingsBasedToggles: Boolean = true,
 ) {
-    val showOnlyConfirmedTags = if (allowSettingsBasedToggles) {
-        settings.showOnlyConfirmedTags
-    } else {
-        savedStateHandle.getMutableStateFlow(
-            key = "showOnlyConfirmedTags",
-            initialValue = settings.showOnlyConfirmedTags.value,
-        )
+    private var localShowOnlyConfirmedTags by savedStateHandle.saveable {
+        mutableStateOf(settings.showOnlyConfirmedTags)
     }
 
     private val merchTagData by transform(scope) {
@@ -59,10 +56,19 @@ class ArtistSortFilterController(
 
     private val persistentState = ArtistSortFilterPersistentState(
         sortFilterSettings = settings,
-        showGridByDefault = settings.showGridByDefault,
-        showRandomCatalogImage = settings.showRandomCatalogImage,
-        showOnlyConfirmedTags = showOnlyConfirmedTags,
-        forceOneDisplayColumn = settings.forceOneDisplayColumn,
+        displaySettings = object : DisplaySettings by settings {
+            override var showOnlyConfirmedTags: Boolean
+                get() = if (allowSettingsBasedToggles) {
+                    settings.showOnlyConfirmedTags
+                } else {
+                    localShowOnlyConfirmedTags
+                }
+                set(value) = if (allowSettingsBasedToggles) {
+                    settings.showOnlyConfirmedTags = value
+                } else {
+                    localShowOnlyConfirmedTags = value
+                }
+        },
     )
 
     private val saveableState by savedStateHandle.saved { ArtistSortFilterSaveableState() }
@@ -85,7 +91,6 @@ class ArtistSortFilterController(
     internal val filterParams by transform(scope) {
         val seriesIn = setOfNotNull(lockedSeries()?.rowid) +
                 saveableState.series.seriesIn.toSet().map { it.rowid }
-        val showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsState()
         ArtistSortFilterParams(
             sortOption = persistentState.sortFilterSettings.artistsSortOption,
             sortAscending = persistentState.sortFilterSettings.artistsSortAscending,
@@ -96,7 +101,7 @@ class ArtistSortFilterController(
             exhibitorTagsIn = emptySet(), // TODO
             artistTagsIn = persistentState.sortFilterSettings.artistsTagsIn.toSet(),
             artistTagsNotIn = persistentState.sortFilterSettings.artistsTagsNotIn.toSet(),
-            showOnlyConfirmedTags = showOnlyConfirmedTags,
+            showOnlyConfirmedTags = persistentState.displaySettings.showOnlyConfirmedTags,
             showOutdatedCatalogs = persistentState.sortFilterSettings.showOutdatedCatalogs,
             hideFavorited = saveableState.hideFavorited,
             hideIgnored = saveableState.hideIgnored,

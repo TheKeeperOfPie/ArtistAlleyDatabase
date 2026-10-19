@@ -52,9 +52,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeDataFilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeDataSectionState
@@ -67,7 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSectionSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
@@ -113,18 +112,16 @@ internal fun StampRallySortFilterSheetContent(
     ) {
         val saveableState = state.saveableState
         val persistentState = state.persistentState
-        var sortOption by persistentState.sortOption.collectAsMutableStateWithLifecycle()
-        var sortAscending by persistentState.sortAscending.collectAsMutableStateWithLifecycle()
         SortSection(
             header = { Text(stringResource(Res.string.alley_sort_label)) },
             expanded = { Section.SORT in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SORT) },
             sortOptions = { StampRallySearchSortOption.entries },
-            sortOption = { sortOption },
-            onSortChanged = { sortOption = it },
+            sortOption = { persistentState.sortSettings.stampRalliesSortOption },
+            onSortChanged = { persistentState.sortSettings.stampRalliesSortOption = it },
             sortOptionLabel = { Text(stringResource(it.textRes)) },
-            sortAscending = { sortAscending },
-            onSortAscendingChange = { sortAscending = it },
+            sortAscending = { persistentState.sortSettings.stampRalliesSortAscending },
+            onSortAscendingChange = { persistentState.sortSettings.stampRalliesSortAscending = it },
         )
 
         HorizontalDivider()
@@ -222,29 +219,27 @@ private fun AdvancedSection(
         headerDropdownContentDescriptionRes = Res.string.alley_filter_advanced_expand_content_description,
     ) { expandedState ->
         if (expandedState) {
-            var showGridByDefault by persistentState.showGridByDefault.collectAsMutableStateWithLifecycle()
+            val displaySettings = persistentState.displaySettings
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_show_grid_by_default)) },
-                enabled = { showGridByDefault },
-                onEnabledChanged = { showGridByDefault = it },
+                enabled = { displaySettings.showGridByDefault },
+                onEnabledChanged = { displaySettings.showGridByDefault = it },
             )
 
             HorizontalDivider()
 
-            var showRandomCatalogImage by persistentState.showRandomCatalogImage.collectAsMutableStateWithLifecycle()
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_show_random_catalog_image)) },
-                enabled = { showRandomCatalogImage },
-                onEnabledChanged = { showRandomCatalogImage = it },
+                enabled = { displaySettings.showRandomCatalogImage },
+                onEnabledChanged = { displaySettings.showRandomCatalogImage = it },
             )
 
             HorizontalDivider()
 
-            var forceOneDisplayColumn by persistentState.forceOneDisplayColumn.collectAsMutableStateWithLifecycle()
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_force_one_display_column)) },
-                enabled = { forceOneDisplayColumn },
-                onEnabledChanged = { forceOneDisplayColumn = it },
+                enabled = { displaySettings.forceOneDisplayColumn },
+                onEnabledChanged = { displaySettings.forceOneDisplayColumn = it },
             )
 
             HorizontalDivider()
@@ -313,22 +308,16 @@ class StampRallySortFilterState(
 }
 
 class StampRallySortFilterPersistentState(
-    val sortOption: MutableStateFlow<StampRallySearchSortOption>,
-    val sortAscending: MutableStateFlow<Boolean>,
-    val showGridByDefault: MutableStateFlow<Boolean>,
-    val showRandomCatalogImage: MutableStateFlow<Boolean>,
-    val forceOneDisplayColumn: MutableStateFlow<Boolean>,
+    val sortSettings: StampRallySortSettings,
+    val displaySettings: DisplaySettings,
 ) {
     companion object {
         @Composable
         fun rememberForPreview(): StampRallySortFilterPersistentState {
             assertInPreview()
             return StampRallySortFilterPersistentState(
-                sortOption = MutableStateFlow(StampRallySearchSortOption.RANDOM),
-                sortAscending = MutableStateFlow(true),
-                showGridByDefault = MutableStateFlow(false),
-                showRandomCatalogImage = MutableStateFlow(true),
-                forceOneDisplayColumn = MutableStateFlow(false),
+                sortSettings = StampRallySortSettings.rememberForPreview(),
+                displaySettings = DisplaySettings.rememberForPreview(),
             )
         }
     }

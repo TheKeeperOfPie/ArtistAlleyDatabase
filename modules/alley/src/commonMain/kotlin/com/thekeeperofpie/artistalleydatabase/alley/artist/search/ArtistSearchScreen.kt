@@ -88,7 +88,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -233,10 +232,6 @@ internal fun ArtistSearchScreenContent(
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     noResultsItem: (@Composable () -> Unit)? = null,
 ) {
-    val showGridByDefault by sortFilterState.persistentState.showGridByDefault
-        .collectAsMutableStateWithLifecycle()
-    val showRandomCatalogImage by sortFilterState.persistentState.showRandomCatalogImage
-        .collectAsMutableStateWithLifecycle()
     val displayType = displayType()
     if (displayType == SearchDisplayType.TABLE) {
         TwoWayGrid(
@@ -274,12 +269,11 @@ internal fun ArtistSearchScreenContent(
             modifier = modifier,
         )
     } else {
-        val forceOneDisplayColumn by sortFilterState.persistentState.forceOneDisplayColumn.collectAsStateWithLifecycle()
         SearchList(
             entries = entries,
             itemToId = { it.id.scopedId },
             displayType = { displayType },
-            forceOneDisplayColumn = { forceOneDisplayColumn },
+            forceOneDisplayColumn = sortFilterState.persistentState.displaySettings::forceOneDisplayColumn,
             unfilteredCount = unfilteredCount,
             gridState = gridState,
             header = header,
@@ -287,8 +281,8 @@ internal fun ArtistSearchScreenContent(
                 ArtistSearchItem(
                     displayType = displayType,
                     artistWithUserData = entry.data,
-                    showGridByDefault = showGridByDefault,
-                    showRandomCatalogImage = showRandomCatalogImage,
+                    showGridByDefault = sortFilterState.persistentState.displaySettings.showGridByDefault,
+                    showRandomCatalogImage = sortFilterState.persistentState.displaySettings.showRandomCatalogImage,
                     blockCrossAxisScrolling = { gridState.isScrollInProgress },
                     showOutdatedCatalogs = sortFilterState.persistentState.sortFilterSettings::showOutdatedCatalogs,
                     onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },

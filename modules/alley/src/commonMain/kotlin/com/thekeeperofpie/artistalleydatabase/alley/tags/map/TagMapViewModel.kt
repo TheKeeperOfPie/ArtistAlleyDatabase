@@ -1,16 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags.map
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -18,12 +18,6 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @AssistedInject
@@ -35,34 +29,21 @@ class TagMapViewModel(
     @Assisted merch: String?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-
-    var booths by mutableStateOf(emptySet<String>())
-        private set
-
-    private val dataYear = if (year == null) {
-        settings.dataYear
-    } else {
-        flowOf(year)
+    val booths by transform(viewModelScope) {
+        val dataYear by settings.dataYear.collectAsStateWithLifecycle()
+        val year = year ?: dataYear
+        val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
+        produceState(emptySet(), year, showOnlyConfirmedTags) {
+            value = tagEntryDao.getBooths(
+                year = year,
+                TagMapQuery(
+                    series = series,
+                    merch = merch,
+                    showOnlyConfirmedTags = showOnlyConfirmedTags,
+                )
+            )
+        }.value
     }
-
-    init {
-        viewModelScope.launch(CustomDispatchers.Main) {
-            combine(settings.showOnlyConfirmedTags, dataYear, ::Pair)
-                .mapLatest { (showOnlyConfirmedTags, year) ->
-                    tagEntryDao.getBooths(
-                        year = year,
-                        TagMapQuery(
-                            series = series,
-                            merch = merch,
-                            showOnlyConfirmedTags = showOnlyConfirmedTags,
-                        )
-                    )
-                }
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { booths = it }
-        }
-    }
-
 
     @AssistedFactory
     @ManualViewModelAssistedFactoryKey

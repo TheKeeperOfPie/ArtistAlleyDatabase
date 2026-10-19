@@ -46,7 +46,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -188,10 +187,6 @@ internal fun StampRallySearchScreenContent(
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     noResultsItem: (@Composable () -> Unit)? = null,
 ) {
-    val showGridByDefault by sortFilterState.persistentState.showGridByDefault
-        .collectAsMutableStateWithLifecycle()
-    val showRandomCatalogImage by sortFilterState.persistentState.showRandomCatalogImage
-        .collectAsMutableStateWithLifecycle()
     val displayType = displayType()
     if (displayType == SearchDisplayType.TABLE) {
         TwoWayGrid(
@@ -214,12 +209,11 @@ internal fun StampRallySearchScreenContent(
             modifier = modifier,
         )
     } else {
-        val forceOneDisplayColumn by sortFilterState.persistentState.forceOneDisplayColumn.collectAsStateWithLifecycle()
         SearchList(
             entries = entries,
             itemToId = { it.stampRally.id },
             displayType = { displayType },
-            forceOneDisplayColumn = { forceOneDisplayColumn },
+            forceOneDisplayColumn = sortFilterState.persistentState.displaySettings::forceOneDisplayColumn,
             unfilteredCount = unfilteredCount,
             gridState = gridState,
             header = header,
@@ -227,8 +221,8 @@ internal fun StampRallySearchScreenContent(
                 StampRallySearchItem(
                     displayType = displayType,
                     stampRallyWithUserData = entry,
-                    showGridByDefault = showGridByDefault,
-                    showRandomCatalogImage = showRandomCatalogImage,
+                    showGridByDefault = sortFilterState.persistentState.displaySettings.showGridByDefault,
+                    showRandomCatalogImage = sortFilterState.persistentState.displaySettings.showRandomCatalogImage,
                     blockCrossAxisScrolling = { gridState.isScrollInProgress },
                     onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
                     onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },

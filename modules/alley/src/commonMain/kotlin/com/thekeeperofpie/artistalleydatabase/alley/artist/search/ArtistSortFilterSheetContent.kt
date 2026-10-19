@@ -26,7 +26,6 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_chip_state_content_description
@@ -58,13 +57,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.category
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
@@ -81,7 +80,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateS
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
@@ -141,7 +139,7 @@ internal fun ArtistSortFilterSheetContent(
 
         HorizontalDivider()
 
-        var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+        val displaySettings = persistentState.displaySettings
         SeriesFilterSection(
             expanded = { Section.SERIES in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SERIES) },
@@ -150,8 +148,8 @@ internal fun ArtistSortFilterSheetContent(
             autocompleteResults = seriesAutocompleteResults,
             showOnlyConfirmedTagsSection = {
                 ShowOnlyConfirmedTagsSection(
-                    enabled = { showOnlyConfirmedTags },
-                    onEnabledChanged = { showOnlyConfirmedTags = it },
+                    enabled = { displaySettings.showOnlyConfirmedTags },
+                    onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
                     modifier = Modifier.padding(start = 32.dp)
                 )
             },
@@ -167,8 +165,8 @@ internal fun ArtistSortFilterSheetContent(
             merchIdsLockedIn = state.merchIdsLockedIn,
             header = {
                 ShowOnlyConfirmedTagsSection(
-                    enabled = { showOnlyConfirmedTags },
-                    onEnabledChanged = { showOnlyConfirmedTags = it },
+                    enabled = { displaySettings.showOnlyConfirmedTags },
+                    onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
                     modifier = Modifier.padding(start = 32.dp)
                 )
             },
@@ -256,28 +254,26 @@ private fun AdvancedSection(
         headerDropdownContentDescriptionRes = Res.string.alley_filter_advanced_expand_content_description,
     ) { expandedState ->
         if (expandedState) {
-            var showGridByDefault by persistentState.showGridByDefault.collectAsMutableStateWithLifecycle()
+            val displaySettings= persistentState.displaySettings
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_show_grid_by_default)) },
-                enabled = { showGridByDefault },
-                onEnabledChanged = { showGridByDefault = it },
+                enabled = { displaySettings.showGridByDefault },
+                onEnabledChanged = { displaySettings.showGridByDefault = it },
             )
 
             HorizontalDivider()
 
-            var showRandomCatalogImage by persistentState.showRandomCatalogImage.collectAsMutableStateWithLifecycle()
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_show_random_catalog_image)) },
-                enabled = { showRandomCatalogImage },
-                onEnabledChanged = { showRandomCatalogImage = it },
+                enabled = { displaySettings.showRandomCatalogImage },
+                onEnabledChanged = { displaySettings.showRandomCatalogImage = it },
             )
 
             HorizontalDivider()
 
-            var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
             ShowOnlyConfirmedTagsSection(
-                enabled = { showOnlyConfirmedTags },
-                onEnabledChanged = { showOnlyConfirmedTags = it },
+                enabled = { displaySettings.showOnlyConfirmedTags },
+                onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
             )
 
             HorizontalDivider()
@@ -290,11 +286,10 @@ private fun AdvancedSection(
 
             HorizontalDivider()
 
-            var forceOneDisplayColumn by persistentState.forceOneDisplayColumn.collectAsMutableStateWithLifecycle()
             SwitchSection(
                 title = { Text(stringResource(Res.string.alley_filter_force_one_display_column)) },
-                enabled = { forceOneDisplayColumn },
-                onEnabledChanged = { forceOneDisplayColumn = it },
+                enabled = { displaySettings.forceOneDisplayColumn },
+                onEnabledChanged = { displaySettings.forceOneDisplayColumn = it },
             )
 
             HorizontalDivider()
@@ -432,10 +427,7 @@ class ArtistSortFilterState(
 /** Everything backed by an externally owned source */
 class ArtistSortFilterPersistentState(
     val sortFilterSettings: ArtistSortFilterSettings,
-    val showGridByDefault: MutableStateFlow<Boolean>,
-    val showRandomCatalogImage: MutableStateFlow<Boolean>,
-    val showOnlyConfirmedTags: MutableStateFlow<Boolean>,
-    val forceOneDisplayColumn: MutableStateFlow<Boolean>,
+    val displaySettings: DisplaySettings,
 ) {
     val activeCount: Int
         @Composable get() {
@@ -443,14 +435,14 @@ class ArtistSortFilterPersistentState(
             var count = 0
             if (sortFilterSettings.artistsTagsIn.isNotEmpty()) count++
             if (sortFilterSettings.artistsTagsNotIn.isNotEmpty()) count++
-            if (showOnlyConfirmedTags.collectAsStateWithLifecycle().value) count++
+            if (displaySettings.showOnlyConfirmedTags) count++
             return count
         }
 
     fun clear() {
         sortFilterSettings.artistsTagsIn = emptySet()
         sortFilterSettings.artistsTagsNotIn = emptySet()
-        showOnlyConfirmedTags.value = false
+        displaySettings.showOnlyConfirmedTags = false
     }
 
     companion object {
@@ -459,10 +451,7 @@ class ArtistSortFilterPersistentState(
             assertInPreview()
             return ArtistSortFilterPersistentState(
                 sortFilterSettings = ArtistSortFilterSettings.rememberForPreview(),
-                showGridByDefault = MutableStateFlow(false),
-                showRandomCatalogImage = MutableStateFlow(true),
-                showOnlyConfirmedTags = MutableStateFlow(false),
-                forceOneDisplayColumn = MutableStateFlow(false),
+                displaySettings = DisplaySettings.rememberForPreview(),
             )
         }
     }

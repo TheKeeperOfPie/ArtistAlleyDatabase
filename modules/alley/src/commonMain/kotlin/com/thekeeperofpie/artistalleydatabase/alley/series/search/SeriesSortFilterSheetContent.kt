@@ -9,10 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.annotation.RememberInComposition
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
@@ -22,8 +20,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState.Section
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldSheetContent
@@ -34,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateS
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,18 +47,17 @@ internal fun SeriesSortFilterSheetContent(
     ) {
         val persistentState = state.persistentState
         val saveableState = state.saveableState
-        var sortOption by persistentState.sortOption.collectAsMutableStateWithLifecycle()
-        var sortAscending by persistentState.sortAscending.collectAsMutableStateWithLifecycle()
+        val sortFilterSettings = persistentState.sortFilterSettings
         SortSection(
             header = { Text(stringResource(Res.string.alley_sort_label)) },
             expanded = { Section.SORT in saveableState.expandedSections },
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SORT) },
             sortOptions = { SeriesSearchSortOption.entries },
-            sortOption = { sortOption },
-            onSortChanged = { sortOption = it },
+            sortOption = sortFilterSettings::seriesSortOption,
+            onSortChanged = { sortFilterSettings.seriesSortOption = it },
             sortOptionLabel = { Text(stringResource(it.textRes)) },
-            sortAscending = { sortAscending },
-            onSortAscendingChange = { sortAscending = it },
+            sortAscending = sortFilterSettings::seriesSortAscending,
+            onSortAscendingChange = { sortFilterSettings.seriesSortAscending = it },
         )
 
         HorizontalDivider()
@@ -79,11 +75,11 @@ internal fun SeriesSortFilterSheetContent(
 
         HorizontalDivider()
 
-        var showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+        val displaySettings = persistentState.displaySettings
         SwitchSection(
             title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
-            enabled = { showOnlyConfirmedTags },
-            onEnabledChanged = { showOnlyConfirmedTags = it },
+            enabled = displaySettings::showOnlyConfirmedTags,
+            onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it } ,
         )
     }
 }
@@ -111,18 +107,16 @@ class SeriesSortFilterState(
 
 @Serializable
 class SeriesSortFilterPersistentState(
-    val sortOption: MutableStateFlow<SeriesSearchSortOption>,
-    val sortAscending: MutableStateFlow<Boolean>,
-    val showOnlyConfirmedTags: MutableStateFlow<Boolean>,
+    val sortFilterSettings: SeriesSortFilterSettings,
+    val displaySettings: DisplaySettings,
 ) {
     companion object {
         @Composable
         fun rememberForPreview(): SeriesSortFilterPersistentState {
             assertInPreview()
             return SeriesSortFilterPersistentState(
-                sortOption = MutableStateFlow(SeriesSearchSortOption.RANDOM),
-                sortAscending = MutableStateFlow(true),
-                showOnlyConfirmedTags = MutableStateFlow(false),
+                sortFilterSettings = SeriesSortFilterSettings.rememberForPreview(),
+                displaySettings = DisplaySettings.rememberForPreview(),
             )
         }
     }

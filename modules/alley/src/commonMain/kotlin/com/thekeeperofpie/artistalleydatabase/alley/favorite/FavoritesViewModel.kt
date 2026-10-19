@@ -111,7 +111,7 @@ class FavoritesViewModel(
     private val inputs = combine(
         snapshotFlow { query.text.toString() },
         year,
-        settings.showOnlyConfirmedTags,
+        snapshotFlow { settings.showOnlyConfirmedTags },
         ::Triple
     )
 

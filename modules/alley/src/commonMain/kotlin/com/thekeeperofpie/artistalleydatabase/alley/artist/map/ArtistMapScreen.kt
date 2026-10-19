@@ -5,10 +5,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
@@ -46,7 +44,7 @@ object ArtistMapScreen {
             create(it.createSavedStateHandle())
         },
     ) {
-        val artist by viewModel.artist.collectAsStateWithLifecycle()
+        val artist = viewModel.artist
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -56,7 +54,7 @@ object ArtistMapScreen {
                                 year = it.year,
                                 id = it.id,
                                 booth = it.booth,
-                                profileImage = artist?.data?.profileImage,
+                                profileImage = artist.data.profileImage,
                                 name = it.name,
                             )
                         }

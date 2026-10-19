@@ -77,26 +77,26 @@ class ArtistAlleyWebSettings(
         },
     )
     override var artistsSortAscending by registerBoolean2(true)
-    override val stampRalliesSortOption by register(
+    override var stampRalliesSortOption by register2(
         serialize = { it.name },
         deserialize = { value ->
             StampRallySearchSortOption.entries.find { it.name == value }
                 ?: StampRallySearchSortOption.RANDOM
         },
     )
-    override val stampRalliesSortAscending by registerBoolean(true)
-    override val seriesSortOption by register(
+    override var stampRalliesSortAscending by registerBoolean2(true)
+    override var seriesSortOption by register2(
         serialize = { it.name },
         deserialize = { value ->
             SeriesSearchSortOption.entries.find { it.name == value }
                 ?: SeriesSearchSortOption.RANDOM
         },
     )
-    override val seriesSortAscending by registerBoolean(true)
-    override val showGridByDefault by registerBoolean(false)
-    override val showRandomCatalogImage by registerBoolean(false)
-    override val showOnlyConfirmedTags by registerBoolean(false)
-    override val forceOneDisplayColumn by registerBoolean(false)
+    override var seriesSortAscending by registerBoolean2(true)
+    override var showGridByDefault by registerBoolean2(false)
+    override var showRandomCatalogImage by registerBoolean2(false)
+    override var showOnlyConfirmedTags by registerBoolean2(false)
+    override var forceOneDisplayColumn by registerBoolean2(false)
     override val dataYear by register(
         serialize = { it.serializedName },
         deserialize = {

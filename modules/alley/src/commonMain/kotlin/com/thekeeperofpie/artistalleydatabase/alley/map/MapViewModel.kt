@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -12,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
@@ -37,14 +35,13 @@ import kotlin.random.Random
 @AssistedInject
 class MapViewModel(
     private val artistEntryDao: ArtistEntryDao,
-    private val seriesEntryCache: SeriesEntryCache,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val gridData by transform(viewModelScope) {
         val showOutdatedCatalogs = settings.showOutdatedCatalogs
-        val showRandomCatalogImage by settings.showRandomCatalogImage.collectAsStateWithLifecycle()
+        val showRandomCatalogImage = settings.showRandomCatalogImage
         produceState(LoadingResult.loading(), showOutdatedCatalogs, showRandomCatalogImage) {
             // TODO: This is very inefficient to respond to favorites updates
             // TODO: Pass in DataYear

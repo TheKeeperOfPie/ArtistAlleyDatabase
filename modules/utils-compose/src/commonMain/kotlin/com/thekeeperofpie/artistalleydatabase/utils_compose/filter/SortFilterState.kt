@@ -396,31 +396,44 @@ sealed class SortFilterSectionState(val id: String) {
     @Stable
     class SwitchBySetting(
         private val title: StringResource,
-        val property: MutableStateFlow<Boolean>,
         val default: Boolean? = null,
+        val value: @Composable () -> Boolean,
+        val onValueChange: (Boolean) -> Unit,
         override val allowClear: Boolean = false,
     ) : SortFilterSectionState(title.key) {
+
+        constructor(
+            title: StringResource,
+            property: MutableStateFlow<Boolean>,
+            default: Boolean? = null,
+            allowClear: Boolean = false,
+        ): this(
+            title = title,
+            value = { property.collectAsStateWithLifecycle().value },
+            onValueChange = { property.value = it },
+            default = default,
+            allowClear = allowClear,
+        )
 
         @Composable
         override fun isDefault(): Boolean {
             val default = default ?: return true
-            var enabled by property.collectAsMutableStateWithLifecycle()
-            return default == enabled
+            return default == value()
         }
 
         override fun clear() {
             if (allowClear && default != null) {
-                property.value = default
+                onValueChange(default)
             }
         }
 
         @Composable
         override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
-            var enabled by property.collectAsMutableStateWithLifecycle()
+            val enabled = value()
             SortAndFilterComposables.SwitchRow(
                 title = title,
                 enabled = { enabled },
-                onEnabledChanged = { enabled = it },
+                onEnabledChanged = onValueChange,
                 showDivider = showDivider,
             )
         }

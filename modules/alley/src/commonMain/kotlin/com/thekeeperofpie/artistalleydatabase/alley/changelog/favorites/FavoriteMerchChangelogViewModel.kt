@@ -39,7 +39,7 @@ class FavoriteMerchChangelogViewModel(
 
     val showOnlyConfirmedTags = savedStateHandle.getMutableStateFlow(
         key = "showOnlyConfirmedTags",
-        initialValue = settings.showOnlyConfirmedTags.value,
+        initialValue = settings.showOnlyConfirmedTags,
     )
 
     private val randomSeed =

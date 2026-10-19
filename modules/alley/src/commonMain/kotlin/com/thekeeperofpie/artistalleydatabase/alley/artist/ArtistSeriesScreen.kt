@@ -12,7 +12,6 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -30,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Approval
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
@@ -180,10 +178,10 @@ object ArtistSeriesScreen {
                 )
                 HorizontalDivider()
 
-                var showOnlyConfirmedTags by state.sortFilterState.persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+                val displaySettings = state.sortFilterState.persistentState.displaySettings
                 ShowOnlyConfirmedTagsSection(
-                    enabled = { showOnlyConfirmedTags },
-                    onEnabledChanged = { showOnlyConfirmedTags = it },
+                    enabled = { displaySettings.showOnlyConfirmedTags },
+                    onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
                 )
             }
             BottomSheetFilterDataYearHeader(

@@ -57,7 +57,7 @@ class TagChangelogViewModel(
 
     val showOnlyConfirmedTags = savedStateHandle.getMutableStateFlow(
         key = "showOnlyConfirmedTags",
-        initialValue = settings.showOnlyConfirmedTags.value,
+        initialValue = settings.showOnlyConfirmedTags,
     )
 
     val series = flow {

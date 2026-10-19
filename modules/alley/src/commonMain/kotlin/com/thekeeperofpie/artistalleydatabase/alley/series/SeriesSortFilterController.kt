@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.serialization.saved
+import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterPersistentState
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
@@ -16,15 +17,13 @@ class SeriesSortFilterController(
     settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
 ) {
-    val showOnlyConfirmedTags = savedStateHandle.getMutableStateFlow(
-        key = "showOnlyConfirmedTags",
-        initialValue = settings.showOnlyConfirmedTags.value,
-    )
+    var showOnlyConfirmedTags by savedStateHandle.saveable {
+        mutableStateOf(settings.showOnlyConfirmedTags)
+    }
 
     private val persistentState = SeriesSortFilterPersistentState(
-        sortOption = settings.seriesSortOption,
-        sortAscending = settings.seriesSortAscending,
-        showOnlyConfirmedTags = showOnlyConfirmedTags,
+        sortFilterSettings = settings,
+        displaySettings = settings,
     )
 
     private val saveableState by savedStateHandle.saved { SeriesSortFilterSaveableState() }
@@ -35,10 +34,9 @@ class SeriesSortFilterController(
     )
 
     internal val filterParams by transform(scope) {
-        val showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsStateWithLifecycle()
         FilterParams(
-            sortOption = persistentState.sortOption.collectAsStateWithLifecycle().value,
-            sortAscending = persistentState.sortAscending.collectAsStateWithLifecycle().value,
+            sortOption = persistentState.sortFilterSettings.seriesSortOption,
+            sortAscending = persistentState.sortFilterSettings.seriesSortAscending,
             sourceIn = saveableState.sourceIn.filterIn.toSet(),
             showOnlyConfirmedTags = showOnlyConfirmedTags,
         )

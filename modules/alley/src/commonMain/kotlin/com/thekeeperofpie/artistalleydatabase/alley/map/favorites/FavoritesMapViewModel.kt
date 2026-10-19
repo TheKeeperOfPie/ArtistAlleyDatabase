@@ -77,7 +77,7 @@ class FavoritesMapViewModel(
             return@transform emptySet()
         }
         val dataYear by settings.dataYear.collectAsStateWithLifecycle()
-        val showOnlyConfirmedTags by settings.showOnlyConfirmedTags.collectAsStateWithLifecycle()
+        val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
         produceState(emptySet(), dataYear, showOnlyConfirmedTags, seriesRowIdIn, merchIdIn) {
             value = artistEntryDao.searchBooths(
                 year = dataYear,
@@ -91,10 +91,10 @@ class FavoritesMapViewModel(
     val filterState = FavoritesMapFilterState(
         dataYear = { settings.dataYear.collectAsStateWithLifecycle().value },
         onDataYearChange = { settings.dataYear.value = it },
-        showOnlyConfirmedTags = { settings.showOnlyConfirmedTags.collectAsStateWithLifecycle().value },
-        onShowOnlyConfirmedTagsChanged = { settings.showOnlyConfirmedTags.value = it },
-        showRandomCatalogImage = { settings.showRandomCatalogImage.collectAsStateWithLifecycle().value },
-        onShowRandomCatalogImageChanged = { settings.showRandomCatalogImage.value = it },
+        showOnlyConfirmedTags = { settings.showOnlyConfirmedTags },
+        onShowOnlyConfirmedTagsChanged = { settings.showOnlyConfirmedTags = it },
+        showRandomCatalogImage = { settings.showRandomCatalogImage },
+        onShowRandomCatalogImageChanged = { settings.showRandomCatalogImage = it },
     )
 
     fun onSeriesSelected(seriesInfo: SeriesInfo, selected: Boolean) = Snapshot.withMutableSnapshot {

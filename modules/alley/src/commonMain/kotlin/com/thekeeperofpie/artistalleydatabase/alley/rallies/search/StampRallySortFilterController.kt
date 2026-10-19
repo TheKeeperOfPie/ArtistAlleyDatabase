@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
@@ -47,11 +46,8 @@ class StampRallySortFilterController(
     }
 
     private val persistentState = StampRallySortFilterPersistentState(
-        sortOption = settings.stampRalliesSortOption,
-        sortAscending = settings.stampRalliesSortAscending,
-        showGridByDefault = settings.showGridByDefault,
-        showRandomCatalogImage = settings.showRandomCatalogImage,
-        forceOneDisplayColumn = settings.forceOneDisplayColumn,
+        sortSettings = settings,
+        displaySettings = settings,
     )
 
     private val saveableState by savedStateHandle.saved { StampRallySortFilterSaveableState() }
@@ -72,13 +68,11 @@ class StampRallySortFilterController(
             .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     internal val filterParams by transform(scope) {
-        val sortOption by persistentState.sortOption.collectAsState()
-        val sortAscending by persistentState.sortAscending.collectAsState()
         val seriesIn = setOfNotNull(lockedSeries()?.id) +
                 saveableState.series.seriesIn.toSet().map { it.id }
         StampRallyFilterParams(
-            sortOption = sortOption,
-            sortAscending = sortAscending,
+            sortOption = persistentState.sortSettings.stampRalliesSortOption,
+            sortAscending = persistentState.sortSettings.stampRalliesSortAscending,
             seriesIn = seriesIn,
             merchIdIn = saveableState.merch.tagIdIn.toSet(),
             prizeMerchIdIn = saveableState.prizeMerch.tagIdIn.toSet(),
