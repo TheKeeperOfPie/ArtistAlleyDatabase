@@ -198,7 +198,7 @@ class FavoritesViewModel(
         snapshotFlow { query.text.toString() },
         year,
         settings.languageOption,
-        seriesSortFilterController.state.filterParams,
+        snapshotFlow { seriesSortFilterController.filterParams },
         ::SeriesInputs,
     )
         .flatMapLatest { (query, year, languageOption, filterParams) ->

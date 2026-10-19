@@ -94,8 +94,8 @@ class ArtistSortFilterController(
             commissionsIn = saveableState.commissions.filterIn.toSet(),
             linkTypesIn = saveableState.links.tagIdIn.toSet().map(Link.Type::valueOf).toSet(),
             exhibitorTagsIn = emptySet(), // TODO
-            artistTagsIn = persistentState.sortFilterSettings.artistsTagsIn,
-            artistTagsNotIn = persistentState.sortFilterSettings.artistsTagsNotIn,
+            artistTagsIn = persistentState.sortFilterSettings.artistsTagsIn.toSet(),
+            artistTagsNotIn = persistentState.sortFilterSettings.artistsTagsNotIn.toSet(),
             showOnlyConfirmedTags = showOnlyConfirmedTags,
             showOutdatedCatalogs = persistentState.sortFilterSettings.showOutdatedCatalogs,
             hideFavorited = saveableState.hideFavorited,

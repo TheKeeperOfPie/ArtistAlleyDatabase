@@ -831,6 +831,7 @@ fun SortFilterBottomScaffold2(
 fun SortFilterBottomScaffoldSheetContent(
     sheetState: SheetState,
     scrollState: ScrollState = rememberScrollState(),
+    dragHandle: (@Composable () -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
@@ -838,7 +839,13 @@ fun SortFilterBottomScaffoldSheetContent(
     val scope = rememberCoroutineScope()
 
     Column {
-        Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
+        Surface(
+            color = if (dragHandle == null) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -850,10 +857,14 @@ fun SortFilterBottomScaffoldSheetContent(
                         }
                     }
             ) {
-                BottomSheetDefaults.DragHandle(
-                    color = LocalContentColor.current,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                if (dragHandle != null) {
+                    dragHandle()
+                } else {
+                    BottomSheetDefaults.DragHandle(
+                        color = LocalContentColor.current,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
 
                 if (actions != null) {
                     Row(

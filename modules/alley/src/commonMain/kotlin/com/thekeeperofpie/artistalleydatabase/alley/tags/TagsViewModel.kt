@@ -80,7 +80,7 @@ class TagsViewModel(
             settings.dataYear,
             settings.languageOption,
             seriesQuery.debounce(250.milliseconds),
-            seriesSortFilterController.state.filterParams,
+            snapshotFlow { seriesSortFilterController.filterParams },
             ::SeriesInputs
         )
             .flatMapLatest { (year, languageOption, query, filterParams) ->

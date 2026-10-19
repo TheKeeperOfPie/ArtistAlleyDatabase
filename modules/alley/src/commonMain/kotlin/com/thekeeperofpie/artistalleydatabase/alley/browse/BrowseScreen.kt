@@ -38,10 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -50,14 +48,15 @@ import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_series
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
@@ -71,11 +70,10 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -118,11 +116,7 @@ object BrowseScreen {
                 }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val selectedTabIndex = selectedTabIndex()
-                SortFilterBottomScaffold(
-                    state = when (selectedTabIndex) {
-                        0 -> tagsViewModel.seriesSortFilterController.state
-                        else -> null
-                    },
+                SortFilterBottomScaffold2(
                     scaffoldState = scaffoldState,
                     sheetPeekHeight = 72.dp,
                     topBar = {
@@ -145,16 +139,15 @@ object BrowseScreen {
                             }
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .conditionallyNonNull(scrollBehavior) {
-                            nestedScroll(
-                                NestedScrollSplitter(
-                                    primary = it.nestedScrollConnection,
-                                    consumeNone = true,
-                                )
+                    sheetContent = {
+                        when (selectedTabIndex) {
+                            0 -> SeriesSortFilterSheetContent(
+                                state = tagsViewModel.seriesSortFilterController.state,
+                                sheetState = scaffoldState.bottomSheetState,
                             )
+                            else -> Box {}
                         }
+                    }
                 ) {
                     val series = tagsViewModel.series.collectAsLazyPagingItems()
                     val merch = tagsViewModel.merch.collectAsLazyPagingItems()
@@ -203,13 +196,16 @@ object BrowseScreen {
                                                 tagsViewModel.seriesLanguageSection
                                                     .Content(Modifier.fillMaxWidth())
 
-                                                val seriesSortFilterController =
-                                                    tagsViewModel.seriesSortFilterController
-                                                seriesSortFilterController.showOnlyConfirmedTagsSection
-                                                    .Content(
-                                                        state = seriesSortFilterController.state.expanded,
-                                                        showDivider = true,
-                                                    )
+                                                HorizontalDivider()
+
+                                                var showOnlyConfirmedTags by tagsViewModel.seriesSortFilterController.state.persistentState.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
+                                                SwitchSection(
+                                                    title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
+                                                    enabled = { showOnlyConfirmedTags },
+                                                    onEnabledChanged = {
+                                                        showOnlyConfirmedTags = it
+                                                    },
+                                                )
                                             }
                                         }
                                     }

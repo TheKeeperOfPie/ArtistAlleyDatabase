@@ -13,8 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.ObserverHandle
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
@@ -144,17 +144,9 @@ fun transformInternal(
 
 private object AlwaysActiveLifecycleOwner : LifecycleOwner {
     override val lifecycle: Lifecycle
-        get() = AlwaysActiveLifecycle
-
-    private object AlwaysActiveLifecycle : Lifecycle() {
-        override val currentState: Lifecycle.State
-            get() = Lifecycle.State.CREATED
-
-        override fun addObserver(observer: LifecycleObserver) = Unit
-
-        override fun removeObserver(observer: LifecycleObserver) = Unit
-
-    }
+        field = LifecycleRegistry(this).apply {
+            currentState = Lifecycle.State.RESUMED
+        }
 }
 
 private object UnitApplier : AbstractApplier<Unit>(Unit) {

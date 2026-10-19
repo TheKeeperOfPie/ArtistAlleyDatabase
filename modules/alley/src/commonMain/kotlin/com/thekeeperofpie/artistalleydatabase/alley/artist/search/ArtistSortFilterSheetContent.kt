@@ -26,6 +26,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_tags_filter_chip_state_content_description
@@ -442,6 +443,7 @@ class ArtistSortFilterPersistentState(
             var count = 0
             if (sortFilterSettings.artistsTagsIn.isNotEmpty()) count++
             if (sortFilterSettings.artistsTagsNotIn.isNotEmpty()) count++
+            if (showOnlyConfirmedTags.collectAsStateWithLifecycle().value) count++
             return count
         }
 

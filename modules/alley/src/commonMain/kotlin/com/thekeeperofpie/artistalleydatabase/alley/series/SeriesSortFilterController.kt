@@ -1,71 +1,48 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.SavedStateHandle
-import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
-import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_chip_state_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_label
-import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.serialization.saved
+import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterPersistentState
+import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState
+import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.stringResource
 
 class SeriesSortFilterController(
     scope: CoroutineScope,
     settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
 ) {
-    val sortOption = settings.seriesSortOption
-    val sortAscending = settings.seriesSortAscending
-    private val sortSection = SortFilterSectionState.Sort(
-        headerText = Res.string.alley_sort_label,
-        defaultSort = SeriesSearchSortOption.RANDOM,
-        sortOption = sortOption,
-        sortAscending = sortAscending,
+    val showOnlyConfirmedTags = savedStateHandle.getMutableStateFlow(
+        key = "showOnlyConfirmedTags",
+        initialValue = settings.showOnlyConfirmedTags.value,
     )
 
-    private val sourceIn = savedStateHandle.getMutableStateFlow<String, Set<SeriesFilterOption>>(
-        scope = scope,
-        key = "sourceIn",
-        initialValue = { emptySet() },
-        serialize = Json::encodeToString,
-        deserialize = Json::decodeFromString,
-    )
-    private val sourceSection = SortFilterSectionState.Filter(
-        title = Res.string.alley_series_filter_source_label,
-        titleDropdownContentDescription = Res.string.alley_series_filter_source_content_description,
-        includeExcludeIconContentDescription = Res.string.alley_series_filter_source_chip_state_content_description,
-        options = MutableStateFlow(SeriesFilterOption.entries),
-        filterIn = sourceIn,
-        filterNotIn = MutableStateFlow(emptySet()),
-        valueToText = { stringResource(it.title) },
-        selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
+    private val persistentState = SeriesSortFilterPersistentState(
+        sortOption = settings.seriesSortOption,
+        sortAscending = settings.seriesSortAscending,
+        showOnlyConfirmedTags = showOnlyConfirmedTags,
     )
 
-    val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
-    val showOnlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
-        title = Res.string.alley_filter_show_only_confirmed_tags,
-        property = showOnlyConfirmedTags,
-        default = false,
-        allowClear = true,
+    private val saveableState by savedStateHandle.saved { SeriesSortFilterSaveableState() }
+
+    val state = SeriesSortFilterState(
+        persistentState = persistentState,
+        saveableState = saveableState,
     )
 
-    private val filterParams =
-        combineStates(sortOption, sortAscending, sourceIn, showOnlyConfirmedTags, ::FilterParams)
-
-    val state = SortFilterState(
-        sections = listOf(sortSection, sourceSection, showOnlyConfirmedTagsSection),
-        filterParams = filterParams,
-        collapseOnClose = ReadOnlyStateFlow(false),
-    )
+    internal val filterParams by transform(scope) {
+        val showOnlyConfirmedTags by persistentState.showOnlyConfirmedTags.collectAsStateWithLifecycle()
+        FilterParams(
+            sortOption = persistentState.sortOption.collectAsStateWithLifecycle().value,
+            sortAscending = persistentState.sortAscending.collectAsStateWithLifecycle().value,
+            sourceIn = saveableState.sourceIn.filterIn.toSet(),
+            showOnlyConfirmedTags = showOnlyConfirmedTags,
+        )
+    }
 
     data class FilterParams(
         val sortOption: SeriesSearchSortOption,

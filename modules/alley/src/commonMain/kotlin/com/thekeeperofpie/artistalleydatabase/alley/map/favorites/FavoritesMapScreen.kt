@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,7 +17,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -29,7 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
@@ -56,7 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -66,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMe
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Search
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -122,32 +118,15 @@ object FavoritesMapScreen {
         mapViewModel: MapViewModel,
     ) {
         val scaffoldState = rememberBottomSheetScaffoldState()
-        BottomSheetScaffold(
+        SortFilterBottomScaffold2(
             scaffoldState = scaffoldState,
             sheetPeekHeight = 102.dp,
-            sheetDragHandle = {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Surface(
-                        modifier = Modifier.padding(18.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        shape = MaterialTheme.shapes.extraLarge,
-                    ) {
-                        Box(Modifier.size(width = 32.dp, height = 4.dp))
-                    }
-                    ZoomSlider(
-                        transformState = mapTransformState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 64.dp)
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                    )
-                }
-            },
             sheetContent = {
-                FavoritesMapFilterSheetContent(filterState, scaffoldState.bottomSheetState)
+                FavoritesMapFilterSheetContent(
+                    state = filterState,
+                    mapTransformState = mapTransformState,
+                    sheetState = scaffoldState.bottomSheetState,
+                )
             },
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
