@@ -153,6 +153,7 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.STAMP_RALLIES ->
                         StampRallySearchScreen(
+                            isRoot = true,
                             lockedYear = null,
                             lockedSeries = null,
                             scrollStateSaver = ScrollStateSaver.fromMap(

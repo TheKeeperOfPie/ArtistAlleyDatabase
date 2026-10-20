@@ -56,7 +56,7 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
         override var seriesSortOption by mutableStateOf(SeriesSearchSortOption.RANDOM)
         override var seriesSortAscending by mutableStateOf(true)
 
-        override val dataYear = MutableStateFlow(DataYear.LATEST)
+        override var dataYear by mutableStateOf(DataYear.LATEST)
         override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
         override val easterEggEnabled = MutableStateFlow(false)
 

@@ -50,19 +50,20 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun StampRallySearchScreen(
+    isRoot: Boolean,
     lockedYear: DataYear?,
     lockedSeries: String?,
     scrollStateSaver: ScrollStateSaver,
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     viewModel: StampRallySearchViewModel = assistedMetroViewModel<StampRallySearchViewModel, StampRallySearchViewModel.Factory> {
         create(
+            isRoot = isRoot,
             lockedYear = lockedYear,
             lockedSeries = lockedSeries,
             savedStateHandle = it.createSavedStateHandle(),
@@ -73,7 +74,11 @@ fun StampRallySearchScreen(
     val state = remember(viewModel, sortFilterController) {
         StampRallySearchScreen.State(viewModel, sortFilterController)
     }
-    val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+    val dataYearHeaderState = rememberDataYearHeaderState(
+        dataYear = state.year,
+        onDataYearChange = state.onYearChange,
+        lockedYear = state.lockedYear,
+    )
     val seriesAutocompleteResults by viewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
     StampRallySearchScreen(
         state = state,
@@ -284,7 +289,8 @@ object StampRallySearchScreen {
         val lockedSeriesEntry: () -> SeriesInfo?,
         val lockedYear: DataYear?,
         val randomSeed: Int,
-        val year: MutableStateFlow<DataYear>,
+        val year: () -> DataYear,
+        val onYearChange: (DataYear) -> Unit,
         val query: TextFieldState,
         val results: Flow<PagingData<StampRallyWithUserData>>,
         val unfilteredCount: () -> Int,
@@ -299,7 +305,8 @@ object StampRallySearchScreen {
             lockedSeriesEntry = { viewModel.lockedSeriesEntry },
             lockedYear = viewModel.lockedYear,
             randomSeed = viewModel.randomSeed,
-            year = viewModel.dataYear,
+            year = viewModel::dataYear,
+            onYearChange = { viewModel.dataYear = it },
             query = viewModel.query,
             results = viewModel.results,
             unfilteredCount = { viewModel.unfilteredCount },
@@ -313,9 +320,14 @@ object StampRallySearchScreen {
         data class FavoriteToggle(val stampRally: StampRallyWithUserData, val favorite: Boolean) :
             Event
 
-        data class IgnoreToggle(val stampRally: StampRallyWithUserData, val ignored: Boolean) : Event
+        data class IgnoreToggle(val stampRally: StampRallyWithUserData, val ignored: Boolean) :
+            Event
+
         data class OpenEntry(val stampRally: StampRallyWithUserData, val imageIndex: Int) : Event
-        data class OpenImageFullscreen(val stampRally: StampRallyWithUserData, val imageIndex: Int) :
+        data class OpenImageFullscreen(
+            val stampRally: StampRallyWithUserData,
+            val imageIndex: Int,
+        ) :
             Event
 
         data object Back : Event

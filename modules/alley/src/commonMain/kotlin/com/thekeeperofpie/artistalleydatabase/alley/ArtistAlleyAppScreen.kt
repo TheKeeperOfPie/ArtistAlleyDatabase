@@ -467,6 +467,7 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.StampRallies> {
                 StampRallySearchScreen(
+                    isRoot = false,
                     lockedYear = it.year,
                     lockedSeries = it.series,
                     scrollStateSaver = ScrollStateSaver(),

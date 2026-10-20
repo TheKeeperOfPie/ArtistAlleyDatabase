@@ -143,7 +143,11 @@ object ArtistMerchScreen {
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) {
-        val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+        val dataYearHeaderState = rememberDataYearHeaderState(
+            dataYear = state.year,
+            onDataYearChange = state.onYearChange,
+            lockedYear = state.lockedYear,
+        )
         Column {
             Card {
                 val data = merchEntry()

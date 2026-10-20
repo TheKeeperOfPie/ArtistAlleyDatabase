@@ -103,8 +103,11 @@ object BrowseScreen {
             create(it.createSavedStateHandle())
         },
     ) {
-        val dataYearHeaderState =
-            rememberDataYearHeaderState(tagsViewModel.dataYear, null)
+        val dataYearHeaderState = rememberDataYearHeaderState(
+            dataYear = tagsViewModel::dataYear,
+            onDataYearChange = { tagsViewModel.dataYear = it },
+            lockedYear = null,
+        )
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 val scaffoldState = rememberBottomSheetScaffoldState()
@@ -180,8 +183,8 @@ object BrowseScreen {
                                             onClick = {
                                                 data?.let {
                                                     onSeriesClick(
-                                                        tagsViewModel.dataYear.value,
-                                                        it.series.id
+                                                        tagsViewModel.dataYear,
+                                                        it.series.id,
                                                     )
                                                 }
                                             },
@@ -231,8 +234,8 @@ object BrowseScreen {
                                         onClick = {
                                             if (data != null) {
                                                 onMerchClick(
-                                                    tagsViewModel.dataYear.value,
-                                                    data.merch.name
+                                                    tagsViewModel.dataYear,
+                                                    data.merch.name,
                                                 )
                                             }
                                         },

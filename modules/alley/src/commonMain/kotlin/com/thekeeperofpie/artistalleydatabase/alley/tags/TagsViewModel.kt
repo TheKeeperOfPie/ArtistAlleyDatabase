@@ -57,7 +57,7 @@ class TagsViewModel(
     dispatchers: CustomDispatchers,
     merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
-    settings: ArtistAlleySettings,
+    private val settings: ArtistAlleySettings,
     userEntryDao: UserEntryDao,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -77,7 +77,7 @@ class TagsViewModel(
 
     val series =
         combine(
-            settings.dataYear,
+            snapshotFlow { settings.dataYear },
             settings.languageOption,
             seriesQuery.debounce(250.milliseconds),
             snapshotFlow { seriesSortFilterController.filterParams },
@@ -102,8 +102,8 @@ class TagsViewModel(
 
     var merchQuery by mutableStateOf("")
 
-    val merch = combine(settings.dataYear, snapshotFlow { merchQuery }, ::Pair)
-        .flatMapLatest { (year, query) ->
+    val merch = snapshotFlow { settings.dataYear to merchQuery }
+        .flatMapLatest { [year, query] ->
             if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
             } else {
@@ -120,7 +120,11 @@ class TagsViewModel(
         .enforceUniqueIds { it.merch.name }
         .cachedIn(viewModelScope)
 
-    val dataYear = settings.dataYear
+    var dataYear: DataYear
+        get() = settings.dataYear
+        set(value) {
+            settings.dataYear = value
+        }
 
     private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
     private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)

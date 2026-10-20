@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
@@ -28,11 +28,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -42,13 +40,10 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -64,7 +59,7 @@ class ArtistSearchViewModel(
     val settings: ArtistAlleySettings,
     private val navStack: AlleyNavStack,
     artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
-    @Assisted isRoot: Boolean,
+    @Assisted private val isRoot: Boolean,
     @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
     @Assisted val lockedMerch: String?,
@@ -89,13 +84,22 @@ class ArtistSearchViewModel(
         booths
     }.orEmpty()
 
-    val year = if (lockedYear != null) {
-        MutableStateFlow(lockedYear)
-    } else if (isRoot) {
-        settings.dataYear
-    } else {
-        savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
-    }
+    private var localSavedYear by savedStateHandle.saveable { mutableStateOf(settings.dataYear) }
+    var year: DataYear
+        get() = lockedYear ?: if (isRoot) {
+            settings.dataYear
+        } else {
+            localSavedYear
+        }
+        set(value) {
+            if (lockedYear == null) {
+                if (isRoot) {
+                    settings.dataYear = value
+                } else {
+                    localSavedYear = value
+                }
+            }
+        }
 
     val lockedSeriesEntry by transform(viewModelScope) {
         produceState<SeriesInfo?>(null, lockedSeries) {
@@ -109,7 +113,7 @@ class ArtistSearchViewModel(
     val sortFilterController = artistSortFilterControllerFactory.create(
         scope = viewModelScope,
         savedStateHandle = savedStateHandle,
-        dataYear = year,
+        dataYear = ::year,
         lockedMerchId = lockedMerch,
         lockedSeries = ::lockedSeriesEntry,
         allowSettingsBasedToggles = lockedMerch == null && lockedSeries == null,
@@ -123,7 +127,7 @@ class ArtistSearchViewModel(
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
     val unfilteredCount by transform(viewModelScope) {
-        val year by year.collectAsStateWithLifecycle()
+        val year = year
         val query = query.text.toString()
         val lockedSeriesEntry = lockedSeriesEntry
         produceState(0, year, query) {
@@ -142,53 +146,50 @@ class ArtistSearchViewModel(
         }.value
     }
 
-    val results = combine(
-        year,
-        snapshotFlow {
-            ArtistSearchQuery(
+    val results = snapshotFlow {
+        SearchParams(
+            year = year,
+            searchQuery = ArtistSearchQuery(
                 query = query.text.toString(),
                 filterParams = sortFilterController.filterParams,
                 randomSeed = randomSeed,
+            ),
+        )
+    }.flatMapLatest { (year, searchQuery) ->
+        Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+            artistEntryDao.searchPagingSource(
+                year = year,
+                searchQuery = searchQuery,
+                lockedBooths = lockedBooths,
             )
-        },
-        ::SearchParams
-    )
-        .flatMapLatest { (year, searchQuery) ->
-            Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                artistEntryDao.searchPagingSource(
-                    year = year,
-                    searchQuery = searchQuery,
-                    lockedBooths = lockedBooths,
-                )
-            }.flow
-                .map {
-                    it.mapOnIO {
-                        ArtistEntryGridModel.buildFromEntry(
-                            randomSeed = randomSeed,
-                            showOnlyConfirmedTags = searchQuery.filterParams.showOnlyConfirmedTags,
-                            entry = it,
-                        )
-                    }
+        }.flow
+            .map {
+                it.mapOnIO {
+                    ArtistEntryGridModel.buildFromEntry(
+                        randomSeed = randomSeed,
+                        showOnlyConfirmedTags = searchQuery.filterParams.showOnlyConfirmedTags,
+                        entry = it,
+                    )
                 }
-        }
+            }
+    }
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val hasRallies = if (lockedSeries == null) {
-        ReadOnlyStateFlow(false)
-    } else {
-        year.mapLatest {
-            when (it) {
-                DataYear.ANIME_EXPO_2023,
-                DataYear.ANIME_EXPO_2024,
-                DataYear.ANIME_NYC_2024,
-                DataYear.ANIME_NYC_2025,
-                    -> false
-                else -> seriesEntryDao.hasRallies(it, lockedSeries)
+    val hasRallies by transform(viewModelScope) {
+        val year = year
+        produceState(false, year) {
+            if (lockedSeries != null) {
+                when (year) {
+                    DataYear.ANIME_EXPO_2023,
+                    DataYear.ANIME_EXPO_2024,
+                    DataYear.ANIME_NYC_2024,
+                    DataYear.ANIME_NYC_2025
+                        -> Unit
+                    else -> value = seriesEntryDao.hasRallies(year, lockedSeries)
+                }
             }
-        }
-            .flowOn(dispatchers.io)
-            .stateInForCompose(this, false)
+        }.value
     }
 
     init {
@@ -221,11 +222,16 @@ class ArtistSearchViewModel(
             is ArtistSearchScreen.Event.IgnoreToggle ->
                 toggleIgnored(event.entry, event.ignored)
             ArtistSearchScreen.Event.OpenChangelog ->
-                navStack.navigate(AlleyDestination.ArtistChangelog(year.value))
+                navStack.navigate(AlleyDestination.ArtistChangelog(year))
             is ArtistSearchScreen.Event.OpenEntry ->
-                navStack.navigate(AlleyDestination.ArtistDetails(event.entry.artist, event.imageIndex))
+                navStack.navigate(
+                    AlleyDestination.ArtistDetails(
+                        event.entry.artist,
+                        event.imageIndex
+                    )
+                )
             ArtistSearchScreen.Event.OpenExport ->
-                navStack.navigate(AlleyDestination.Export(year.value))
+                navStack.navigate(AlleyDestination.Export(year))
             is ArtistSearchScreen.Event.OpenImageFullscreen ->
                 navStack.navigate(
                     AlleyDestination.Images.fromArtist(
@@ -236,9 +242,9 @@ class ArtistSearchViewModel(
                     )
                 )
             is ArtistSearchScreen.Event.OpenMerch ->
-                navStack.navigate(Merch(year.value, event.merch))
+                navStack.navigate(Merch(year, event.merch))
             is ArtistSearchScreen.Event.OpenSeries ->
-                navStack.navigate(Series(year.value, event.series))
+                navStack.navigate(Series(year, event.series))
             ArtistSearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
         }
     }

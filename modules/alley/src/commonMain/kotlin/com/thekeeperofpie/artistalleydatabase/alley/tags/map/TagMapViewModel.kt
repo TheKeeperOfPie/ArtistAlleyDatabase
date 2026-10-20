@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
@@ -28,7 +27,7 @@ class TagMapViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val booths by transform(viewModelScope) {
-        val dataYear by settings.dataYear.collectAsStateWithLifecycle()
+        val dataYear = settings.dataYear
         val year = year ?: dataYear
         val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
         produceState(emptySet(), year, showOnlyConfirmedTags) {

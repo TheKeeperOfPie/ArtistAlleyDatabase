@@ -68,14 +68,13 @@ object ArtistSeriesScreen {
             )
         },
     ) {
-        val hasRallies by artistSearchViewModel.hasRallies.collectAsStateWithLifecycle()
         ArtistSeriesScreen(
             artistSearchViewModel = artistSearchViewModel,
             artistSeriesViewModel = artistSeriesViewModel,
             onClickBack = onClickBack,
             scrollStateSaver = scrollStateSaver,
-            showRalliesButton = { hasRallies },
-            onClickRallies = { onClickRallies(artistSearchViewModel.year.value) },
+            showRalliesButton = artistSearchViewModel::hasRallies,
+            onClickRallies = { onClickRallies(artistSearchViewModel.year) },
             onClickMap = { onClickMap(artistSearchViewModel.lockedYear) },
             onOpenArtist = onOpenArtist,
             onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
@@ -161,7 +160,11 @@ object ArtistSeriesScreen {
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) {
-        val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+        val dataYearHeaderState = rememberDataYearHeaderState(
+            dataYear = state.year,
+            onDataYearChange = state.onYearChange,
+            lockedYear = state.lockedYear,
+        )
         Column {
             Card {
                 val data = seriesEntry()

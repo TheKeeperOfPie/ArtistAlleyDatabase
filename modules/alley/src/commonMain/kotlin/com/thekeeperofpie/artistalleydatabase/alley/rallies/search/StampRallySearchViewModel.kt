@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
@@ -35,9 +35,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -53,6 +51,7 @@ class StampRallySearchViewModel(
     internal val settings: ArtistAlleySettings,
     stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
     private val navStack: AlleyNavStack,
+    @Assisted val isRoot: Boolean,
     @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
     @Assisted private val savedStateHandle: SavedStateHandle,
@@ -60,11 +59,22 @@ class StampRallySearchViewModel(
     val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 
-    val dataYear = if (lockedYear != null) {
-        MutableStateFlow(lockedYear)
-    } else {
-        savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
-    }
+    private var localSavedYear by savedStateHandle.saveable { mutableStateOf(settings.dataYear) }
+    var dataYear: DataYear
+        get() = lockedYear ?: if (isRoot) {
+            settings.dataYear
+        } else {
+            localSavedYear
+        }
+        set(value) {
+            if (lockedYear == null) {
+                if (isRoot) {
+                    settings.dataYear = value
+                } else {
+                    localSavedYear = value
+                }
+            }
+        }
 
     val lockedSeriesEntry by transform(viewModelScope) {
         produceState<SeriesInfo?>(null, lockedSeries) {
@@ -78,7 +88,7 @@ class StampRallySearchViewModel(
     val sortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
         lockedSeries = ::lockedSeriesEntry,
-        dataYear = dataYear,
+        dataYear = ::dataYear,
         savedStateHandle = savedStateHandle,
     )
 
@@ -87,7 +97,7 @@ class StampRallySearchViewModel(
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
     val unfilteredCount by transform(viewModelScope) {
-        val year by dataYear.collectAsStateWithLifecycle()
+        val year = dataYear
         val query = query.text.toString()
         produceState(0, year, query) {
             stampRallyEntryDao.searchCount(
@@ -109,25 +119,23 @@ class StampRallySearchViewModel(
         }
     }
 
-    val results = combine(
-        dataYear,
-        snapshotFlow {
-            StampRallySearchQuery(
+    val results = snapshotFlow {
+        SearchParams(
+            year = dataYear,
+            searchQuery = StampRallySearchQuery(
                 query = query.text.toString(),
                 filterParams = sortFilterController.filterParams,
                 randomSeed = randomSeed,
+            ),
+        )
+    }.flatMapLatest { (year, searchQuery) ->
+        Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+            stampRallyEntryDao.searchPagingSource(
+                year = year,
+                searchQuery = searchQuery,
             )
-        },
-        ::SearchParams,
-    )
-        .flatMapLatest { (year, searchQuery) ->
-            Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                stampRallyEntryDao.searchPagingSource(
-                    year = year,
-                    searchQuery = searchQuery,
-                )
-            }.flow
-        }
+        }.flow
+    }
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 
@@ -152,7 +160,9 @@ class StampRallySearchViewModel(
             )
         is StampRallySearchScreen.Event.ClearFilters -> sortFilterController.clear()
         StampRallySearchScreen.Event.Back -> navStack.onBack()
-        StampRallySearchScreen.Event.OpenChangelog -> navStack.navigate(AlleyDestination.StampRallyChangelog(dataYear.value))
+        StampRallySearchScreen.Event.OpenChangelog -> navStack.navigate(
+            AlleyDestination.StampRallyChangelog(dataYear)
+        )
         StampRallySearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
     }
 
@@ -166,6 +176,7 @@ class StampRallySearchViewModel(
     @ContributesIntoMap(NavigatorScope::class)
     interface Factory : ManualViewModelAssistedFactory {
         fun create(
+            isRoot: Boolean,
             lockedYear: DataYear?,
             lockedSeries: String?,
             savedStateHandle: SavedStateHandle,

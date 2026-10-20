@@ -17,7 +17,7 @@ interface ArtistAlleySettings : ArtistSortFilterSettings, StampRallySortSettings
     var appTheme: AppThemeSetting
     var displayType: SearchDisplayType
 
-    val dataYear: MutableStateFlow<DataYear>
+    var dataYear: DataYear
     val languageOption: MutableStateFlow<AniListLanguageOption>
     val easterEggEnabled: MutableStateFlow<Boolean>
 

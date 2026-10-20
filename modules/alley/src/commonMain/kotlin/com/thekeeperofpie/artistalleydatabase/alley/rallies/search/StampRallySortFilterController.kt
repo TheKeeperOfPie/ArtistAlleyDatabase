@@ -17,10 +17,8 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -33,15 +31,15 @@ class StampRallySortFilterController(
     seriesEntryDao: SeriesEntryDao,
     val settings: ArtistAlleySettings,
     @Assisted scope: CoroutineScope,
-    @Assisted dataYear: StateFlow<DataYear>,
+    @Assisted dataYear: () -> DataYear,
     @Assisted lockedSeries: () -> SeriesInfo?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) {
 
     private val merchTagData by transform(scope) {
-        produceState(MerchTagData(emptyList())) {
-            dataYear.flatMapLatest(merchCache::merchTags)
-                .collectLatest { value = it }
+        val dataYear = dataYear()
+        produceState(MerchTagData(emptyList()), dataYear) {
+            merchCache.merchTags(dataYear).collectLatest { value = it }
         }.value
     }
 

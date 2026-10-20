@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
+import androidx.compose.runtime.snapshotFlow
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
@@ -69,7 +70,7 @@ class UserEntryDao(
         .flatMapLatest { it.getAllArtistFavorites().asFlow() }
         .mapToList(PlatformDispatchers.IO)
 
-    fun getBoothsWithFavorites() = settings.dataYear
+    fun getBoothsWithFavorites() = snapshotFlow { settings.dataYear }
         .flatMapLatest { dataYear ->
             dao().getBoothsWithFavorites(dataYear)
                 .asFlow()

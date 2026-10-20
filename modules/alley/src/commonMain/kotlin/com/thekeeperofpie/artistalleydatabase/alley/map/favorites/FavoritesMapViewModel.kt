@@ -7,7 +7,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -76,7 +75,7 @@ class FavoritesMapViewModel(
         if (seriesRowIdIn.isEmpty() && merchIdIn.isEmpty()) {
             return@transform emptySet()
         }
-        val dataYear by settings.dataYear.collectAsStateWithLifecycle()
+        val dataYear = settings.dataYear
         val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
         produceState(emptySet(), dataYear, showOnlyConfirmedTags, seriesRowIdIn, merchIdIn) {
             value = artistEntryDao.searchBooths(
@@ -89,8 +88,8 @@ class FavoritesMapViewModel(
     }
 
     val filterState = FavoritesMapFilterState(
-        dataYear = { settings.dataYear.collectAsStateWithLifecycle().value },
-        onDataYearChange = { settings.dataYear.value = it },
+        dataYear = { settings.dataYear },
+        onDataYearChange = { settings.dataYear = it },
         showOnlyConfirmedTags = { settings.showOnlyConfirmedTags },
         onShowOnlyConfirmedTagsChanged = { settings.showOnlyConfirmedTags = it },
         showRandomCatalogImage = { settings.showRandomCatalogImage },

@@ -6,7 +6,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
@@ -83,14 +82,16 @@ class FavoritesViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    val year = settings.dataYear
+    var year
+        get() = settings.dataYear
+        set(value) { settings.dataYear = value }
 
     val showOutdatedCatalogs = settings.showOutdatedCatalogs
 
     val artistSortFilterController = artistSortFilterControllerFactory.create(
         scope = viewModelScope,
         savedStateHandle = savedStateHandle,
-        dataYear = year,
+        dataYear = ::year,
         lockedMerchId = null,
         lockedSeries = { null },
     )
@@ -100,7 +101,7 @@ class FavoritesViewModel(
     val stampRallySortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
         lockedSeries = { null },
-        dataYear = year,
+        dataYear = ::year,
         savedStateHandle = savedStateHandle,
     )
 
@@ -109,12 +110,11 @@ class FavoritesViewModel(
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
     private val inputs by transform(viewModelScope) {
-        val year by year.collectAsStateWithLifecycle()
         Triple(query.text.toString(), year, settings.showOnlyConfirmedTags)
     }
 
     val artistsUnfilteredCount by transform(viewModelScope) {
-        val year by year.collectAsStateWithLifecycle()
+        val year = year
         val query = query.text.toString()
         produceState(0, year, query) {
             artistEntryDao.searchCount(
@@ -153,7 +153,7 @@ class FavoritesViewModel(
         .cachedIn(viewModelScope)
 
     val stampRallyUnfilteredCount by transform(viewModelScope) {
-        val year by year.collectAsStateWithLifecycle()
+        val year = year
         val query = query.text.toString()
         produceState(0, year, query) {
             stampRallyEntryDao.searchCount(
@@ -195,7 +195,7 @@ class FavoritesViewModel(
 
     val seriesEntries = combine(
         snapshotFlow { query.text.toString() },
-        year,
+        snapshotFlow { year },
         settings.languageOption,
         snapshotFlow { seriesSortFilterController.filterParams },
         ::SeriesInputs,
@@ -220,7 +220,7 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val merchEntries = combine(snapshotFlow { query.text.toString() }, year, ::Pair)
+    val merchEntries = snapshotFlow { query.text.toString() to year }
         .flatMapLatest { [query, year] ->
             if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
@@ -275,10 +275,10 @@ class FavoritesViewModel(
         onNavigateToMerch: () -> Unit,
     ) = when (event) {
         is FavoritesScreen.Event.OpenMerch -> navigator.navigate(
-            AlleyDestination.Merch(year.value, event.merch)
+            AlleyDestination.Merch(year, event.merch)
         )
         is FavoritesScreen.Event.OpenSeries ->
-            navigator.navigate(AlleyDestination.Series(year.value, event.series))
+            navigator.navigate(AlleyDestination.Series(year, event.series))
         FavoritesScreen.Event.NavigateToArtists -> onNavigateToArtists()
         FavoritesScreen.Event.NavigateToRallies -> onNavigateToRallies()
         FavoritesScreen.Event.NavigateToSeries -> onNavigateToSeries()
@@ -288,7 +288,6 @@ class FavoritesViewModel(
         is FavoritesScreen.Event.MerchFavoriteToggle ->
             merchMutationUpdates.tryEmit(event.merch.userEntry.copy(favorite = event.favorite))
         FavoritesScreen.Event.OpenChangelog -> {
-            val year = year.value
             when (tab.value) {
                 FavoritesScreen.EntryTab.ARTISTS -> navigator.navigate(AlleyDestination.FavoriteArtistsChangelog(year))
                 FavoritesScreen.EntryTab.RALLIES -> navigator.navigate(AlleyDestination.FavoriteRalliesChangelog(year))
@@ -308,7 +307,7 @@ class FavoritesViewModel(
             is ArtistSearchScreen.Event.ClearFilters -> artistSortFilterController.clear()
             ArtistSearchScreen.Event.Back -> navigator.goBack()
             ArtistSearchScreen.Event.OpenChangelog ->
-                navigator.navigate(AlleyDestination.ArtistChangelog(year.value))
+                navigator.navigate(AlleyDestination.ArtistChangelog(year))
             is ArtistSearchScreen.Event.OpenEntry ->
                 navigator.navigate(
                     AlleyDestination.ArtistDetails(
@@ -317,7 +316,7 @@ class FavoritesViewModel(
                     )
                 )
             ArtistSearchScreen.Event.OpenExport ->
-                navigator.navigate(AlleyDestination.Export(year.value))
+                navigator.navigate(AlleyDestination.Export(year))
             is ArtistSearchScreen.Event.OpenImageFullscreen ->
                 navigator.navigate(
                     AlleyDestination.Images.fromArtist(
@@ -328,9 +327,9 @@ class FavoritesViewModel(
                     )
                 )
             is ArtistSearchScreen.Event.OpenMerch ->
-                navigator.navigate(AlleyDestination.Merch(year.value, searchEvent.merch))
+                navigator.navigate(AlleyDestination.Merch(year, searchEvent.merch))
             is ArtistSearchScreen.Event.OpenSeries ->
-                navigator.navigate(AlleyDestination.Series(year.value, searchEvent.series))
+                navigator.navigate(AlleyDestination.Series(year, searchEvent.series))
             ArtistSearchScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
         }
         is FavoritesScreen.Event.StampRallySearchEvent -> when (val searchEvent = event.event) {
@@ -357,7 +356,7 @@ class FavoritesViewModel(
             is StampRallySearchScreen.Event.ClearFilters -> stampRallySortFilterController.clear()
             StampRallySearchScreen.Event.Back -> navigator.goBack()
             StampRallySearchScreen.Event.OpenChangelog ->
-                navigator.navigate(AlleyDestination.StampRallyChangelog(year.value))
+                navigator.navigate(AlleyDestination.StampRallyChangelog(year))
             StampRallySearchScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
         }
     }

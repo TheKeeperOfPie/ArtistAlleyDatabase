@@ -68,15 +68,14 @@ internal fun MetricsScreen(
         create(it.createSavedStateHandle())
     },
 ) {
-    val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, null)
-    val data by viewModel.data.collectAsStateWithLifecycle()
+    val dataYearHeaderState =
+        rememberDataYearHeaderState(viewModel::dataYear, { viewModel.dataYear = it }, null)
     val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-    var includeInferred by viewModel.includeInferred.collectAsMutableStateWithLifecycle()
     MetricsScreen(
         dataYearHeaderState,
-        data = { data },
-        includeInferred = { includeInferred },
-        onIncludeInferredChange = { includeInferred = it },
+        data = viewModel::data,
+        includeInferred = viewModel::includeInferred,
+        onIncludeInferredChange = { viewModel.includeInferred = it },
         seriesTitles = seriesTitles,
         onNavigateBack = onNavigateBack,
         onClickArtist = onClickArtist,

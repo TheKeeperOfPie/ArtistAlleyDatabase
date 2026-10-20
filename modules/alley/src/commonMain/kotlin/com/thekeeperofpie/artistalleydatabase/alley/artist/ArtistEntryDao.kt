@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.paging.PagingSource
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
@@ -121,7 +122,7 @@ class ArtistEntryDao(
             .awaitAsList()
             .map { it.toArtistEntry() }
 
-    fun getEntryFlow(id: String) = settings.dataYear
+    fun getEntryFlow(id: String) = snapshotFlow { settings.dataYear }
         .flatMapLatest { dataYear ->
             dao().getEntry(dataYear, Uuid.parse(id))
                 .asFlow()

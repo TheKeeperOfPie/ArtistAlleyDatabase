@@ -142,7 +142,8 @@ object FavoritesScreen {
                     query = viewModel.query,
                     displayType = { viewModel.settings.displayType },
                     onDisplayTypeChange = { viewModel.settings.displayType = it },
-                    year = viewModel.year,
+                    year = viewModel::year,
+                    onYearChange = { viewModel.year = it },
                     artistsEntries = viewModel.artistEntries,
                     artistsSortFilterState = viewModel.artistSortFilterController.state,
                     artistsUnfilteredCount = viewModel::artistsUnfilteredCount,
@@ -195,7 +196,11 @@ object FavoritesScreen {
             val artistsEntries = state.artistsEntries.collectAsLazyPagingItems()
             val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItems()
 
-            val dataYearHeaderState = rememberDataYearHeaderState(state.year, null)
+            val dataYearHeaderState = rememberDataYearHeaderState(
+                dataYear = state.year,
+                onDataYearChange = state.onYearChange,
+                lockedYear = null,
+            )
             if (tab == EntryTab.ARTISTS || tab == EntryTab.RALLIES) {
                 val entries = when (tab) {
                     EntryTab.ARTISTS -> artistsEntries
@@ -710,7 +715,8 @@ object FavoritesScreen {
         val query: TextFieldState,
         val displayType: () -> SearchDisplayType,
         val onDisplayTypeChange: (SearchDisplayType) -> Unit,
-        val year: MutableStateFlow<DataYear>,
+        val year: () -> DataYear,
+        val onYearChange: (DataYear) -> Unit,
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
         val artistsSortFilterState: ArtistSortFilterState,
         val artistsUnfilteredCount: () -> Int,

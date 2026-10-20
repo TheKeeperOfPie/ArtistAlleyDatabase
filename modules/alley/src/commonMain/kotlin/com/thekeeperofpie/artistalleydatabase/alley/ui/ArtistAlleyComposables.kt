@@ -314,12 +314,25 @@ fun rememberDataYearHeaderState(
     lockedYear: DataYear?,
 ): DataYearHeaderState {
     var year by dataYear.collectAsMutableStateWithLifecycle()
+    return rememberDataYearHeaderState(
+        dataYear = { year },
+        onDataYearChange = { year = it },
+        lockedYear = lockedYear,
+    )
+}
+
+@Composable
+fun rememberDataYearHeaderState(
+    dataYear: () -> DataYear,
+    onDataYearChange: (DataYear) -> Unit,
+    lockedYear: DataYear?,
+): DataYearHeaderState {
     return remember(dataYear, lockedYear) {
         DataYearHeaderState(
-            dataYear = { year },
+            dataYear = dataYear,
             onYearChange = {
                 if (lockedYear == null) {
-                    year = it
+                    onDataYearChange(it)
                 }
             },
             lockedYear = lockedYear != null,
@@ -399,7 +412,8 @@ internal fun FeedbackHeader(year: DataYear) {
         val link = when (year) {
             DataYear.ANIME_EXPO_2023,
             DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_NYC_2024 -> null
+            DataYear.ANIME_NYC_2024,
+                -> null
             DataYear.ANIME_EXPO_2025 -> BuildKonfig.feedbackFormLink
             DataYear.ANIME_EXPO_2026 -> BuildKonfig.feedbackFormLink2026
             DataYear.ANIME_NYC_2025 -> BuildKonfig.feedbackFormLinkAnimeNyc2025

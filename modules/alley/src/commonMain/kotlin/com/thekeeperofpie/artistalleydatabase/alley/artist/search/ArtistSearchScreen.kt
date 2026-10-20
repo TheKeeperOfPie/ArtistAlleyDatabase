@@ -120,7 +120,11 @@ fun ArtistSearchScreen(
     val state = remember(viewModel, sortFilterController) {
         State(viewModel, sortFilterController)
     }
-    val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+    val dataYearHeaderState = rememberDataYearHeaderState(
+        dataYear = state.year,
+        onDataYearChange = state.onYearChange,
+        lockedYear = state.lockedYear,
+    )
     val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
     val seriesAutocompleteResults by viewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
     ArtistSearchScreen(
@@ -568,7 +572,8 @@ object ArtistSearchScreen {
         val lockedMerch: String?,
         val lockedYear: DataYear?,
         val randomSeed: Int,
-        val year: MutableStateFlow<DataYear>,
+        val year: () -> DataYear,
+        val onYearChange: (DataYear) -> Unit,
         val query: TextFieldState,
         val results: Flow<PagingData<ArtistEntryGridModel>>,
         val unfilteredCount: () -> Int,
@@ -584,7 +589,8 @@ object ArtistSearchScreen {
             lockedMerch = viewModel.lockedMerch,
             lockedYear = viewModel.lockedYear,
             randomSeed = viewModel.randomSeed,
-            year = viewModel.year,
+            year = viewModel::year,
+            onYearChange = { viewModel.year = it },
             query = viewModel.query,
             results = viewModel.results,
             unfilteredCount = viewModel::unfilteredCount,
@@ -628,7 +634,8 @@ private fun Preview() {
             lockedMerch = null,
             lockedYear = null,
             randomSeed = 1,
-            year = MutableStateFlow(DataYear.ANIME_EXPO_2025),
+            year = { DataYear.ANIME_EXPO_2025 },
+            onYearChange = {},
             query = TextFieldState(""),
             results = MutableStateFlow(PagingData.from(results)),
             unfilteredCount = { 1000 },
@@ -638,7 +645,11 @@ private fun Preview() {
         )
     }
 
-    val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+    val dataYearHeaderState = rememberDataYearHeaderState(
+        dataYear = state.year,
+        onDataYearChange = state.onYearChange,
+        lockedYear = state.lockedYear,
+    )
     val scaffoldState = rememberBottomSheetScaffoldState()
     ArtistSearchScreen(
         state = state,
