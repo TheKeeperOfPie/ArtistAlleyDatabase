@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,17 +13,15 @@ import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.uuid.Uuid
@@ -39,23 +39,30 @@ class FavoriteArtistsChangelogViewModel(
     private val randomSeed =
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    val useCase = useCaseFactory.create(
-        dataYear = dataYear,
-        randomSeed = randomSeed,
-        input = combine(
+    private val input by transform(viewModelScope) {
+        val artistFavorites by produceState(emptySet(), dataYear) {
             userEntryDao.getArtistFavorites(dataYear)
                 .mapLatest {
                     // TODO: Are all artists guaranteed to be UUIDs?
                     it.map { Uuid.parse(it) }.toSet()
-                },
-            userEntryDao.getTagFavorites(),
-        ) { favoriteArtists, tagFavorites ->
-            Input(
-                favoriteArtistIds = favoriteArtists,
-                favoriteSeriesIds = tagFavorites.seriesIds,
-                favoriteMerchIds = tagFavorites.merchIds
-            )
-        },
+                }
+                .collectLatest { value = it }
+        }
+        val tagFavorites by produceState(UserEntryDao.TagFavorites(emptySet(), emptySet())) {
+            userEntryDao.getTagFavorites().collectLatest { value = it }
+        }
+        Input(
+            favoriteArtistIds = artistFavorites,
+            favoriteSeriesIds = tagFavorites.seriesIds,
+            favoriteMerchIds = tagFavorites.merchIds
+        )
+    }
+
+    val useCase = useCaseFactory.create(
+        scope = viewModelScope,
+        dataYear = dataYear,
+        randomSeed = randomSeed,
+        input = ::input,
         filterArtist = { input ->
             this.artist.artistId in input.favoriteArtistIds
         },
@@ -65,20 +72,18 @@ class FavoriteArtistsChangelogViewModel(
         },
     )
 
-    internal val changes = useCase.changes
-        .mapLatest { changes ->
-            changes.changes.map {
-                FavoritesChangelogScreen.DayChange(
-                    date = it.date,
-                    addedArtists = it.addedArtists.map { it.toChangelogEntry(changes) },
-                    updatedArtists = it.updatedArtists.map { it.toChangelogEntry(changes) },
-                    addedRallies = it.addedRallies,
-                    updatedRallies = it.updatedRallies,
-                )
-            }
+    internal val changes by transform(viewModelScope) {
+        val changes = useCase.changes
+        changes.changes.map {
+            FavoritesChangelogScreen.DayChange(
+                date = it.date,
+                addedArtists = it.addedArtists.map { it.toChangelogEntry(changes) },
+                updatedArtists = it.updatedArtists.map { it.toChangelogEntry(changes) },
+                addedRallies = it.addedRallies,
+                updatedRallies = it.updatedRallies,
+            )
         }
-        .flowOn(dispatchers.io)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    }
 
     private fun ChangelogEntry.Artist.toChangelogEntry(changes: FavoritesChangelogUseCase.Changes<Input>) =
         artist.toChangelogEntry(

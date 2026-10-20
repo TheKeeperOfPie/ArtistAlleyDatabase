@@ -30,11 +30,10 @@ object FavoriteRalliesChangelogScreen {
             )
         },
     ) {
-        val changes by viewModel.changes.collectAsStateWithLifecycle()
         val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         FavoritesChangelogScreen(
             dataYear = dataYear,
-            changes = { changes },
+            changes = viewModel::changes,
             seriesTitles = { seriesTitles },
             showOnlyConfirmedTags = null,
             onChangeShowOnlyConfirmedTags = {},

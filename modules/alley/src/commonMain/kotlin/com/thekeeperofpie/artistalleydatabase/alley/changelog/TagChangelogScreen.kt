@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -40,7 +39,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.datetime.LocalDate
@@ -69,19 +67,15 @@ object TagChangelogScreen {
             )
         },
     ) {
-        val changes by viewModel.changes.collectAsStateWithLifecycle()
         val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        var showOnlyConfirmedTags by viewModel.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
-        val series by viewModel.series.collectAsStateWithLifecycle()
-        val merch by viewModel.merch.collectAsStateWithLifecycle()
         TagChangelogScreen(
             dataYear = dataYear,
-            changes = { changes },
-            series = { series },
-            merch = { merch },
+            changes = viewModel::changes,
+            series = viewModel::series,
+            merch = viewModel::merch,
             seriesTitles = { seriesTitles },
-            showOnlyConfirmedTags = { showOnlyConfirmedTags },
-            onChangeShowOnlyConfirmedTags = { showOnlyConfirmedTags = it },
+            showOnlyConfirmedTags = viewModel::showOnlyConfirmedTags,
+            onChangeShowOnlyConfirmedTags = { viewModel.showOnlyConfirmedTags = it },
             onClickBack = onClickBack,
             onClickArtist = onClickArtist,
             onClickStampRally = onClickStampRally,

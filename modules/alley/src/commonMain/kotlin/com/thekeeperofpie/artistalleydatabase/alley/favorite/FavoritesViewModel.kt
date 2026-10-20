@@ -1,9 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.favorite
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
@@ -11,9 +14,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -24,7 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallyFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
@@ -46,7 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -79,7 +79,7 @@ class FavoritesViewModel(
     dispatchers: CustomDispatchers,
     artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
     stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
-    private val navStack: AlleyNavStack,
+    private val navigator: AlleyNavigator,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -108,15 +108,15 @@ class FavoritesViewModel(
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    private val inputs = combine(
-        snapshotFlow { query.text.toString() },
-        year,
-        snapshotFlow { settings.showOnlyConfirmedTags },
-        ::Triple
-    )
+    private val inputs by transform(viewModelScope) {
+        val year by year.collectAsStateWithLifecycle()
+        Triple(query.text.toString(), year, settings.showOnlyConfirmedTags)
+    }
 
-    val artistsUnfilteredCount = combine(year, snapshotFlow { query.text.toString() }, ::Pair)
-        .flatMapLatest { [year, query] ->
+    val artistsUnfilteredCount by transform(viewModelScope) {
+        val year by year.collectAsStateWithLifecycle()
+        val query = query.text.toString()
+        produceState(0, year, query) {
             artistEntryDao.searchCount(
                 year = year,
                 searchQuery = ArtistSearchQuery(
@@ -125,38 +125,37 @@ class FavoritesViewModel(
                     randomSeed = randomSeed,
                 ),
                 onlyFavorites = true,
-            )
-        }
-        .stateInForCompose(0)
-
-    val artistEntries = combine(
-        inputs,
-        snapshotFlow { artistSortFilterController.filterParams },
-        ::Pair,
-    ).flatMapLatest { [inputs, filterParams] ->
-        val [query, year, showOnlyConfirmedTags] = inputs
-        Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-            artistEntryDao.searchPagingSource(
-                year = year,
-                searchQuery = ArtistSearchQuery(query = query, filterParams, randomSeed),
-                onlyFavorites = true,
-            )
-        }.flow
-            .map {
-                it.mapOnIO {
-                    ArtistEntryGridModel.buildFromEntry(
-                        randomSeed = randomSeed,
-                        showOnlyConfirmedTags = showOnlyConfirmedTags,
-                        entry = it,
-                    )
-                }
-            }
+            ).collectLatest { value = it }
+        }.value
     }
+
+    val artistEntries = snapshotFlow { inputs to artistSortFilterController.filterParams }
+        .flatMapLatest { [inputs, filterParams] ->
+            val [query, year, showOnlyConfirmedTags] = inputs
+            Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                artistEntryDao.searchPagingSource(
+                    year = year,
+                    searchQuery = ArtistSearchQuery(query = query, filterParams, randomSeed),
+                    onlyFavorites = true,
+                )
+            }.flow
+                .map {
+                    it.mapOnIO {
+                        ArtistEntryGridModel.buildFromEntry(
+                            randomSeed = randomSeed,
+                            showOnlyConfirmedTags = showOnlyConfirmedTags,
+                            entry = it,
+                        )
+                    }
+                }
+        }
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val stampRallyUnfilteredCount = combine(year, snapshotFlow { query.text.toString() }, ::Pair)
-        .flatMapLatest { [year, query] ->
+    val stampRallyUnfilteredCount by transform(viewModelScope) {
+        val year by year.collectAsStateWithLifecycle()
+        val query = query.text.toString()
+        produceState(0, year, query) {
             stampRallyEntryDao.searchCount(
                 year = year,
                 searchQuery = StampRallySearchQuery(
@@ -165,12 +164,12 @@ class FavoritesViewModel(
                     randomSeed = randomSeed,
                 ),
                 onlyFavorites = true,
-            )
-        }
-        .stateInForCompose(0)
+            ).collectLatest { value = it }
+        }.value
+    }
 
     val stampRallyEntries =
-        combine(inputs, snapshotFlow { stampRallySortFilterController.filterParams }, ::Pair)
+        snapshotFlow { inputs to stampRallySortFilterController.filterParams }
             .flatMapLatest { [inputs, filterParams] ->
                 val [query, year, showOnlyConfirmedTags] = inputs
                 Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
@@ -274,17 +273,12 @@ class FavoritesViewModel(
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
-        onOpenMerch: (DataYear, String) -> Unit,
-        onOpenSeries: (DataYear, String) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
-        onOpenFavoriteArtistsChangelog: (DataYear) -> Unit,
-        onOpenFavoriteStampRalliesChangelog: (DataYear) -> Unit,
-        onOpenFavoriteSeriesChangelog: (DataYear) -> Unit,
-        onOpenFavoriteMerchChangelog: (DataYear) -> Unit,
-        onOpenSettings: () -> Unit,
     ) = when (event) {
-        is FavoritesScreen.Event.OpenMerch -> onOpenMerch(year.value, event.merch)
-        is FavoritesScreen.Event.OpenSeries -> onOpenSeries(year.value, event.series)
+        is FavoritesScreen.Event.OpenMerch -> navigator.navigate(
+            AlleyDestination.Merch(year.value, event.merch)
+        )
+        is FavoritesScreen.Event.OpenSeries ->
+            navigator.navigate(AlleyDestination.Series(year.value, event.series))
         FavoritesScreen.Event.NavigateToArtists -> onNavigateToArtists()
         FavoritesScreen.Event.NavigateToRallies -> onNavigateToRallies()
         FavoritesScreen.Event.NavigateToSeries -> onNavigateToSeries()
@@ -296,14 +290,14 @@ class FavoritesViewModel(
         FavoritesScreen.Event.OpenChangelog -> {
             val year = year.value
             when (tab.value) {
-                FavoritesScreen.EntryTab.ARTISTS -> onOpenFavoriteArtistsChangelog(year)
-                FavoritesScreen.EntryTab.RALLIES -> onOpenFavoriteStampRalliesChangelog(year)
-                FavoritesScreen.EntryTab.SERIES -> onOpenFavoriteSeriesChangelog(year)
-                FavoritesScreen.EntryTab.MERCH -> onOpenFavoriteMerchChangelog(year)
+                FavoritesScreen.EntryTab.ARTISTS -> navigator.navigate(AlleyDestination.FavoriteArtistsChangelog(year))
+                FavoritesScreen.EntryTab.RALLIES -> navigator.navigate(AlleyDestination.FavoriteRalliesChangelog(year))
+                FavoritesScreen.EntryTab.SERIES -> navigator.navigate(AlleyDestination.FavoriteSeriesChangelog(year))
+                FavoritesScreen.EntryTab.MERCH -> navigator.navigate(AlleyDestination.FavoriteMerchChangelog(year))
             }
         }
-        is FavoritesScreen.Event.OpenExport -> onOpenExport(event.dataYear)
-        FavoritesScreen.Event.OpenSettings -> onOpenSettings()
+        is FavoritesScreen.Event.OpenExport -> navigator.navigate(AlleyDestination.Export(event.dataYear))
+        FavoritesScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
         is FavoritesScreen.Event.ArtistSearchEvent -> when (val searchEvent = event.event) {
             is ArtistSearchScreen.Event.FavoriteToggle -> artistMutationUpdates.tryEmit(
                 searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite)
@@ -312,15 +306,20 @@ class FavoritesViewModel(
                 searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored)
             )
             is ArtistSearchScreen.Event.ClearFilters -> artistSortFilterController.clear()
-            ArtistSearchScreen.Event.Back -> navStack.onBack()
+            ArtistSearchScreen.Event.Back -> navigator.goBack()
             ArtistSearchScreen.Event.OpenChangelog ->
-                navStack.navigate(AlleyDestination.ArtistChangelog(year.value))
+                navigator.navigate(AlleyDestination.ArtistChangelog(year.value))
             is ArtistSearchScreen.Event.OpenEntry ->
-                navStack.navigate(ArtistDetails(searchEvent.entry.artist, searchEvent.imageIndex))
+                navigator.navigate(
+                    AlleyDestination.ArtistDetails(
+                        entry = searchEvent.entry.artist,
+                        imageIndex = searchEvent.imageIndex,
+                    )
+                )
             ArtistSearchScreen.Event.OpenExport ->
-                navStack.navigate(AlleyDestination.Export(year.value))
+                navigator.navigate(AlleyDestination.Export(year.value))
             is ArtistSearchScreen.Event.OpenImageFullscreen ->
-                navStack.navigate(
+                navigator.navigate(
                     AlleyDestination.Images.fromArtist(
                         artistWithUserData = searchEvent.entry.data,
                         showOutdatedCatalogs =
@@ -329,10 +328,10 @@ class FavoritesViewModel(
                     )
                 )
             is ArtistSearchScreen.Event.OpenMerch ->
-                navStack.navigate(Merch(year.value, searchEvent.merch))
+                navigator.navigate(AlleyDestination.Merch(year.value, searchEvent.merch))
             is ArtistSearchScreen.Event.OpenSeries ->
-                navStack.navigate(Series(year.value, searchEvent.series))
-            ArtistSearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
+                navigator.navigate(AlleyDestination.Series(year.value, searchEvent.series))
+            ArtistSearchScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
         }
         is FavoritesScreen.Event.StampRallySearchEvent -> when (val searchEvent = event.event) {
             is StampRallySearchScreen.Event.FavoriteToggle -> rallyMutationUpdates.tryEmit(
@@ -342,24 +341,24 @@ class FavoritesViewModel(
                 searchEvent.stampRally.userEntry.copy(ignored = searchEvent.ignored)
             )
             is StampRallySearchScreen.Event.OpenEntry ->
-                navStack.navigate(
+                navigator.navigate(
                     StampRallyDetails(
                         searchEvent.stampRally.stampRally,
                         searchEvent.imageIndex
                     )
                 )
             is StampRallySearchScreen.Event.OpenImageFullscreen ->
-                navStack.navigate(
+                navigator.navigate(
                     AlleyDestination.Images.fromStampRally(
                         stampRallyWithUserData = searchEvent.stampRally,
                         imageIndex = searchEvent.imageIndex,
                     )
                 )
             is StampRallySearchScreen.Event.ClearFilters -> stampRallySortFilterController.clear()
-            StampRallySearchScreen.Event.Back -> navStack.onBack()
+            StampRallySearchScreen.Event.Back -> navigator.goBack()
             StampRallySearchScreen.Event.OpenChangelog ->
-                navStack.navigate(AlleyDestination.StampRallyChangelog(year.value))
-            StampRallySearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
+                navigator.navigate(AlleyDestination.StampRallyChangelog(year.value))
+            StampRallySearchScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
         }
     }
 

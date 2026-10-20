@@ -1,9 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hoc081098.flowext.flowFromSuspend
+import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
@@ -19,7 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -27,14 +30,7 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -55,85 +51,82 @@ class TagChangelogViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    val showOnlyConfirmedTags = savedStateHandle.getMutableStateFlow(
-        key = "showOnlyConfirmedTags",
-        initialValue = settings.showOnlyConfirmedTags,
-    )
+    var showOnlyConfirmedTags by savedStateHandle.saveable { mutableStateOf(settings.showOnlyConfirmedTags) }
 
-    val series = flow {
-        if (seriesId != null) {
-            emitAll(seriesEntryDao.getSeriesByIdWithUserData(seriesId))
-        }
-    }.stateInForCompose(null)
+    val series by transform(viewModelScope) {
+        produceState<SeriesWithUserData?>(null, seriesId) {
+            if (seriesId != null) {
+                seriesEntryDao.getSeriesByIdWithUserData(seriesId).collectLatest { value = it }
+            }
+        }.value
+    }
 
-    val merch = flow {
-        if (merchId != null) {
-            emitAll(merchEntryDao.getMerchById(merchId))
-        }
-    }.stateInForCompose(null)
+    val merch by transform(viewModelScope) {
+        produceState<MerchWithUserData?>(null, merchId) {
+            if (merchId != null) {
+                merchEntryDao.getMerchById(merchId).collectLatest { value = it }
+            }
+        }.value
+    }
 
     private val randomSeed =
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    internal val changes = flowFromSuspend {
-        val artists = artistEntryDao.getChangelog(dataYear, false)
-            .map(ChangelogEntry::Artist)
-        val allRallies = stampRallyEntryDao.getAllEntriesForChangelog(dataYear)
-        val stampRallies = stampRallyEntryDao.getChangelog(dataYear)
-            .mapNotNull { it.toChangelogEntry(dataYear, allRallies, randomSeed) }
-            .map(ChangelogEntry::StampRally)
-        artists + stampRallies
-    }
-        .mapLatest {
-            it.groupBy { it.date }
+    val changes by transform(viewModelScope) {
+        val changelog by produceState(emptyList()) {
+            val artists = artistEntryDao.getChangelog(dataYear, false)
+                .map(ChangelogEntry::Artist)
+            val allRallies = stampRallyEntryDao.getAllEntriesForChangelog(dataYear)
+            val stampRallies = stampRallyEntryDao.getChangelog(dataYear)
+                .mapNotNull { it.toChangelogEntry(dataYear, allRallies, randomSeed) }
+                .map(ChangelogEntry::StampRally)
+            value = (artists + stampRallies)
+                .groupBy { it.date }
                 .toList()
                 .sortedByDescending { it.first }
         }
-        .combine(showOnlyConfirmedTags, ::Pair)
-        .mapLatest { (changelog, showOnlyConfirmedTags) ->
-            changelog.mapNotNull {
-                val artists =
-                    it.second.filterIsInstance<ChangelogEntry.Artist>()
-                val rallies = it.second.filterIsInstance<ChangelogEntry.StampRally>()
-                    .map { it.stampRally }
-                val (addedArtists, updatedArtists) = artists.filterArtists(showOnlyConfirmedTags)
-                    .partition { it.artist.isBrandNew }
-                val (addedRallies, updatedRallies) = rallies.filterRallies()
-                    .partition { it.isBrandNew }
-                if (addedArtists.isEmpty() &&
-                    updatedArtists.isEmpty() &&
-                    addedRallies.isEmpty() &&
-                    updatedRallies.isEmpty()
-                ) {
-                    return@mapNotNull null
-                }
-                TagChangelogScreen.DayChange(
-                    date = it.first,
-                    addedArtists = addedArtists
-                        .map {
-                            it.artist.toChangelogEntry(
-                                dataYear,
-                                randomSeed,
-                                showOnlyConfirmedTags
-                            )
-                        }
-                        .sortArtistsForChangelog(),
-                    updatedArtists = updatedArtists
-                        .map {
-                            it.artist.toChangelogEntry(
-                                dataYear,
-                                randomSeed,
-                                showOnlyConfirmedTags
-                            )
-                        }
-                        .sortArtistsForChangelog(),
-                    addedRallies = addedRallies.sortRalliesForChangelog(),
-                    updatedRallies = updatedRallies.sortRalliesForChangelog(),
-                )
+
+        changelog.mapNotNull {
+            val artists =
+                it.second.filterIsInstance<ChangelogEntry.Artist>()
+            val rallies = it.second.filterIsInstance<ChangelogEntry.StampRally>()
+                .map { it.stampRally }
+            val [addedArtists, updatedArtists] = artists.filterArtists(showOnlyConfirmedTags)
+                .partition { it.artist.isBrandNew }
+            val [addedRallies, updatedRallies] = rallies.filterRallies()
+                .partition { it.isBrandNew }
+            if (addedArtists.isEmpty() &&
+                updatedArtists.isEmpty() &&
+                addedRallies.isEmpty() &&
+                updatedRallies.isEmpty()
+            ) {
+                return@mapNotNull null
             }
+            TagChangelogScreen.DayChange(
+                date = it.first,
+                addedArtists = addedArtists
+                    .map {
+                        it.artist.toChangelogEntry(
+                            dataYear,
+                            randomSeed,
+                            showOnlyConfirmedTags
+                        )
+                    }
+                    .sortArtistsForChangelog(),
+                updatedArtists = updatedArtists
+                    .map {
+                        it.artist.toChangelogEntry(
+                            dataYear,
+                            randomSeed,
+                            showOnlyConfirmedTags
+                        )
+                    }
+                    .sortArtistsForChangelog(),
+                addedRallies = addedRallies.sortRalliesForChangelog(),
+                updatedRallies = updatedRallies.sortRalliesForChangelog(),
+            )
         }
-        .flowOn(dispatchers.io)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    }
 
     private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
     private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)

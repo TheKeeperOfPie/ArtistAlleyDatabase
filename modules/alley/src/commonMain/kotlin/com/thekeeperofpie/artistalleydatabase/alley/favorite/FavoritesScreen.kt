@@ -71,7 +71,6 @@ import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreenContent
@@ -79,7 +78,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreenContent
@@ -113,7 +111,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrol
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -131,22 +128,6 @@ object FavoritesScreen {
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
-        onOpenArtist: (ArtistEntry, Int) -> Unit,
-        onOpenArtistImageFullscreen: (
-            ArtistEntryGridModel,
-            imageIndex: Int,
-            showOutdatedCatalogs: Boolean,
-        ) -> Unit,
-        onOpenMerch: (DataYear, String) -> Unit,
-        onOpenSeries: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
-        onOpenFavoriteArtistsChangelog: (DataYear) -> Unit,
-        onOpenFavoriteStampRalliesChangelog: (DataYear) -> Unit,
-        onOpenFavoriteSeriesChangelog: (DataYear) -> Unit,
-        onOpenFavoriteMerchChangelog: (DataYear) -> Unit,
-        onOpenSettings: () -> Unit,
         viewModel: FavoritesViewModel = assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
             create(it.createSavedStateHandle())
         },
@@ -164,10 +145,10 @@ object FavoritesScreen {
                     year = viewModel.year,
                     artistsEntries = viewModel.artistEntries,
                     artistsSortFilterState = viewModel.artistSortFilterController.state,
-                    artistsUnfilteredCount = viewModel.artistsUnfilteredCount,
+                    artistsUnfilteredCount = viewModel::artistsUnfilteredCount,
                     ralliesEntries = viewModel.stampRallyEntries,
                     ralliesSortFilterState = viewModel.stampRallySortFilterController.state,
-                    ralliesUnfilteredCount = viewModel.stampRallyUnfilteredCount,
+                    ralliesUnfilteredCount = viewModel::stampRallyUnfilteredCount,
                     seriesEntries = viewModel.seriesEntries,
                     merchEntries = viewModel.merchEntries,
                 )
@@ -185,14 +166,6 @@ object FavoritesScreen {
                     onNavigateToRallies = onNavigateToRallies,
                     onNavigateToSeries = onNavigateToSeries,
                     onNavigateToMerch = onNavigateToMerch,
-                    onOpenMerch = onOpenMerch,
-                    onOpenSeries = onOpenSeries,
-                    onOpenExport = onOpenExport,
-                    onOpenFavoriteArtistsChangelog = onOpenFavoriteArtistsChangelog,
-                    onOpenFavoriteStampRalliesChangelog = onOpenFavoriteStampRalliesChangelog,
-                    onOpenFavoriteSeriesChangelog = onOpenFavoriteSeriesChangelog,
-                    onOpenFavoriteMerchChangelog = onOpenFavoriteMerchChangelog,
-                    onOpenSettings = onOpenSettings,
                 )
             },
         )
@@ -447,14 +420,13 @@ object FavoritesScreen {
         noResultsItem: @Composable () -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val unfilteredCount by state.artistsUnfilteredCount.collectAsStateWithLifecycle()
         ArtistSearchScreenContent(
             sortFilterState = sortFilterState,
             gridState = gridState,
             header = header,
             entries = entries,
             series = series,
-            unfilteredCount = { unfilteredCount },
+            unfilteredCount = state.artistsUnfilteredCount,
             displayType = state.displayType,
             eventSink = { eventSink(Event.ArtistSearchEvent(it)) },
             noResultsItem = noResultsItem,
@@ -473,13 +445,12 @@ object FavoritesScreen {
         noResultsItem: @Composable () -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val unfilteredCount by state.ralliesUnfilteredCount.collectAsStateWithLifecycle()
         StampRallySearchScreenContent(
             sortFilterState = sortFilterState,
             gridState = gridState,
             header = header,
             entries = entries,
-            unfilteredCount = { unfilteredCount },
+            unfilteredCount = state.ralliesUnfilteredCount,
             displayType = state.displayType,
             eventSink = { eventSink(Event.StampRallySearchEvent(it)) },
             noResultsItem = noResultsItem,
@@ -742,10 +713,10 @@ object FavoritesScreen {
         val year: MutableStateFlow<DataYear>,
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
         val artistsSortFilterState: ArtistSortFilterState,
-        val artistsUnfilteredCount: StateFlow<Int>,
+        val artistsUnfilteredCount: () -> Int,
         val ralliesEntries: Flow<PagingData<StampRallyWithUserData>>,
         val ralliesSortFilterState: StampRallySortFilterState,
-        val ralliesUnfilteredCount: StateFlow<Int>,
+        val ralliesUnfilteredCount: () -> Int,
         val seriesEntries: Flow<PagingData<SeriesWithUserData>>,
         val merchEntries: Flow<PagingData<MerchWithUserData>>,
     )

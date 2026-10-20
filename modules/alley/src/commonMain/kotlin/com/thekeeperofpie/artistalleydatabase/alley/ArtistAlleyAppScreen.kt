@@ -176,9 +176,6 @@ object ArtistAlleyAppScreen {
                     )
                 )
             }
-        val onOpenExport: (DataYear) -> Unit = {
-            navStack.navigate(AlleyDestination.Export(it))
-        }
         val onOpenArtistChangelog: (DataYear) -> Unit =
             { navStack.navigate(AlleyDestination.ArtistChangelog(it)) }
         val onOpenSeriesTagChangelog: (String) -> Unit =
@@ -215,7 +212,7 @@ object ArtistAlleyAppScreen {
                         ),
                         images = catalogImages,
                         // Add one for the initial grid
-                        initialImageIndex = (catalogImages.indexOf(image) ?: 0) + 1,
+                        initialImageIndex = catalogImages.indexOf(image) + 1,
                         showOpenButton = true,
                         changelogDate = changelogEntry.date.toString(),
                     )
@@ -265,7 +262,6 @@ object ArtistAlleyAppScreen {
                     onOpenMerch = onOpenMerch,
                     onOpenStampRally = onOpenStampRally,
                     onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
-                    onOpenExport = onOpenExport,
                     onOpenArtistChangelog = onOpenArtistChangelog,
                     onOpenStampRallyChangelog = onOpenStampRallyChangelog,
                     onOpenSeriesChangelog = {
@@ -273,18 +269,6 @@ object ArtistAlleyAppScreen {
                     },
                     onOpenMerchChangelog = {
                         navStack.navigate(AlleyDestination.MerchChangelog(it))
-                    },
-                    onOpenFavoriteArtistsChangelog = {
-                        navStack.navigate(AlleyDestination.FavoriteArtistsChangelog(it))
-                    },
-                    onOpenFavoriteStampRalliesChangelog = {
-                        navStack.navigate(AlleyDestination.FavoriteRalliesChangelog(it))
-                    },
-                    onOpenFavoriteSeriesChangelog = {
-                        navStack.navigate(AlleyDestination.FavoriteSeriesChangelog(it))
-                    },
-                    onOpenFavoriteMerchChangelog = {
-                        navStack.navigate(AlleyDestination.FavoriteMerchChangelog(it))
                     },
                     onOpenSettings = onOpenSettings,
                 )

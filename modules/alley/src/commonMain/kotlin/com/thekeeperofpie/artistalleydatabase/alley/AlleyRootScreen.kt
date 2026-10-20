@@ -60,15 +60,10 @@ object AlleyRootScreen {
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenExport: (DataYear) -> Unit,
         onOpenArtistChangelog: (DataYear) -> Unit,
         onOpenStampRallyChangelog: (DataYear) -> Unit,
         onOpenSeriesChangelog: (DataYear) -> Unit,
         onOpenMerchChangelog: (DataYear) -> Unit,
-        onOpenFavoriteArtistsChangelog: (DataYear) -> Unit,
-        onOpenFavoriteStampRalliesChangelog: (DataYear) -> Unit,
-        onOpenFavoriteSeriesChangelog: (DataYear) -> Unit,
-        onOpenFavoriteMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
     ) {
         val settings = remember(graph) { graph.settings }
@@ -148,18 +143,6 @@ object AlleyRootScreen {
                                 // TODO: This doesn't tab over to merch
                                 destination = AlleyRootDestination.BROWSE
                             },
-                            onOpenArtist = onOpenArtist,
-                            onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
-                            onOpenMerch = onOpenMerch,
-                            onOpenSeries = onOpenSeries,
-                            onOpenStampRally = onOpenStampRally,
-                            onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
-                            onOpenExport = onOpenExport,
-                            onOpenFavoriteArtistsChangelog = onOpenFavoriteArtistsChangelog,
-                            onOpenFavoriteStampRalliesChangelog = onOpenFavoriteStampRalliesChangelog,
-                            onOpenFavoriteSeriesChangelog = onOpenFavoriteSeriesChangelog,
-                            onOpenFavoriteMerchChangelog = onOpenFavoriteMerchChangelog,
-                            onOpenSettings = onOpenSettings,
                         )
                     AlleyRootDestination.MAP ->
                         FavoritesMapScreen(

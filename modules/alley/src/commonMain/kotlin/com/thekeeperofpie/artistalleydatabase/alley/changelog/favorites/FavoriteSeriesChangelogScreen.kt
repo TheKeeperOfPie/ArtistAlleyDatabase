@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -12,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEnt
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
@@ -35,15 +33,13 @@ object FavoriteSeriesChangelogScreen {
             )
         },
     ) {
-        val changes by viewModel.changes.collectAsStateWithLifecycle()
         val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        var showOnlyConfirmedTags by viewModel.showOnlyConfirmedTags.collectAsMutableStateWithLifecycle()
         FavoritesChangelogScreen(
             dataYear = dataYear,
-            changes = { changes },
+            changes = viewModel::changes,
             seriesTitles = { seriesTitles },
-            showOnlyConfirmedTags = { showOnlyConfirmedTags },
-            onChangeShowOnlyConfirmedTags = { showOnlyConfirmedTags = it },
+            showOnlyConfirmedTags = viewModel::showOnlyConfirmedTags,
+            onChangeShowOnlyConfirmedTags = { viewModel.showOnlyConfirmedTags = it },
             onClickBack = onClickBack,
             onClickArtist = onClickArtist,
             onClickStampRally = onClickStampRally,
