@@ -24,6 +24,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -45,7 +46,8 @@ class ArtistMapViewModel(
         produceState<ArtistEntryGridModel?>(null, showOnlyConfirmedTags) {
             // Need to observe updates since it's possible to
             // toggle favorite from inside the map
-            artistEntryDao.getEntryFlow(id)
+            artistEntryDao.getEntry(route.year, id)
+                .filterNotNull()
                 .mapLatest {
                     ArtistEntryGridModel.buildFromEntry(
                         randomSeed = randomSeed,

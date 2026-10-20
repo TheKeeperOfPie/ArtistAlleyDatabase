@@ -1,14 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import androidx.compose.runtime.snapshotFlow
 import androidx.paging.PagingSource
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.coroutines.mapToOneOrDefault
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
+import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistChangelogEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryEditQueries
@@ -42,6 +42,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlin.uuid.Uuid
@@ -112,35 +113,30 @@ class ArtistEntryDao(
         settings: ArtistAlleySettings,
     ) : this(driver = database::driver, database = database::database, settings = settings)
 
-    suspend fun getEntry(year: DataYear, id: String) =
-        dao().getEntry(year, Uuid.parse(id))
-            .awaitAsOneOrNull()
-            ?.toArtistWithUserData(year)
-
     suspend fun getEntriesByBooth(year: DataYear, booth: String) =
         dao().getEntriesByBooth(year, booth)
             .awaitAsList()
             .map { it.toArtistEntry() }
 
-    fun getEntryFlow(id: String) = snapshotFlow { settings.dataYear }
-        .flatMapLatest { dataYear ->
-            dao().getEntry(dataYear, Uuid.parse(id))
-                .asFlow()
-                .mapToOne(PlatformDispatchers.IO)
-                .mapLatest { it.toArtistWithUserData(dataYear) }
-        }
+    fun getEntry(year: DataYear, id: String) = flowFromSuspend { dao() }
+        .flatMapLatest { it.getEntry(year, Uuid.parse(id)).asFlow() }
+        .mapToOneOrNull(PlatformDispatchers.IO)
+        .mapLatest { it?.toArtistWithUserData(year) }
 
-    suspend fun getEntryWithStampRallies(
+    fun getEntryWithStampRallies(
         dataYear: DataYear,
         artistId: String,
-    ): ArtistWithStampRalliesEntry? =
-        dao().transactionWithResult {
-            val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
-            val stampRallies =
-                dao().getStampRallyEntries(dataYear, Uuid.parse(artistId)).awaitAsList()
-                    .map { it.toStampRallyEntry(dataYear) }
-            ArtistWithStampRalliesEntry(artist, stampRallies)
-        }
+    ): Flow<ArtistWithStampRalliesEntry> =
+        getEntry(dataYear, artistId)
+            .filterNotNull()
+            .mapLatest { artist ->
+                dao().transactionWithResult {
+                    val stampRallies =
+                        dao().getStampRallyEntries(dataYear, Uuid.parse(artistId)).awaitAsList()
+                            .map { it.toStampRallyEntry(dataYear) }
+                    ArtistWithStampRalliesEntry(artist, stampRallies)
+                }
+            }
 
     fun search(
         year: DataYear,

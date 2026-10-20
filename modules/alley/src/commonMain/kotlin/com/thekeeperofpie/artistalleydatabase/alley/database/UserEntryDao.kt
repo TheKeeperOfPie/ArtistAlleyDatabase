@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
-import androidx.compose.runtime.snapshotFlow
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
@@ -11,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
-import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
@@ -49,7 +47,6 @@ private fun GetBoothsWithFavorites.toBoothWithFavorite() =
 class UserEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val settings: ArtistAlleySettings,
     private val dao: suspend () -> UserEntryQueries = { database().userEntryQueries },
 ) {
     companion object {
@@ -59,8 +56,7 @@ class UserEntryDao(
     @Inject
     constructor(
         database: ArtistAlleyDatabase,
-        settings: ArtistAlleySettings,
-    ) : this(driver = database::driver, database = database::database, settings = settings)
+    ) : this(driver = database::driver, database = database::database)
 
     fun getArtistFavorites(dataYear: DataYear) = flowFromSuspend { dao() }
         .flatMapLatest { it.getArtistFavorites(dataYear).asFlow() }
@@ -70,13 +66,10 @@ class UserEntryDao(
         .flatMapLatest { it.getAllArtistFavorites().asFlow() }
         .mapToList(PlatformDispatchers.IO)
 
-    fun getBoothsWithFavorites() = snapshotFlow { settings.dataYear }
-        .flatMapLatest { dataYear ->
-            dao().getBoothsWithFavorites(dataYear)
-                .asFlow()
-                .mapToList(PlatformDispatchers.IO)
-                .map { dataYear to it.map { it.toBoothWithFavorite() } }
-        }
+    fun getBoothsWithFavorites(year: DataYear) = flowFromSuspend { dao() }
+        .flatMapLatest { dao().getBoothsWithFavorites(year) .asFlow() }
+        .mapToList(PlatformDispatchers.IO)
+        .map { it.map { it.toBoothWithFavorite() } }
 
     suspend fun insertArtistUserEntry(entry: ArtistUserEntry) {
         PersistentStorageRequester.requestPersistent()

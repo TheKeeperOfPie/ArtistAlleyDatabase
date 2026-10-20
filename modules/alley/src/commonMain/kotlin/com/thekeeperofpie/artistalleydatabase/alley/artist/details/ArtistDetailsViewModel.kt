@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -72,7 +73,7 @@ class ArtistDetailsViewModel(
 
     val entry by transform(viewModelScope) {
         val entryWithStampRallies by produceState<ArtistWithStampRalliesEntry?>(null) {
-            value = when {
+            when {
                 route.id == null && route.booth != null -> {
                     val artistId =
                         artistEntryDao.getEntriesByBooth(year, route.booth).firstOrNull()?.id
@@ -80,7 +81,7 @@ class ArtistDetailsViewModel(
                 }
                 route.id != null -> artistEntryDao.getEntryWithStampRallies(year, route.id)
                 else -> null
-            }
+            }?.collectLatest { value = it }
         }
         val (artistWithUserData, stampRallies) = entryWithStampRallies ?: return@transform null
         Entry(
@@ -167,7 +168,7 @@ class ArtistDetailsViewModel(
         val id = id ?: return@transform emptyList()
         produceState(emptyList()) {
             value = (DataYear.entries - year)
-                .filter { artistEntryDao.getEntry(it, id) != null }
+                .filter { artistEntryDao.getEntry(it, id).firstOrNull() != null }
         }.value
     }
 
@@ -223,7 +224,7 @@ class ArtistDetailsViewModel(
                     }
                     DetailsScreen.Event.OpenMap ->
                         entry?.artist?.id?.let {
-                            navigator.navigate(AlleyDestination.ArtistMap(it))
+                            navigator.navigate(AlleyDestination.ArtistMap(year, it))
                         }
                 }
             ArtistDetailsScreen.Event.ShowFallback -> requestedShowFallback = true

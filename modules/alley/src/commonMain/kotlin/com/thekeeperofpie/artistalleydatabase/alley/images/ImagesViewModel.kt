@@ -13,6 +13,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.flow.firstOrNull
 import kotlin.uuid.Uuid
 
 @AssistedInject
@@ -27,7 +28,7 @@ class ImagesViewModel(
     ): Pair<AlleyDestination.Images.Type, List<CatalogImage>>? =
         when (val type = route.type) {
             is AlleyDestination.Images.Type.Artist -> {
-                val entry = artistEntryDao.getEntry(route.year, route.id)
+                val entry = artistEntryDao.getEntry(route.year, route.id).firstOrNull()
                 val artist = entry?.artist ?: return null
                 val artistImages = if (route.changelogDate != null) {
                     val changelog =

@@ -29,10 +29,10 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,9 +68,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.Notes
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ImageNotSupported
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.mapLatest
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -127,17 +128,11 @@ fun TableCell(
 
         if (showPopup) {
             BackHandler { showPopup = false }
-            var tableEntries by remember { mutableStateOf<List<ArtistEntryGridModel>?>(null) }
-            LaunchedEffect(table) {
-                tableEntries = withContext(CustomDispatchers.IO) {
-                    when (table) {
-                        is Table.Single ->
-                            mapViewModel.tableEntry(table.year, table.artistId)?.let { listOf(it) }
-                        is Table.Shared -> table.artistIds.mapNotNull {
-                            mapViewModel.tableEntry(table.year, it)
-                        }.ifEmpty { null }
-                    }
-                }
+            val tableEntries: List<ArtistEntryGridModel>? by produceState(null) {
+                when (table) {
+                    is Table.Single -> mapViewModel.tableEntry(table.year, table.artistId).mapLatest { listOf(it) }
+                    is Table.Shared -> combine(table.artistIds.map { mapViewModel.tableEntry(table.year, it) }) { it.toList() }
+                }.collectLatest { value = it }
             }
             Popup(
                 alignment = Alignment.TopCenter,

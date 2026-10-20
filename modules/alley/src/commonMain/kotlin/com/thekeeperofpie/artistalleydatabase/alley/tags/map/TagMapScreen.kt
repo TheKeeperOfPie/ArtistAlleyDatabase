@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -18,6 +19,7 @@ object TagMapScreen {
 
     @Composable
     operator fun invoke(
+        settings: ArtistAlleySettings,
         year: DataYear?,
         series: String?,
         merch: String?,
@@ -32,7 +34,7 @@ object TagMapScreen {
             )
         },
         mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
-            create(it.createSavedStateHandle())
+            create({ year ?: settings.dataYear }, it.createSavedStateHandle())
         },
     ) {
         TagMapScreen(

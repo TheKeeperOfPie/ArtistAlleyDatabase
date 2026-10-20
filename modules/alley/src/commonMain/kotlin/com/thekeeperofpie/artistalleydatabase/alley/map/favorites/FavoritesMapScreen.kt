@@ -57,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
@@ -71,13 +72,14 @@ object FavoritesMapScreen {
 
     @Composable
     operator fun invoke(
+        settings: ArtistAlleySettings,
         mapTransformState: MapScreen.TransformState,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         viewModel: FavoritesMapViewModel = assistedMetroViewModel<FavoritesMapViewModel, FavoritesMapViewModel.Factory> {
             create(it.createSavedStateHandle())
         },
         mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
-            create(it.createSavedStateHandle())
+            create({ settings.dataYear }, it.createSavedStateHandle())
         },
     ) {
         val seriesByRowId by viewModel.tagAutocomplete.seriesByRowId.collectAsStateWithLifecycle()

@@ -148,6 +148,7 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.MAP ->
                         FavoritesMapScreen(
+                            settings = graph.settings,
                             mapTransformState = mapTransformState,
                             onArtistClick = { entry, imageIndex ->
                                 onOpenArtist(entry.artist, imageIndex)

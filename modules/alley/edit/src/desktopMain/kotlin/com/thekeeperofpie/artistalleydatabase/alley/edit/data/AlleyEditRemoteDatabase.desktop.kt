@@ -31,6 +31,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -86,6 +87,7 @@ actual class AlleyEditRemoteDatabase(
         simulateLatency()
         return artistsByDataYearAndId[dataYear]?.get(artistId.toString())
             ?: artistEntryDao.getEntry(dataYear, artistId.toString())
+                .firstOrNull()
                 ?.artist
                 ?.databaseEntry
     }

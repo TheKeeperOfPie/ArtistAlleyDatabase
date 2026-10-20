@@ -50,7 +50,7 @@ sealed interface AlleyDestination : NavKey {
     }
 
     @Serializable
-    data class ArtistMap(val id: String) : AlleyDestination
+    data class ArtistMap(val year: DataYear, val id: String) : AlleyDestination
 
     @Serializable
     data class ArtistsList(val year: DataYear, val serializedBooths: String) : AlleyDestination
@@ -224,7 +224,7 @@ sealed interface AlleyDestination : NavKey {
     fun toEncodedRoute() = when (this) {
         AboutLibraries -> "libraries"
         is ArtistDetails -> "artist/${year.serializedName}/${id ?: booth}"
-        is ArtistMap -> "artist/map/$id"
+        is ArtistMap -> "artist/map/${year.serializedNameOrAll}/$id"
         is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
         is ArtistChangelog -> "changelog/${year.serializedName}"
         is Export -> "export/${dataYear.serializedName}"
@@ -273,7 +273,7 @@ sealed interface AlleyDestination : NavKey {
             } else {
                 when (parts.first()) {
                     "artist" -> when (parts.size) {
-                        3 if parts[1] == "map" -> ArtistMap(id = parts[2])
+                        4 if parts[1] == "map" -> ArtistMap(year = parts[2].toDataYearOrLatest(), id = parts[3])
                         3 -> {
                             val part2 = parts[2]
                             val booth = Booth.fromStringOrNull(part2)

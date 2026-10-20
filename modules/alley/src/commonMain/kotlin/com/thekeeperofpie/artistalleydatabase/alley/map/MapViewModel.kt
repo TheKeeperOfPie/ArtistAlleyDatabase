@@ -27,6 +27,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -37,17 +38,18 @@ class MapViewModel(
     private val artistEntryDao: ArtistEntryDao,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
+    @Assisted dataYear: () -> DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val gridData by transform(viewModelScope) {
         val showOutdatedCatalogs = settings.showOutdatedCatalogs
         val showRandomCatalogImage = settings.showRandomCatalogImage
-        produceState(LoadingResult.loading(), showOutdatedCatalogs, showRandomCatalogImage) {
+        val dataYear = dataYear()
+        produceState(LoadingResult.loading(), showOutdatedCatalogs, showRandomCatalogImage, dataYear) {
             // TODO: This is very inefficient to respond to favorites updates
             // TODO: Pass in DataYear
-            userEntryDao.getBoothsWithFavorites()
-                .mapLatest {
-                    val [dataYear, booths] = it
+            userEntryDao.getBoothsWithFavorites(dataYear)
+                .mapLatest { booths ->
                     when (dataYear) {
                         DataYear.ANIME_EXPO_2023,
                         DataYear.ANIME_EXPO_2024,
@@ -118,7 +120,7 @@ class MapViewModel(
         var currentIndex = 0
         return letterToBooths.mapIndexed { letterIndex, pair ->
             pair.second.groupBy { it.booth }
-                .mapNotNull { (booth, artists) ->
+                .mapNotNull { [booth, artists] ->
                     booth?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     val tableNumber = booth.filter { it.isDigit() }.toInt()
                     table(
@@ -449,14 +451,16 @@ class MapViewModel(
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
-    suspend fun tableEntry(year: DataYear, artistId: String) =
-        artistEntryDao.getEntry(year, artistId)?.let {
-            ArtistEntryGridModel.buildFromEntry(
-                randomSeed = randomSeed,
-                showOnlyConfirmedTags = false, // This shouldn't matter here
-                entry = it,
-            )
-        }
+    fun tableEntry(year: DataYear, artistId: String) =
+        artistEntryDao.getEntry(year, artistId)
+            .filterNotNull()
+            .mapLatest {
+                ArtistEntryGridModel.buildFromEntry(
+                    randomSeed = randomSeed,
+                    showOnlyConfirmedTags = false, // This shouldn't matter here
+                    entry = it,
+                )
+            }
 
     data class GridData(
         val maxX: Int,
@@ -468,6 +472,6 @@ class MapViewModel(
     @ManualViewModelAssistedFactoryKey
     @ContributesIntoMap(NavigatorScope::class)
     interface Factory : ManualViewModelAssistedFactory {
-        fun create(savedStateHandle: SavedStateHandle): MapViewModel
+        fun create(dataYear: () -> DataYear, savedStateHandle: SavedStateHandle): MapViewModel
     }
 }

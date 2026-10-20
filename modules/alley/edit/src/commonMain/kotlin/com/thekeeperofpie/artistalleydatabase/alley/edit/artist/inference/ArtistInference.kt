@@ -16,6 +16,7 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.yield
@@ -48,7 +49,7 @@ class ArtistInference(
         }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
 
     suspend fun hasPreviousYear(artistId: String): Boolean = DataYear.entries.any {
-        artistEntryDao.getEntry(it, artistId) != null
+        artistEntryDao.getEntry(it, artistId).firstOrNull() != null
     }
 
     suspend fun inferArtist(
@@ -204,42 +205,42 @@ class ArtistInference(
 
         private suspend fun animeExpo2023(): ArtistEntry? {
             if (!animeExpo2023.isCompleted) {
-                animeExpo2023.complete(dao.getEntry(DataYear.ANIME_EXPO_2023, artistId)?.artist)
+                animeExpo2023.complete(dao.getEntry(DataYear.ANIME_EXPO_2023, artistId).firstOrNull()?.artist)
             }
             return animeExpo2023.getCompleted()
         }
 
         private suspend fun animeExpo2024(): ArtistEntry? {
             if (!animeExpo2024.isCompleted) {
-                animeExpo2024.complete(dao.getEntry(DataYear.ANIME_EXPO_2024, artistId)?.artist)
+                animeExpo2024.complete(dao.getEntry(DataYear.ANIME_EXPO_2024, artistId).firstOrNull()?.artist)
             }
             return animeExpo2024.getCompleted()
         }
 
         private suspend fun animeExpo2025(): ArtistEntry? {
             if (!animeExpo2025.isCompleted) {
-                animeExpo2025.complete(dao.getEntry(DataYear.ANIME_EXPO_2025, artistId)?.artist)
+                animeExpo2025.complete(dao.getEntry(DataYear.ANIME_EXPO_2025, artistId).firstOrNull()?.artist)
             }
             return animeExpo2025.getCompleted()
         }
 
         private suspend fun animeExpo2026(): ArtistEntry? {
             if (!animeExpo2026.isCompleted) {
-                animeExpo2026.complete(dao.getEntry(DataYear.ANIME_EXPO_2026, artistId)?.artist)
+                animeExpo2026.complete(dao.getEntry(DataYear.ANIME_EXPO_2026, artistId).firstOrNull()?.artist)
             }
             return animeExpo2026.getCompleted()
         }
 
         private suspend fun animeNyc2024(): ArtistEntry? {
             if (!animeNyc2024.isCompleted) {
-                animeNyc2024.complete(dao.getEntry(DataYear.ANIME_NYC_2024, artistId)?.artist)
+                animeNyc2024.complete(dao.getEntry(DataYear.ANIME_NYC_2024, artistId).firstOrNull()?.artist)
             }
             return animeNyc2024.getCompleted()
         }
 
         private suspend fun animeNyc2025(): ArtistEntry? {
             if (!animeNyc2025.isCompleted) {
-                animeNyc2025.complete(dao.getEntry(DataYear.ANIME_NYC_2025, artistId)?.artist)
+                animeNyc2025.complete(dao.getEntry(DataYear.ANIME_NYC_2025, artistId).firstOrNull()?.artist)
             }
             return animeNyc2025.getCompleted()
         }

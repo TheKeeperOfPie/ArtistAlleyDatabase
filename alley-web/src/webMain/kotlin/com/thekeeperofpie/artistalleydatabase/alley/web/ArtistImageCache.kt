@@ -22,9 +22,6 @@ import kotlinx.coroutines.launch
 import org.w3c.fetch.Request
 import org.w3c.workers.Cache
 import org.w3c.workers.CacheQueryOptions
-import kotlin.js.ExperimentalWasmJsInterop
-import kotlin.js.get
-import kotlin.js.length
 
 @OptIn(ExperimentalWasmJsInterop::class)
 @SingleIn(AppScope::class)
@@ -67,7 +64,7 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
             when (event) {
                 is Event.Delete -> {
                     val entriesForArtist = DataYear.entries
-                        .mapNotNull { artistEntryDao.getEntry(it, event.artistId) }
+                        .mapNotNull { artistEntryDao.getEntry(it, event.artistId).firstOrNull() }
                         .ifEmpty { null }
                         ?: return
 
@@ -87,7 +84,7 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                 }
                 is Event.Save -> {
                     val entriesForArtist = DataYear.entries
-                        .mapNotNull { artistEntryDao.getEntry(it, event.artistId) }
+                        .mapNotNull { artistEntryDao.getEntry(it, event.artistId).firstOrNull() }
                         .ifEmpty { null }
                         ?: return
 
@@ -143,7 +140,7 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                     val favorites = userEntryDao.getAllArtistFavorites().firstOrNull()
                     favorites?.forEach { artistId ->
                         DataYear.entries.forEach {
-                            val artist = artistEntryDao.getEntry(it, artistId)
+                            val artist = artistEntryDao.getEntry(it, artistId).firstOrNull()
                                 ?: return@forEach
                             val images = AlleyImageUtils.getArtistImagesWithEmbedFallback(
                                 year = it,

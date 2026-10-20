@@ -631,6 +631,7 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.SeriesMap> {
                 TagMapScreen(
+                    settings = graph.settings,
                     year = it.year,
                     series = it.series,
                     merch = null,
@@ -643,6 +644,7 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.MerchMap> {
                 TagMapScreen(
+                    settings = graph.settings,
                     year = it.year,
                     series = null,
                     merch = it.merch,

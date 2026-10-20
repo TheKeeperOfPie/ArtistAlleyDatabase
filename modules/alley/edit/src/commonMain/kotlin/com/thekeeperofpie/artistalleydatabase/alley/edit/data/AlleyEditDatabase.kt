@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.flow.firstOrNull
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -50,12 +51,14 @@ class AlleyEditDatabase(
     suspend fun loadArtist(dataYear: DataYear, artistId: Uuid) =
         remoteDatabase.loadArtist(dataYear, artistId)
             ?: artistEntryDao.getEntry(dataYear, artistId.toString())
+                .firstOrNull()
                 ?.artist
                 ?.databaseEntry
 
     suspend fun loadArtistWithFormMetadata(dataYear: DataYear, artistId: Uuid) =
         remoteDatabase.loadArtistWithFormMetadata(dataYear, artistId)
             ?: artistEntryDao.getEntry(dataYear, artistId.toString())
+                .firstOrNull()
                 ?.artist
                 ?.databaseEntry
                 ?.let {

@@ -38,7 +38,7 @@ object StampRallyMapScreen {
             )
         },
         mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
-            create(it.createSavedStateHandle())
+            create({ route.year }, it.createSavedStateHandle())
         },
     ) {
         Scaffold(
