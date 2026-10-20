@@ -246,7 +246,7 @@ fun ImagePager(
                             onDoubleClick = CycleDoubleClickListener,
                         )
                 ) {
-                    val zoomed = zoomableState.zoomFraction != 0f
+                    val zoomed by remember { derivedStateOf { zoomableState.zoomFraction != 0f } }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalPlatformContext.current)
                             .data(image)
@@ -522,7 +522,7 @@ fun ImageGrid(
                 Box {
                     val zoomableState = rememberZoomableState(ZoomSpec(maxZoomFactor = 3f))
                     val size = cachedDimensions[image]
-                    val zoomed = zoomableState.zoomFraction != 0f
+                    val zoomed by remember { derivedStateOf { zoomableState.zoomFraction != 0f } }
                     var showMenu by remember { mutableStateOf(false) }
                     val imageModel = image.coilImageModel
                     AsyncImage(
@@ -570,7 +570,7 @@ fun ImageGrid(
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                     )
 
-                    val isZoomed = zoomableState.zoomFraction.let { it != null && it > 0f }
+                    val isZoomed by remember { derivedStateOf { zoomableState.zoomFraction.let { it != null && it > 0f } } }
                     val sliderVisible = isZoomed && zoomableState.isAnimationRunning
                     val alpha by animateFloatAsState(
                         if (sliderVisible) 1f else 0f,
