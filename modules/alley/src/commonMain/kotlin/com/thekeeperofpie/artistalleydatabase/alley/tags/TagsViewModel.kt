@@ -69,7 +69,8 @@ class TagsViewModel(
         labelTextRes = Res.string.alley_settings_series_language,
         options = AniListLanguageOption.entries,
         optionToText = { stringResource(it.textWithExplanation) },
-        property = settings.languageOption,
+        initialSelectedOption = settings.languageOption,
+        onItemSelected = { settings.languageOption = it },
     )
 
     val seriesSortFilterController =
@@ -77,23 +78,28 @@ class TagsViewModel(
 
     val series =
         combine(
-            snapshotFlow { settings.dataYear },
-            settings.languageOption,
+            snapshotFlow {
+                SeriesInputs(
+                    dataYear = settings.dataYear,
+                    languageOption = settings.languageOption,
+                    seriesFilterParams = seriesSortFilterController.filterParams
+                )
+            },
             seriesQuery.debounce(250.milliseconds),
-            snapshotFlow { seriesSortFilterController.filterParams },
-            ::SeriesInputs
+            ::Pair
         )
-            .flatMapLatest { (year, languageOption, query, filterParams) ->
-                if (year == DataYear.ANIME_EXPO_2023) {
+            .flatMapLatest { [inputs, query] ->
+                val (dataYear, languageOption, seriesFilterParams) = inputs
+                if (dataYear == DataYear.ANIME_EXPO_2023) {
                     flowOf(PagingData.empty())
                 } else {
                     Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         seriesEntryDao.searchSeries(
                             languageOption = languageOption,
-                            year = year,
+                            year = dataYear,
                             query = query,
                             randomSeed = randomSeed,
-                            seriesFilterParams = filterParams,
+                            seriesFilterParams = seriesFilterParams,
                         )
                     }.flow
                 }
@@ -154,7 +160,6 @@ class TagsViewModel(
     private data class SeriesInputs(
         val dataYear: DataYear,
         val languageOption: AniListLanguageOption,
-        val seriesQuery: String,
         val seriesFilterParams: SeriesSortFilterController.FilterParams,
     )
 

@@ -52,7 +52,7 @@ class AlleySettingsViewModel(
                 AppThemeSetting.DARK,
                 AppThemeSetting.BLACK,
                     -> true
-                AppThemeSetting.MIKU -> settings.easterEggEnabled.value
+                AppThemeSetting.MIKU -> settings.easterEggEnabled
             }
         },
         optionToText = { stringResource(it.textRes) },
@@ -64,7 +64,8 @@ class AlleySettingsViewModel(
         labelTextRes = Res.string.alley_settings_series_language,
         options = AniListLanguageOption.entries,
         optionToText = { stringResource(it.textWithExplanation) },
-        property = settings.languageOption,
+        initialSelectedOption = settings.languageOption,
+        onItemSelected = { settings.languageOption = it },
     )
 
     val state =
@@ -98,7 +99,7 @@ class AlleySettingsViewModel(
                         .hash(event.data.encodeToByteString())
                         .toHexString()
                     if (hash == "f944c691a9d2c3dc8de634e8c91ffb025d93aad2f050b94c8f2c39c7aac656cb5bb881d9600b18718120ca53f70227ae1db0d15eb93bff0927da1f6becd88b2b") {
-                        settings.easterEggEnabled.value = true
+                        settings.easterEggEnabled = true
                         settings.appTheme = AppThemeSetting.MIKU
                         state.importState = LoadingResult.success(Unit)
                         return@launch

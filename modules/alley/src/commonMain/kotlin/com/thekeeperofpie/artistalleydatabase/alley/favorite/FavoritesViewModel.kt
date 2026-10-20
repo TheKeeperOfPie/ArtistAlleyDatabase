@@ -56,7 +56,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -84,7 +83,9 @@ class FavoritesViewModel(
 
     var year
         get() = settings.dataYear
-        set(value) { settings.dataYear = value }
+        set(value) {
+            settings.dataYear = value
+        }
 
     val showOutdatedCatalogs = settings.showOutdatedCatalogs
 
@@ -193,29 +194,29 @@ class FavoritesViewModel(
         val filterParams: SeriesSortFilterController.FilterParams,
     )
 
-    val seriesEntries = combine(
-        snapshotFlow { query.text.toString() },
-        snapshotFlow { year },
-        settings.languageOption,
-        snapshotFlow { seriesSortFilterController.filterParams },
-        ::SeriesInputs,
-    )
-        .flatMapLatest { (query, year, languageOption, filterParams) ->
-            if (year == DataYear.ANIME_EXPO_2023) {
-                flowOf(PagingData.empty())
-            } else {
-                Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                    seriesEntryDao.searchSeries(
-                        languageOption = languageOption,
-                        year = year,
-                        query = query,
-                        randomSeed = randomSeed,
-                        seriesFilterParams = filterParams,
-                        favoriteOnly = true,
-                    )
-                }.flow
-            }
+    val seriesEntries = snapshotFlow {
+        SeriesInputs(
+            query = query.text.toString(),
+            year = year,
+            languageOption = settings.languageOption,
+            filterParams = seriesSortFilterController.filterParams,
+        )
+    }.flatMapLatest { (query, year, languageOption, filterParams) ->
+        if (year == DataYear.ANIME_EXPO_2023) {
+            flowOf(PagingData.empty())
+        } else {
+            Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                seriesEntryDao.searchSeries(
+                    languageOption = languageOption,
+                    year = year,
+                    query = query,
+                    randomSeed = randomSeed,
+                    seriesFilterParams = filterParams,
+                    favoriteOnly = true,
+                )
+            }.flow
         }
+    }
         .enforceUniqueIds { it.series.id }
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
@@ -289,10 +290,26 @@ class FavoritesViewModel(
             merchMutationUpdates.tryEmit(event.merch.userEntry.copy(favorite = event.favorite))
         FavoritesScreen.Event.OpenChangelog -> {
             when (tab.value) {
-                FavoritesScreen.EntryTab.ARTISTS -> navigator.navigate(AlleyDestination.FavoriteArtistsChangelog(year))
-                FavoritesScreen.EntryTab.RALLIES -> navigator.navigate(AlleyDestination.FavoriteRalliesChangelog(year))
-                FavoritesScreen.EntryTab.SERIES -> navigator.navigate(AlleyDestination.FavoriteSeriesChangelog(year))
-                FavoritesScreen.EntryTab.MERCH -> navigator.navigate(AlleyDestination.FavoriteMerchChangelog(year))
+                FavoritesScreen.EntryTab.ARTISTS -> navigator.navigate(
+                    AlleyDestination.FavoriteArtistsChangelog(
+                        year
+                    )
+                )
+                FavoritesScreen.EntryTab.RALLIES -> navigator.navigate(
+                    AlleyDestination.FavoriteRalliesChangelog(
+                        year
+                    )
+                )
+                FavoritesScreen.EntryTab.SERIES -> navigator.navigate(
+                    AlleyDestination.FavoriteSeriesChangelog(
+                        year
+                    )
+                )
+                FavoritesScreen.EntryTab.MERCH -> navigator.navigate(
+                    AlleyDestination.FavoriteMerchChangelog(
+                        year
+                    )
+                )
             }
         }
         is FavoritesScreen.Event.OpenExport -> navigator.navigate(AlleyDestination.Export(event.dataYear))

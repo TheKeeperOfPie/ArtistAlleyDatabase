@@ -41,8 +41,8 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override var seriesSortAscending by mutableStateOf(true)
 
     override var dataYear by mutableStateOf(DataYear.LATEST)
-    override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
-    override val easterEggEnabled = MutableStateFlow(true)
+    override var languageOption by mutableStateOf(AniListLanguageOption.DEFAULT)
+    override var easterEggEnabled by mutableStateOf(true)
 
-    override val rootDestination = MutableStateFlow(AlleyRootDestination.ARTISTS)
+    override var rootDestination by mutableStateOf(AlleyRootDestination.ARTISTS)
 }

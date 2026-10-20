@@ -22,14 +22,11 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.w3c.dom.StorageEvent
-import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -55,49 +52,49 @@ class ArtistAlleyWebSettings(
         }
     }
 
-    override var appTheme by register2(
+    override var appTheme by register(
         serialize = { it.name },
         deserialize = {
             it?.let { theme -> AppThemeSetting.entries.find { it.name == theme } }
                 ?: AppThemeSetting.AUTO
         },
     )
-    override var displayType by register2(
+    override var displayType by register(
         serialize = { it.name },
         deserialize = { value ->
             SearchDisplayType.entries.find { it.name == value }
                 ?: SearchDisplayType.CARD
         },
     )
-    override var artistsSortOption by register2(
+    override var artistsSortOption by register(
         serialize = { it.name },
         deserialize = { value ->
             ArtistSearchSortOption.entries.find { it.name == value }
                 ?: ArtistSearchSortOption.RANDOM
         },
     )
-    override var artistsSortAscending by registerBoolean2(true)
-    override var stampRalliesSortOption by register2(
+    override var artistsSortAscending by registerBoolean(true)
+    override var stampRalliesSortOption by register(
         serialize = { it.name },
         deserialize = { value ->
             StampRallySearchSortOption.entries.find { it.name == value }
                 ?: StampRallySearchSortOption.RANDOM
         },
     )
-    override var stampRalliesSortAscending by registerBoolean2(true)
-    override var seriesSortOption by register2(
+    override var stampRalliesSortAscending by registerBoolean(true)
+    override var seriesSortOption by register(
         serialize = { it.name },
         deserialize = { value ->
             SeriesSearchSortOption.entries.find { it.name == value }
                 ?: SeriesSearchSortOption.RANDOM
         },
     )
-    override var seriesSortAscending by registerBoolean2(true)
-    override var showGridByDefault by registerBoolean2(false)
-    override var showRandomCatalogImage by registerBoolean2(false)
-    override var showOnlyConfirmedTags by registerBoolean2(false)
-    override var forceOneDisplayColumn by registerBoolean2(false)
-    override var dataYear by register2(
+    override var seriesSortAscending by registerBoolean(true)
+    override var showGridByDefault by registerBoolean(false)
+    override var showRandomCatalogImage by registerBoolean(false)
+    override var showOnlyConfirmedTags by registerBoolean(false)
+    override var forceOneDisplayColumn by registerBoolean(false)
+    override var dataYear by register(
         serialize = { it.serializedName },
         deserialize = {
             val value = try {
@@ -128,17 +125,17 @@ class ArtistAlleyWebSettings(
             }
         },
     )
-    override val languageOption by register(
+    override var languageOption by register(
         serialize = { it.name },
         deserialize = { value ->
             AniListLanguageOption.entries.find { it.name == value }
                 ?: AniListLanguageOption.DEFAULT
         },
     )
-    override var showOutdatedCatalogs by registerBoolean2(false)
-    override val easterEggEnabled by registerBoolean(false)
+    override var showOutdatedCatalogs by registerBoolean(false)
+    override var easterEggEnabled by registerBoolean(false)
 
-    override var artistsTagsIn by register2(
+    override var artistsTagsIn by register(
         serialize = { json.encodeToString<Set<String>>(it.map { it.name }.toSet()) },
         deserialize = { value ->
             value?.let { json.decodeFromString<Set<String>>(it) }
@@ -149,7 +146,7 @@ class ArtistAlleyWebSettings(
                 .toSet()
         },
     )
-    override var artistsTagsNotIn by register2(
+    override var artistsTagsNotIn by register(
         serialize = { json.encodeToString<Set<String>>(it.map { it.name }.toSet()) },
         deserialize = { value ->
             value?.let { json.decodeFromString<Set<String>>(it) }
@@ -160,7 +157,7 @@ class ArtistAlleyWebSettings(
                 .toSet()
         },
     )
-    override val rootDestination by register(
+    override var rootDestination by register(
         serialize = { it.name },
         deserialize = { value ->
             AlleyRootDestination.entries.find { it.name == value }
@@ -169,40 +166,6 @@ class ArtistAlleyWebSettings(
     )
 
     private fun <T> register(serialize: (T) -> String, deserialize: (String?) -> T) =
-        object : ReadOnlyProperty<Any?, MutableStateFlow<T>> {
-            private lateinit var flow: MutableStateFlow<T>
-            override fun getValue(thisRef: Any?, property: KProperty<*>): MutableStateFlow<T> {
-                if (!::flow.isInitialized) {
-                    val key = property.name
-                    val value = try {
-                        localStorage.getItem(key)
-                    } catch (t: Throwable) {
-                        ConsoleLogger.log("Failed to read $key from localStorage: ${t.message}")
-                        null
-                    }
-                    flow = MutableStateFlow(deserialize(value))
-                    applicationScope.launch {
-                        flow.drop(1)
-                            .collectLatest {
-                                try {
-                                    localStorage.setItem(key, serialize(it))
-                                } catch (t: Throwable) {
-                                    ConsoleLogger.log("Failed to write $key = $it to localStorage: ${t.message}")
-                                }
-                            }
-                    }
-                    applicationScope.launch {
-                        updates.filter { it.first == key }
-                            .collectLatest {
-                                flow.emit(deserialize(it.second))
-                            }
-                    }
-                }
-                return flow
-            }
-        }
-
-    private fun <T> register2(serialize: (T) -> String, deserialize: (String?) -> T) =
         object : ReadWriteProperty<Any?, T> {
             private lateinit var state: MutableState<T>
             override fun getValue(thisRef: Any?, property: KProperty<*>): T {
@@ -249,11 +212,6 @@ class ArtistAlleyWebSettings(
         }
 
     private fun registerBoolean(defaultValue: Boolean) = register<Boolean>(
-        serialize = Boolean::toString,
-        deserialize = { it?.toBoolean() ?: defaultValue },
-    )
-
-    private fun registerBoolean2(defaultValue: Boolean) = register2(
         serialize = Boolean::toString,
         deserialize = { it?.toBoolean() ?: defaultValue },
     )

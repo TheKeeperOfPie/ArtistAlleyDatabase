@@ -26,7 +26,6 @@ import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import io.ktor.client.HttpClient
-import kotlinx.coroutines.flow.MutableStateFlow
 
 @SingleIn(AppScope::class)
 interface ArtistAlleyEditGraph : ArtistAlleyGraph {
@@ -62,10 +61,10 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
         override var seriesSortAscending by mutableStateOf(true)
 
         override var dataYear by mutableStateOf(DataYear.LATEST)
-        override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
-        override val easterEggEnabled = MutableStateFlow(false)
+        override var languageOption by mutableStateOf(AniListLanguageOption.DEFAULT)
+        override var easterEggEnabled by mutableStateOf(false)
 
-        override val rootDestination = MutableStateFlow(AlleyRootDestination.ARTISTS)
+        override var rootDestination by mutableStateOf(AlleyRootDestination.ARTISTS)
     }
 
     val editNavigatorGraphFactory: ArtistAlleyEditNavigatorGraph.Factory

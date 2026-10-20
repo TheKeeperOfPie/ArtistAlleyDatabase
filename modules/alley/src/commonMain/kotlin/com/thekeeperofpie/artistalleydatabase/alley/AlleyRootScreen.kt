@@ -69,11 +69,13 @@ object AlleyRootScreen {
         val settings = remember(graph) { graph.settings }
         val scrollPositions = ScrollStateSaver.scrollPositions()
         val mapTransformState = MapScreen.rememberTransformState()
-        var destination by rememberSaveable { mutableStateOf(settings.rootDestination.value) }
+
+        // Mirror to support multiple roots, in theory
+        var destination by rememberSaveable { mutableStateOf(settings.rootDestination) }
         NavigationScaffold(
             destination = { destination },
             onChangeDestination = {
-                settings.rootDestination.value = it
+                settings.rootDestination = it
                 destination = it
             },
         ) {

@@ -9,7 +9,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
-import kotlinx.coroutines.flow.MutableStateFlow
 
 interface ArtistAlleySettings : ArtistSortFilterSettings, StampRallySortSettings, DisplaySettings,
     SeriesSortFilterSettings {
@@ -18,8 +17,8 @@ interface ArtistAlleySettings : ArtistSortFilterSettings, StampRallySortSettings
     var displayType: SearchDisplayType
 
     var dataYear: DataYear
-    val languageOption: MutableStateFlow<AniListLanguageOption>
-    val easterEggEnabled: MutableStateFlow<Boolean>
+    var languageOption: AniListLanguageOption
+    var easterEggEnabled: Boolean
 
-    val rootDestination: MutableStateFlow<AlleyRootDestination>
+    var rootDestination: AlleyRootDestination
 }

@@ -9,11 +9,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.scene.DialogSceneStrategy
@@ -80,15 +78,13 @@ object ArtistAlleyAppScreen {
         navStack: AlleyNavStack = rememberAlleyNavStack(),
     ) {
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
-            val languageOption by graph.settings.languageOption
-                .collectAsStateWithLifecycle()
             val navigatorGraph = retain(graph, navStack) {
                 graph.navigatorGraphFactory.create(navStack)
             }
             CompositionLocalProvider(
                 LocalSharedTransitionScope provides this,
                 LocalNavigationResults provides rememberNavigationResults(),
-                LocalLanguageOptionMedia provides languageOption,
+                LocalLanguageOptionMedia provides graph.settings.languageOption,
                 LocalMetroViewModelFactory provides navigatorGraph.metroViewModelFactory,
                 LocalAlleyNavigator provides rememberAlleyNavigator(navStack),
             ) {
