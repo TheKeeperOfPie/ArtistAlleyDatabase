@@ -8,10 +8,15 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.annotation.RememberInComposition
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateSet
+import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_content_description
@@ -79,7 +84,7 @@ internal fun SeriesSortFilterSheetContent(
         SwitchSection(
             title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
             enabled = displaySettings::showOnlyConfirmedTags,
-            onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it } ,
+            onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
         )
     }
 }
@@ -94,7 +99,11 @@ class SeriesSortFilterState(
         fun rememberForPreview(): SeriesSortFilterState {
             assertInPreview()
             val persistentState = SeriesSortFilterPersistentState.rememberForPreview()
-            val saveableState = rememberSerializable { SeriesSortFilterSaveableState() }
+            val saveableState = rememberSerializable {
+                SeriesSortFilterSaveableState(
+                    _showOnlyConfirmedTags = mutableStateOf(false),
+                )
+            }
             return remember(persistentState, saveableState) {
                 SeriesSortFilterState(
                     persistentState = persistentState,
@@ -127,7 +136,11 @@ class SeriesSortFilterSaveableState @RememberInComposition constructor(
     val sourceIn: FilterSectionState<SeriesFilterOption> = FilterSectionState(),
     @Serializable(SnapshotStateSetSerializer::class)
     val expandedSections: SnapshotStateSet<Section> = mutableStateSetOf(),
+    @Serializable(MutableStateSerializer::class)
+    private var _showOnlyConfirmedTags: MutableState<Boolean>,
 ) {
+    var showOnlyConfirmedTags by _showOnlyConfirmedTags
+
     enum class Section {
         SORT,
         SOURCE,

@@ -201,13 +201,13 @@ object BrowseScreen {
 
                                                 HorizontalDivider()
 
-                                                val displaySettings =
-                                                    tagsViewModel.seriesSortFilterController.state.persistentState.displaySettings
+                                                val saveableState =
+                                                    tagsViewModel.seriesSortFilterController.state.saveableState
                                                 SwitchSection(
                                                     title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
-                                                    enabled = displaySettings::showOnlyConfirmedTags,
+                                                    enabled = saveableState::showOnlyConfirmedTags,
                                                     onEnabledChanged = {
-                                                        displaySettings.showOnlyConfirmedTags = it
+                                                        saveableState.showOnlyConfirmedTags = it
                                                     },
                                                 )
                                             }

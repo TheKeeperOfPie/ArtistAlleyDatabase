@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.serialization.saved
-import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterPersistentState
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
@@ -17,16 +16,16 @@ class SeriesSortFilterController(
     settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
 ) {
-    var showOnlyConfirmedTags by savedStateHandle.saveable {
-        mutableStateOf(settings.showOnlyConfirmedTags)
-    }
-
     private val persistentState = SeriesSortFilterPersistentState(
         sortFilterSettings = settings,
         displaySettings = settings,
     )
 
-    private val saveableState by savedStateHandle.saved { SeriesSortFilterSaveableState() }
+    private val saveableState by savedStateHandle.saved {
+        SeriesSortFilterSaveableState(
+            _showOnlyConfirmedTags = mutableStateOf(settings.showOnlyConfirmedTags),
+        )
+    }
 
     val state = SeriesSortFilterState(
         persistentState = persistentState,
@@ -38,7 +37,7 @@ class SeriesSortFilterController(
             sortOption = persistentState.sortFilterSettings.seriesSortOption,
             sortAscending = persistentState.sortFilterSettings.seriesSortAscending,
             sourceIn = saveableState.sourceIn.filterIn.toSet(),
-            showOnlyConfirmedTags = showOnlyConfirmedTags,
+            showOnlyConfirmedTags = saveableState.showOnlyConfirmedTags,
         )
     }
 
