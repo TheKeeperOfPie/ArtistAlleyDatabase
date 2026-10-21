@@ -13,12 +13,11 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreenEventHandler
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -27,7 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallyFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreenEventHandler
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -291,91 +290,35 @@ class FavoritesViewModel(
         FavoritesScreen.Event.OpenChangelog -> {
             when (tab.value) {
                 FavoritesScreen.EntryTab.ARTISTS -> navigator.navigate(
-                    AlleyDestination.FavoriteArtistsChangelog(
-                        year
-                    )
+                    AlleyDestination.FavoriteArtistsChangelog(year)
                 )
                 FavoritesScreen.EntryTab.RALLIES -> navigator.navigate(
-                    AlleyDestination.FavoriteRalliesChangelog(
-                        year
-                    )
+                    AlleyDestination.FavoriteRalliesChangelog(year)
                 )
                 FavoritesScreen.EntryTab.SERIES -> navigator.navigate(
-                    AlleyDestination.FavoriteSeriesChangelog(
-                        year
-                    )
+                    AlleyDestination.FavoriteSeriesChangelog(year)
                 )
                 FavoritesScreen.EntryTab.MERCH -> navigator.navigate(
-                    AlleyDestination.FavoriteMerchChangelog(
-                        year
-                    )
+                    AlleyDestination.FavoriteMerchChangelog(year)
                 )
             }
         }
         is FavoritesScreen.Event.OpenExport -> navigator.navigate(AlleyDestination.Export(event.dataYear))
         FavoritesScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
-        is FavoritesScreen.Event.ArtistSearchEvent -> when (val searchEvent = event.event) {
-            is ArtistSearchScreen.Event.FavoriteToggle -> artistMutationUpdates.tryEmit(
-                searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite)
-            )
-            is ArtistSearchScreen.Event.IgnoreToggle -> artistMutationUpdates.tryEmit(
-                searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored)
-            )
-            is ArtistSearchScreen.Event.ClearFilters -> artistSortFilterController.clear()
-            ArtistSearchScreen.Event.Back -> navigator.goBack()
-            ArtistSearchScreen.Event.OpenChangelog ->
-                navigator.navigate(AlleyDestination.ArtistChangelog(year))
-            is ArtistSearchScreen.Event.OpenEntry ->
-                navigator.navigate(
-                    AlleyDestination.ArtistDetails(
-                        entry = searchEvent.entry.artist,
-                        imageIndex = searchEvent.imageIndex,
-                    )
-                )
-            ArtistSearchScreen.Event.OpenExport ->
-                navigator.navigate(AlleyDestination.Export(year))
-            is ArtistSearchScreen.Event.OpenImageFullscreen ->
-                navigator.navigate(
-                    AlleyDestination.Images.fromArtist(
-                        artistWithUserData = searchEvent.entry.data,
-                        showOutdatedCatalogs =
-                            artistSortFilterController.state.persistentState.sortFilterSettings.showOutdatedCatalogs,
-                        imageIndex = searchEvent.imageIndex,
-                    )
-                )
-            is ArtistSearchScreen.Event.OpenMerch ->
-                navigator.navigate(AlleyDestination.Merch(year, searchEvent.merch))
-            is ArtistSearchScreen.Event.OpenSeries ->
-                navigator.navigate(AlleyDestination.Series(year, searchEvent.series))
-            ArtistSearchScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
-        }
-        is FavoritesScreen.Event.StampRallySearchEvent -> when (val searchEvent = event.event) {
-            is StampRallySearchScreen.Event.FavoriteToggle -> rallyMutationUpdates.tryEmit(
-                searchEvent.stampRally.userEntry.copy(favorite = searchEvent.favorite)
-            )
-            is StampRallySearchScreen.Event.IgnoreToggle -> rallyMutationUpdates.tryEmit(
-                searchEvent.stampRally.userEntry.copy(ignored = searchEvent.ignored)
-            )
-            is StampRallySearchScreen.Event.OpenEntry ->
-                navigator.navigate(
-                    StampRallyDetails(
-                        searchEvent.stampRally.stampRally,
-                        searchEvent.imageIndex
-                    )
-                )
-            is StampRallySearchScreen.Event.OpenImageFullscreen ->
-                navigator.navigate(
-                    AlleyDestination.Images.fromStampRally(
-                        stampRallyWithUserData = searchEvent.stampRally,
-                        imageIndex = searchEvent.imageIndex,
-                    )
-                )
-            is StampRallySearchScreen.Event.ClearFilters -> stampRallySortFilterController.clear()
-            StampRallySearchScreen.Event.Back -> navigator.goBack()
-            StampRallySearchScreen.Event.OpenChangelog ->
-                navigator.navigate(AlleyDestination.StampRallyChangelog(year))
-            StampRallySearchScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
-        }
+        is FavoritesScreen.Event.ArtistSearchEvent -> ArtistSearchScreenEventHandler.onEvent(
+            navigator = navigator,
+            sortFilterController = artistSortFilterController,
+            year = ::year,
+            onMutationUpdate = artistMutationUpdates::tryEmit,
+            event = event.event,
+        )
+        is FavoritesScreen.Event.StampRallySearchEvent -> StampRallySearchScreenEventHandler.onEvent(
+            navigator = navigator,
+            sortFilterController = stampRallySortFilterController,
+            year = ::year,
+            onMutationUpdate = rallyMutationUpdates::tryEmit,
+            event = event.event,
+        )
     }
 
     @AssistedFactory

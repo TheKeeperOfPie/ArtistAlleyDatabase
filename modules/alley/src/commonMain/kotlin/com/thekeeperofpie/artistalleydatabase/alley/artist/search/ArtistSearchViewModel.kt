@@ -12,15 +12,12 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -57,7 +54,7 @@ class ArtistSearchViewModel(
     private val seriesEntryDao: SeriesEntryDao,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
-    private val navStack: AlleyNavStack,
+    private val navigator: AlleyNavigator,
     artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
     @Assisted private val isRoot: Boolean,
     @Assisted val lockedYear: DataYear?,
@@ -205,48 +202,14 @@ class ArtistSearchViewModel(
         val searchQuery: ArtistSearchQuery,
     )
 
-    fun toggleFavorite(entry: ArtistEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
-    }
-
-    fun toggleIgnored(entry: ArtistEntryGridModel, ignored: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
-    }
-
     fun onEvent(event: ArtistSearchScreen.Event) {
-        when (event) {
-            ArtistSearchScreen.Event.Back -> navStack.onBack()
-            ArtistSearchScreen.Event.ClearFilters -> sortFilterController.clear()
-            is ArtistSearchScreen.Event.FavoriteToggle ->
-                toggleFavorite(event.entry, event.favorite)
-            is ArtistSearchScreen.Event.IgnoreToggle ->
-                toggleIgnored(event.entry, event.ignored)
-            ArtistSearchScreen.Event.OpenChangelog ->
-                navStack.navigate(AlleyDestination.ArtistChangelog(year))
-            is ArtistSearchScreen.Event.OpenEntry ->
-                navStack.navigate(
-                    AlleyDestination.ArtistDetails(
-                        event.entry.artist,
-                        event.imageIndex
-                    )
-                )
-            ArtistSearchScreen.Event.OpenExport ->
-                navStack.navigate(AlleyDestination.Export(year))
-            is ArtistSearchScreen.Event.OpenImageFullscreen ->
-                navStack.navigate(
-                    AlleyDestination.Images.fromArtist(
-                        artistWithUserData = event.entry.data,
-                        showOutdatedCatalogs =
-                            sortFilterController.state.persistentState.sortFilterSettings.showOutdatedCatalogs,
-                        imageIndex = event.imageIndex,
-                    )
-                )
-            is ArtistSearchScreen.Event.OpenMerch ->
-                navStack.navigate(Merch(year, event.merch))
-            is ArtistSearchScreen.Event.OpenSeries ->
-                navStack.navigate(Series(year, event.series))
-            ArtistSearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
-        }
+        ArtistSearchScreenEventHandler.onEvent(
+            navigator = navigator,
+            sortFilterController = sortFilterController,
+            year = ::year,
+            onMutationUpdate = mutationUpdates::tryEmit,
+            event = event,
+        )
     }
 
     @AssistedFactory

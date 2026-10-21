@@ -12,12 +12,10 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavStack
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -50,7 +48,7 @@ class StampRallySearchViewModel(
     private val userEntryDao: UserEntryDao,
     internal val settings: ArtistAlleySettings,
     stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
-    private val navStack: AlleyNavStack,
+    private val navigator: AlleyNavigator,
     @Assisted val isRoot: Boolean,
     @Assisted val lockedYear: DataYear?,
     @Assisted lockedSeries: String?,
@@ -139,31 +137,14 @@ class StampRallySearchViewModel(
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 
-    fun onEvent(event: StampRallySearchScreen.Event) = when (event) {
-        is StampRallySearchScreen.Event.FavoriteToggle ->
-            mutationUpdates.tryEmit(event.stampRally.userEntry.copy(favorite = event.favorite))
-        is StampRallySearchScreen.Event.IgnoreToggle ->
-            mutationUpdates.tryEmit(event.stampRally.userEntry.copy(ignored = event.ignored))
-        is StampRallySearchScreen.Event.OpenEntry ->
-            navStack.navigate(
-                StampRallyDetails(
-                    entry = event.stampRally.stampRally,
-                    initialImageIndex = event.imageIndex
-                )
-            )
-        is StampRallySearchScreen.Event.OpenImageFullscreen ->
-            navStack.navigate(
-                AlleyDestination.Images.fromStampRally(
-                    stampRallyWithUserData = event.stampRally,
-                    imageIndex = event.imageIndex,
-                )
-            )
-        is StampRallySearchScreen.Event.ClearFilters -> sortFilterController.clear()
-        StampRallySearchScreen.Event.Back -> navStack.onBack()
-        StampRallySearchScreen.Event.OpenChangelog -> navStack.navigate(
-            AlleyDestination.StampRallyChangelog(dataYear)
+    fun onEvent(event: StampRallySearchScreen.Event) {
+        StampRallySearchScreenEventHandler.onEvent(
+            navigator = navigator,
+            sortFilterController = sortFilterController,
+            year = ::dataYear,
+            onMutationUpdate = mutationUpdates::tryEmit,
+            event = event,
         )
-        StampRallySearchScreen.Event.OpenSettings -> navStack.navigate(AlleyDestination.Settings)
     }
 
     private data class SearchParams(
