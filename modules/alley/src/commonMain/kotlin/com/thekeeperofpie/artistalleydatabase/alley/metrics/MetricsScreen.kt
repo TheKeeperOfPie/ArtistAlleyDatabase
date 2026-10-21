@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -43,6 +43,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_metrics_popul
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_title
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesId
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
@@ -52,11 +53,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables
+import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.uuid.Uuid
 
 @Composable
 internal fun MetricsScreen(
@@ -76,7 +78,7 @@ internal fun MetricsScreen(
         data = viewModel::data,
         includeInferred = viewModel::includeInferred,
         onIncludeInferredChange = { viewModel.includeInferred = it },
-        seriesTitles = seriesTitles,
+        seriesTitles = { seriesTitles },
         onNavigateBack = onNavigateBack,
         onClickArtist = onClickArtist,
         onClickSeries = onClickSeries,
@@ -90,7 +92,7 @@ internal fun MetricsScreen(
     includeInferred: () -> Boolean,
     onIncludeInferredChange: (Boolean) -> Unit,
     data: () -> MetricsViewModel.Data,
-    seriesTitles: Map<String, GetSeriesTitles>,
+    seriesTitles: () -> Map<String, GetSeriesTitles>,
     onNavigateBack: () -> Unit,
     onClickArtist: (MetricsDao.ArtistData) -> Unit,
     onClickSeries: (MetricsDao.SeriesData) -> Unit,
@@ -164,7 +166,7 @@ internal fun MetricsScreen(
                         )
 
                         Text(
-                            text = seriesTitles[series.id]
+                            text = seriesTitles()[series.id]
                                 ?.name(LocalLanguageOptionMedia.current)
                                 ?: series.id,
                             modifier = Modifier.weight(1f)
@@ -212,10 +214,10 @@ internal fun MetricsScreen(
 @Composable
 private fun <T> MetricsList(
     title: StringResource,
-    values: List<T>,
+    values: List<T>?,
     content: @Composable (index: Int, value: T) -> Unit,
 ) {
-    Column {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = stringResource(title),
             style = MaterialTheme.typography.titleMedium,
@@ -223,7 +225,11 @@ private fun <T> MetricsList(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        if (values.isEmpty()) {
+        if (values == null) {
+            CircularProgressIndicator(
+                modifier = Modifier.padding(12.dp).align(Alignment.CenterHorizontally)
+            )
+        } else if (values.isEmpty()) {
             Text(
                 text = stringResource(Res.string.alley_metrics_no_data),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -248,7 +254,7 @@ private fun IndexText(index: Int) {
 @Composable
 private fun ArtistMetricsList(
     title: StringResource,
-    artists: List<MetricsDao.ArtistData>,
+    artists: List<MetricsDao.ArtistData>?,
     onClickArtist: (MetricsDao.ArtistData) -> Unit,
 ) {
     MetricsList(
@@ -271,4 +277,34 @@ private fun ArtistMetricsList(
             )
         }
     }
+}
+
+@AlleyPreview
+@Composable
+private fun MetricsScreenPreview() {
+    val artists = ArtistWithUserDataProvider.values.take(10).toList()
+    MetricsScreen(
+        dataYearHeaderState = DataYearHeaderState.rememberForPreview(),
+        includeInferred = { false },
+        onIncludeInferredChange = { },
+        data = {
+            MetricsViewModel.Data(
+                artistsBySeries = artists.mapIndexed { index, artistWithUserData ->
+                    val artist = artistWithUserData.artist
+                    MetricsDao.ArtistData(
+                        year = artist.year,
+                        id = Uuid.parse(artist.id),
+                        booth = artist.booth,
+                        name = artist.name,
+                        count = 10L - index,
+                    )
+                }
+            )
+        },
+        seriesTitles = { emptyMap() },
+        onNavigateBack = { },
+        onClickArtist = { },
+        onClickSeries = { },
+        onClickMerch = { },
+    )
 }

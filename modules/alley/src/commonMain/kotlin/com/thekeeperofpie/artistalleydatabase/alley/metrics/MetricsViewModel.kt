@@ -18,9 +18,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @AssistedInject
 class MetricsViewModel(
     private val settings: ArtistAlleySettings,
@@ -39,6 +37,7 @@ class MetricsViewModel(
         val year = dataYear
         val includeInferred = includeInferred
         produceState(Data(), year, includeInferred) {
+            value = Data()
             value = Data(
                 artistsBySeries = metricsDao.getArtistsWithMostSeries(year, includeInferred),
                 artistsByMerch = metricsDao.getArtistsWithMostMerch(year, includeInferred),
@@ -50,11 +49,11 @@ class MetricsViewModel(
     }
 
     data class Data(
-        val artistsBySeries: List<MetricsDao.ArtistData> = emptyList(),
-        val artistsByMerch: List<MetricsDao.ArtistData> = emptyList(),
-        val artistsByRallies: List<MetricsDao.ArtistData> = emptyList(),
-        val series: List<MetricsDao.SeriesData> = emptyList(),
-        val merch: List<MetricsDao.MerchData> = emptyList(),
+        val artistsBySeries: List<MetricsDao.ArtistData>? = null,
+        val artistsByMerch: List<MetricsDao.ArtistData>? = null,
+        val artistsByRallies: List<MetricsDao.ArtistData>? = null,
+        val series: List<MetricsDao.SeriesData>? = null,
+        val merch: List<MetricsDao.MerchData>? = null,
     )
 
     @AssistedFactory

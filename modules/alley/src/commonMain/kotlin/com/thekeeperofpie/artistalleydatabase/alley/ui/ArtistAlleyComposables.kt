@@ -145,6 +145,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.atStartOfDayIn
@@ -351,6 +352,19 @@ class DataYearHeaderState(
         set(value) {
             onYearChange(value)
         }
+
+    companion object {
+        @Composable
+        fun rememberForPreview(): DataYearHeaderState {
+            assertInPreview()
+            var year by rememberSaveable { mutableStateOf(DataYear.ANIME_EXPO_2026) }
+            return rememberDataYearHeaderState(
+                dataYear = { year },
+                onDataYearChange = { year = it },
+                lockedYear = null,
+            )
+        }
+    }
 }
 
 private val UPCOMING_PROMPT_DURATION = 15.days
