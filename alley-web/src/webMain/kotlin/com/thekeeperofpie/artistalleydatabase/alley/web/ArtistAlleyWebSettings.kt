@@ -182,7 +182,6 @@ class ArtistAlleyWebSettings(
                         listener {
                             val value = state.value
                             OnChangeEffect(value) {
-                                ConsoleLogger.log("Writing $key = $value")
                                 try {
                                     localStorage.setItem(key, serialize(value))
                                 } catch (t: Throwable) {
@@ -193,10 +192,7 @@ class ArtistAlleyWebSettings(
                     }
                     applicationScope.launch {
                         updates.filter { it.first == key }
-                            .collectLatest {
-                                ConsoleLogger.log("Propagating $key = $value")
-                                state.value = deserialize(it.second)
-                            }
+                            .collectLatest { state.value = deserialize(it.second) }
                     }
                 }
                 return state.value
