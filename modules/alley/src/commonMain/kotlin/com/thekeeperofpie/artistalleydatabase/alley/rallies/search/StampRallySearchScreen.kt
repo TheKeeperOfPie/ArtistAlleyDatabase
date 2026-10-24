@@ -2,7 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -44,10 +46,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.enterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberEnterAlwaysTopAppBarConnection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
@@ -109,8 +115,12 @@ fun StampRallySearchScreen(
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val gridState = scrollStateSaver.lazyStaggeredGridState()
-    // TODO
-//    sortFilterState.ImmediateScrollResetEffect(gridState)
+    val scrollConnection = rememberEnterAlwaysTopAppBarConnection()
+
+    OnChangeEffect(state.query.text) {
+        scrollConnection.scrollBehavior.state.heightOffset = 0f
+        gridState.scrollToItem(0)
+    }
 
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
         val lockedSeriesEntry = state.lockedSeriesEntry()
@@ -137,43 +147,45 @@ fun StampRallySearchScreen(
                 scaffoldState.bottomSheetState.partialExpand()
             }
         }
-        SortFilterBottomScaffold2(
-            scaffoldState = scaffoldState,
-            topBar = {
-                AlleySearchBar(
-                    onClickBack = { eventSink(Event.Back) },
-                    query = state.query,
-                    itemCount = { entries.itemCount },
-                    title = { title },
-                    onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
-                    additionalActions = actions,
-                    modifier = Modifier
-                        .animateEnterExit(
-                            enter = slideInVertically { -it },
-                            exit = slideOutVertically { -it },
+        Box(modifier = Modifier.enterAlwaysTopAppBar(scrollConnection)) {
+            SortFilterBottomScaffold2(
+                scaffoldState = scaffoldState,
+                topBar = {
+                    EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollConnection.scrollBehavior) {
+                        AlleySearchBar(
+                            onClickBack = { eventSink(Event.Back) },
+                            query = state.query,
+                            itemCount = { entries.itemCount },
+                            title = { title },
+                            onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
+                            additionalActions = actions,
+                            modifier = Modifier
+                                .animateEnterExit(
+                                    enter = slideInVertically { -it },
+                                    exit = slideOutVertically { -it },
+                                )
+                                .renderMaybeInSharedTransitionScopeOverlay(1f)
                         )
-                        .renderMaybeInSharedTransitionScopeOverlay(1f)
+                    }
+                },
+                sheetContent = {
+                    StampRallySortFilterSheetContent(
+                        state = state.sortFilterState,
+                        sheetState = scaffoldState.bottomSheetState,
+                        seriesAutocompleteResults = seriesAutocompleteResults
+                    )
+                },
+            ) {
+                StampRallySearchScreenContent(
+                    sortFilterState = state.sortFilterState,
+                    header = header,
+                    entries = entries,
+                    unfilteredCount = state.unfilteredCount,
+                    displayType = state.displayType,
+                    eventSink = eventSink,
+                    gridState = gridState,
                 )
-            },
-            sheetContent = {
-                StampRallySortFilterSheetContent(
-                    state = state.sortFilterState,
-                    sheetState = scaffoldState.bottomSheetState,
-                    seriesAutocompleteResults = seriesAutocompleteResults
-                )
-            },
-            // TODO: This breaks vertical scrolling with 1.12.0-beta03+
-//                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-        ) {
-            StampRallySearchScreenContent(
-                sortFilterState = state.sortFilterState,
-                header = header,
-                entries = entries,
-                unfilteredCount = state.unfilteredCount,
-                displayType = state.displayType,
-                eventSink = eventSink,
-                gridState = gridState,
-            )
+            }
         }
     }
 }
@@ -210,7 +222,7 @@ internal fun StampRallySearchScreenContent(
                     onClick = { eventSink(Event.ClearFilters) },
                 )
             },
-            modifier = modifier,
+            modifier = modifier.fillMaxSize(),
         )
     } else {
         SearchList(
@@ -221,6 +233,7 @@ internal fun StampRallySearchScreenContent(
             unfilteredCount = unfilteredCount,
             gridState = gridState,
             header = header,
+            modifier = modifier.fillMaxSize(),
             itemRow = { entry ->
                 StampRallySearchItem(
                     displayType = displayType,
@@ -251,7 +264,6 @@ internal fun StampRallySearchScreenContent(
                     onClick = { eventSink(Event.ClearFilters) },
                 )
             },
-            modifier = modifier,
         )
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,9 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -300,6 +304,78 @@ class NestedScrollSplitter(
             ?: secondary?.onPreScroll(available, source)
             ?: super.onPreScroll(available, source))
             .takeUnless { consumeNone } ?: Offset.Zero
+}
+
+@Composable
+fun Modifier.enterAlwaysTopAppBar(connection: EnterAlwaysTopAppBarNestedScrollConnection): Modifier {
+    return pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent()
+                if (event.type == PointerEventType.Scroll) {
+                    val scrollDelta = event.changes.firstOrNull()?.scrollDelta
+                    if (scrollDelta != null) {
+                        val delta = scrollDelta.y * 20f
+                        connection.scrollBehavior.state.heightOffset += delta
+                        event.changes.forEach { it.consume() }
+                    }
+                }
+            }
+        }
+    }
+        .pointerInput(Unit) {
+            detectDragGestures { change, dragAmount ->
+                change.consume()
+                connection.scrollBehavior.state.heightOffset += dragAmount.y
+            }
+        }
+        .nestedScroll(connection)
+}
+
+@Composable
+fun rememberEnterAlwaysTopAppBarConnection(): EnterAlwaysTopAppBarNestedScrollConnection {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    return remember(scrollBehavior) {
+        EnterAlwaysTopAppBarNestedScrollConnection(scrollBehavior)
+    }
+}
+
+class EnterAlwaysTopAppBarNestedScrollConnection(
+    val scrollBehavior: TopAppBarScrollBehavior,
+) : NestedScrollConnection {
+    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        val oldOffset = scrollBehavior.state.heightOffset
+        val newOffset = oldOffset + available.y
+        val offset = newOffset.coerceIn(scrollBehavior.state.heightOffsetLimit, 0f)
+        scrollBehavior.state.heightOffset = offset
+        val consumedY = offset - oldOffset
+        if (consumedY == 0f) return Offset.Zero
+        return Offset(0f, consumedY)
+    }
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset {
+        val oldOffset = scrollBehavior.state.heightOffset
+        val newOffset = oldOffset + available.y
+        val offset = newOffset.coerceIn(scrollBehavior.state.heightOffsetLimit, 0f)
+        scrollBehavior.state.heightOffset = offset
+        val consumedY = offset - oldOffset
+        if (consumedY == 0f) return Offset.Zero
+        return Offset(0f, consumedY)
+    }
+
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+        return super.onPostFling(consumed, available) +
+                settle(
+                    state = scrollBehavior.state,
+                    velocity = available.y,
+                    snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium),
+                    flingAnimationSpec = null,
+                )
+    }
 }
 
 private suspend fun settle(
