@@ -107,6 +107,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_changelog
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_show_qr
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_suffix
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_generic_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_settings
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_convention
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_year
@@ -130,6 +131,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ChangeHistory
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Error
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
@@ -638,15 +640,14 @@ private fun YearDropdown(
 }
 
 @Composable
-fun DisplayTypeSearchBar(
+fun AlleySearchBar(
     onClickBack: (() -> Unit)?,
     query: TextFieldState,
-    displayType: () -> SearchDisplayType,
-    onDisplayTypeChange: (SearchDisplayType) -> Unit,
     itemCount: () -> Int,
     title: () -> String?,
     modifier: Modifier = Modifier,
-    actions: (@Composable RowScope.() -> Unit)? = null,
+    onClickFilter: () -> Unit,
+    additionalActions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -685,7 +686,7 @@ fun DisplayTypeSearchBar(
             },
             trailingIcon = {
                 Row {
-                    actions?.invoke(this)
+                    additionalActions?.invoke(this)
 
                     AnimatedVisibility(isNotEmpty) {
                         IconButton(onClick = query::clearText) {
@@ -697,40 +698,13 @@ fun DisplayTypeSearchBar(
                             )
                         }
                     }
-                    Box {
-                        val displayType = displayType()
-                        var expanded by remember { mutableStateOf(false) }
-                        IconButton(onClick = { expanded = true }) {
-                            Icon(
-                                imageVector = displayType.icon,
-                                contentDescription = stringResource(
-                                    Res.string.alley_display_type_icon_content_description,
-                                ),
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                        ) {
-                            SearchDisplayType.entries.forEach {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(it.label)) },
-                                    leadingIcon = {
-                                        RadioButton(
-                                            selected = displayType == it,
-                                            onClick = {
-                                                onDisplayTypeChange(it)
-                                                expanded = false
-                                            },
-                                        )
-                                    },
-                                    onClick = {
-                                        onDisplayTypeChange(it)
-                                        expanded = false
-                                    },
-                                )
-                            }
-                        }
+                    IconButton(onClick = onClickFilter) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = stringResource(
+                                Res.string.alley_generic_filter_content_description,
+                            ),
+                        )
                     }
                 }
             },

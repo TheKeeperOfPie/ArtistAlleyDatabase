@@ -88,9 +88,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -106,6 +106,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
@@ -215,13 +216,12 @@ object FavoritesScreen {
                     topBar = {
                         val title = stringResource(Res.string.alley_favorites_search)
                         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                            DisplayTypeSearchBar(
+                            AlleySearchBar(
                                 onClickBack = null,
                                 query = state.query,
                                 title = { title },
                                 itemCount = { entries.itemCount },
-                                displayType = state.displayType,
-                                onDisplayTypeChange = state.onDisplayTypeChange,
+                                onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
                                 modifier = Modifier
                                     .animateEnterExit(
                                         enter = slideInVertically { -it },
@@ -349,13 +349,13 @@ object FavoritesScreen {
                 topBar = {
                     val title = stringResource(Res.string.alley_favorites_search)
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                        DisplayTypeSearchBar(
+                        val scope = rememberCoroutineScope()
+                        AlleySearchBar(
                             onClickBack = null,
                             query = state.query,
                             title = { title },
                             itemCount = { entries.itemCount },
-                            displayType = state.displayType,
-                            onDisplayTypeChange = state.onDisplayTypeChange,
+                            onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
                         )
                     }
                 },

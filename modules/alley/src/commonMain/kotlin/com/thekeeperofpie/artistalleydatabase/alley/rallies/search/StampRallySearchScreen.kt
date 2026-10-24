@@ -33,12 +33,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen.Event
-import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchList
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchMoreResults
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
+import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -47,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
@@ -84,9 +85,8 @@ fun StampRallySearchScreen(
         state = state,
         eventSink = viewModel::onEvent,
         header = {
-            BottomSheetFilterDataYearHeader(
-                dataYearHeaderState = dataYearHeaderState,
-                scaffoldState = scaffoldState,
+            DataYearHeader(
+                state = dataYearHeaderState,
                 onOpenChangelog = { viewModel.onEvent(Event.OpenChangelog) },
                 onOpenSettings = { viewModel.onEvent(Event.OpenSettings) },
             )
@@ -140,14 +140,13 @@ fun StampRallySearchScreen(
         SortFilterBottomScaffold2(
             scaffoldState = scaffoldState,
             topBar = {
-                DisplayTypeSearchBar(
+                AlleySearchBar(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
-                    displayType = state.displayType,
-                    onDisplayTypeChange = state.onDisplayTypeChange,
                     itemCount = { entries.itemCount },
                     title = { title },
-                    actions = actions,
+                    onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
+                    additionalActions = actions,
                     modifier = Modifier
                         .animateEnterExit(
                             enter = slideInVertically { -it },

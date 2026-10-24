@@ -779,7 +779,7 @@ fun SortFilterBottomScaffold2(
         enabledValues = setOf(SheetValue.PartiallyExpanded, SheetValue.Expanded),
     ),
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
-    sheetPeekHeight: Dp = 72.dp,
+    sheetPeekHeight: Dp = Dp.Unspecified,
     bottomNavigationState: BottomNavigationState? = null,
     sheetContent: @Composable ColumnScope.() -> Unit,
     content: @Composable (PaddingValues) -> Unit,
@@ -944,5 +944,13 @@ fun SectionsExpandIndicator(
                 )
             }
         }
+    }
+}
+
+suspend fun SheetState.toggle() {
+    if (targetValue == SheetValue.Expanded) {
+        partialExpand()
+    } else {
+        expand()
     }
 }

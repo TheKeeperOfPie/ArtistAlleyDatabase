@@ -12,7 +12,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,50 +25,19 @@ import artistalleydatabase.modules.alley.generated.resources.alley_generic_filte
 import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-
-@Composable
-internal fun BottomSheetFilterDataYearHeader(
-    dataYearHeaderState: DataYearHeaderState,
-    scaffoldState: BottomSheetScaffoldState?,
-    onOpenChangelog: (DataYear) -> Unit,
-    onOpenSettings: () -> Unit,
-) {
-    DataYearHeader(
-        state = dataYearHeaderState,
-        onOpenChangelog = onOpenChangelog,
-        onOpenSettings = onOpenSettings,
-    ) {
-        val scope = rememberCoroutineScope()
-        if (scaffoldState != null) {
-            IconButton(onClick = {
-                if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded) {
-                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-                } else {
-                    scope.launch { scaffoldState.bottomSheetState.expand() }
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.FilterList,
-                    contentDescription = stringResource(Res.string.alley_generic_filter_content_description),
-                )
-            }
-        }
-    }
-}
 
 @Composable
 internal fun SearchNoResults() {

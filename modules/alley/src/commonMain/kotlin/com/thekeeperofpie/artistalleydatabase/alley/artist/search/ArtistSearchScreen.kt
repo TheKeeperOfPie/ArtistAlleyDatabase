@@ -63,16 +63,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchList
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchMoreResults
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
+import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FeedbackHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -90,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -131,7 +132,7 @@ fun ArtistSearchScreen(
         state = state,
         series = { series },
         eventSink = viewModel::onEvent,
-        header = { Header(dataYearHeaderState, scaffoldState, viewModel::onEvent) },
+        header = { Header(dataYearHeaderState, viewModel::onEvent) },
         scaffoldState = scaffoldState,
         scrollStateSaver = scrollStateSaver,
         seriesAutocompleteResults = { seriesAutocompleteResults },
@@ -183,14 +184,13 @@ fun ArtistSearchScreen(
         SortFilterBottomScaffold2(
             scaffoldState = scaffoldState,
             topBar = {
-                DisplayTypeSearchBar(
+                AlleySearchBar(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
-                    displayType = state.displayType,
-                    onDisplayTypeChange = state.onDisplayTypeChange,
                     itemCount = { entries.itemCount },
                     title = { title },
-                    actions = actions,
+                    onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
+                    additionalActions = actions,
                     modifier = Modifier
                         .animateEnterExit(
                             enter = slideInVertically { -it },
@@ -328,7 +328,6 @@ internal fun ArtistSearchScreenContent(
 @Composable
 private fun Header(
     dataYearHeaderState: DataYearHeaderState,
-    scaffoldState: BottomSheetScaffoldState,
     eventSink: (Event) -> Unit,
 ) {
     Column {
@@ -337,9 +336,8 @@ private fun Header(
             onOpenExport = { eventSink(Event.OpenExport) },
         )
         FeedbackHeader(dataYearHeaderState.year)
-        BottomSheetFilterDataYearHeader(
-            dataYearHeaderState = dataYearHeaderState,
-            scaffoldState = scaffoldState,
+        DataYearHeader(
+            state = dataYearHeaderState,
             onOpenChangelog = { eventSink(Event.OpenChangelog) },
             onOpenSettings = { eventSink(Event.OpenSettings) },
         )
@@ -650,15 +648,13 @@ private fun Preview() {
         onDataYearChange = state.onYearChange,
         lockedYear = state.lockedYear,
     )
-    val scaffoldState = rememberBottomSheetScaffoldState()
     ArtistSearchScreen(
         state = state,
         series = { emptyMap() },
         eventSink = {},
         header = {
-            BottomSheetFilterDataYearHeader(
-                dataYearHeaderState = dataYearHeaderState,
-                scaffoldState = scaffoldState,
+            DataYearHeader(
+                state = dataYearHeaderState,
                 onOpenChangelog = {},
                 onOpenSettings = {},
             )

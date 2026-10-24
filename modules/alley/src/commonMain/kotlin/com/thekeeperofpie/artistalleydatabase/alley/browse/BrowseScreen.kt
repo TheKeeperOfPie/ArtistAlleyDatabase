@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.browse
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -16,11 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
@@ -34,7 +33,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -51,37 +49,31 @@ import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_me
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_series
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
-import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
-import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
-import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
-import com.thekeeperofpie.artistalleydatabase.icons.Icons
-import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -162,13 +154,10 @@ object BrowseScreen {
                     ) {
                         when (it) {
                             Tab.SERIES -> {
-                                var seriesQuery by tagsViewModel.seriesQuery
-                                    .collectAsMutableStateWithLifecycle()
                                 TabScreen(
                                     dataYearHeaderState = dataYearHeaderState,
                                     scaffoldState = scaffoldState,
-                                    query = { seriesQuery },
-                                    onQueryChange = { seriesQuery = it },
+                                    query = tagsViewModel.seriesQuery,
                                     entriesSize = { series.itemCount },
                                     values = series,
                                     itemKey = { it.series.id },
@@ -219,8 +208,7 @@ object BrowseScreen {
                             Tab.MERCH -> TabScreen(
                                 dataYearHeaderState = dataYearHeaderState,
                                 scaffoldState = null,
-                                query = { tagsViewModel.merchQuery },
-                                onQueryChange = { tagsViewModel.merchQuery = it },
+                                query = tagsViewModel.merchQuery,
                                 entriesSize = { merch.itemCount },
                                 values = merch,
                                 itemKey = { it.merch.name },
@@ -257,8 +245,7 @@ object BrowseScreen {
     private fun <T : Any> TabScreen(
         dataYearHeaderState: DataYearHeaderState,
         scaffoldState: BottomSheetScaffoldState?,
-        query: () -> String,
-        onQueryChange: (String) -> Unit,
+        query: TextFieldState,
         entriesSize: () -> Int,
         values: LazyPagingItems<T>,
         itemKey: (T) -> Any,
@@ -279,42 +266,19 @@ object BrowseScreen {
                             .padding(bottom = 8.dp)
                     ) {
                         val isNotEmpty by remember {
-                            derivedStateOf { query().isNotEmpty() }
+                            derivedStateOf { query.text.isNotEmpty() }
                         }
                         BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
-                            onQueryChange("")
+                            query.clearText()
                         }
 
-                        StaticSearchBar(
-                            query = query(),
-                            onQueryChange = onQueryChange,
-                            placeholder = {
-                                @Suppress("NAME_SHADOWING")
-                                val entriesSize = entriesSize()
-                                Text(
-                                    if (entriesSize > 0) {
-                                        stringResource(
-                                            EntryRes.string.entry_search_hint_with_entry_count,
-                                            entriesSize,
-                                        )
-                                    } else {
-                                        stringResource(EntryRes.string.entry_search_hint)
-                                    }
-                                )
-                            },
-                            trailingIcon = {
-                                AnimatedVisibility(isNotEmpty) {
-                                    IconButton(onClick = { onQueryChange("") }) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Clear,
-                                            contentDescription = stringResource(
-                                                EntryRes.string.entry_search_clear
-                                            ),
-                                        )
-                                    }
-                                }
-                            },
-                            onSearch = {},
+                        val scope = rememberCoroutineScope()
+                        AlleySearchBar(
+                            onClickBack = null,
+                            query = query,
+                            itemCount = entriesSize,
+                            title = { null },
+                            onClickFilter = { scope.launch { scaffoldState?.bottomSheetState?.toggle() } },
                             modifier = Modifier
                                 .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                                 .fillMaxWidth()
@@ -351,9 +315,8 @@ object BrowseScreen {
                             .align(Alignment.TopCenter)
                     ) {
                         item(key = "dataYearHeader") {
-                            BottomSheetFilterDataYearHeader(
-                                dataYearHeaderState = dataYearHeaderState,
-                                scaffoldState = scaffoldState,
+                            DataYearHeader(
+                                state = dataYearHeaderState,
                                 onOpenChangelog = onOpenChangelog,
                                 onOpenSettings = onOpenSettings,
                             )

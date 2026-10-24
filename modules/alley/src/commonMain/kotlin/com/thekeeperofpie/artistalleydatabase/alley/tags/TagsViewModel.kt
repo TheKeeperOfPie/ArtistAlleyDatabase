@@ -1,12 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -30,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -39,7 +39,6 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -63,7 +62,7 @@ class TagsViewModel(
 ) : ViewModel() {
 
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
-    val seriesQuery = MutableStateFlow("")
+    val seriesQuery by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
     val seriesLanguageSection = SettingsSection.Dropdown(
         labelTextRes = Res.string.alley_settings_series_language,
@@ -85,7 +84,8 @@ class TagsViewModel(
                     seriesFilterParams = seriesSortFilterController.filterParams
                 )
             },
-            seriesQuery.debounce(250.milliseconds),
+            snapshotFlow { seriesQuery.text.toString() }
+                .debounce(250.milliseconds),
             ::Pair
         )
             .flatMapLatest { [inputs, query] ->
@@ -106,9 +106,9 @@ class TagsViewModel(
             }
             .cachedIn(viewModelScope)
 
-    var merchQuery by mutableStateOf("")
+    val merchQuery by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
-    val merch = snapshotFlow { settings.dataYear to merchQuery }
+    val merch = snapshotFlow { settings.dataYear to merchQuery.text.toString() }
         .flatMapLatest { [year, query] ->
             if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())

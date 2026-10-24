@@ -20,8 +20,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ShowOnlyConfirmedTagsSection
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
@@ -113,7 +113,6 @@ object ArtistMerchScreen {
             header = {
                 Header(
                     state = state,
-                    scaffoldState = scaffoldState,
                     merchEntry = { merchEntry },
                     onFavoriteToggle = artistMerchViewModel::onFavoriteToggle,
                     onOpenChangelog = onOpenChangelog,
@@ -137,7 +136,6 @@ object ArtistMerchScreen {
     @Composable
     private fun Header(
         state: ArtistSearchScreen.State,
-        scaffoldState: BottomSheetScaffoldState,
         merchEntry: () -> MerchWithUserData?,
         onFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
@@ -167,9 +165,8 @@ object ArtistMerchScreen {
                     onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
                 )
             }
-            BottomSheetFilterDataYearHeader(
-                dataYearHeaderState = dataYearHeaderState,
-                scaffoldState = scaffoldState,
+            DataYearHeader(
+                state = dataYearHeaderState,
                 onOpenChangelog = onOpenChangelog,
                 onOpenSettings = onOpenSettings,
             )

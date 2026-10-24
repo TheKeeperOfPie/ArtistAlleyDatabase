@@ -21,9 +21,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ShowOnlyConfirmedTagsSection
-import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Approval
@@ -122,7 +122,6 @@ object ArtistSeriesScreen {
             header = {
                 Header(
                     state = state,
-                    scaffoldState = scaffoldState,
                     seriesEntry = { seriesEntry },
                     onFavoriteToggle = artistSeriesViewModel::onFavoriteToggle,
                     onOpenChangelog = onOpenChangelog,
@@ -154,7 +153,6 @@ object ArtistSeriesScreen {
     @Composable
     private fun Header(
         state: ArtistSearchScreen.State,
-        scaffoldState: BottomSheetScaffoldState,
         seriesEntry: () -> SeriesWithUserData?,
         onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
@@ -187,9 +185,8 @@ object ArtistSeriesScreen {
                     onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
                 )
             }
-            BottomSheetFilterDataYearHeader(
-                dataYearHeaderState = dataYearHeaderState,
-                scaffoldState = scaffoldState,
+            DataYearHeader(
+                state = dataYearHeaderState,
                 onOpenChangelog = onOpenChangelog,
                 onOpenSettings = onOpenSettings,
             )
