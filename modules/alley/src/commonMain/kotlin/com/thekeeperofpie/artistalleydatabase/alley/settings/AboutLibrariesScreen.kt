@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_libraries_title
 import com.composables.core.ScrollArea
@@ -20,6 +19,7 @@ import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -43,7 +43,7 @@ internal object AboutLibrariesScreen {
                         upIconOption = UpIconOption.Back(onNavigateBack),
                     )
                 },
-                modifier = Modifier.widthIn(max = 1200.dp),
+                modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH),
             ) {
                 val libraries by produceLibraries {
                     val allLibraries =

@@ -61,7 +61,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_title_fandom
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_title_host_table_fandom
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
@@ -88,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
@@ -311,7 +311,7 @@ internal object StampRallyFormMergeScreen {
                 saving = saving(),
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                val modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)
+                val modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH).align(Alignment.TopCenter)
                 if (stampRallyFormState == null) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,

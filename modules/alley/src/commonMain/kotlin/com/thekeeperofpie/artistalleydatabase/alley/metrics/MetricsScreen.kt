@@ -52,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
@@ -106,7 +107,7 @@ internal fun MetricsScreen(
                     upIconOption = UpIconOption.Back(onNavigateBack),
                 )
             },
-            modifier = Modifier.widthIn(max = 1200.dp),
+            modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH),
         ) {
             Column(modifier = Modifier.padding(it).verticalScroll(rememberScrollState())) {
                 DataYearHeader(state = dataYearHeaderState)

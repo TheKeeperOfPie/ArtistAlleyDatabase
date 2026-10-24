@@ -67,7 +67,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_select_all
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_title
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryCardHeader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryEntryCard
@@ -89,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
@@ -204,7 +204,7 @@ object StampRallyHistoryScreen {
                 saving = saveProgress is JobProgress.Loading<*>,
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                Row(modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)) {
+                Row(modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH).align(Alignment.TopCenter)) {
                     var selectedIndex by rememberSaveable(history) { mutableIntStateOf(0) }
                     var activeRevert by rememberSaveable(history) { mutableStateOf<Int?>(null) }
 

@@ -134,6 +134,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
@@ -735,7 +736,7 @@ fun DisplayTypeSearchBar(
             },
             onSearch = {},
             modifier = Modifier
-                .widthIn(max = 1200.dp)
+                .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                 .fillMaxWidth()
                 .padding(top = 4.dp),
         )
@@ -844,7 +845,7 @@ fun DisplayTypeSearchBar(
             },
             onSearch = {},
             modifier = Modifier
-                .widthIn(max = 1200.dp)
+                .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                 .fillMaxWidth()
                 .padding(top = 4.dp),
         )

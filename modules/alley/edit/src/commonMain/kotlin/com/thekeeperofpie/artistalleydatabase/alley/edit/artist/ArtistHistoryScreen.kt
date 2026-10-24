@@ -43,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -69,7 +68,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_revert_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_select_all
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_title
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryCardHeader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryEntryCard
@@ -90,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
@@ -203,7 +202,7 @@ object ArtistHistoryScreen {
                 saving = saveProgress is JobProgress.Loading<*>,
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                Row(modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)) {
+                Row(modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH).align(Alignment.TopCenter)) {
                     var selectedIndex by rememberSaveable(history) { mutableIntStateOf(0) }
                     var activeRevert by rememberSaveable(history) { mutableStateOf<Int?>(null) }
 

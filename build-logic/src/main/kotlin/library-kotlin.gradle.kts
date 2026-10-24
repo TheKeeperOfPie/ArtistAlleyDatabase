@@ -27,6 +27,7 @@ kotlin {
                 "androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
                 "androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi",
                 "androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi",
+                "kotlin.ExperimentalStdlibApi",
                 "kotlin.js.ExperimentalWasmJsInterop",
                 "kotlin.time.ExperimentalTime",
                 "kotlin.uuid.ExperimentalUuidApi",

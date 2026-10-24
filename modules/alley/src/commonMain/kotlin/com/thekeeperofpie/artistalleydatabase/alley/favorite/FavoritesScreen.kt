@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.favorite
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -96,8 +97,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.QrCode2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
@@ -470,10 +471,9 @@ object FavoritesScreen {
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            val width = LocalWindowConfiguration.current.screenWidthDp
-            val horizontalContentPadding = if (width > 800.dp) {
-                (width - 800.dp) / 2
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val horizontalContentPadding = if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
+                (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
             } else {
                 0.dp
             }
@@ -558,75 +558,76 @@ object FavoritesScreen {
     ) {
         val scrollAreaState = rememberScrollAreaState(listState)
         ScrollArea(state = scrollAreaState, modifier = Modifier.fillMaxSize()) {
-            val width = LocalWindowConfiguration.current.screenWidthDp
-            val horizontalContentPadding = if (width > 800.dp) {
-                (width - 800.dp) / 2
-            } else {
-                0.dp
-            }
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
-                    start = horizontalContentPadding,
-                    end = horizontalContentPadding,
-                    bottom = 80.dp
-                ),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.TopCenter)
-            ) {
-                item("header") { header() }
+            BoxWithConstraints {
+                val horizontalContentPadding = if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
+                    (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
+                } else {
+                    0.dp
+                }
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(
+                        start = horizontalContentPadding,
+                        end = horizontalContentPadding,
+                        bottom = 80.dp
+                    ),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .align(Alignment.TopCenter)
+                ) {
+                    item("header") { header() }
 
-                if (merch.itemCount == 0) {
-                    if (merch.loadState.refresh is LoadState.Loading) {
-                        item("loadingIndicator") {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxWidth()
-                                    .padding(8.dp)
-                            ) {
-                                InfiniteProgressIndicator()
+                    if (merch.itemCount == 0) {
+                        if (merch.loadState.refresh is LoadState.Loading) {
+                            item("loadingIndicator") {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(8.dp)
+                                ) {
+                                    InfiniteProgressIndicator()
+                                }
+                            }
+                        } else {
+                            item("noResults") {
+                                NoResultsItem(
+                                    tab = EntryTab.MERCH,
+                                    eventSink = eventSink,
+                                )
                             }
                         }
                     } else {
-                        item("noResults") {
-                            NoResultsItem(
-                                tab = EntryTab.MERCH,
-                                eventSink = eventSink,
-                            )
-                        }
-                    }
-                } else {
-                    items(
-                        count = merch.itemCount,
-                        key = merch.itemKey { it.merch.name },
-                        contentType = merch.itemContentType { "merch" },
-                    ) { index ->
-                        val data = merch[index]
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            MerchRow(
-                                data = data,
-                                showNotes = false,
-                                onFavoriteToggle = {
-                                    if (data != null) {
-                                        eventSink(Event.MerchFavoriteToggle(data, it))
-                                    }
-                                },
-                                onClick = {
-                                    if (data != null) {
-                                        eventSink(Event.OpenMerch(data.merch.name))
-                                    }
-                                },
-                            )
-                            HorizontalDivider()
+                        items(
+                            count = merch.itemCount,
+                            key = merch.itemKey { it.merch.name },
+                            contentType = merch.itemContentType { "merch" },
+                        ) { index ->
+                            val data = merch[index]
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                MerchRow(
+                                    data = data,
+                                    showNotes = false,
+                                    onFavoriteToggle = {
+                                        if (data != null) {
+                                            eventSink(Event.MerchFavoriteToggle(data, it))
+                                        }
+                                    },
+                                    onClick = {
+                                        if (data != null) {
+                                            eventSink(Event.OpenMerch(data.merch.name))
+                                        }
+                                    },
+                                )
+                                HorizontalDivider()
+                            }
                         }
                     }
                 }
-            }
 
-            PrimaryVerticalScrollbar(listState)
+                PrimaryVerticalScrollbar(listState)
+            }
         }
     }
 

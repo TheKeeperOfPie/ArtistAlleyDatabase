@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +20,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.rememberScrollbarState
@@ -38,63 +39,64 @@ fun <T : Any> SearchList(
     moreResultsItem: (@Composable () -> Unit)? = null,
     itemRow: @Composable (T) -> Unit,
 ) {
-    Row(modifier = modifier) {
-        val width = LocalWindowConfiguration.current.screenWidthDp
-        val horizontalContentPadding = if (width > 1200.dp) {
-            (width - 1200.dp) / 2
+    BoxWithConstraints(modifier = modifier) {
+        val horizontalContentPadding = if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
+            (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
         } else {
             0.dp
         }
         val scrollbarState = rememberScrollbarState(gridState)
         val displayType = displayType()
-        LazyVerticalStaggeredGrid(
-            columns = displayType.columns(forceOneDisplayColumn()),
-            state = gridState,
-            contentPadding = displayType.contentPadding(horizontalContentPadding),
-            verticalItemSpacing = displayType.verticalItemSpacing,
-            horizontalArrangement = displayType.horizontalArrangement,
-            modifier = Modifier.weight(1f)
-        ) {
-            item("header", span = StaggeredGridItemSpan.FullLine) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    header()
-                    if (entries.loadState.refresh is LoadState.Loading) {
-                        InfiniteProgressIndicator()
+        Row {
+            LazyVerticalStaggeredGrid(
+                columns = displayType.columns(forceOneDisplayColumn()),
+                state = gridState,
+                contentPadding = displayType.contentPadding(horizontalContentPadding),
+                verticalItemSpacing = displayType.verticalItemSpacing,
+                horizontalArrangement = displayType.horizontalArrangement,
+                modifier = Modifier.weight(1f)
+            ) {
+                item("header", span = StaggeredGridItemSpan.FullLine) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        header()
+                        if (entries.loadState.refresh is LoadState.Loading) {
+                            InfiniteProgressIndicator()
+                        }
+                    }
+                }
+
+                val showMoreResultsItem = entries.loadState.refresh !is LoadState.Loading
+                        && moreResultsItem != null && unfilteredCount() > entries.itemCount
+                if (!showMoreResultsItem && entries.itemCount == 0 && entries.loadState.refresh is LoadState.NotLoading) {
+                    item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
+                        if (noResultsItem != null) {
+                            noResultsItem()
+                        } else {
+                            SearchNoResults()
+                        }
+                    }
+                }
+
+                items(
+                    count = entries.itemCount,
+                    key = entries.itemKey { itemToId(it) },
+                    contentType = entries.itemContentType { "search_entry" },
+                ) { index ->
+                    itemRow(entries[index] ?: return@items)
+                }
+
+                if (showMoreResultsItem) {
+                    item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
+                        moreResultsItem()
                     }
                 }
             }
 
-            val showMoreResultsItem = entries.loadState.refresh !is LoadState.Loading
-                    && moreResultsItem != null && unfilteredCount() > entries.itemCount
-            if (!showMoreResultsItem && entries.itemCount == 0 && entries.loadState.refresh is LoadState.NotLoading) {
-                item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
-                    if (noResultsItem != null) {
-                        noResultsItem()
-                    } else {
-                        SearchNoResults()
-                    }
-                }
-            }
-
-            items(
-                count = entries.itemCount,
-                key = entries.itemKey { itemToId(it) },
-                contentType = entries.itemContentType { "search_entry" },
-            ) { index ->
-                itemRow(entries[index] ?: return@items)
-            }
-
-            if (showMoreResultsItem) {
-                item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
-                    moreResultsItem()
-                }
-            }
+            PrimaryVerticalScrollbar(scrollbarState = scrollbarState)
         }
-
-        PrimaryVerticalScrollbar(scrollbarState = scrollbarState)
     }
 }
 

@@ -43,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.List
 import com.thekeeperofpie.artistalleydatabase.icons.filled.History
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -112,7 +113,7 @@ internal object RemoteArtistDataQueueScreen {
                         }
                     }
                 },
-                modifier = Modifier.widthIn(max = 1200.dp)
+                modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 LazyColumn(

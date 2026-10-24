@@ -82,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.SaveAs
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
@@ -254,7 +255,7 @@ internal object ArtistFormMergeScreen {
                 saving = saving(),
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                val modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)
+                val modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH).align(Alignment.TopCenter)
                 if (initialArtist == null || artistFormState == null) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,

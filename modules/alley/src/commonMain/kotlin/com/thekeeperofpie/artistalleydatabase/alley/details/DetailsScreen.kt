@@ -47,8 +47,8 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.BrokenImage
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
@@ -149,18 +149,17 @@ object DetailsScreen {
             val catalog = catalog()
             val images = catalog.images
             val hasImages = images.isNotEmpty()
-            val width = LocalWindowConfiguration.current.screenWidthDp
-            val horizontalContentPadding = if (!hasImages && width > 800.dp) {
-                (width - 800.dp) / 2
-            } else {
-                0.dp
-            }.coerceAtLeast(16.dp)
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxHeight()
                     .conditionally(hasImages) { width(MAX_DETAILS_WIDTH) }
                     .conditionally(!hasImages) { fillMaxWidth() }
             ) {
+                val horizontalContentPadding = if (!hasImages && maxWidth > DisplayConstants.DETAILS_CONTENT_WIDTH) {
+                    (maxWidth - DisplayConstants.DETAILS_CONTENT_WIDTH) / 2
+                } else {
+                    0.dp
+                }.coerceAtLeast(16.dp)
                 val density = LocalDensity.current
                 val columnCount = remember(gridCells, density, maxWidth, horizontalContentPadding) {
                     with(gridCells) {

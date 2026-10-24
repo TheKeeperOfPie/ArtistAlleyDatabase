@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -67,9 +68,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
@@ -128,7 +129,7 @@ object BrowseScreen {
                                 TabRow(
                                     selectedTabIndex = selectedTabIndex,
                                     modifier = Modifier
-                                        .widthIn(max = 1200.dp)
+                                        .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                                         .align(Alignment.TopCenter)
                                 ) {
                                     Tab.entries.forEachIndexed { index, tab ->
@@ -315,7 +316,7 @@ object BrowseScreen {
                             },
                             onSearch = {},
                             modifier = Modifier
-                                .widthIn(max = 1200.dp)
+                                .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                                 .fillMaxWidth()
                                 .padding(top = 4.dp),
                         )
@@ -331,75 +332,77 @@ object BrowseScreen {
                     .fillMaxSize()
                     .padding(it)
             ) {
-                val width = LocalWindowConfiguration.current.screenWidthDp
-                val horizontalContentPadding = if (width > 800.dp) {
-                    (width - 800.dp) / 2
-                } else {
-                    0.dp
-                }
-                LazyColumn(
-                    state = listState,
-                    contentPadding = PaddingValues(
-                        start = horizontalContentPadding,
-                        end = horizontalContentPadding,
-                        bottom = 200.dp,
-                    ),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .align(Alignment.TopCenter)
-                ) {
-                    item(key = "dataYearHeader") {
-                        BottomSheetFilterDataYearHeader(
-                            dataYearHeaderState = dataYearHeaderState,
-                            scaffoldState = scaffoldState,
-                            onOpenChangelog = onOpenChangelog,
-                            onOpenSettings = onOpenSettings,
-                        )
-                    }
+                BoxWithConstraints {
+                    val horizontalContentPadding =
+                        if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
+                            (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
+                        } else {
+                            0.dp
+                        }
+                    LazyColumn(
+                        state = listState,
+                        contentPadding = PaddingValues(
+                            start = horizontalContentPadding,
+                            end = horizontalContentPadding,
+                            bottom = 200.dp,
+                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.TopCenter)
+                    ) {
+                        item(key = "dataYearHeader") {
+                            BottomSheetFilterDataYearHeader(
+                                dataYearHeaderState = dataYearHeaderState,
+                                scaffoldState = scaffoldState,
+                                onOpenChangelog = onOpenChangelog,
+                                onOpenSettings = onOpenSettings,
+                            )
+                        }
 
-                    additionalHeader()
+                        additionalHeader()
 
-                    if (values.itemCount == 0) {
-                        if (values.loadState.refresh is LoadState.Loading) {
-                            item("loadingIndicator") {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    InfiniteProgressIndicator()
+                        if (values.itemCount == 0) {
+                            if (values.loadState.refresh is LoadState.Loading) {
+                                item("loadingIndicator") {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        InfiniteProgressIndicator()
+                                    }
+                                }
+                            } else {
+                                item("noResults") {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = stringResource(Res.string.alley_search_no_results),
+                                            modifier = Modifier.padding(16.dp)
+                                        )
+                                    }
                                 }
                             }
                         } else {
-                            item("noResults") {
-                                Box(
-                                    contentAlignment = Alignment.Center,
+                            items(
+                                count = values.itemCount,
+                                key = values.itemKey(itemKey),
+                                contentType = values.itemContentType { "tag_entry" },
+                            ) { index ->
+                                val value = values[index]
+                                Column(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text(
-                                        text = stringResource(Res.string.alley_search_no_results),
-                                        modifier = Modifier.padding(16.dp)
-                                    )
+                                    item(value)
+                                    HorizontalDivider()
                                 }
                             }
                         }
-                    } else {
-                        items(
-                            count = values.itemCount,
-                            key = values.itemKey(itemKey),
-                            contentType = values.itemContentType { "tag_entry" },
-                        ) { index ->
-                            val value = values[index]
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                item(value)
-                                HorizontalDivider()
-                            }
-                        }
                     }
-                }
 
-                PrimaryVerticalScrollbar(listState)
+                    PrimaryVerticalScrollbar(listState)
+                }
             }
         }
     }

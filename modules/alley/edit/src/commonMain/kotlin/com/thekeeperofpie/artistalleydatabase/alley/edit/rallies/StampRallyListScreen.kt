@@ -63,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Add
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Refresh
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -215,7 +216,7 @@ internal object StampRallyListScreen {
                         }
                     }
                 },
-                modifier = Modifier.widthIn(max = 1200.dp)
+                modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 val dataYear by state.dataYear.collectAsStateWithLifecycle()

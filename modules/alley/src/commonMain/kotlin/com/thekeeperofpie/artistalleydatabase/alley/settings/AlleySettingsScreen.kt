@@ -79,6 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Info
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -122,7 +123,7 @@ internal fun AlleySettingsScreen(
             sections = viewModel.state.sections,
             upIconOption = UpIconOption.Back(onNavigateBack),
             automaticallyInsertDividers = false,
-            modifier = Modifier.widthIn(max = 1200.dp),
+            modifier = Modifier.widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH),
         ) {
             when (it.id) {
                 "header" -> Header(onOpenLibraries = onOpenLibraries, onOpenMetrics = onOpenMetrics)
