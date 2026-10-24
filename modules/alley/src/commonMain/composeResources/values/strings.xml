@@ -28,6 +28,7 @@
     <string name="alley_artist_catalog_image">Artist catalog image</string>
     <string name="alley_artist_catalog_image_showing_fallback">Old catalog from %1$s</string>
     <string name="alley_artist_catalog_image_showing_fallback_short">OLD CATALOG</string>
+    <string name="alley_display_type_filter">Display type</string>
     <string name="alley_display_type_icon_content_description">Change display type</string>
     <string name="alley_details_close_image">Close image</string>
     <string name="alley_artist_details_booth">Booth</string>

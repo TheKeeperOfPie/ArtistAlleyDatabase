@@ -16,13 +16,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.flow.MutableStateFlow
 
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override var appTheme by mutableStateOf(AppThemeSetting.MIKU)
-    override var displayType by mutableStateOf(SearchDisplayType.CARD)
 
     override var artistsSortOption by mutableStateOf(ArtistSearchSortOption.RANDOM)
     override var artistsSortAscending by mutableStateOf(true)
@@ -32,6 +30,8 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
 
     override var stampRalliesSortOption by mutableStateOf(StampRallySearchSortOption.RANDOM)
     override var stampRalliesSortAscending by mutableStateOf(true)
+
+    override var displayType by mutableStateOf(SearchDisplayType.CARD)
     override var showGridByDefault by mutableStateOf(false)
     override var showRandomCatalogImage by mutableStateOf(false)
     override var showOnlyConfirmedTags by mutableStateOf(false)

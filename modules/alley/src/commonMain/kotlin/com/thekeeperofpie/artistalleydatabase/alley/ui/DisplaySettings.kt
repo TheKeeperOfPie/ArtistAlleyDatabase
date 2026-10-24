@@ -4,8 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 
 interface DisplaySettings {
+    var displayType: SearchDisplayType
     var showGridByDefault: Boolean
     var showRandomCatalogImage: Boolean
     var showOnlyConfirmedTags: Boolean
@@ -14,6 +16,7 @@ interface DisplaySettings {
     companion object {
         @Composable
         fun rememberForPreview() = object : DisplaySettings {
+            override var displayType by mutableStateOf(SearchDisplayType.CARD)
             override var showGridByDefault by mutableStateOf(false)
             override var showRandomCatalogImage by mutableStateOf(true)
             override var showOnlyConfirmedTags by mutableStateOf(false)

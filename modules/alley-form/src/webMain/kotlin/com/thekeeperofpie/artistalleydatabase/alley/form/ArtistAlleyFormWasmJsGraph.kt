@@ -36,7 +36,6 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
     @Provides
     fun provideArtistAlleySettings(): ArtistAlleySettings = object : ArtistAlleySettings {
         override var appTheme by mutableStateOf(AppThemeSetting.AUTO)
-        override var displayType by mutableStateOf(SearchDisplayType.CARD)
 
         override var artistsSortOption by mutableStateOf(ArtistSearchSortOption.RANDOM)
         override var artistsSortAscending by mutableStateOf(true)
@@ -47,6 +46,7 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
         override var stampRalliesSortOption by mutableStateOf(StampRallySearchSortOption.RANDOM)
         override var stampRalliesSortAscending by mutableStateOf(true)
 
+        override var displayType by mutableStateOf(SearchDisplayType.CARD)
         override var showGridByDefault by mutableStateOf(false)
         override var showRandomCatalogImage by mutableStateOf(false)
         override var showOnlyConfirmedTags by mutableStateOf(false)

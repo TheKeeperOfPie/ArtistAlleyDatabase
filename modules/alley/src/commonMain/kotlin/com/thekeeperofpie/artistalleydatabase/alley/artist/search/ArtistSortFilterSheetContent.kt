@@ -54,6 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection2
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayTypeFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
@@ -293,6 +294,14 @@ private fun AdvancedSection(
             )
 
             HorizontalDivider()
+
+            SearchDisplayTypeFilterSection(
+                displaySettings = displaySettings,
+                expanded = { Section.DISPLAY_TYPE in state.expandedSections },
+                onExpandedChange = { state.expandedSections.toggle(Section.DISPLAY_TYPE) },
+            )
+
+            HorizontalDivider()
         }
 
         if (showHideFavorited && (expandedState || state.hideFavorited)) {
@@ -504,6 +513,7 @@ class ArtistSortFilterSaveableState @RememberInComposition constructor(
         ARTIST_TAGS,
         LINKS,
         ADVANCED,
+        DISPLAY_TYPE,
     }
 }
 

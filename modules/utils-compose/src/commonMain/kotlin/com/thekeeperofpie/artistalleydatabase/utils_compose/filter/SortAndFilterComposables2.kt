@@ -369,16 +369,15 @@ class FilterSectionState<T>(
                     filterNotIn.clear()
                 }
                 SelectionMethod.EXACTLY_ONE -> {
-                    filterIn.clear()
-                    filterIn.addAll(
-                        setOf(
-                            if (filter in filterIn) {
-                                options[(options.indexOf(filter) + 1) % options.size]
-                            } else {
-                                filter
-                            }
-                        )
+                    val newItem = setOf(
+                        if (filter in filterIn) {
+                            options[(options.indexOf(filter) + 1) % options.size]
+                        } else {
+                            filter
+                        }
                     )
+                    filterIn.clear()
+                    filterIn.addAll(newItem)
                     filterNotIn.clear()
                 }
                 SelectionMethod.ONLY_INCLUDE -> filterIn.toggle(filter)
