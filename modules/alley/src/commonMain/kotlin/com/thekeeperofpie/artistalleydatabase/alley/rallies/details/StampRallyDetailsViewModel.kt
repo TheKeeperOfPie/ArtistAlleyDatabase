@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
+import androidx.appstate.transform.transform
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
@@ -30,7 +31,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -60,7 +60,7 @@ class StampRallyDetailsViewModel(
     val id = route.id
     val initialImageIndex = route.initialImageIndex
 
-    internal val images by transform(viewModelScope) {
+    internal val images by transform<List<CatalogImage>>(emptyList(), viewModelScope) {
         if (!route.images.isNullOrEmpty()) {
             return@transform AlleyImageUtils.getRallyImages(route.year, route.images)
         }
@@ -73,7 +73,7 @@ class StampRallyDetailsViewModel(
         }.value
     }
 
-    internal val entry by transform(viewModelScope) {
+    internal val entry by transform<Entry?>(null, viewModelScope) {
         val entryWithArtists by produceState<StampRallyWithArtistsEntry?>(null) {
             value = stampRallyEntryDao.getEntryWithArtists(year, id)
         }
@@ -103,7 +103,7 @@ class StampRallyDetailsViewModel(
         )
     }
 
-    val series by transform(viewModelScope) {
+    val series by transform<List<SeriesWithUserData>?>(null, viewModelScope) {
         val entry = entry ?: return@transform null
         produceState<List<SeriesWithUserData>?>(null, entry) {
             seriesEntryDao.observeSeriesByIdsWithUserData(entry.stampRally.series)

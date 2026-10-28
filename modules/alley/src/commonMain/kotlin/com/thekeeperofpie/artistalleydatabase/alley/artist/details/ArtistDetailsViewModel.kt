@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
+import androidx.appstate.transform.transform
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
@@ -14,6 +15,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -32,7 +34,6 @@ import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -71,7 +72,7 @@ class ArtistDetailsViewModel(
         requestedShowFallback or settings.showOutdatedCatalogs
     }
 
-    val entry by transform(viewModelScope) {
+    val entry by transform<Entry?>(null, viewModelScope) {
         val entryWithStampRallies by produceState<ArtistWithStampRalliesEntry?>(null) {
             when {
                 route.id == null && route.booth != null -> {
@@ -83,7 +84,8 @@ class ArtistDetailsViewModel(
                 else -> null
             }?.collectLatest { value = it }
         }
-        val (artistWithUserData, stampRallies) = entryWithStampRallies ?: return@transform null
+        val (artistWithUserData, stampRallies) = entryWithStampRallies
+            ?: return@transform null
         Entry(
             artistWithUserData = artistWithUserData,
             stampRallies = stampRallies,
@@ -92,7 +94,7 @@ class ArtistDetailsViewModel(
 
     private val id = route.id ?: entry?.artist?.id
 
-    val catalog by transform(viewModelScope) {
+    val catalog by derivedStateOf {
         val artist = entry?.artist
         val year = artist?.year ?: route.year
         val images = (artist?.images ?: route.images).orEmpty()
@@ -140,7 +142,7 @@ class ArtistDetailsViewModel(
         }
     }
 
-    val otherArtists by transform(viewModelScope) {
+    val otherArtists by transform<List<ArtistEntry>>(emptyList(), viewModelScope) {
         val booth = entry?.artist?.booth?.ifBlank { null } ?: return@transform emptyList()
         val artistId = id
         produceState(emptyList()) {
@@ -148,7 +150,7 @@ class ArtistDetailsViewModel(
         }.value
     }
 
-    val seriesInferred by transform(viewModelScope) {
+    val seriesInferred by transform<List<SeriesWithUserData>?>(null, viewModelScope) {
         val entry = entry ?: return@transform null
         produceState<List<SeriesWithUserData>?>(null, entry) {
             seriesEntryDao.observeSeriesByIdsWithUserData(entry.artist.seriesInferred)
@@ -156,7 +158,7 @@ class ArtistDetailsViewModel(
         }.value
     }
 
-    val seriesConfirmed by transform(viewModelScope) {
+    val seriesConfirmed by transform<List<SeriesWithUserData>?>(null, viewModelScope) {
         val entry = entry ?: return@transform null
         produceState<List<SeriesWithUserData>?>(null, entry) {
             seriesEntryDao.observeSeriesByIdsWithUserData(entry.artist.seriesConfirmed)
@@ -164,7 +166,7 @@ class ArtistDetailsViewModel(
         }.value
     }
 
-    val otherYears by transform(viewModelScope) {
+    val otherYears by transform<List<DataYear>>(emptyList(), viewModelScope) {
         val id = id ?: return@transform emptyList()
         produceState(emptyList()) {
             value = (DataYear.entries - year)
@@ -172,7 +174,7 @@ class ArtistDetailsViewModel(
         }.value
     }
 
-    val seriesImages by transform(viewModelScope) {
+    val seriesImages by transform<Map<String, String>>(emptyMap(), viewModelScope) {
         val seriesInferred = seriesInferred ?: return@transform emptyMap()
         val seriesConfirmed = seriesConfirmed ?: return@transform emptyMap()
         produceState(emptyMap(), seriesInferred, seriesConfirmed) {

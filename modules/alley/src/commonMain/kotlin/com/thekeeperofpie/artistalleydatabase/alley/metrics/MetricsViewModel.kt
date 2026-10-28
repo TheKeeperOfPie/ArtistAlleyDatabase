@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.metrics
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -11,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -33,7 +33,7 @@ class MetricsViewModel(
 
     var includeInferred by savedStateHandle.saveable { mutableStateOf(false) }
 
-    internal val data by transform(viewModelScope) {
+    internal val data by transform(Data(), viewModelScope) {
         val year = dataYear
         val includeInferred = includeInferred
         produceState(Data(), year, includeInferred) {

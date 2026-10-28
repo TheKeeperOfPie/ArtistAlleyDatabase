@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -8,7 +9,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import kotlinx.coroutines.CoroutineScope
 
 class SeriesSortFilterController(
@@ -32,14 +32,16 @@ class SeriesSortFilterController(
         saveableState = saveableState,
     )
 
-    internal val filterParams by transform(scope) {
-        FilterParams(
-            sortOption = persistentState.sortFilterSettings.seriesSortOption,
-            sortAscending = persistentState.sortFilterSettings.seriesSortAscending,
-            sourceIn = saveableState.sourceIn.filterIn.toSet(),
-            showOnlyConfirmedTags = saveableState.showOnlyConfirmedTags,
-        )
+    internal val filterParams by transform(filterParams(), scope) {
+        filterParams()
     }
+
+    private fun filterParams() = FilterParams(
+        sortOption = persistentState.sortFilterSettings.seriesSortOption,
+        sortAscending = persistentState.sortFilterSettings.seriesSortAscending,
+        sourceIn = saveableState.sourceIn.filterIn.toSet(),
+        showOnlyConfirmedTags = saveableState.showOnlyConfirmedTags,
+    )
 
     data class FilterParams(
         val sortOption: SeriesSearchSortOption,

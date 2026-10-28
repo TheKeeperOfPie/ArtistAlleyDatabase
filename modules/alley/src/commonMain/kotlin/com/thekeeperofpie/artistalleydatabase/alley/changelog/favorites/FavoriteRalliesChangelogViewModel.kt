@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
@@ -11,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -34,7 +34,7 @@ class FavoriteRalliesChangelogViewModel(
     private val randomSeed =
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    private val input by transform(viewModelScope) {
+    private val input by transform(Input(emptySet(), emptySet(), emptySet()), viewModelScope) {
         val rallyFavorites by produceState(emptySet()) {
             userEntryDao.getRallyFavorites().collectLatest { value = it }
         }
@@ -61,7 +61,10 @@ class FavoriteRalliesChangelogViewModel(
     )
 
 
-    internal val changes by transform(viewModelScope) {
+    internal val changes by transform<List<FavoritesChangelogScreen.DayChange>>(
+        initialValue = emptyList(),
+        scope = viewModelScope,
+    ) {
         val changes = useCase.changes
         changes.changes.map {
             FavoritesChangelogScreen.DayChange(

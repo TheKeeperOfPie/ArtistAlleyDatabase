@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
+import androidx.appstate.transform.transform
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -98,7 +98,7 @@ class ArtistSearchViewModel(
             }
         }
 
-    val lockedSeriesEntry by transform(viewModelScope) {
+    val lockedSeriesEntry by transform<SeriesInfo?>(null, viewModelScope) {
         produceState<SeriesInfo?>(null, lockedSeries) {
             if (lockedSeries != null) {
                 seriesEntryDao.getSeriesById(lockedSeries)
@@ -123,7 +123,7 @@ class ArtistSearchViewModel(
 
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
-    val unfilteredCount by transform(viewModelScope) {
+    val unfilteredCount by transform(0, viewModelScope) {
         val year = year
         val query = query.text.toString()
         val lockedSeriesEntry = lockedSeriesEntry
@@ -173,7 +173,7 @@ class ArtistSearchViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val hasRallies by transform(viewModelScope) {
+    val hasRallies by transform(false, viewModelScope) {
         val year = year
         produceState(false, year) {
             if (lockedSeries != null) {

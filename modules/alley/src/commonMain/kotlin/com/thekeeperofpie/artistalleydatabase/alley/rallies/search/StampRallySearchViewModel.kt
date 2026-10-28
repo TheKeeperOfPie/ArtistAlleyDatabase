@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
+import androidx.appstate.transform.transform
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -74,7 +74,7 @@ class StampRallySearchViewModel(
             }
         }
 
-    val lockedSeriesEntry by transform(viewModelScope) {
+    val lockedSeriesEntry by transform<SeriesInfo?>(null, viewModelScope) {
         produceState<SeriesInfo?>(null, lockedSeries) {
             if (lockedSeries != null) {
                 seriesEntryDao.getSeriesById(lockedSeries)
@@ -94,7 +94,7 @@ class StampRallySearchViewModel(
 
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
-    val unfilteredCount by transform(viewModelScope) {
+    val unfilteredCount by transform(0, viewModelScope) {
         val year = dataYear
         val query = query.text.toString()
         produceState(0, year, query) {

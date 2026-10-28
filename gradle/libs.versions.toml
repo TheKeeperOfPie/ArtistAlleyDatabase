@@ -1,8 +1,9 @@
 [versions]
 aboutLibraries = "15.3.0"
-android-gradle = "9.5.0-alpha10"
+android-gradle = "9.5.0"
 androidx-activity = "1.13.0"
 androidx-annotation = "1.11.0"
+androidx-appstate-transform = "1.0.0-alpha01"
 androidx-browser = "1.10.0"
 androidx-core = "1.19.1"
 androidx-media3 = "1.11.1"
@@ -97,6 +98,7 @@ xml-util = "1.0.2.1"
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidx-annotation" }
+androidx-appstate-transform = { group = "androidx.appstate.transform", name = "transform", version.ref = "androidx-appstate-transform" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidx-browser" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "androidx-security-crypto" }

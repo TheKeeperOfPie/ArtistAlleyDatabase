@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -10,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.sortRalliesForChan
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.toChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +26,10 @@ class FavoritesChangelogUseCase<Input>(
     @Assisted private val filterArtist: ChangelogEntry.Artist.(Input) -> Boolean,
     @Assisted private val filterRally: StampRallyChangelogEntry.(Input) -> Boolean,
 ) {
-    private val changelog by transform(scope) {
+    private val changelog by transform<List<Pair<LocalDate, List<ChangelogEntry>>>>(
+        initialValue = emptyList(),
+        scope = scope,
+    ) {
         produceState(emptyList(), dataYear, randomSeed) {
             val artists = artistEntryDao.getChangelog(dataYear, false)
                 .map(ChangelogEntry::Artist)
@@ -41,7 +44,7 @@ class FavoritesChangelogUseCase<Input>(
         }.value
     }
 
-    internal val changes by transform(scope) {
+    internal val changes by transform<Changes<Input>>(Changes<Input>(emptyList(), input()), scope) {
         val changelog = changelog
         val input = input()
         val changes = changelog.mapNotNull {

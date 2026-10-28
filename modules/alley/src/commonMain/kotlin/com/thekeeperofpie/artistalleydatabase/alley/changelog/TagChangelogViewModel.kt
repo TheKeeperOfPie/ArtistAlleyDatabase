@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -22,7 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -53,7 +53,7 @@ class TagChangelogViewModel(
 
     var showOnlyConfirmedTags by savedStateHandle.saveable { mutableStateOf(settings.showOnlyConfirmedTags) }
 
-    val series by transform(viewModelScope) {
+    val series by transform<SeriesWithUserData?>(null, viewModelScope) {
         produceState<SeriesWithUserData?>(null, seriesId) {
             if (seriesId != null) {
                 seriesEntryDao.getSeriesByIdWithUserData(seriesId).collectLatest { value = it }
@@ -61,7 +61,7 @@ class TagChangelogViewModel(
         }.value
     }
 
-    val merch by transform(viewModelScope) {
+    val merch by transform<MerchWithUserData?>(null, viewModelScope) {
         produceState<MerchWithUserData?>(null, merchId) {
             if (merchId != null) {
                 merchEntryDao.getMerchById(merchId).collectLatest { value = it }
@@ -72,7 +72,7 @@ class TagChangelogViewModel(
     private val randomSeed =
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    val changes by transform(viewModelScope) {
+    val changes by transform<List<TagChangelogScreen.DayChange>>(emptyList(), viewModelScope) {
         val changelog by produceState(emptyList()) {
             val artists = artistEntryDao.getChangelog(dataYear, false)
                 .map(ChangelogEntry::Artist)

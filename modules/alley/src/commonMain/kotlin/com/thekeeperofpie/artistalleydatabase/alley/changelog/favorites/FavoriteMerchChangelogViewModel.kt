@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -15,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -41,9 +41,9 @@ class FavoriteMerchChangelogViewModel(
     private val randomSeed =
         savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    private val input by transform(viewModelScope) {
+    private val input by transform(Input(showOnlyConfirmedTags, emptySet()), viewModelScope) {
         val merchFavorites by produceState(emptySet()) {
-            userEntryDao.getMerchFavorites().collectLatest {  value = it }
+            userEntryDao.getMerchFavorites().collectLatest { value = it }
         }
         Input(showOnlyConfirmedTags, merchFavorites)
     }
@@ -62,7 +62,10 @@ class FavoriteMerchChangelogViewModel(
         },
     )
 
-    internal val changes by transform(viewModelScope) {
+    internal val changes by transform<List<FavoritesChangelogScreen.DayChange>>(
+        initialValue = emptyList(),
+        scope = viewModelScope,
+    ) {
         val changes = useCase.changes
         changes.changes.map {
             FavoritesChangelogScreen.DayChange(

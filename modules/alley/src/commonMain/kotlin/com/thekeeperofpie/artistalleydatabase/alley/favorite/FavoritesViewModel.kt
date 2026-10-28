@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.favorite
 
+import androidx.appstate.transform.transform
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -44,7 +45,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -109,11 +109,14 @@ class FavoritesViewModel(
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    private val inputs by transform(viewModelScope) {
+    private val inputs by transform(
+        initialValue = Triple("", year, settings.showOnlyConfirmedTags),
+        scope = viewModelScope,
+    ) {
         Triple(query.text.toString(), year, settings.showOnlyConfirmedTags)
     }
 
-    val artistsUnfilteredCount by transform(viewModelScope) {
+    val artistsUnfilteredCount by transform(0, viewModelScope) {
         val year = year
         val query = query.text.toString()
         produceState(0, year, query) {
@@ -152,7 +155,7 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val stampRallyUnfilteredCount by transform(viewModelScope) {
+    val stampRallyUnfilteredCount by transform(0, viewModelScope) {
         val year = year
         val query = query.text.toString()
         produceState(0, year, query) {

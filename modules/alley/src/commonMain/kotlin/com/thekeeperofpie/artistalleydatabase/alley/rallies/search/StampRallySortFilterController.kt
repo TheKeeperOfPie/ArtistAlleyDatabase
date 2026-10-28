@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
@@ -12,7 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -32,11 +32,11 @@ class StampRallySortFilterController(
     val settings: ArtistAlleySettings,
     @Assisted scope: CoroutineScope,
     @Assisted dataYear: () -> DataYear,
-    @Assisted lockedSeries: () -> SeriesInfo?,
+    @Assisted private val lockedSeries: () -> SeriesInfo?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) {
 
-    private val merchTagData by transform(scope) {
+    private val merchTagData by transform(MerchTagData(emptyList()), scope) {
         val dataYear = dataYear()
         produceState(MerchTagData(emptyList()), dataYear) {
             merchCache.merchTags(dataYear).collectLatest { value = it }
@@ -65,10 +65,14 @@ class StampRallySortFilterController(
             .flowOn(dispatchers.io)
             .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    internal val filterParams by transform(scope) {
+    internal val filterParams by transform(filterParams(), scope) {
+        filterParams()
+    }
+
+    private fun filterParams(): StampRallyFilterParams {
         val seriesIn = setOfNotNull(lockedSeries()?.id) +
                 saveableState.series.seriesIn.toSet().map { it.id }
-        StampRallyFilterParams(
+        return StampRallyFilterParams(
             sortOption = persistentState.sortSettings.stampRalliesSortOption,
             sortAscending = persistentState.sortSettings.stampRalliesSortAscending,
             seriesIn = seriesIn,

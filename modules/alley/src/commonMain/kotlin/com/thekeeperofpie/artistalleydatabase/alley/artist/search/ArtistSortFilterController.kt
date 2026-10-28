@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
+import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -16,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.transform.transform
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +37,7 @@ class ArtistSortFilterController(
     @Assisted scope: CoroutineScope,
     @Assisted dataYear: () -> DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted lockedSeries: () -> SeriesInfo?,
+    @Assisted private val lockedSeries: () -> SeriesInfo?,
     @Assisted private val lockedMerchId: String?,
     @Assisted private val allowSettingsBasedToggles: Boolean = true,
 ) {
@@ -45,7 +45,7 @@ class ArtistSortFilterController(
         mutableStateOf(settings.showOnlyConfirmedTags)
     }
 
-    private val merchTagData by transform(scope) {
+    private val merchTagData by transform(MerchTagData(emptyList()), scope) {
         val dataYear = dataYear()
         produceState(MerchTagData(emptyList()), dataYear) {
             merchCache.merchTags(dataYear).collectLatest { value = it }
@@ -86,10 +86,14 @@ class ArtistSortFilterController(
             .flowOn(dispatchers.io)
             .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    internal val filterParams by transform(scope) {
+    internal val filterParams by transform(filterParams(), scope) {
+        filterParams()
+    }
+
+    private fun filterParams(): ArtistSortFilterParams {
         val seriesIn = setOfNotNull(lockedSeries()?.rowid) +
                 saveableState.series.seriesIn.toSet().map { it.rowid }
-        ArtistSortFilterParams(
+        return ArtistSortFilterParams(
             sortOption = persistentState.sortFilterSettings.artistsSortOption,
             sortAscending = persistentState.sortFilterSettings.artistsSortAscending,
             seriesIn = seriesIn,
