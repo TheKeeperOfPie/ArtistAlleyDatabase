@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 
 import androidx.appstate.transform.transform
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -44,7 +45,7 @@ class FavoritesChangelogUseCase<Input>(
         }.value
     }
 
-    internal val changes by transform<Changes<Input>>(Changes<Input>(emptyList(), input()), scope) {
+    internal val changes by derivedStateOf {
         val changelog = changelog
         val input = input()
         val changes = changelog.mapNotNull {

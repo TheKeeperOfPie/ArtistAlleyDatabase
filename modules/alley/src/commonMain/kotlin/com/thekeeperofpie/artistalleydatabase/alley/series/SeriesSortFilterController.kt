@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
-import androidx.appstate.transform.transform
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -32,16 +32,14 @@ class SeriesSortFilterController(
         saveableState = saveableState,
     )
 
-    internal val filterParams by transform(filterParams(), scope) {
-        filterParams()
+    internal val filterParams by derivedStateOf {
+        FilterParams(
+            sortOption = persistentState.sortFilterSettings.seriesSortOption,
+            sortAscending = persistentState.sortFilterSettings.seriesSortAscending,
+            sourceIn = saveableState.sourceIn.filterIn.toSet(),
+            showOnlyConfirmedTags = saveableState.showOnlyConfirmedTags,
+        )
     }
-
-    private fun filterParams() = FilterParams(
-        sortOption = persistentState.sortFilterSettings.seriesSortOption,
-        sortAscending = persistentState.sortFilterSettings.seriesSortAscending,
-        sourceIn = saveableState.sourceIn.filterIn.toSet(),
-        showOnlyConfirmedTags = saveableState.showOnlyConfirmedTags,
-    )
 
     data class FilterParams(
         val sortOption: SeriesSearchSortOption,

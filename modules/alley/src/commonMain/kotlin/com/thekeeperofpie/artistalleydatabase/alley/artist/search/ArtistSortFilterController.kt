@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import androidx.appstate.transform.transform
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -86,14 +87,10 @@ class ArtistSortFilterController(
             .flowOn(dispatchers.io)
             .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    internal val filterParams by transform(filterParams(), scope) {
-        filterParams()
-    }
-
-    private fun filterParams(): ArtistSortFilterParams {
+    internal val filterParams by derivedStateOf {
         val seriesIn = setOfNotNull(lockedSeries()?.rowid) +
                 saveableState.series.seriesIn.toSet().map { it.rowid }
-        return ArtistSortFilterParams(
+        ArtistSortFilterParams(
             sortOption = persistentState.sortFilterSettings.artistsSortOption,
             sortAscending = persistentState.sortFilterSettings.artistsSortAscending,
             seriesIn = seriesIn,

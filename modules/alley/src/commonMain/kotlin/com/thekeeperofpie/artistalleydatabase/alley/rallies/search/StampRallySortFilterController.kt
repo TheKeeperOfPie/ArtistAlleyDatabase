@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.appstate.transform.transform
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
@@ -65,14 +66,10 @@ class StampRallySortFilterController(
             .flowOn(dispatchers.io)
             .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    internal val filterParams by transform(filterParams(), scope) {
-        filterParams()
-    }
-
-    private fun filterParams(): StampRallyFilterParams {
+    internal val filterParams by derivedStateOf {
         val seriesIn = setOfNotNull(lockedSeries()?.id) +
                 saveableState.series.seriesIn.toSet().map { it.id }
-        return StampRallyFilterParams(
+        StampRallyFilterParams(
             sortOption = persistentState.sortSettings.stampRalliesSortOption,
             sortAscending = persistentState.sortSettings.stampRalliesSortAscending,
             seriesIn = seriesIn,

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 
 import androidx.appstate.transform.transform
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.lifecycle.SavedStateHandle
@@ -61,10 +62,7 @@ class FavoriteRalliesChangelogViewModel(
     )
 
 
-    internal val changes by transform<List<FavoritesChangelogScreen.DayChange>>(
-        initialValue = emptyList(),
-        scope = viewModelScope,
-    ) {
+    internal val changes by derivedStateOf {
         val changes = useCase.changes
         changes.changes.map {
             FavoritesChangelogScreen.DayChange(

@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.favorite
 
 import androidx.appstate.transform.transform
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
@@ -109,10 +110,7 @@ class FavoritesViewModel(
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
-    private val inputs by transform(
-        initialValue = Triple("", year, settings.showOnlyConfirmedTags),
-        scope = viewModelScope,
-    ) {
+    private val inputs by derivedStateOf {
         Triple(query.text.toString(), year, settings.showOnlyConfirmedTags)
     }
 
