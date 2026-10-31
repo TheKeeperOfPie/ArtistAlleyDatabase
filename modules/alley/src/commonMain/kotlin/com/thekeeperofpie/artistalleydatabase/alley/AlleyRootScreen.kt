@@ -5,34 +5,50 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AppBarRow
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.zIndex
+import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_generic_filter_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
@@ -42,10 +58,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.icons.Icons
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +94,28 @@ object AlleyRootScreen {
 
         // Mirror to support multiple roots, in theory
         var destination by rememberSaveable { mutableStateOf(settings.rootDestination) }
+        val artistsScaffoldState = rememberSortFilterBottomScaffoldState()
+        val browseScaffoldState = rememberSortFilterBottomScaffoldState()
+        val favoritesScaffoldState = rememberSortFilterBottomScaffoldState()
+        val mapScaffoldState = rememberSortFilterBottomScaffoldState()
+        val ralliesScaffoldState = rememberSortFilterBottomScaffoldState()
+        val state = remember(
+            artistsScaffoldState,
+            browseScaffoldState,
+            favoritesScaffoldState,
+            mapScaffoldState,
+            ralliesScaffoldState,
+        ) {
+            NavigationState(
+                artistsScaffoldState = artistsScaffoldState,
+                browseScaffoldState = browseScaffoldState,
+                favoritesScaffoldState = favoritesScaffoldState,
+                mapScaffoldState = mapScaffoldState,
+                ralliesScaffoldState = ralliesScaffoldState,
+            )
+        }
         NavigationScaffold(
+            state = state,
             destination = { destination },
             onChangeDestination = {
                 settings.rootDestination = it
@@ -92,6 +135,7 @@ object AlleyRootScreen {
                     AlleyRootDestination.ARTISTS ->
                         ArtistSearchScreen(
                             isRoot = true,
+                            scaffoldState = artistsScaffoldState,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.ARTISTS.name,
                                 scrollPositions,
@@ -99,11 +143,12 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.BROWSE ->
                         BrowseScreen(
-                            seriesScrollStateSaver  = ScrollStateSaver.fromMap(
+                            scaffoldState = browseScaffoldState,
+                            seriesScrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.BROWSE.name + "_series",
                                 scrollPositions,
                             ),
-                            merchScrollStateSaver  = ScrollStateSaver.fromMap(
+                            merchScrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.BROWSE.name + "_merch",
                                 scrollPositions,
                             ),
@@ -117,6 +162,7 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.FAVORITES ->
                         FavoritesScreen(
+                            scaffoldState = favoritesScaffoldState,
                             artistsScrollStateSaver = ScrollStateSaver.fromMap(
                                 AlleyRootDestination.FAVORITES.name + "artists",
                                 scrollPositions,
@@ -148,6 +194,7 @@ object AlleyRootScreen {
                         )
                     AlleyRootDestination.MAP ->
                         FavoritesMapScreen(
+                            scaffoldState = mapScaffoldState,
                             settings = graph.settings,
                             mapTransformState = mapTransformState,
                             onArtistClick = { entry, imageIndex ->
@@ -157,6 +204,7 @@ object AlleyRootScreen {
                     AlleyRootDestination.STAMP_RALLIES ->
                         StampRallySearchScreen(
                             isRoot = true,
+                            scaffoldState = ralliesScaffoldState,
                             lockedYear = null,
                             lockedSeries = null,
                             scrollStateSaver = ScrollStateSaver.fromMap(
@@ -171,6 +219,7 @@ object AlleyRootScreen {
 
     @Composable
     private fun NavigationScaffold(
+        state: NavigationState,
         destination: () -> AlleyRootDestination,
         onChangeDestination: (AlleyRootDestination) -> Unit,
         content: @Composable (PaddingValues) -> Unit,
@@ -208,33 +257,86 @@ object AlleyRootScreen {
                 }
             }
         } else {
-            Column {
-                Scaffold(modifier = Modifier.fillMaxSize().weight(1f)) {
+            Box {
+                Scaffold(modifier = Modifier.fillMaxSize()) {
                     movableContent(it)
                 }
-                NavigationBar(
-                    modifier = Modifier
-                        .animateEnterExit(
-                            enter = slideInVertically { it },
-                            exit = slideOutVertically { it },
-                        )
-                        .renderMaybeInSharedTransitionScopeOverlay(2f)
-                ) {
-                    AlleyRootDestination.entries.forEach {
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    it.icon,
-                                    contentDescription = stringResource(it.textRes)
-                                )
+
+                HorizontalFloatingToolbar(
+                    expanded = true,
+                    floatingActionButton = {
+                        val contentDescription =
+                            stringResource(Res.string.alley_generic_filter_content_description)
+                        TooltipBox(
+                            positionProvider =
+                                TooltipDefaults.rememberTooltipPositionProvider(
+                                    TooltipAnchorPosition.Above
+                                ),
+                            tooltip = {
+                                PlainTooltip(
+                                    modifier =
+                                        Modifier.semantics {
+                                            liveRegion = LiveRegionMode.Assertive
+                                            paneTitle = contentDescription
+                                        }
+                                ) {
+                                    Text(contentDescription)
+                                }
                             },
-                            label = { Text(stringResource(it.textRes)) },
-                            selected = it == destination(),
-                            onClick = { onChangeDestination(it) },
-                        )
+                            state = rememberTooltipState(),
+                        ) {
+                            val scope = rememberCoroutineScope()
+                            FloatingToolbarDefaults.VibrantFloatingActionButton(
+                                onClick = {
+                                    scope.launch {
+                                        when (destination()) {
+                                            AlleyRootDestination.ARTISTS -> state.artistsScaffoldState
+                                            AlleyRootDestination.BROWSE -> state.browseScaffoldState
+                                            AlleyRootDestination.FAVORITES -> state.favoritesScaffoldState
+                                            AlleyRootDestination.MAP -> state.mapScaffoldState
+                                            AlleyRootDestination.STAMP_RALLIES -> state.ralliesScaffoldState
+                                        }.bottomSheetState.toggle()
+                                    }
+                                },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FilterList,
+                                    contentDescription = contentDescription,
+                                )
+                            }
+                        }
+                    },
+                    modifier =
+                        Modifier.align(Alignment.BottomCenter).offset(y = -ScreenOffset).zIndex(1f)
+                            .animateEnterExit(
+                                enter = slideInVertically { it * 2 },
+                                exit = slideOutVertically { it * 2 },
+                            )
+                            .renderMaybeInSharedTransitionScopeOverlay(2f),
+                ) {
+                    val itemsWithText =
+                        AlleyRootDestination.entries.map { it to stringResource(it.textRes) }
+                    val currentDestination = destination()
+                    AppBarRow {
+                        itemsWithText.forEach { [item, text] ->
+                            this@AppBarRow.toggleableItem(
+                                onCheckedChange = { if (it) onChangeDestination(item) },
+                                icon = { Icon(item.icon, text) },
+                                label = text,
+                                checked = item == currentDestination,
+                            )
+                        }
                     }
                 }
             }
         }
     }
+
+    private class NavigationState(
+        val artistsScaffoldState: SortFilterBottomScaffoldState,
+        val browseScaffoldState: SortFilterBottomScaffoldState,
+        val favoritesScaffoldState: SortFilterBottomScaffoldState,
+        val mapScaffoldState: SortFilterBottomScaffoldState,
+        val ralliesScaffoldState: SortFilterBottomScaffoldState,
+    )
 }

@@ -1,13 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -26,6 +24,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
@@ -49,7 +49,7 @@ object ArtistMerchScreen {
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
         artistSearchViewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
             create(
                 lockedYear = route.year,
@@ -97,7 +97,7 @@ object ArtistMerchScreen {
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     ) {
         val sortFilterController = artistSearchViewModel.sortFilterController
         val state = remember(artistSearchViewModel, sortFilterController) {

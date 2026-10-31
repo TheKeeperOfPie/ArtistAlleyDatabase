@@ -769,28 +769,42 @@ private fun ascendingText(ascending: Boolean) = stringResource(
     }
 )
 
+@Composable
+fun rememberSortFilterBottomScaffoldState(): SortFilterBottomScaffoldState {
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
+    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
+    return remember(scaffoldState) {
+        SortFilterBottomScaffoldState(scaffoldState)
+    }
+}
+
+class SortFilterBottomScaffoldState internal constructor(
+    internal val scaffoldState: BottomSheetScaffoldState
+) {
+    val bottomSheetState get() = scaffoldState.bottomSheetState
+}
 
 @Composable
 fun SortFilterBottomScaffold2(
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
-    sheetState: SheetState = rememberBottomSheetState(
-        initialValue = SheetValue.PartiallyExpanded,
-        enabledValues = setOf(SheetValue.PartiallyExpanded, SheetValue.Expanded),
-    ),
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
+    state: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     sheetPeekHeight: Dp = Dp.Unspecified,
     bottomNavigationState: BottomNavigationState? = null,
     sheetContent: @Composable ColumnScope.() -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val scaffoldState = state.scaffoldState
     val bottomSheetState = scaffoldState.bottomSheetState
     BackHandler(
         enabled = bottomSheetState.targetValue == SheetValue.Expanded
                 && !WindowInsets.isImeVisibleKmp
     ) {
-        scope.launch { bottomSheetState.partialExpand() }
+        scope.launch { bottomSheetState.hide() }
     }
 
     BottomSheetScaffold(
@@ -850,7 +864,7 @@ fun SortFilterBottomScaffoldSheetContent(
                     .fillMaxWidth()
                     .clickable {
                         if (sheetState.currentValue == SheetValue.Expanded) {
-                            scope.launch { sheetState.partialExpand() }
+                            scope.launch { sheetState.hide() }
                         } else {
                             scope.launch { sheetState.expand() }
                         }
@@ -887,7 +901,7 @@ fun SortFilterBottomScaffoldSheetContent(
         ) {
             content()
 
-            Spacer(Modifier.height(72.dp))
+            Spacer(Modifier.height(120.dp))
 
             if (footer != null) {
                 HorizontalDivider()
@@ -949,7 +963,11 @@ fun SectionsExpandIndicator(
 
 suspend fun SheetState.toggle() {
     if (targetValue == SheetValue.Expanded) {
-        partialExpand()
+        if (this.hasPartiallyExpandedState) {
+            partialExpand()
+        } else {
+            hide()
+        }
     } else {
         expand()
     }

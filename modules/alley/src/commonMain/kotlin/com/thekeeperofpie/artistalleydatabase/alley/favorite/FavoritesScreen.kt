@@ -10,13 +10,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -28,12 +25,10 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -42,7 +37,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -71,7 +65,6 @@ import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreenContent
@@ -104,10 +97,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -130,6 +123,7 @@ object FavoritesScreen {
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
+        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
         viewModel: FavoritesViewModel = assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
             create(it.createSavedStateHandle())
         },
@@ -156,6 +150,7 @@ object FavoritesScreen {
                     merchEntries = viewModel.merchEntries,
                 )
             },
+            scaffoldState = scaffoldState,
             series = { series },
             artistsScrollStateSaver = artistsScrollStateSaver,
             ralliesScrollStateSaver = ralliesScrollStateSaver,
@@ -184,9 +179,9 @@ object FavoritesScreen {
         merchScrollStateSaver: ScrollStateSaver,
         seriesAutocompleteResults: () -> List<SeriesInfo>,
         eventSink: (Event) -> Unit,
+        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-            val scaffoldState = rememberBottomSheetScaffoldState()
             val scope = rememberCoroutineScope()
             BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                 scope.launch {
@@ -197,170 +192,60 @@ object FavoritesScreen {
             var tab by state.tab.collectAsMutableStateWithLifecycle()
             val artistsEntries = state.artistsEntries.collectAsLazyPagingItems()
             val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItems()
+            val seriesEntries = state.seriesEntries.collectAsLazyPagingItems()
+            val merchEntries = state.merchEntries.collectAsLazyPagingItems()
 
             val dataYearHeaderState = rememberDataYearHeaderState(
                 dataYear = state.year,
                 onDataYearChange = state.onYearChange,
                 lockedYear = null,
             )
-            if (tab == EntryTab.ARTISTS || tab == EntryTab.RALLIES) {
-                val entries = when (tab) {
-                    EntryTab.ARTISTS -> artistsEntries
-                    EntryTab.RALLIES -> ralliesEntries
-                    EntryTab.SERIES -> TODO()
-                    EntryTab.MERCH -> TODO()
-                }
-                val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-                SortFilterBottomScaffold2(
-                    scaffoldState = scaffoldState,
-                    topBar = {
-                        val title = stringResource(Res.string.alley_favorites_search)
-                        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                            AlleySearchBar(
-                                onClickBack = null,
-                                query = state.query,
-                                title = { title },
-                                itemCount = { entries.itemCount },
-                                onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
-                                modifier = Modifier
-                                    .animateEnterExit(
-                                        enter = slideInVertically { -it },
-                                        exit = slideOutVertically { -it },
-                                    )
-                                    .renderMaybeInSharedTransitionScopeOverlay(1f)
-                            )
-                        }
-                    },
-                    sheetContent = {
-                        when (tab) {
-                            EntryTab.ARTISTS -> ArtistSortFilterSheetContent(
-                                state = state.artistsSortFilterState,
-                                sheetState = scaffoldState.bottomSheetState,
-                                seriesAutocompleteResults = seriesAutocompleteResults,
-                                showHideFavorited = false,
-                            )
-                            EntryTab.RALLIES -> StampRallySortFilterSheetContent(
-                                state = state.ralliesSortFilterState,
-                                sheetState = scaffoldState.bottomSheetState,
-                                seriesAutocompleteResults = seriesAutocompleteResults,
-                                showHideFavorited = false,
-                            )
-                            EntryTab.SERIES -> TODO()
-                            EntryTab.MERCH -> TODO()
-                        }
-                    },
-                    modifier = Modifier
-                        .conditionallyNonNull(scrollBehavior) {
-                            nestedScroll(
-                                NestedScrollSplitter(
-                                    primary = it.nestedScrollConnection,
-                                    consumeNone = true,
-                                )
-                            )
-                        }
-                ) {
-                    when (tab) {
-                        EntryTab.ARTISTS ->
-                            ArtistContent(
-                                state = state,
-                                gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
-                                sortFilterState = state.artistsSortFilterState,
-                                entries = artistsEntries,
-                                series = series,
-                                eventSink = eventSink,
-                                header = {
-                                    Header(
-                                        tab = { tab },
-                                        onTabChange = { tab = it },
-                                        dataYearHeaderState = dataYearHeaderState,
-                                        eventSink = eventSink,
-                                    )
-                                },
-                                noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
-                                modifier = Modifier.padding(top = it.calculateTopPadding())
-                            )
-                        EntryTab.RALLIES ->
-                            RalliesContent(
-                                state = state,
-                                gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
-                                sortFilterState = state.ralliesSortFilterState,
-                                entries = ralliesEntries,
-                                eventSink = eventSink,
-                                header = {
-                                    Header(
-                                        tab = { tab },
-                                        onTabChange = { tab = it },
-                                        dataYearHeaderState = dataYearHeaderState,
-                                        eventSink = eventSink,
-                                    )
-                                },
-                                noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
-                                modifier = Modifier.padding(top = it.calculateTopPadding())
-                            )
-                        EntryTab.SERIES -> TODO()
-                        EntryTab.MERCH -> TODO()
-                    }
-                }
-            } else {
-                LegacyScaffold(
-                    state = state,
-                    scaffoldState = scaffoldState,
-                    dataYearHeaderState = dataYearHeaderState,
-                    seriesScrollStateSaver = seriesScrollStateSaver,
-                    merchScrollStateSaver = merchScrollStateSaver,
-                    eventSink = eventSink,
-                )
+            val entries = when (tab) {
+                EntryTab.ARTISTS -> artistsEntries
+                EntryTab.RALLIES -> ralliesEntries
+                EntryTab.SERIES -> seriesEntries
+                EntryTab.MERCH -> merchEntries
             }
-        }
-    }
-
-    @Composable
-    private fun LegacyScaffold(
-        state: State,
-        scaffoldState: BottomSheetScaffoldState,
-        dataYearHeaderState: DataYearHeaderState,
-        seriesScrollStateSaver: ScrollStateSaver,
-        merchScrollStateSaver: ScrollStateSaver,
-        eventSink: (Event) -> Unit,
-    ) {
-        var tab by state.tab.collectAsMutableStateWithLifecycle()
-        if (tab == EntryTab.ARTISTS || tab == EntryTab.RALLIES) throw IllegalStateException()
-        val seriesEntries = state.seriesEntries.collectAsLazyPagingItems()
-        val merchEntries = state.merchEntries.collectAsLazyPagingItems()
-        val entries = when (tab) {
-            EntryTab.ARTISTS -> throw IllegalStateException()
-            EntryTab.RALLIES -> throw IllegalStateException()
-            EntryTab.SERIES -> seriesEntries
-            EntryTab.MERCH -> merchEntries
-        }
-        Box {
-            var horizontalScrollBarWidth by remember { mutableStateOf(0) }
-            val horizontalScrollState = rememberScrollState()
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-            SortFilterBottomScaffold(
-                state = when (tab) {
-                    EntryTab.ARTISTS -> throw IllegalStateException()
-                    EntryTab.RALLIES -> throw IllegalStateException()
-                    EntryTab.SERIES -> null // TODO: SortFilterState
-                    EntryTab.MERCH -> null // TODO: SortFilterState
-                },
-                scaffoldState = scaffoldState,
-                sheetPeekHeight = 72.dp,
+            SortFilterBottomScaffold2(
+                state = scaffoldState,
                 topBar = {
                     val title = stringResource(Res.string.alley_favorites_search)
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                        val scope = rememberCoroutineScope()
                         AlleySearchBar(
                             onClickBack = null,
                             query = state.query,
                             title = { title },
                             itemCount = { entries.itemCount },
                             onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
+                            modifier = Modifier
+                                .animateEnterExit(
+                                    enter = slideInVertically { -it },
+                                    exit = slideOutVertically { -it },
+                                )
+                                .renderMaybeInSharedTransitionScopeOverlay(1f)
                         )
                     }
                 },
+                sheetContent = {
+                    when (tab) {
+                        EntryTab.ARTISTS -> ArtistSortFilterSheetContent(
+                            state = state.artistsSortFilterState,
+                            sheetState = scaffoldState.bottomSheetState,
+                            seriesAutocompleteResults = seriesAutocompleteResults,
+                            showHideFavorited = false,
+                        )
+                        EntryTab.RALLIES -> StampRallySortFilterSheetContent(
+                            state = state.ralliesSortFilterState,
+                            sheetState = scaffoldState.bottomSheetState,
+                            seriesAutocompleteResults = seriesAutocompleteResults,
+                            showHideFavorited = false,
+                        )
+                        EntryTab.SERIES -> TODO()
+                        EntryTab.MERCH -> TODO()
+                    }
+                },
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
                     .conditionallyNonNull(scrollBehavior) {
                         nestedScroll(
                             NestedScrollSplitter(
@@ -371,8 +256,43 @@ object FavoritesScreen {
                     }
             ) {
                 when (tab) {
-                    EntryTab.ARTISTS -> throw IllegalStateException()
-                    EntryTab.RALLIES -> throw IllegalStateException()
+                    EntryTab.ARTISTS ->
+                        ArtistContent(
+                            state = state,
+                            gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
+                            sortFilterState = state.artistsSortFilterState,
+                            entries = artistsEntries,
+                            series = series,
+                            eventSink = eventSink,
+                            header = {
+                                Header(
+                                    tab = { tab },
+                                    onTabChange = { tab = it },
+                                    dataYearHeaderState = dataYearHeaderState,
+                                    eventSink = eventSink,
+                                )
+                            },
+                            noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
+                            modifier = Modifier.padding(top = it.calculateTopPadding())
+                        )
+                    EntryTab.RALLIES ->
+                        RalliesContent(
+                            state = state,
+                            gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
+                            sortFilterState = state.ralliesSortFilterState,
+                            entries = ralliesEntries,
+                            eventSink = eventSink,
+                            header = {
+                                Header(
+                                    tab = { tab },
+                                    onTabChange = { tab = it },
+                                    dataYearHeaderState = dataYearHeaderState,
+                                    eventSink = eventSink,
+                                )
+                            },
+                            noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
+                            modifier = Modifier.padding(top = it.calculateTopPadding())
+                        )
                     EntryTab.SERIES -> SeriesContent(
                         listState = seriesScrollStateSaver.lazyListState(),
                         series = seriesEntries,
@@ -400,16 +320,6 @@ object FavoritesScreen {
                         eventSink = eventSink,
                     )
                 }
-            }
-
-            if (PlatformSpecificConfig.scrollbarsAlwaysVisible) {
-                HorizontalScrollbar(
-                    state = horizontalScrollState,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .width(LocalDensity.current.run { horizontalScrollBarWidth.toDp() })
-                        .padding(horizontal = 8.dp)
-                )
             }
         }
     }

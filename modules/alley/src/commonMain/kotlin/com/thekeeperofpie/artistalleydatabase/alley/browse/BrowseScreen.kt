@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
@@ -27,7 +26,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -66,7 +64,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -92,6 +92,7 @@ object BrowseScreen {
         onOpenSeriesChangelog: (DataYear) -> Unit,
         onOpenMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
+        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
         tagsViewModel: TagsViewModel = assistedMetroViewModel<TagsViewModel, TagsViewModel.Factory> {
             create(it.createSavedStateHandle())
         },
@@ -103,7 +104,6 @@ object BrowseScreen {
         )
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                val scaffoldState = rememberBottomSheetScaffoldState()
                 val scope = rememberCoroutineScope()
                 BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                     scope.launch {
@@ -113,7 +113,7 @@ object BrowseScreen {
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val selectedTabIndex = selectedTabIndex()
                 SortFilterBottomScaffold2(
-                    scaffoldState = scaffoldState,
+                    state = scaffoldState,
                     sheetPeekHeight = 72.dp,
                     topBar = {
                         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -244,7 +244,7 @@ object BrowseScreen {
     @Composable
     private fun <T : Any> TabScreen(
         dataYearHeaderState: DataYearHeaderState,
-        scaffoldState: BottomSheetScaffoldState?,
+        scaffoldState: SortFilterBottomScaffoldState?,
         query: TextFieldState,
         entriesSize: () -> Int,
         values: LazyPagingItems<T>,

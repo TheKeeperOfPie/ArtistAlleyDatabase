@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -63,6 +62,8 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Search
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -75,6 +76,7 @@ object FavoritesMapScreen {
         settings: ArtistAlleySettings,
         mapTransformState: MapScreen.TransformState,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
+        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
         viewModel: FavoritesMapViewModel = assistedMetroViewModel<FavoritesMapViewModel, FavoritesMapViewModel.Factory> {
             create(it.createSavedStateHandle())
         },
@@ -85,6 +87,7 @@ object FavoritesMapScreen {
         val seriesByRowId by viewModel.tagAutocomplete.seriesByRowId.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         FavoritesMapScreen(
+            scaffoldState = scaffoldState,
             filterState = viewModel.filterState,
             query = viewModel.query,
             tagResults = viewModel::tagResults,
@@ -118,10 +121,10 @@ object FavoritesMapScreen {
         onMerchSelected: (MerchInfo, Boolean) -> Unit,
         onClearTags: () -> Unit,
         mapViewModel: MapViewModel,
+        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     ) {
-        val scaffoldState = rememberBottomSheetScaffoldState()
         SortFilterBottomScaffold2(
-            scaffoldState = scaffoldState,
+            state = scaffoldState,
             sheetPeekHeight = 102.dp,
             sheetContent = {
                 FavoritesMapFilterSheetContent(

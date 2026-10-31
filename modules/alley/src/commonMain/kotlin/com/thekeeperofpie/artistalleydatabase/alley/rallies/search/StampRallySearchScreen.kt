@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -47,6 +45,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -61,7 +61,7 @@ fun StampRallySearchScreen(
     lockedYear: DataYear?,
     lockedSeries: String?,
     scrollStateSaver: ScrollStateSaver,
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+    scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     viewModel: StampRallySearchViewModel = assistedMetroViewModel<StampRallySearchViewModel, StampRallySearchViewModel.Factory> {
         create(
             isRoot = isRoot,
@@ -103,7 +103,7 @@ fun StampRallySearchScreen(
     state: StampRallySearchScreen.State,
     eventSink: (Event) -> Unit,
     header: @Composable () -> Unit,
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+    scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     scrollStateSaver: ScrollStateSaver,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
     actions: (@Composable RowScope.() -> Unit)? = null,
@@ -138,7 +138,7 @@ fun StampRallySearchScreen(
             }
         }
         SortFilterBottomScaffold2(
-            scaffoldState = scaffoldState,
+            state = scaffoldState,
             topBar = {
                 AlleySearchBar(
                     onClickBack = { eventSink(Event.Back) },
