@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.web
 import androidx.appstate.transform.listener
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
+import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
@@ -160,8 +160,8 @@ class ArtistAlleyWebSettings(
     override var rootDestination by register(
         serialize = { it.name },
         deserialize = { value ->
-            AlleyRootDestination.entries.find { it.name == value }
-                ?: AlleyRootDestination.ARTISTS
+            AlleyHomeDestination.entries.find { it.name == value }
+                ?: AlleyHomeDestination.ARTISTS
         },
     )
 

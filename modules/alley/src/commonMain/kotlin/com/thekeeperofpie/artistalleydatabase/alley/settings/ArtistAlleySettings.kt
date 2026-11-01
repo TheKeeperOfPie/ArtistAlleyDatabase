@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
+import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSettings
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortSettings
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSettings
@@ -18,5 +18,5 @@ interface ArtistAlleySettings : ArtistSortFilterSettings, StampRallySortSettings
     var languageOption: AniListLanguageOption
     var easterEggEnabled: Boolean
 
-    var rootDestination: AlleyRootDestination
+    var rootDestination: AlleyHomeDestination
 }

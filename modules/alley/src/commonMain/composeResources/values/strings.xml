@@ -423,7 +423,7 @@
     <string name="alley_export_qr_code_data_year_label">Convention</string>
 
     <string name="alley_close_content_description">Close X</string>
-    <string name="alley_generic_filter_content_description">Open filters</string>
+    <string name="alley_generic_filter_content_description">Filters</string>
 
     <string name="alley_copy_link_icon_content_description">Copy link</string>
 

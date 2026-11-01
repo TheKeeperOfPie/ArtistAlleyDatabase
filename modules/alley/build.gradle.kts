@@ -1,5 +1,7 @@
 
 import com.codingfeline.buildkonfig.compiler.FieldSpec
+import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
+import java.lang.module.ModuleFinder.compose
 import java.util.Properties
 
 plugins {
@@ -27,6 +29,7 @@ kotlin {
             api(projects.modules.anilist.data)
             api(projects.modules.entry)
             api(projects.modules.utilsNetwork)
+            api(projects.modules.utilsTheme)
             implementation(projects.modules.apollo.utils)
             implementation(projects.modules.icons)
             implementation(projects.modules.settings.ui)

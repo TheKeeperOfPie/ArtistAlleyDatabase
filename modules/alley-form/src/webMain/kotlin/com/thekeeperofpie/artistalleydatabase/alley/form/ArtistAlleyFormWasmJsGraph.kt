@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.form
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyRootDestination
+import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
@@ -59,7 +59,7 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
         override var languageOption by mutableStateOf(AniListLanguageOption.DEFAULT)
         override var easterEggEnabled by mutableStateOf(false)
 
-        override var rootDestination by mutableStateOf(AlleyRootDestination.ARTISTS)
+        override var rootDestination by mutableStateOf(AlleyHomeDestination.ARTISTS)
     }
 
     @DependencyGraph.Factory

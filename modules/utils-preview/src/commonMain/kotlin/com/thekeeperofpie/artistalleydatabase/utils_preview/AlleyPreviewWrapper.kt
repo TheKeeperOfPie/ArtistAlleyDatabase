@@ -6,12 +6,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.hsl
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.tooling.preview.Devices.DESKTOP
 import androidx.compose.ui.tooling.preview.Devices.PHONE
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,13 +29,22 @@ import coil3.compose.LocalAsyncImagePreviewHandler
 import coil3.compose.asPainter
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
+import com.thekeeperofpie.artistalleydatabase.utils_theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.utils_theme.AppTheme
 import kotlin.random.Random
 
 private class AlleyPreviewWrapper : PreviewWrapperProvider {
     @Composable
     override fun Wrap(content: @Composable () -> Unit) {
         CompositionLocalProvider(LocalAsyncImagePreviewHandler provides CoilPreviewHandler) {
-            MaterialTheme(colorScheme = darkColorScheme()) {
+            val colorScheme = when (LocalLocale.current.language) {
+                "za" -> AlleyTheme.darkScheme
+                "zb" -> AlleyTheme.lightScheme
+                "zc" -> AlleyTheme.blackTheme
+                "zd" -> AppTheme.mikuTheme
+                else -> AlleyTheme.darkScheme
+            }
+            MaterialTheme(colorScheme = colorScheme) {
                 Surface {
                     content()
                 }
@@ -76,9 +85,30 @@ annotation class AlleyPreview
 @PreviewWrapper(wrapper = AlleyPreviewWrapper::class)
 annotation class AlleyPreviewSizes
 
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
+@Preview(name = "Dark", locale = "za")
+@Preview(name = "Light", locale = "zb")
+@Preview(name = "Black", locale = "zc")
+@Preview(name = "Miku", locale = "zd")
+@PreviewWrapper(wrapper = AlleyPreviewWrapper::class)
+annotation class AlleyPreviewThemes
+
 @AlleyPreview
 @Composable
 private fun AlleyPreviewWrapperPreview() {
     AsyncImage("test", null, modifier = Modifier.size(80.dp))
+    Text("Example text")
+}
+
+@AlleyPreviewSizes
+@Composable
+private fun AlleyPreviewWrapperSizesPreview() {
+    Text("Example text")
+}
+
+@AlleyPreviewThemes
+@Composable
+private fun AlleyPreviewWrapperThemesPreview() {
     Text("Example text")
 }

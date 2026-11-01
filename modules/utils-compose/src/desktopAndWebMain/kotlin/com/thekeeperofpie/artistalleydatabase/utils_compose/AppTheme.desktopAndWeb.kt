@@ -7,6 +7,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import com.thekeeperofpie.artistalleydatabase.utils_theme.AppTheme
 
 @Composable
 actual fun AppTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit) {

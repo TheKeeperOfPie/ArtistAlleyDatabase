@@ -9,6 +9,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.coil3.coil.compose)
+            implementation(projects.modules.utilsTheme)
         }
     }
 }

@@ -40,9 +40,9 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import com.materialkolor.ktx.harmonize
 import com.materialkolor.utils.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
-import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
+import com.thekeeperofpie.artistalleydatabase.utils_theme.AlleyTheme
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random

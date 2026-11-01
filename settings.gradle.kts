@@ -188,5 +188,6 @@ include(
     ":modules:utils-roborazzi",
     ":modules:utils-room",
     ":modules:utils-scrollbars",
+    ":modules:utils-theme",
     ":modules:vgmdb",
 )

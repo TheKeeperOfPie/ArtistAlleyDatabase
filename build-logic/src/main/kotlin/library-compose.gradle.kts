@@ -13,7 +13,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            if (project.path != ":modules:utils-preview") {
+            if (project.path != ":modules:utils-preview" && project.path != ":modules:utils-theme") {
                 implementation(project(":modules:utils-preview"))
             }
             resolveLibraries(

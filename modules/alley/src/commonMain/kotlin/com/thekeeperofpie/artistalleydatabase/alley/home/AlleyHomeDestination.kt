@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.home
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -15,7 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Favorite
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import org.jetbrains.compose.resources.StringResource
 
-enum class AlleyRootDestination(val icon: ImageVector, val textRes: StringResource) {
+enum class AlleyHomeDestination(val icon: ImageVector, val textRes: StringResource) {
     ARTISTS(Icons.Default.Brush, Res.string.alley_nav_bar_artists),
     BROWSE(Icons.AutoMirrored.Default.List, Res.string.alley_nav_bar_browse),
     FAVORITES(Icons.Default.Favorite, Res.string.alley_nav_bar_favorites),

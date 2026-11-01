@@ -65,6 +65,7 @@ kotlin {
             implementation(libs.molecule.runtime)
             implementation(projects.modules.icons)
             implementation(projects.modules.utils)
+            implementation(projects.modules.utilsTheme)
         }
         getByName("desktopAndWebMain").dependencies {
             implementation(libs.human.readable)

@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.thekeeperofpie.artistalleydatabase.utils_theme.AppTheme
 
 @Composable
 actual fun AppTheme(

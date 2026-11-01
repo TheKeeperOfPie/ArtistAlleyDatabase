@@ -38,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.Favorite
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoriteSeriesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites.FavoritesChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
@@ -249,7 +250,7 @@ object ArtistAlleyAppScreen {
         val onOpenSettings = { navStack.navigate(AlleyDestination.Settings) }
         return entryProvider {
             sharedElementEntry<AlleyDestination.Home> {
-                AlleyRootScreen(
+                AlleyHomeScreen(
                     graph = graph,
                     onOpenArtist = onOpenArtist,
                     onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
