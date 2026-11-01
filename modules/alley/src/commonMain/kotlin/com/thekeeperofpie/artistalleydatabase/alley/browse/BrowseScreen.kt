@@ -141,6 +141,7 @@ object BrowseScreen {
                                 state = tagsViewModel.seriesSortFilterController.state,
                                 sheetState = scaffoldState.bottomSheetState,
                             )
+                            // TODO: Real merch sort filter?
                             else -> Box {}
                         }
                     }

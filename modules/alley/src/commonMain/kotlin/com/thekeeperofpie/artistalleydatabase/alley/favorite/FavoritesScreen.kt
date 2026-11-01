@@ -247,6 +247,7 @@ object FavoritesScreen {
                             state = state.seriesSortFilterState,
                             sheetState = scaffoldState.bottomSheetState,
                         )
+                        // TODO: Real merch sort filter?
                         EntryTab.MERCH -> Box {}
                     }
                 },
