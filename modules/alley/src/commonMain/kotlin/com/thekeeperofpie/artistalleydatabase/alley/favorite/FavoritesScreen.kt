@@ -3,10 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.favorite
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -61,8 +59,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_mer
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
-import com.composables.core.ScrollArea
-import com.composables.core.rememberScrollAreaState
+import com.composeunstyled.rememberScrollbarState
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -87,12 +84,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.QrCode2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
@@ -104,7 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.VerticalScrollableWithBar
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -387,12 +382,9 @@ object FavoritesScreen {
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val horizontalContentPadding = if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
-                (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
-            } else {
-                0.dp
-            }
+        VerticalScrollableWithBar(
+            scrollbarState = rememberScrollbarState(listState),
+        ) { horizontalContentPadding ->
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(
@@ -402,7 +394,6 @@ object FavoritesScreen {
                 ),
                 modifier = Modifier
                     .fillMaxSize()
-                    .align(Alignment.TopCenter)
             ) {
                 item("header") { header() }
 
@@ -454,14 +445,6 @@ object FavoritesScreen {
                     }
                 }
             }
-
-            VerticalScrollbar(
-                state = listState,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .padding(bottom = 72.dp)
-            )
         }
     }
 
@@ -472,77 +455,67 @@ object FavoritesScreen {
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
-        val scrollAreaState = rememberScrollAreaState(listState)
-        ScrollArea(state = scrollAreaState, modifier = Modifier.fillMaxSize()) {
-            BoxWithConstraints {
-                val horizontalContentPadding = if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
-                    (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
-                } else {
-                    0.dp
-                }
-                LazyColumn(
-                    state = listState,
-                    contentPadding = PaddingValues(
-                        start = horizontalContentPadding,
-                        end = horizontalContentPadding,
-                        bottom = 80.dp
-                    ),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .align(Alignment.TopCenter)
-                ) {
-                    item("header") { header() }
+        VerticalScrollableWithBar(
+            scrollbarState = rememberScrollbarState(listState),
+        ) { horizontalContentPadding ->
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = horizontalContentPadding,
+                    end = horizontalContentPadding,
+                    bottom = 80.dp
+                ),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                item("header") { header() }
 
-                    if (merch.itemCount == 0) {
-                        if (merch.loadState.refresh is LoadState.Loading) {
-                            item("loadingIndicator") {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                        .padding(8.dp)
-                                ) {
-                                    InfiniteProgressIndicator()
-                                }
-                            }
-                        } else {
-                            item("noResults") {
-                                NoResultsItem(
-                                    tab = EntryTab.MERCH,
-                                    eventSink = eventSink,
-                                )
+                if (merch.itemCount == 0) {
+                    if (merch.loadState.refresh is LoadState.Loading) {
+                        item("loadingIndicator") {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(8.dp)
+                            ) {
+                                InfiniteProgressIndicator()
                             }
                         }
                     } else {
-                        items(
-                            count = merch.itemCount,
-                            key = merch.itemKey { it.merch.name },
-                            contentType = merch.itemContentType { "merch" },
-                        ) { index ->
-                            val data = merch[index]
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                MerchRow(
-                                    data = data,
-                                    showNotes = false,
-                                    onFavoriteToggle = {
-                                        if (data != null) {
-                                            eventSink(Event.MerchFavoriteToggle(data, it))
-                                        }
-                                    },
-                                    onClick = {
-                                        if (data != null) {
-                                            eventSink(Event.OpenMerch(data.merch.name))
-                                        }
-                                    },
-                                )
-                                HorizontalDivider()
-                            }
+                        item("noResults") {
+                            NoResultsItem(
+                                tab = EntryTab.MERCH,
+                                eventSink = eventSink,
+                            )
+                        }
+                    }
+                } else {
+                    items(
+                        count = merch.itemCount,
+                        key = merch.itemKey { it.merch.name },
+                        contentType = merch.itemContentType { "merch" },
+                    ) { index ->
+                        val data = merch[index]
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            MerchRow(
+                                data = data,
+                                showNotes = false,
+                                onFavoriteToggle = {
+                                    if (data != null) {
+                                        eventSink(Event.MerchFavoriteToggle(data, it))
+                                    }
+                                },
+                                onClick = {
+                                    if (data != null) {
+                                        eventSink(Event.OpenMerch(data.merch.name))
+                                    }
+                                },
+                            )
+                            HorizontalDivider()
                         }
                     }
                 }
-
-                PrimaryVerticalScrollbar(listState)
             }
         }
     }

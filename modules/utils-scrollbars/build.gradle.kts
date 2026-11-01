@@ -9,6 +9,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.composeunstyled.scrollbars)
+            implementation(projects.modules.icons)
             implementation(projects.modules.utilsCompose)
         }
     }

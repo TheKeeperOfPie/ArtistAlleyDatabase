@@ -577,7 +577,6 @@ object ArtistSearchScreen {
         val unfilteredCount: () -> Int,
         val sortFilterState: ArtistSortFilterState,
         val displayType: () -> SearchDisplayType,
-        val onDisplayTypeChange: (SearchDisplayType) -> Unit,
     ) {
         constructor(
             viewModel: ArtistSearchViewModel,
@@ -594,7 +593,6 @@ object ArtistSearchScreen {
             unfilteredCount = viewModel::unfilteredCount,
             sortFilterState = sortFilterController.state,
             displayType = { viewModel.settings.displayType },
-            onDisplayTypeChange = { viewModel.settings.displayType = it },
         )
     }
 
@@ -639,7 +637,6 @@ private fun Preview() {
             unfilteredCount = { 1000 },
             sortFilterState = sortFilterState,
             displayType = { SearchDisplayType.CARD },
-            onDisplayTypeChange = {},
         )
     }
 

@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils_scrollbars
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.InteractionSource
@@ -9,6 +11,7 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,11 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.ScrollbarState
 import com.composeunstyled.Thumb
+import com.composeunstyled.ThumbVisibility
 import com.composeunstyled.UnstyledHorizontalScrollbar
 import com.composeunstyled.UnstyledVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun rememberScrollbarState(gridState: LazyStaggeredGridState): ScrollbarState =
@@ -90,15 +95,15 @@ fun PrimaryVerticalScrollbar(
 ) {
     val windowSizeClass = currentWindowSizeClass()
     val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
-    if (isExpanded) {
-        val interactionSource = remember { MutableInteractionSource() }
-        UnstyledVerticalScrollbar(
-            scrollbarState = scrollbarState,
-            interactionSource = interactionSource,
-            modifier = modifier.fillMaxHeight()
-        ) {
-            val isHovered by interactionSource.collectIsHoveredAsState()
-            val isDragging by interactionSource.collectIsDraggedAsState()
+    val interactionSource = remember { MutableInteractionSource() }
+    UnstyledVerticalScrollbar(
+        scrollbarState = scrollbarState,
+        interactionSource = interactionSource,
+        modifier = modifier.fillMaxHeight()
+    ) {
+        val isHovered by interactionSource.collectIsHoveredAsState()
+        val isDragging by interactionSource.collectIsDraggedAsState()
+        if (isExpanded) {
             Thumb(
                 modifier = Modifier
                     .width(12.dp)
@@ -111,10 +116,27 @@ fun PrimaryVerticalScrollbar(
                         shape = RoundedCornerShape(100),
                     ),
             )
+        } else {
+            Thumb(
+                thumbVisibility = ThumbVisibility.HideWhileIdle(
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    hideDelay = 1.seconds,
+                ),
+                modifier = Modifier
+                    .heightIn(32.dp)
+                    .width(32.dp)
+                    .background(
+                        color = if (isHovered or isDragging) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        },
+                        shape = RoundedCornerShape(topStartPercent = 100, bottomStartPercent = 100),
+                    ),
+            )
         }
     }
-
-    // TODO: Non-expanded scrollbar
 }
 
 @Composable
