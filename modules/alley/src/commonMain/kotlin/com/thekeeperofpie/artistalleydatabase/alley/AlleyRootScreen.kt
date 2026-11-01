@@ -280,9 +280,12 @@ object AlleyRootScreen {
             }
             // In case the user hides the bar and can't get it back, return it after a delay
             LaunchedEffect(scrollBehavior) {
-                snapshotFlow { isHiding }
+                snapshotFlow {
+                    // Read contentOffset so that the interval resets on every scroll
+                    scrollBehavior.state.contentOffset to isHiding
+                }
                     .flatMapLatest {
-                        if (it) {
+                        if (it.second) {
                             interval(5.seconds, 5.seconds)
                         } else {
                             emptyFlow()

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -181,9 +182,10 @@ fun ArtistSearchScreen(
                 scaffoldState.bottomSheetState.partialExpand()
             }
         }
+
         SortFilterBottomScaffold2(
             state = scaffoldState,
-            topBar = {
+            enterAlwaysTopBar = {
                 AlleySearchBar(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
@@ -206,11 +208,10 @@ fun ArtistSearchScreen(
                     seriesAutocompleteResults = seriesAutocompleteResults
                 )
             },
-            // TODO: This breaks vertical scrolling with 1.12.0-beta03+
-//                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-        ) {
+        ) { _, contentPadding ->
             ArtistSearchScreenContent(
                 sortFilterState = state.sortFilterState,
+                baseContentPadding = contentPadding,
                 header = header,
                 entries = entries,
                 series = series,
@@ -226,6 +227,7 @@ fun ArtistSearchScreen(
 @Composable
 internal fun ArtistSearchScreenContent(
     sortFilterState: ArtistSortFilterState,
+    baseContentPadding: () -> PaddingValues,
     header: @Composable () -> Unit,
     entries: LazyPagingItems<ArtistEntryGridModel>,
     series: () -> Map<String, GetSeriesTitles>,
@@ -240,6 +242,7 @@ internal fun ArtistSearchScreenContent(
     if (displayType == SearchDisplayType.TABLE) {
         TwoWayGrid(
             columns = ArtistSearchColumn.entries,
+            baseContentPadding = baseContentPadding,
             header = header,
             rows = entries,
             unfilteredCount = unfilteredCount,
@@ -277,6 +280,7 @@ internal fun ArtistSearchScreenContent(
             entries = entries,
             itemToId = { it.id.scopedId },
             displayType = { displayType },
+            baseContentPadding = baseContentPadding,
             forceOneDisplayColumn = sortFilterState.persistentState.displaySettings::forceOneDisplayColumn,
             unfilteredCount = unfilteredCount,
             gridState = gridState,

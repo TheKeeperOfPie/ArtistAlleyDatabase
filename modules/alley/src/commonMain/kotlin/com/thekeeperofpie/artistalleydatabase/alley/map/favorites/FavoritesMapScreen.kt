@@ -133,7 +133,7 @@ object FavoritesMapScreen {
                     sheetState = scaffoldState.bottomSheetState,
                 )
             },
-        ) {
+        ) { scaffoldPadding, _ ->
             Box(modifier = Modifier.fillMaxSize()) {
                 val highlightedBooths = highlightedBooths()
                 val isFiltered by remember {
@@ -147,14 +147,14 @@ object FavoritesMapScreen {
                     viewModel = mapViewModel,
                     transformState = mapTransformState,
                     showSlider = false,
-                    bottomContentPadding = it.calculateBottomPadding(),
+                    bottomContentPadding = scaffoldPadding.calculateBottomPadding(),
                     modifier = Modifier.pointerInput(Unit) {
                         awaitEachGesture {
                             val event = awaitPointerEvent(pass = PointerEventPass.Initial)
                             if (event.changes.any { it.pressed }) {
                                 searchExpanded = false
-                                if (scaffoldState.bottomSheetState.targetValue != SheetValue.PartiallyExpanded) {
-                                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                                if (scaffoldState.bottomSheetState.targetValue != SheetValue.Hidden) {
+                                    scope.launch { scaffoldState.bottomSheetState.hide() }
                                 }
                             }
                         }
@@ -182,6 +182,7 @@ object FavoritesMapScreen {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
+                        .padding(horizontal = 16.dp)
                         .width(600.dp)
                         .align(Alignment.TopCenter)
                 ) {
@@ -190,7 +191,7 @@ object FavoritesMapScreen {
                             SearchBarDefaults.InputField(
                                 state = query,
                                 onSearch = {
-                                    val (merchResults, seriesResults) = tagResults()
+                                    val [merchResults, seriesResults] = tagResults()
                                     if (merchResults.isNotEmpty()) {
                                         onMerchSelected(merchResults.first(), true)
                                         query.clearText()

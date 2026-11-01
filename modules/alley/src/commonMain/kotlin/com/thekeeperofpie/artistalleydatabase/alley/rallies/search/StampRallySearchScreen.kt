@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
@@ -139,7 +140,7 @@ fun StampRallySearchScreen(
         }
         SortFilterBottomScaffold2(
             state = scaffoldState,
-            topBar = {
+            enterAlwaysTopBar = {
                 AlleySearchBar(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
@@ -162,11 +163,10 @@ fun StampRallySearchScreen(
                     seriesAutocompleteResults = seriesAutocompleteResults
                 )
             },
-            // TODO: This breaks vertical scrolling with 1.12.0-beta03+
-//                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-        ) {
+        ) { _, contentPadding ->
             StampRallySearchScreenContent(
                 sortFilterState = state.sortFilterState,
+                baseContentPadding = contentPadding,
                 header = header,
                 entries = entries,
                 unfilteredCount = state.unfilteredCount,
@@ -188,6 +188,7 @@ internal fun StampRallySearchScreenContent(
     displayType: () -> SearchDisplayType,
     eventSink: (Event) -> Unit,
     modifier: Modifier = Modifier,
+    baseContentPadding: () -> PaddingValues,
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     noResultsItem: (@Composable () -> Unit)? = null,
 ) {
@@ -195,6 +196,7 @@ internal fun StampRallySearchScreenContent(
     if (displayType == SearchDisplayType.TABLE) {
         TwoWayGrid(
             columns = StampRallySearchColumn.entries,
+            baseContentPadding = baseContentPadding,
             header = header,
             rows = entries,
             unfilteredCount = unfilteredCount,
@@ -220,6 +222,7 @@ internal fun StampRallySearchScreenContent(
             forceOneDisplayColumn = sortFilterState.persistentState.displaySettings::forceOneDisplayColumn,
             unfilteredCount = unfilteredCount,
             gridState = gridState,
+            baseContentPadding = baseContentPadding,
             header = header,
             itemRow = { entry ->
                 StampRallySearchItem(

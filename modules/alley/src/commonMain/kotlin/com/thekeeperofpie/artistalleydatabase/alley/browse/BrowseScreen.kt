@@ -12,20 +12,18 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -61,8 +59,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
@@ -110,28 +106,61 @@ object BrowseScreen {
                         scaffoldState.bottomSheetState.partialExpand()
                     }
                 }
-                val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val selectedTabIndex = selectedTabIndex()
+                val series = tagsViewModel.series.collectAsLazyPagingItems()
+                val merch = tagsViewModel.merch.collectAsLazyPagingItems()
                 SortFilterBottomScaffold2(
                     state = scaffoldState,
                     sheetPeekHeight = 72.dp,
-                    topBar = {
-                        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                            Box(Modifier.fillMaxWidth()) {
-                                TabRow(
-                                    selectedTabIndex = selectedTabIndex,
+                    enterAlwaysTopBar = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            TabRow(
+                                selectedTabIndex = selectedTabIndex,
+                                modifier = Modifier
+                                    .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
+                            ) {
+                                Tab.entries.forEachIndexed { index, tab ->
+                                    Tab(
+                                        selected = selectedTabIndex == index,
+                                        onClick = { onSelectedTabIndexChanged(index) },
+                                        text = { Text(stringResource(tab.textRes)) },
+                                    )
+                                }
+                            }
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                val query = when (selectedTabIndex) {
+                                    0 -> tagsViewModel.seriesQuery
+                                    else -> tagsViewModel.merchQuery
+                                }
+                                val entries = when (selectedTabIndex) {
+                                    0 -> series
+                                    else -> merch
+                                }
+                                val isNotEmpty by remember {
+                                    derivedStateOf { query.text.isNotEmpty() }
+                                }
+                                BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
+                                    query.clearText()
+                                }
+
+                                val scope = rememberCoroutineScope()
+                                AlleySearchBar(
+                                    onClickBack = null,
+                                    query = query,
+                                    itemCount = { entries.itemCount },
+                                    title = { null },
+                                    onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
                                     modifier = Modifier
                                         .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
-                                        .align(Alignment.TopCenter)
-                                ) {
-                                    Tab.entries.forEachIndexed { index, tab ->
-                                        Tab(
-                                            selected = selectedTabIndex == index,
-                                            onClick = { onSelectedTabIndexChanged(index) },
-                                            text = { Text(stringResource(tab.textRes)) },
-                                        )
-                                    }
-                                }
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp),
+                                )
                             }
                         }
                     },
@@ -145,9 +174,7 @@ object BrowseScreen {
                             else -> Box {}
                         }
                     }
-                ) {
-                    val series = tagsViewModel.series.collectAsLazyPagingItems()
-                    val merch = tagsViewModel.merch.collectAsLazyPagingItems()
+                ) { _, contentPadding ->
                     AnimatedContent(
                         targetState = Tab.entries[selectedTabIndex],
                         transitionSpec = { fadeIn().togetherWith(fadeOut()) },
@@ -157,9 +184,7 @@ object BrowseScreen {
                             Tab.SERIES -> {
                                 TabScreen(
                                     dataYearHeaderState = dataYearHeaderState,
-                                    scaffoldState = scaffoldState,
-                                    query = tagsViewModel.seriesQuery,
-                                    entriesSize = { series.itemCount },
+                                    baseContentPadding = contentPadding,
                                     values = series,
                                     itemKey = { it.series.id },
                                     item = { data ->
@@ -208,9 +233,7 @@ object BrowseScreen {
                             }
                             Tab.MERCH -> TabScreen(
                                 dataYearHeaderState = dataYearHeaderState,
-                                scaffoldState = null,
-                                query = tagsViewModel.merchQuery,
-                                entriesSize = { merch.itemCount },
+                                baseContentPadding = contentPadding,
                                 values = merch,
                                 itemKey = { it.merch.name },
                                 item = { data ->
@@ -245,9 +268,7 @@ object BrowseScreen {
     @Composable
     private fun <T : Any> TabScreen(
         dataYearHeaderState: DataYearHeaderState,
-        scaffoldState: SortFilterBottomScaffoldState?,
-        query: TextFieldState,
-        entriesSize: () -> Int,
+        baseContentPadding: () -> PaddingValues,
         values: LazyPagingItems<T>,
         itemKey: (T) -> Any,
         item: @Composable (T?) -> Unit,
@@ -256,117 +277,82 @@ object BrowseScreen {
         onOpenSettings: () -> Unit,
         additionalHeader: LazyListScope.() -> Unit = {},
     ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        Scaffold(
-            topBar = {
-                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                    ) {
-                        val isNotEmpty by remember {
-                            derivedStateOf { query.text.isNotEmpty() }
-                        }
-                        BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
-                            query.clearText()
-                        }
-
-                        val scope = rememberCoroutineScope()
-                        AlleySearchBar(
-                            onClickBack = null,
-                            query = query,
-                            itemCount = entriesSize,
-                            title = { null },
-                            onClickFilter = { scope.launch { scaffoldState?.bottomSheetState?.toggle() } },
-                            modifier = Modifier
-                                .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
-                                .fillMaxWidth()
-                                .padding(top = 4.dp),
+        val listState = scrollStateSaver.lazyListState()
+        val scrollAreaState = rememberScrollAreaState(listState)
+        ScrollArea(
+            state = scrollAreaState,
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            BoxWithConstraints {
+                val horizontalContentPadding =
+                    if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
+                        (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
+                    } else {
+                        0.dp
+                    }
+                LazyColumn(
+                    state = listState,
+                    contentPadding = baseContentPadding() + PaddingValues(
+                        start = horizontalContentPadding,
+                        end = horizontalContentPadding,
+                        bottom = 200.dp,
+                    ),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .align(Alignment.TopCenter)
+                ) {
+                    item(key = "dataYearHeader") {
+                        DataYearHeader(
+                            state = dataYearHeaderState,
+                            onOpenChangelog = onOpenChangelog,
+                            onOpenSettings = onOpenSettings,
                         )
                     }
-                }
-            },
-        ) {
-            val listState = scrollStateSaver.lazyListState()
-            val scrollAreaState = rememberScrollAreaState(listState)
-            ScrollArea(
-                state = scrollAreaState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-            ) {
-                BoxWithConstraints {
-                    val horizontalContentPadding =
-                        if (maxWidth > DisplayConstants.MAX_CONTENT_WIDTH) {
-                            (maxWidth - DisplayConstants.MAX_CONTENT_WIDTH) / 2
-                        } else {
-                            0.dp
-                        }
-                    LazyColumn(
-                        state = listState,
-                        contentPadding = PaddingValues(
-                            start = horizontalContentPadding,
-                            end = horizontalContentPadding,
-                            bottom = 200.dp,
-                        ),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .align(Alignment.TopCenter)
-                    ) {
-                        item(key = "dataYearHeader") {
-                            DataYearHeader(
-                                state = dataYearHeaderState,
-                                onOpenChangelog = onOpenChangelog,
-                                onOpenSettings = onOpenSettings,
-                            )
-                        }
 
-                        additionalHeader()
+                    additionalHeader()
 
-                        if (values.itemCount == 0) {
-                            if (values.loadState.refresh is LoadState.Loading) {
-                                item("loadingIndicator") {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        InfiniteProgressIndicator()
-                                    }
-                                }
-                            } else {
-                                item("noResults") {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            text = stringResource(Res.string.alley_search_no_results),
-                                            modifier = Modifier.padding(16.dp)
-                                        )
-                                    }
+                    if (values.itemCount == 0) {
+                        if (values.loadState.refresh is LoadState.Loading) {
+                            item("loadingIndicator") {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    InfiniteProgressIndicator()
                                 }
                             }
                         } else {
-                            items(
-                                count = values.itemCount,
-                                key = values.itemKey(itemKey),
-                                contentType = values.itemContentType { "tag_entry" },
-                            ) { index ->
-                                val value = values[index]
-                                Column(
+                            item("noResults") {
+                                Box(
+                                    contentAlignment = Alignment.Center,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    item(value)
-                                    HorizontalDivider()
+                                    Text(
+                                        text = stringResource(Res.string.alley_search_no_results),
+                                        modifier = Modifier.padding(16.dp)
+                                    )
                                 }
+                            }
+                        }
+                    } else {
+                        items(
+                            count = values.itemCount,
+                            key = values.itemKey(itemKey),
+                            contentType = values.itemContentType { "tag_entry" },
+                        ) { index ->
+                            val value = values[index]
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                item(value)
+                                HorizontalDivider()
                             }
                         }
                     }
-
-                    PrimaryVerticalScrollbar(listState)
                 }
+
+                PrimaryVerticalScrollbar(listState)
             }
         }
     }

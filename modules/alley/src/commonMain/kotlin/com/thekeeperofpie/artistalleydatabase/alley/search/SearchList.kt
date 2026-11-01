@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -32,6 +33,7 @@ fun <T : Any> SearchList(
     unfilteredCount: () -> Int,
     gridState: LazyStaggeredGridState,
     modifier: Modifier = Modifier,
+    baseContentPadding: () -> PaddingValues = { PaddingValues.Zero },
     noResultsItem: (@Composable () -> Unit)? = null,
     moreResultsItem: (@Composable () -> Unit)? = null,
     itemRow: @Composable (T) -> Unit,
@@ -44,10 +46,10 @@ fun <T : Any> SearchList(
         LazyVerticalStaggeredGrid(
             columns = displayType.columns(forceOneDisplayColumn()),
             state = gridState,
-            contentPadding = displayType.contentPadding(horizontalContentPadding),
+            contentPadding = baseContentPadding() + displayType.contentPadding(horizontalContentPadding),
             verticalItemSpacing = displayType.verticalItemSpacing,
             horizontalArrangement = displayType.horizontalArrangement,
-            modifier = Modifier.fillMaxWidth(1f)
+            modifier = Modifier.fillMaxWidth()
         ) {
             item("header", span = StaggeredGridItemSpan.FullLine) {
                 Box(

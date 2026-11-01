@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -45,7 +46,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import com.hoc081098.flowext.interval
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Copy of [androidx.compose.material3.LargeTopAppBar] supporting CollapsingToolbarLayout features.
@@ -124,6 +130,41 @@ fun EnterAlwaysTopAppBarHeightChange(
     var heightOffsetLimit by rememberSaveable { mutableFloatStateOf(0f) }
     LaunchedEffect(heightOffsetLimit) {
         scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
+    }
+
+    Box(modifier = modifier) {
+        val height =
+            LocalDensity.current.run { -heightOffsetLimit.toDp() + scrollBehavior.state.heightOffset.toDp() }
+        Box(
+            modifier = Modifier
+                .windowInsetsPadding(windowInsets)
+                .clipToBounds()
+                .onSizeChanged {
+                    if (heightOffsetLimit == 0f) {
+                        heightOffsetLimit = -it.height.toFloat()
+                    }
+                }
+                .conditionally(heightOffsetLimit != 0f) { height(height) },
+        ) {
+            Box(
+                modifier = Modifier.wrapContentHeight(align = Alignment.Bottom, unbounded = true),
+                content = content,
+            )
+        }
+    }
+}
+
+@Composable
+fun EnterAlwaysTopAppBarHeightChange(
+    scrollBehavior: FixedTopAppBarScrollBehavior,
+    modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    var heightOffsetLimit by rememberSaveable { mutableFloatStateOf(0f) }
+    LaunchedEffect(heightOffsetLimit) {
+        scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
+        scrollBehavior.fixedHeightOffsetLimit = heightOffsetLimit
     }
 
     Box(modifier = modifier) {
@@ -344,4 +385,52 @@ private suspend fun settle(
     }
 
     return Velocity(0f, remainingVelocity)
+}
+
+
+@Composable
+fun TopAppBarDefaults.enterAlwaysScrollBehaviorAutoReset(): FixedTopAppBarScrollBehavior {
+    val scrollBehavior = enterAlwaysScrollBehavior()
+    val isHiding by remember(scrollBehavior) {
+        derivedStateOf { scrollBehavior.state.heightOffset != 0f }
+    }
+    // In case the user hides the bar and can't get it back, return it after a delay
+    LaunchedEffect(scrollBehavior) {
+        snapshotFlow {
+            // Read contentOffset so that the interval resets on every scroll
+            scrollBehavior.state.contentOffset to isHiding
+        }
+            .flatMapLatest {
+                if (it.second) {
+                    interval(5.seconds, 5.seconds)
+                } else {
+                    emptyFlow()
+                }
+            }
+            .collectLatest {
+                val state = scrollBehavior.state
+                val snapAnimationSpec = scrollBehavior.snapAnimationSpec
+                if (snapAnimationSpec == null) {
+                    state.heightOffset = 0f
+                } else {
+                    AnimationState(state.heightOffset)
+                        .animateTo(0f, snapAnimationSpec) {
+                            state.heightOffset = value
+                        }
+                }
+            }
+    }
+    return remember(scrollBehavior) { FixedTopAppBarScrollBehavior(scrollBehavior) }
+}
+
+class FixedTopAppBarScrollBehavior(scrollBehavior: TopAppBarScrollBehavior) :
+    TopAppBarScrollBehavior by scrollBehavior {
+
+    var fixedHeightOffsetLimit by mutableFloatStateOf(scrollBehavior.state.heightOffsetLimit)
+
+    override val nestedScrollConnection =
+        NestedScrollSplitter(
+            primary = scrollBehavior.nestedScrollConnection,
+            consumeNone = true,
+        )
 }

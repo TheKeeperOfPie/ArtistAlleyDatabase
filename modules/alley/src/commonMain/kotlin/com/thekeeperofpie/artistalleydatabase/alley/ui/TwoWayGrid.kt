@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,6 +57,7 @@ object TwoWayGrid {
         unfilteredCount: () -> Int,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
         modifier: Modifier = Modifier,
+        baseContentPadding: () -> PaddingValues = { PaddingValues.Zero },
         columnHeader: @Composable (column: ColumnType) -> Unit = { ColumnHeader(it) },
         noResultsHeader: @Composable (() -> Unit)? = null,
         moreResultsFooter: @Composable (() -> Unit)? = null,
@@ -87,7 +89,10 @@ object TwoWayGrid {
                         columns.fold(0.dp) { width, column -> width + column.size } +
                                 (DividerDefaults.Thickness * dividerCount)
                     }
-                    LazyColumn(state = listState, contentPadding = contentPadding) {
+                    LazyColumn(
+                        state = listState,
+                        contentPadding = baseContentPadding() + contentPadding,
+                    ) {
                         item("header") {
                             Box(
                                 contentAlignment = Alignment.Center,

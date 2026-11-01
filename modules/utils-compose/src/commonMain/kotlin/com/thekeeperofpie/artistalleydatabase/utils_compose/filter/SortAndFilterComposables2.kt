@@ -60,6 +60,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
@@ -79,12 +80,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.zIndex
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.section_expand_all_content_description
@@ -103,11 +106,14 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.enterAlwaysScrollBehaviorAutoReset
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState.Filter.SelectionMethod
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
@@ -116,6 +122,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
@@ -782,7 +789,7 @@ fun rememberSortFilterBottomScaffoldState(): SortFilterBottomScaffoldState {
 }
 
 class SortFilterBottomScaffoldState internal constructor(
-    internal val scaffoldState: BottomSheetScaffoldState
+    internal val scaffoldState: BottomSheetScaffoldState,
 ) {
     val bottomSheetState get() = scaffoldState.bottomSheetState
 }
@@ -790,12 +797,12 @@ class SortFilterBottomScaffoldState internal constructor(
 @Composable
 fun SortFilterBottomScaffold2(
     modifier: Modifier = Modifier,
-    topBar: @Composable (() -> Unit)? = null,
+    enterAlwaysTopBar: @Composable (() -> Unit)? = null,
     state: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     sheetPeekHeight: Dp = Dp.Unspecified,
     bottomNavigationState: BottomNavigationState? = null,
     sheetContent: @Composable ColumnScope.() -> Unit,
-    content: @Composable (PaddingValues) -> Unit,
+    content: @Composable (scaffoldPadding: PaddingValues, contentPadding: () -> PaddingValues) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val scaffoldState = state.scaffoldState
@@ -807,37 +814,76 @@ fun SortFilterBottomScaffold2(
         scope.launch { bottomSheetState.hide() }
     }
 
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
-                (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
-        sheetDragHandle = null,
-        sheetContent = {
-            // Handle compact layouts with a bottom nav bar
-            val extraAnimateHeight = with(LocalDensity.current) { 100.dp.roundToPx() }
-            Column(
-                modifier = modifier
-                    .animateEnterExit(
-                        enter = slideInVertically { it + extraAnimateHeight },
-                        exit = slideOutVertically { it + extraAnimateHeight },
-                    )
-                    .renderMaybeInSharedTransitionScopeOverlay(1f)
-                    .sharedElement(SharedTransitionKey.makeKeyForId("sortFilterBottomSheet"), "")
-                    .clip(BottomSheetDefaults.ExpandedShape)
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehaviorAutoReset()
+    Box(modifier = modifier) {
+        if (enterAlwaysTopBar != null) {
+            EnterAlwaysTopAppBarHeightChange(
+                scrollBehavior = scrollBehavior,
+                modifier =
+                    Modifier.align(Alignment.TopCenter)
+                        .zIndex(1f)
+                        .animateEnterExit(
+                            enter = slideInVertically { it * 2 },
+                            exit = slideOutVertically { it * 2 },
+                        )
+                        .renderMaybeInSharedTransitionScopeOverlay(2f)
             ) {
-                sheetContent()
+                enterAlwaysTopBar()
             }
-        },
-        sheetContainerColor = Color.Unspecified,
-        sheetTonalElevation = 4.dp,
-        sheetShadowElevation = 4.dp,
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = topBar,
-        modifier = modifier,
-        content = content,
-        // TODO: Error state
-        // snackbarHost = {},
-    )
+        }
+        BottomSheetScaffold(
+            scaffoldState = scaffoldState,
+            sheetPeekHeight = (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
+                    (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
+            sheetDragHandle = null,
+            sheetContent = {
+                // Handle compact layouts with a bottom nav bar
+                val extraAnimateHeight = with(LocalDensity.current) { 100.dp.roundToPx() }
+                Column(
+                    modifier = Modifier
+                        .animateEnterExit(
+                            enter = slideInVertically { it + extraAnimateHeight },
+                            exit = slideOutVertically { it + extraAnimateHeight },
+                        )
+                        .renderMaybeInSharedTransitionScopeOverlay(1f)
+                        .sharedElement(
+                            SharedTransitionKey.makeKeyForId("sortFilterBottomSheet"),
+                            ""
+                        )
+                        .clip(BottomSheetDefaults.ExpandedShape)
+                ) {
+                    sheetContent()
+                }
+            },
+            sheetContainerColor = Color.Unspecified,
+            sheetTonalElevation = 4.dp,
+            sheetShadowElevation = 4.dp,
+            containerColor = MaterialTheme.colorScheme.background,
+            topBar = null,
+            modifier = Modifier.conditionally(
+                enterAlwaysTopBar != null,
+                Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            ),
+            content = {
+                val density = LocalDensity.current
+                content(
+                    it,
+                    {
+                        with(density) {
+                            val heightOffsetLimit = abs(scrollBehavior.fixedHeightOffsetLimit)
+                            if (heightOffsetLimit > 0) {
+                                PaddingValues(top = heightOffsetLimit.toDp())
+                            } else {
+                                PaddingValues.Zero
+                            }
+                        }
+                    },
+                )
+            },
+            // TODO: Error state
+            // snackbarHost = {},
+        )
+    }
 }
 
 @Composable

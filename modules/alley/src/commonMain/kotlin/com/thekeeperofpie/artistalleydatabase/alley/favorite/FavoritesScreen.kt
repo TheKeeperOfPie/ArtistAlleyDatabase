@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -22,7 +23,6 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -88,12 +87,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.QrCode2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
@@ -203,26 +199,23 @@ object FavoritesScreen {
                 EntryTab.SERIES -> seriesEntries
                 EntryTab.MERCH -> merchEntries
             }
-            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             SortFilterBottomScaffold2(
                 state = scaffoldState,
-                topBar = {
+                enterAlwaysTopBar = {
                     val title = stringResource(Res.string.alley_favorites_search)
-                    EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                        AlleySearchBar(
-                            onClickBack = null,
-                            query = state.query,
-                            title = { title },
-                            itemCount = { entries.itemCount },
-                            onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
-                            modifier = Modifier
-                                .animateEnterExit(
-                                    enter = slideInVertically { -it },
-                                    exit = slideOutVertically { -it },
-                                )
-                                .renderMaybeInSharedTransitionScopeOverlay(1f)
-                        )
-                    }
+                    AlleySearchBar(
+                        onClickBack = null,
+                        query = state.query,
+                        title = { title },
+                        itemCount = { entries.itemCount },
+                        onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
+                        modifier = Modifier
+                            .animateEnterExit(
+                                enter = slideInVertically { -it },
+                                exit = slideOutVertically { -it },
+                            )
+                            .renderMaybeInSharedTransitionScopeOverlay(1f)
+                    )
                 },
                 sheetContent = {
                     when (tab) {
@@ -246,21 +239,13 @@ object FavoritesScreen {
                         EntryTab.MERCH -> Box {}
                     }
                 },
-                modifier = Modifier
-                    .conditionallyNonNull(scrollBehavior) {
-                        nestedScroll(
-                            NestedScrollSplitter(
-                                primary = it.nestedScrollConnection,
-                                consumeNone = true,
-                            )
-                        )
-                    }
-            ) {
+            ) { _, contentPadding ->
                 when (tab) {
                     EntryTab.ARTISTS ->
                         ArtistContent(
                             state = state,
                             gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
+                            baseContentPadding = contentPadding,
                             sortFilterState = state.artistsSortFilterState,
                             entries = artistsEntries,
                             series = series,
@@ -274,12 +259,12 @@ object FavoritesScreen {
                                 )
                             },
                             noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
-                            modifier = Modifier.padding(top = it.calculateTopPadding())
                         )
                     EntryTab.RALLIES ->
                         RalliesContent(
                             state = state,
                             gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
+                            baseContentPadding = contentPadding,
                             sortFilterState = state.ralliesSortFilterState,
                             entries = ralliesEntries,
                             eventSink = eventSink,
@@ -292,10 +277,10 @@ object FavoritesScreen {
                                 )
                             },
                             noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
-                            modifier = Modifier.padding(top = it.calculateTopPadding())
                         )
                     EntryTab.SERIES -> SeriesContent(
                         listState = seriesScrollStateSaver.lazyListState(),
+                        baseContentPadding = contentPadding,
                         series = seriesEntries,
                         header = {
                             Header(
@@ -309,6 +294,7 @@ object FavoritesScreen {
                     )
                     EntryTab.MERCH -> MerchContent(
                         listState = merchScrollStateSaver.lazyListState(),
+                        baseContentPadding = contentPadding,
                         merch = merchEntries,
                         header = {
                             Header(
@@ -330,6 +316,7 @@ object FavoritesScreen {
         state: State,
         sortFilterState: ArtistSortFilterState,
         gridState: LazyStaggeredGridState,
+        baseContentPadding: () -> PaddingValues,
         entries: LazyPagingItems<ArtistEntryGridModel>,
         series: () -> Map<String, GetSeriesTitles>,
         eventSink: (Event) -> Unit,
@@ -339,6 +326,7 @@ object FavoritesScreen {
     ) {
         ArtistSearchScreenContent(
             sortFilterState = sortFilterState,
+            baseContentPadding = baseContentPadding,
             gridState = gridState,
             header = header,
             entries = entries,
@@ -356,6 +344,7 @@ object FavoritesScreen {
         state: State,
         sortFilterState: StampRallySortFilterState,
         gridState: LazyStaggeredGridState,
+        baseContentPadding: () -> PaddingValues,
         entries: LazyPagingItems<StampRallyWithUserData>,
         eventSink: (Event) -> Unit,
         header: @Composable () -> Unit,
@@ -365,6 +354,7 @@ object FavoritesScreen {
         StampRallySearchScreenContent(
             sortFilterState = sortFilterState,
             gridState = gridState,
+            baseContentPadding = baseContentPadding,
             header = header,
             entries = entries,
             unfilteredCount = state.ralliesUnfilteredCount,
@@ -378,6 +368,7 @@ object FavoritesScreen {
     @Composable
     private fun SeriesContent(
         listState: LazyListState,
+        baseContentPadding: () -> PaddingValues,
         series: LazyPagingItems<SeriesWithUserData>,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
@@ -387,7 +378,7 @@ object FavoritesScreen {
         ) { horizontalContentPadding ->
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(
+                contentPadding = baseContentPadding() + PaddingValues(
                     start = horizontalContentPadding,
                     end = horizontalContentPadding,
                     bottom = 80.dp
@@ -451,6 +442,7 @@ object FavoritesScreen {
     @Composable
     private fun MerchContent(
         listState: LazyListState,
+        baseContentPadding: () -> PaddingValues,
         merch: LazyPagingItems<MerchWithUserData>,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
@@ -460,7 +452,7 @@ object FavoritesScreen {
         ) { horizontalContentPadding ->
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(
+                contentPadding = baseContentPadding() + PaddingValues(
                     start = horizontalContentPadding,
                     end = horizontalContentPadding,
                     bottom = 80.dp
