@@ -79,6 +79,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSheetContent
+import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
@@ -137,7 +139,6 @@ object FavoritesScreen {
                     tab = viewModel.tab,
                     query = viewModel.query,
                     displayType = { viewModel.settings.displayType },
-                    onDisplayTypeChange = { viewModel.settings.displayType = it },
                     year = viewModel::year,
                     onYearChange = { viewModel.year = it },
                     artistsEntries = viewModel.artistEntries,
@@ -147,6 +148,7 @@ object FavoritesScreen {
                     ralliesSortFilterState = viewModel.stampRallySortFilterController.state,
                     ralliesUnfilteredCount = viewModel::stampRallyUnfilteredCount,
                     seriesEntries = viewModel.seriesEntries,
+                    seriesSortFilterState = viewModel.seriesSortFilterController.state,
                     merchEntries = viewModel.merchEntries,
                 )
             },
@@ -241,8 +243,11 @@ object FavoritesScreen {
                             seriesAutocompleteResults = seriesAutocompleteResults,
                             showHideFavorited = false,
                         )
-                        EntryTab.SERIES -> TODO()
-                        EntryTab.MERCH -> TODO()
+                        EntryTab.SERIES -> SeriesSortFilterSheetContent(
+                            state = state.seriesSortFilterState,
+                            sheetState = scaffoldState.bottomSheetState,
+                        )
+                        EntryTab.MERCH -> Box {}
                     }
                 },
                 modifier = Modifier
@@ -625,7 +630,6 @@ object FavoritesScreen {
         val tab: MutableStateFlow<EntryTab>,
         val query: TextFieldState,
         val displayType: () -> SearchDisplayType,
-        val onDisplayTypeChange: (SearchDisplayType) -> Unit,
         val year: () -> DataYear,
         val onYearChange: (DataYear) -> Unit,
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
@@ -635,6 +639,7 @@ object FavoritesScreen {
         val ralliesSortFilterState: StampRallySortFilterState,
         val ralliesUnfilteredCount: () -> Int,
         val seriesEntries: Flow<PagingData<SeriesWithUserData>>,
+        val seriesSortFilterState: SeriesSortFilterState,
         val merchEntries: Flow<PagingData<MerchWithUserData>>,
     )
 
