@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
+import androidx.compose.animation.core.AnimationState
+import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -16,6 +18,7 @@ import androidx.compose.material3.AppBarRow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
+import androidx.compose.material3.FloatingToolbarExitDirection
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationRail
@@ -31,6 +34,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -39,8 +44,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -49,6 +60,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.zIndex
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_generic_filter_content_description
+import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
@@ -67,8 +79,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 object AlleyRootScreen {
@@ -257,76 +273,122 @@ object AlleyRootScreen {
                 }
             }
         } else {
-            Box {
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-                    movableContent(it)
-                }
-
-                HorizontalFloatingToolbar(
-                    expanded = true,
-                    floatingActionButton = {
-                        val contentDescription =
-                            stringResource(Res.string.alley_generic_filter_content_description)
-                        TooltipBox(
-                            positionProvider =
-                                TooltipDefaults.rememberTooltipPositionProvider(
-                                    TooltipAnchorPosition.Above
-                                ),
-                            tooltip = {
-                                PlainTooltip(
-                                    modifier =
-                                        Modifier.semantics {
-                                            liveRegion = LiveRegionMode.Assertive
-                                            paneTitle = contentDescription
-                                        }
-                                ) {
-                                    Text(contentDescription)
+            val scrollBehavior =
+                FloatingToolbarDefaults.exitAlwaysScrollBehavior(exitDirection = FloatingToolbarExitDirection.Bottom)
+            val isHiding by remember(scrollBehavior) {
+                derivedStateOf { scrollBehavior.state.offset != 0f }
+            }
+            // In case the user hides the bar and can't get it back, return it after a delay
+            LaunchedEffect(scrollBehavior) {
+                snapshotFlow { isHiding }
+                    .flatMapLatest {
+                        if (it) {
+                            interval(5.seconds, 5.seconds)
+                        } else {
+                            emptyFlow()
+                        }
+                    }
+                    .collectLatest {
+                        val state = scrollBehavior.state
+                        AnimationState(state.offset)
+                            .animateTo(0f, scrollBehavior.snapAnimationSpec) {
+                                state.offset = value
+                            }
+                    }
+            }
+            Scaffold(
+                modifier = Modifier
+                    .pointerInput(scrollBehavior) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                if (event.type == PointerEventType.Scroll) {
+                                    val delta = event.changes.firstOrNull()?.scrollDelta
+                                    if (delta != null) {
+                                        scrollBehavior.onPostScroll(
+                                            -delta,
+                                            Offset.Zero,
+                                            NestedScrollSource.UserInput,
+                                        )
+                                    }
                                 }
-                            },
-                            state = rememberTooltipState(),
-                        ) {
-                            val scope = rememberCoroutineScope()
-                            FloatingToolbarDefaults.VibrantFloatingActionButton(
-                                onClick = {
-                                    scope.launch {
-                                        when (destination()) {
-                                            AlleyRootDestination.ARTISTS -> state.artistsScaffoldState
-                                            AlleyRootDestination.BROWSE -> state.browseScaffoldState
-                                            AlleyRootDestination.FAVORITES -> state.favoritesScaffoldState
-                                            AlleyRootDestination.MAP -> state.mapScaffoldState
-                                            AlleyRootDestination.STAMP_RALLIES -> state.ralliesScaffoldState
-                                        }.bottomSheetState.toggle()
+                            }
+                        }
+                    }
+                    .nestedScroll(scrollBehavior)
+            ) {
+                Box(Modifier.padding(it)) {
+                    HorizontalFloatingToolbar(
+                        expanded = true,
+                        scrollBehavior = scrollBehavior,
+                        floatingActionButton = {
+                            val contentDescription =
+                                stringResource(Res.string.alley_generic_filter_content_description)
+                            TooltipBox(
+                                positionProvider =
+                                    TooltipDefaults.rememberTooltipPositionProvider(
+                                        TooltipAnchorPosition.Above
+                                    ),
+                                tooltip = {
+                                    PlainTooltip(
+                                        modifier =
+                                            Modifier.semantics {
+                                                liveRegion = LiveRegionMode.Assertive
+                                                paneTitle = contentDescription
+                                            }
+                                    ) {
+                                        Text(contentDescription)
                                     }
                                 },
+                                state = rememberTooltipState(),
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.FilterList,
-                                    contentDescription = contentDescription,
+                                val scope = rememberCoroutineScope()
+                                FloatingToolbarDefaults.VibrantFloatingActionButton(
+                                    onClick = {
+                                        scope.launch {
+                                            when (destination()) {
+                                                AlleyRootDestination.ARTISTS -> state.artistsScaffoldState
+                                                AlleyRootDestination.BROWSE -> state.browseScaffoldState
+                                                AlleyRootDestination.FAVORITES -> state.favoritesScaffoldState
+                                                AlleyRootDestination.MAP -> state.mapScaffoldState
+                                                AlleyRootDestination.STAMP_RALLIES -> state.ralliesScaffoldState
+                                            }.bottomSheetState.toggle()
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.FilterList,
+                                        contentDescription = contentDescription,
+                                    )
+                                }
+                            }
+                        },
+                        modifier =
+                            Modifier.align(Alignment.BottomCenter)
+                                .offset(y = -ScreenOffset)
+                                .zIndex(1f)
+                                .animateEnterExit(
+                                    enter = slideInVertically { it * 2 },
+                                    exit = slideOutVertically { it * 2 },
+                                )
+                                .renderMaybeInSharedTransitionScopeOverlay(2f),
+                    ) {
+                        val itemsWithText =
+                            AlleyRootDestination.entries.map { it to stringResource(it.textRes) }
+                        val currentDestination = destination()
+                        AppBarRow {
+                            itemsWithText.forEach { [item, text] ->
+                                this@AppBarRow.toggleableItem(
+                                    onCheckedChange = { if (it) onChangeDestination(item) },
+                                    icon = { Icon(item.icon, text) },
+                                    label = text,
+                                    checked = item == currentDestination,
                                 )
                             }
                         }
-                    },
-                    modifier =
-                        Modifier.align(Alignment.BottomCenter).offset(y = -ScreenOffset).zIndex(1f)
-                            .animateEnterExit(
-                                enter = slideInVertically { it * 2 },
-                                exit = slideOutVertically { it * 2 },
-                            )
-                            .renderMaybeInSharedTransitionScopeOverlay(2f),
-                ) {
-                    val itemsWithText =
-                        AlleyRootDestination.entries.map { it to stringResource(it.textRes) }
-                    val currentDestination = destination()
-                    AppBarRow {
-                        itemsWithText.forEach { [item, text] ->
-                            this@AppBarRow.toggleableItem(
-                                onCheckedChange = { if (it) onChangeDestination(item) },
-                                icon = { Icon(item.icon, text) },
-                                label = text,
-                                checked = item == currentDestination,
-                            )
-                        }
                     }
+
+                    movableContent(it)
                 }
             }
         }
