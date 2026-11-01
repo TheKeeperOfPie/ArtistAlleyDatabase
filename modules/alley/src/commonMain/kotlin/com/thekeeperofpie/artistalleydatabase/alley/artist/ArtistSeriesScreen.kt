@@ -29,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
@@ -40,7 +39,6 @@ object ArtistSeriesScreen {
     operator fun invoke(
         route: AlleyDestination.Series,
         onClickBack: (() -> Unit)?,
-        scrollStateSaver: ScrollStateSaver,
         onClickRallies: (DataYear) -> Unit,
         onClickMap: (DataYear?) -> Unit,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
@@ -72,7 +70,6 @@ object ArtistSeriesScreen {
             artistSearchViewModel = artistSearchViewModel,
             artistSeriesViewModel = artistSeriesViewModel,
             onClickBack = onClickBack,
-            scrollStateSaver = scrollStateSaver,
             showRalliesButton = artistSearchViewModel::hasRallies,
             onClickRallies = { onClickRallies(artistSearchViewModel.year) },
             onClickMap = { onClickMap(artistSearchViewModel.lockedYear) },
@@ -92,7 +89,6 @@ object ArtistSeriesScreen {
         artistSearchViewModel: ArtistSearchViewModel,
         artistSeriesViewModel: ArtistSeriesViewModel,
         onClickBack: (() -> Unit)?,
-        scrollStateSaver: ScrollStateSaver,
         showRalliesButton: () -> Boolean,
         onClickRallies: () -> Unit,
         onClickMap: () -> Unit,
@@ -129,7 +125,6 @@ object ArtistSeriesScreen {
                 )
             },
             scaffoldState = scaffoldState,
-            scrollStateSaver = scrollStateSaver,
             seriesAutocompleteResults = { seriesAutocompleteResults },
             actions = {
                 if (showRalliesButton()) {

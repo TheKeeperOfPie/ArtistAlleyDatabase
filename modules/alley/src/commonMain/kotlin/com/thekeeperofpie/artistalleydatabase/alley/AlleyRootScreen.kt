@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -78,7 +79,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMayb
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -105,7 +105,6 @@ object AlleyRootScreen {
         onOpenSettings: () -> Unit,
     ) {
         val settings = remember(graph) { graph.settings }
-        val scrollPositions = ScrollStateSaver.scrollPositions()
         val mapTransformState = MapScreen.rememberTransformState()
 
         // Mirror to support multiple roots, in theory
@@ -147,87 +146,60 @@ object AlleyRootScreen {
                     )
             ) {
                 var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-                when (destination) {
-                    AlleyRootDestination.ARTISTS ->
-                        ArtistSearchScreen(
-                            isRoot = true,
-                            scaffoldState = artistsScaffoldState,
-                            scrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.ARTISTS.name,
-                                scrollPositions,
-                            ),
-                        )
-                    AlleyRootDestination.BROWSE ->
-                        BrowseScreen(
-                            scaffoldState = browseScaffoldState,
-                            seriesScrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.BROWSE.name + "_series",
-                                scrollPositions,
-                            ),
-                            merchScrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.BROWSE.name + "_merch",
-                                scrollPositions,
-                            ),
-                            selectedTabIndex = { selectedTabIndex },
-                            onSelectedTabIndexChanged = { selectedTabIndex = it },
-                            onSeriesClick = onOpenSeries,
-                            onMerchClick = onOpenMerch,
-                            onOpenSeriesChangelog = onOpenSeriesChangelog,
-                            onOpenMerchChangelog = onOpenMerchChangelog,
-                            onOpenSettings = onOpenSettings,
-                        )
-                    AlleyRootDestination.FAVORITES ->
-                        FavoritesScreen(
-                            scaffoldState = favoritesScaffoldState,
-                            artistsScrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.FAVORITES.name + "artists",
-                                scrollPositions,
-                            ),
-                            ralliesScrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.FAVORITES.name + "rallies",
-                                scrollPositions,
-                            ),
-                            seriesScrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.FAVORITES.name + "series",
-                                scrollPositions,
-                            ),
-                            merchScrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.FAVORITES.name + "merch",
-                                scrollPositions,
-                            ),
-                            onNavigateToArtists = { destination = AlleyRootDestination.ARTISTS },
-                            onNavigateToRallies = {
-                                destination = AlleyRootDestination.STAMP_RALLIES
-                            },
-                            onNavigateToSeries = {
-                                // TODO: This doesn't tab over to series
-                                destination = AlleyRootDestination.BROWSE
-                            },
-                            onNavigateToMerch = {
-                                // TODO: This doesn't tab over to merch
-                                destination = AlleyRootDestination.BROWSE
-                            },
-                        )
-                    AlleyRootDestination.MAP ->
-                        FavoritesMapScreen(
-                            scaffoldState = mapScaffoldState,
-                            settings = graph.settings,
-                            mapTransformState = mapTransformState,
-                            onArtistClick = { entry, imageIndex ->
-                                onOpenArtist(entry.artist, imageIndex)
-                            },
-                        )
-                    AlleyRootDestination.STAMP_RALLIES ->
-                        StampRallySearchScreen(
-                            isRoot = true,
-                            scaffoldState = ralliesScaffoldState,
-                            lockedYear = null,
-                            lockedSeries = null,
-                            scrollStateSaver = ScrollStateSaver.fromMap(
-                                AlleyRootDestination.STAMP_RALLIES.name,
-                                scrollPositions,
-                            ),
-                        )
+                val saveableStateHolder = rememberSaveableStateHolder()
+                saveableStateHolder.SaveableStateProvider(destination) {
+                    when (destination) {
+                        AlleyRootDestination.ARTISTS ->
+                            ArtistSearchScreen(
+                                isRoot = true,
+                                scaffoldState = artistsScaffoldState,
+                            )
+                        AlleyRootDestination.BROWSE ->
+                            BrowseScreen(
+                                scaffoldState = browseScaffoldState,
+                                selectedTabIndex = { selectedTabIndex },
+                                onSelectedTabIndexChanged = { selectedTabIndex = it },
+                                onSeriesClick = onOpenSeries,
+                                onMerchClick = onOpenMerch,
+                                onOpenSeriesChangelog = onOpenSeriesChangelog,
+                                onOpenMerchChangelog = onOpenMerchChangelog,
+                                onOpenSettings = onOpenSettings,
+                            )
+                        AlleyRootDestination.FAVORITES ->
+                            FavoritesScreen(
+                                scaffoldState = favoritesScaffoldState,
+                                onNavigateToArtists = {
+                                    destination = AlleyRootDestination.ARTISTS
+                                },
+                                onNavigateToRallies = {
+                                    destination = AlleyRootDestination.STAMP_RALLIES
+                                },
+                                onNavigateToSeries = {
+                                    // TODO: This doesn't tab over to series
+                                    destination = AlleyRootDestination.BROWSE
+                                },
+                                onNavigateToMerch = {
+                                    // TODO: This doesn't tab over to merch
+                                    destination = AlleyRootDestination.BROWSE
+                                },
+                            )
+                        AlleyRootDestination.MAP ->
+                            FavoritesMapScreen(
+                                scaffoldState = mapScaffoldState,
+                                settings = graph.settings,
+                                mapTransformState = mapTransformState,
+                                onArtistClick = { entry, imageIndex ->
+                                    onOpenArtist(entry.artist, imageIndex)
+                                },
+                            )
+                        AlleyRootDestination.STAMP_RALLIES ->
+                            StampRallySearchScreen(
+                                isRoot = true,
+                                scaffoldState = ralliesScaffoldState,
+                                lockedYear = null,
+                                lockedSeries = null,
+                            )
+                    }
                 }
             }
         }

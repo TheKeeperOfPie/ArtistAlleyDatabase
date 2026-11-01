@@ -63,7 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberD
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementDialog
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -279,7 +278,6 @@ object ArtistAlleyAppScreen {
                     lockedYear = it.year,
                     isRoot = false,
                     lockedSerializedBooths = it.serializedBooths,
-                    scrollStateSaver = ScrollStateSaver(),
                 )
             }
 
@@ -466,7 +464,6 @@ object ArtistAlleyAppScreen {
                     isRoot = false,
                     lockedYear = it.year,
                     lockedSeries = it.series,
-                    scrollStateSaver = ScrollStateSaver(),
                 )
             }
 
@@ -534,7 +531,6 @@ object ArtistAlleyAppScreen {
                 ArtistSeriesScreen(
                     route = route,
                     onClickBack = navStack::onBack,
-                    scrollStateSaver = ScrollStateSaver(),
                     onClickRallies = {
                         navStack.navigate(
                             AlleyDestination.StampRallies(it, route.series)
@@ -586,7 +582,6 @@ object ArtistAlleyAppScreen {
                 ArtistMerchScreen(
                     route = route,
                     onClickBack = navStack::onBack,
-                    scrollStateSaver = ScrollStateSaver(),
                     onClickMap = {
                         navStack.navigate(
                             AlleyDestination.MerchMap(it, route.merch)

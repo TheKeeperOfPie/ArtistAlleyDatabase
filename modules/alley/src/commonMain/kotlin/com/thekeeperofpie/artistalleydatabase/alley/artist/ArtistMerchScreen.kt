@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Map
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
@@ -37,7 +36,6 @@ object ArtistMerchScreen {
     operator fun invoke(
         route: AlleyDestination.Merch,
         onClickBack: (() -> Unit)?,
-        scrollStateSaver: ScrollStateSaver,
         onClickMap: (DataYear?) -> Unit,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
         onOpenArtistImageFullscreen: (
@@ -68,7 +66,6 @@ object ArtistMerchScreen {
             artistSearchViewModel = artistSearchViewModel,
             artistMerchViewModel = artistMerchViewModel,
             onClickBack = onClickBack,
-            scrollStateSaver = scrollStateSaver,
             onClickMap = { onClickMap(artistSearchViewModel.lockedYear) },
             onOpenArtist = onOpenArtist,
             onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
@@ -84,7 +81,6 @@ object ArtistMerchScreen {
     operator fun invoke(
         artistSearchViewModel: ArtistSearchViewModel,
         artistMerchViewModel: ArtistMerchViewModel,
-        scrollStateSaver: ScrollStateSaver,
         onClickBack: (() -> Unit)?,
         onClickMap: () -> Unit,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
@@ -120,7 +116,6 @@ object ArtistMerchScreen {
                 )
             },
             scaffoldState = scaffoldState,
-            scrollStateSaver = scrollStateSaver,
             seriesAutocompleteResults = { seriesAutocompleteResults },
             actions = {
                 IconButton(onClick = onClickMap) {

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Icon
@@ -92,7 +91,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
@@ -104,7 +102,6 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ArtistSearchScreen(
-    scrollStateSaver: ScrollStateSaver,
     isRoot: Boolean,
     lockedYear: DataYear? = null,
     lockedSerializedBooths: String? = null,
@@ -135,7 +132,6 @@ fun ArtistSearchScreen(
         eventSink = viewModel::onEvent,
         header = { Header(dataYearHeaderState, viewModel::onEvent) },
         scaffoldState = scaffoldState,
-        scrollStateSaver = scrollStateSaver,
         seriesAutocompleteResults = { seriesAutocompleteResults },
     )
 }
@@ -148,11 +144,9 @@ fun ArtistSearchScreen(
     eventSink: (Event) -> Unit,
     header: @Composable () -> Unit,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-    scrollStateSaver: ScrollStateSaver,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val gridState = scrollStateSaver.lazyStaggeredGridState()
     // TODO
 //    sortFilterState.ImmediateScrollResetEffect(gridState)
 
@@ -218,7 +212,6 @@ fun ArtistSearchScreen(
                 unfilteredCount = state.unfilteredCount,
                 displayType = state.displayType,
                 eventSink = eventSink,
-                gridState = gridState,
             )
         }
     }
@@ -235,9 +228,9 @@ internal fun ArtistSearchScreenContent(
     displayType: () -> SearchDisplayType,
     eventSink: (Event) -> Unit,
     modifier: Modifier = Modifier,
-    gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     noResultsItem: (@Composable () -> Unit)? = null,
 ) {
+    val gridState = rememberLazyStaggeredGridState()
     val displayType = displayType()
     if (displayType == SearchDisplayType.TABLE) {
         TwoWayGrid(
@@ -660,7 +653,6 @@ private fun Preview() {
                 onOpenSettings = {},
             )
         },
-        scrollStateSaver = ScrollStateSaver.STUB,
         seriesAutocompleteResults = { emptyList() },
     )
 }

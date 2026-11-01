@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -29,6 +30,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -65,7 +67,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -79,8 +80,6 @@ object BrowseScreen {
 
     @Composable
     operator fun invoke(
-        seriesScrollStateSaver: ScrollStateSaver,
-        merchScrollStateSaver: ScrollStateSaver,
         selectedTabIndex: () -> Int,
         onSelectedTabIndexChanged: (Int) -> Unit,
         onSeriesClick: (DataYear, String) -> Unit,
@@ -175,89 +174,93 @@ object BrowseScreen {
                         }
                     }
                 ) { _, contentPadding ->
+                    val saveableStateHolder = rememberSaveableStateHolder()
                     AnimatedContent(
                         targetState = Tab.entries[selectedTabIndex],
                         transitionSpec = { fadeIn().togetherWith(fadeOut()) },
                         label = "Tag screen",
                     ) {
-                        when (it) {
-                            Tab.SERIES -> {
-                                TabScreen(
+                        saveableStateHolder.SaveableStateProvider(it) {
+                            when (it) {
+                                Tab.SERIES -> {
+                                    TabScreen(
+                                        dataYearHeaderState = dataYearHeaderState,
+                                        baseContentPadding = contentPadding,
+                                        values = series,
+                                        itemKey = { it.series.id },
+                                        item = { data ->
+                                            SeriesRow(
+                                                data = data,
+                                                textStyle = LocalTextStyle.current,
+                                                onFavoriteToggle = {
+                                                    if (data != null) {
+                                                        tagsViewModel.onSeriesFavoriteToggle(
+                                                            data,
+                                                            it
+                                                        )
+                                                    }
+                                                },
+                                                onClick = {
+                                                    data?.let {
+                                                        onSeriesClick(
+                                                            tagsViewModel.dataYear,
+                                                            it.series.id,
+                                                        )
+                                                    }
+                                                },
+                                            )
+                                        },
+                                        onOpenChangelog = onOpenSeriesChangelog,
+                                        onOpenSettings = onOpenSettings,
+                                        additionalHeader = {
+                                            item(key = "seriesFilterOptions") {
+                                                Column {
+                                                    tagsViewModel.seriesLanguageSection
+                                                        .Content(Modifier.fillMaxWidth())
+
+                                                    HorizontalDivider()
+
+                                                    val saveableState =
+                                                        tagsViewModel.seriesSortFilterController.state.saveableState
+                                                    SwitchSection(
+                                                        title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
+                                                        enabled = saveableState::showOnlyConfirmedTags,
+                                                        onEnabledChanged = {
+                                                            saveableState.showOnlyConfirmedTags = it
+                                                        },
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                                Tab.MERCH -> TabScreen(
                                     dataYearHeaderState = dataYearHeaderState,
                                     baseContentPadding = contentPadding,
-                                    values = series,
-                                    itemKey = { it.series.id },
+                                    values = merch,
+                                    itemKey = { it.merch.name },
                                     item = { data ->
-                                        SeriesRow(
+                                        MerchRow(
                                             data = data,
-                                            textStyle = LocalTextStyle.current,
                                             onFavoriteToggle = {
                                                 if (data != null) {
-                                                    tagsViewModel.onSeriesFavoriteToggle(data, it)
+                                                    tagsViewModel.onMerchFavoriteToggle(data, it)
                                                 }
                                             },
                                             onClick = {
-                                                data?.let {
-                                                    onSeriesClick(
+                                                if (data != null) {
+                                                    onMerchClick(
                                                         tagsViewModel.dataYear,
-                                                        it.series.id,
+                                                        data.merch.name,
                                                     )
                                                 }
                                             },
                                         )
                                     },
-                                    onOpenChangelog = onOpenSeriesChangelog,
+                                    onOpenChangelog = onOpenMerchChangelog,
                                     onOpenSettings = onOpenSettings,
-                                    scrollStateSaver = seriesScrollStateSaver,
-                                    additionalHeader = {
-                                        item(key = "seriesFilterOptions") {
-                                            Column {
-                                                tagsViewModel.seriesLanguageSection
-                                                    .Content(Modifier.fillMaxWidth())
-
-                                                HorizontalDivider()
-
-                                                val saveableState =
-                                                    tagsViewModel.seriesSortFilterController.state.saveableState
-                                                SwitchSection(
-                                                    title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
-                                                    enabled = saveableState::showOnlyConfirmedTags,
-                                                    onEnabledChanged = {
-                                                        saveableState.showOnlyConfirmedTags = it
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    }
                                 )
                             }
-                            Tab.MERCH -> TabScreen(
-                                dataYearHeaderState = dataYearHeaderState,
-                                baseContentPadding = contentPadding,
-                                values = merch,
-                                itemKey = { it.merch.name },
-                                item = { data ->
-                                    MerchRow(
-                                        data = data,
-                                        onFavoriteToggle = {
-                                            if (data != null) {
-                                                tagsViewModel.onMerchFavoriteToggle(data, it)
-                                            }
-                                        },
-                                        onClick = {
-                                            if (data != null) {
-                                                onMerchClick(
-                                                    tagsViewModel.dataYear,
-                                                    data.merch.name,
-                                                )
-                                            }
-                                        },
-                                    )
-                                },
-                                onOpenChangelog = onOpenMerchChangelog,
-                                onOpenSettings = onOpenSettings,
-                                scrollStateSaver = merchScrollStateSaver,
-                            )
                         }
                     }
                 }
@@ -272,12 +275,11 @@ object BrowseScreen {
         values: LazyPagingItems<T>,
         itemKey: (T) -> Any,
         item: @Composable (T?) -> Unit,
-        scrollStateSaver: ScrollStateSaver,
         onOpenChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
         additionalHeader: LazyListScope.() -> Unit = {},
     ) {
-        val listState = scrollStateSaver.lazyListState()
+        val listState = rememberLazyListState()
         val scrollAreaState = rememberScrollAreaState(listState)
         ScrollArea(
             state = scrollAreaState,

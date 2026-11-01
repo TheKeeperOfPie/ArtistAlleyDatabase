@@ -10,8 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -29,6 +28,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -94,7 +94,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.VerticalScrollableWithBar
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
@@ -108,10 +107,6 @@ object FavoritesScreen {
 
     @Composable
     operator fun invoke(
-        artistsScrollStateSaver: ScrollStateSaver,
-        ralliesScrollStateSaver: ScrollStateSaver,
-        seriesScrollStateSaver: ScrollStateSaver,
-        merchScrollStateSaver: ScrollStateSaver,
         onNavigateToArtists: () -> Unit,
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
@@ -145,10 +140,6 @@ object FavoritesScreen {
             },
             scaffoldState = scaffoldState,
             series = { series },
-            artistsScrollStateSaver = artistsScrollStateSaver,
-            ralliesScrollStateSaver = ralliesScrollStateSaver,
-            seriesScrollStateSaver = seriesScrollStateSaver,
-            merchScrollStateSaver = merchScrollStateSaver,
             seriesAutocompleteResults = { seriesAutocompleteResults },
             eventSink = {
                 viewModel.onEvent(
@@ -166,10 +157,6 @@ object FavoritesScreen {
     operator fun invoke(
         state: State,
         series: () -> Map<String, GetSeriesTitles>,
-        artistsScrollStateSaver: ScrollStateSaver,
-        ralliesScrollStateSaver: ScrollStateSaver,
-        seriesScrollStateSaver: ScrollStateSaver,
-        merchScrollStateSaver: ScrollStateSaver,
         seriesAutocompleteResults: () -> List<SeriesInfo>,
         eventSink: (Event) -> Unit,
         scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
@@ -240,16 +227,47 @@ object FavoritesScreen {
                     }
                 },
             ) { _, contentPadding ->
-                when (tab) {
-                    EntryTab.ARTISTS ->
-                        ArtistContent(
-                            state = state,
-                            gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
+                val saveableStateHolder = rememberSaveableStateHolder()
+                saveableStateHolder.SaveableStateProvider(tab) {
+                    when (tab) {
+                        EntryTab.ARTISTS ->
+                            ArtistContent(
+                                state = state,
+                                baseContentPadding = contentPadding,
+                                sortFilterState = state.artistsSortFilterState,
+                                entries = artistsEntries,
+                                series = series,
+                                eventSink = eventSink,
+                                header = {
+                                    Header(
+                                        tab = { tab },
+                                        onTabChange = { tab = it },
+                                        dataYearHeaderState = dataYearHeaderState,
+                                        eventSink = eventSink,
+                                    )
+                                },
+                                noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
+                            )
+                        EntryTab.RALLIES ->
+                            RalliesContent(
+                                state = state,
+                                baseContentPadding = contentPadding,
+                                sortFilterState = state.ralliesSortFilterState,
+                                entries = ralliesEntries,
+                                eventSink = eventSink,
+                                header = {
+                                    Header(
+                                        tab = { tab },
+                                        onTabChange = { tab = it },
+                                        dataYearHeaderState = dataYearHeaderState,
+                                        eventSink = eventSink,
+                                    )
+                                },
+                                noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
+                            )
+                        EntryTab.SERIES -> SeriesContent(
                             baseContentPadding = contentPadding,
-                            sortFilterState = state.artistsSortFilterState,
-                            entries = artistsEntries,
-                            series = series,
-                            eventSink = eventSink,
+                            series = seriesEntries,
                             header = {
                                 Header(
                                     tab = { tab },
@@ -258,16 +276,11 @@ object FavoritesScreen {
                                     eventSink = eventSink,
                                 )
                             },
-                            noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
-                        )
-                    EntryTab.RALLIES ->
-                        RalliesContent(
-                            state = state,
-                            gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
-                            baseContentPadding = contentPadding,
-                            sortFilterState = state.ralliesSortFilterState,
-                            entries = ralliesEntries,
                             eventSink = eventSink,
+                        )
+                        EntryTab.MERCH -> MerchContent(
+                            baseContentPadding = contentPadding,
+                            merch = merchEntries,
                             header = {
                                 Header(
                                     tab = { tab },
@@ -276,36 +289,9 @@ object FavoritesScreen {
                                     eventSink = eventSink,
                                 )
                             },
-                            noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
+                            eventSink = eventSink,
                         )
-                    EntryTab.SERIES -> SeriesContent(
-                        listState = seriesScrollStateSaver.lazyListState(),
-                        baseContentPadding = contentPadding,
-                        series = seriesEntries,
-                        header = {
-                            Header(
-                                tab = { tab },
-                                onTabChange = { tab = it },
-                                dataYearHeaderState = dataYearHeaderState,
-                                eventSink = eventSink,
-                            )
-                        },
-                        eventSink = eventSink,
-                    )
-                    EntryTab.MERCH -> MerchContent(
-                        listState = merchScrollStateSaver.lazyListState(),
-                        baseContentPadding = contentPadding,
-                        merch = merchEntries,
-                        header = {
-                            Header(
-                                tab = { tab },
-                                onTabChange = { tab = it },
-                                dataYearHeaderState = dataYearHeaderState,
-                                eventSink = eventSink,
-                            )
-                        },
-                        eventSink = eventSink,
-                    )
+                    }
                 }
             }
         }
@@ -315,7 +301,6 @@ object FavoritesScreen {
     private fun ArtistContent(
         state: State,
         sortFilterState: ArtistSortFilterState,
-        gridState: LazyStaggeredGridState,
         baseContentPadding: () -> PaddingValues,
         entries: LazyPagingItems<ArtistEntryGridModel>,
         series: () -> Map<String, GetSeriesTitles>,
@@ -327,7 +312,6 @@ object FavoritesScreen {
         ArtistSearchScreenContent(
             sortFilterState = sortFilterState,
             baseContentPadding = baseContentPadding,
-            gridState = gridState,
             header = header,
             entries = entries,
             series = series,
@@ -343,7 +327,6 @@ object FavoritesScreen {
     private fun RalliesContent(
         state: State,
         sortFilterState: StampRallySortFilterState,
-        gridState: LazyStaggeredGridState,
         baseContentPadding: () -> PaddingValues,
         entries: LazyPagingItems<StampRallyWithUserData>,
         eventSink: (Event) -> Unit,
@@ -353,7 +336,6 @@ object FavoritesScreen {
     ) {
         StampRallySearchScreenContent(
             sortFilterState = sortFilterState,
-            gridState = gridState,
             baseContentPadding = baseContentPadding,
             header = header,
             entries = entries,
@@ -367,12 +349,12 @@ object FavoritesScreen {
 
     @Composable
     private fun SeriesContent(
-        listState: LazyListState,
         baseContentPadding: () -> PaddingValues,
         series: LazyPagingItems<SeriesWithUserData>,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
+        val listState = rememberLazyListState()
         VerticalScrollableWithBar(
             scrollbarState = rememberScrollbarState(listState),
         ) { horizontalContentPadding ->
@@ -441,12 +423,12 @@ object FavoritesScreen {
 
     @Composable
     private fun MerchContent(
-        listState: LazyListState,
         baseContentPadding: () -> PaddingValues,
         merch: LazyPagingItems<MerchWithUserData>,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
+        val listState = rememberLazyListState()
         VerticalScrollableWithBar(
             scrollbarState = rememberScrollbarState(listState),
         ) { horizontalContentPadding ->

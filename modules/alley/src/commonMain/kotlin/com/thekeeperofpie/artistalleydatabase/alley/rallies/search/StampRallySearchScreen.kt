@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.SheetValue
@@ -49,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -61,7 +59,6 @@ fun StampRallySearchScreen(
     isRoot: Boolean,
     lockedYear: DataYear?,
     lockedSeries: String?,
-    scrollStateSaver: ScrollStateSaver,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     viewModel: StampRallySearchViewModel = assistedMetroViewModel<StampRallySearchViewModel, StampRallySearchViewModel.Factory> {
         create(
@@ -93,7 +90,6 @@ fun StampRallySearchScreen(
             )
         },
         scaffoldState = scaffoldState,
-        scrollStateSaver = scrollStateSaver,
         seriesAutocompleteResults = { seriesAutocompleteResults },
     )
 }
@@ -105,11 +101,9 @@ fun StampRallySearchScreen(
     eventSink: (Event) -> Unit,
     header: @Composable () -> Unit,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-    scrollStateSaver: ScrollStateSaver,
     seriesAutocompleteResults: () -> List<SeriesInfo>,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val gridState = scrollStateSaver.lazyStaggeredGridState()
     // TODO
 //    sortFilterState.ImmediateScrollResetEffect(gridState)
 
@@ -172,7 +166,6 @@ fun StampRallySearchScreen(
                 unfilteredCount = state.unfilteredCount,
                 displayType = state.displayType,
                 eventSink = eventSink,
-                gridState = gridState,
             )
         }
     }
@@ -189,9 +182,9 @@ internal fun StampRallySearchScreenContent(
     eventSink: (Event) -> Unit,
     modifier: Modifier = Modifier,
     baseContentPadding: () -> PaddingValues,
-    gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     noResultsItem: (@Composable () -> Unit)? = null,
 ) {
+    val gridState = rememberLazyStaggeredGridState()
     val displayType = displayType()
     if (displayType == SearchDisplayType.TABLE) {
         TwoWayGrid(
@@ -298,7 +291,6 @@ object StampRallySearchScreen {
         val unfilteredCount: () -> Int,
         val sortFilterState: StampRallySortFilterState,
         val displayType: () -> SearchDisplayType,
-        val onDisplayTypeChange: (SearchDisplayType) -> Unit,
     ) {
         constructor(
             viewModel: StampRallySearchViewModel,
@@ -314,7 +306,6 @@ object StampRallySearchScreen {
             unfilteredCount = { viewModel.unfilteredCount },
             sortFilterState = sortFilterController.state,
             displayType = { viewModel.settings.displayType },
-            onDisplayTypeChange = { viewModel.settings.displayType = it },
         )
     }
 

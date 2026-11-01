@@ -82,6 +82,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -823,8 +824,8 @@ fun SortFilterBottomScaffold2(
                     Modifier.align(Alignment.TopCenter)
                         .zIndex(1f)
                         .animateEnterExit(
-                            enter = slideInVertically { it * 2 },
-                            exit = slideOutVertically { it * 2 },
+                            enter = slideInVertically { -it * 2 },
+                            exit = slideOutVertically { -it * 2 },
                         )
                         .renderMaybeInSharedTransitionScopeOverlay(2f)
             ) {
@@ -866,12 +867,13 @@ fun SortFilterBottomScaffold2(
             ),
             content = {
                 val density = LocalDensity.current
+                val windowHeight = LocalWindowInfo.current.containerSize.height
                 content(
                     it,
                     {
                         with(density) {
                             val heightOffsetLimit = abs(scrollBehavior.fixedHeightOffsetLimit)
-                            if (heightOffsetLimit > 0) {
+                            if (heightOffsetLimit > 0 && heightOffsetLimit < windowHeight) {
                                 PaddingValues(top = heightOffsetLimit.toDp())
                             } else {
                                 PaddingValues.Zero
