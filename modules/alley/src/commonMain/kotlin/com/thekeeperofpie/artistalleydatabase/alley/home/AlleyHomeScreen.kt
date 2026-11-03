@@ -18,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
 import androidx.compose.material3.FloatingToolbarExitDirection
+import androidx.compose.material3.FloatingToolbarState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
@@ -26,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
+import androidx.compose.material3.rememberFloatingToolbarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -234,8 +236,22 @@ object AlleyHomeScreen {
                 }
             }
         } else {
+            val baseFloatingToolbarState = rememberFloatingToolbarState()
+            val floatingToolbarState = remember(baseFloatingToolbarState) {
+                object : FloatingToolbarState by baseFloatingToolbarState {
+                    override var offsetLimit: Float
+                        get() = baseFloatingToolbarState.offsetLimit
+                        set(value) {
+                            // Fix bug where this is sometimes assigned a positive offsetLimit
+                            baseFloatingToolbarState.offsetLimit = value.coerceAtMost(0f)
+                        }
+                }
+            }
             val scrollBehavior =
-                FloatingToolbarDefaults.exitAlwaysScrollBehavior(exitDirection = FloatingToolbarExitDirection.Bottom)
+                FloatingToolbarDefaults.exitAlwaysScrollBehavior(
+                    exitDirection = FloatingToolbarExitDirection.Bottom,
+                    state = floatingToolbarState,
+                )
             val isHiding by remember(scrollBehavior) {
                 derivedStateOf { scrollBehavior.state.offset != 0f }
             }
