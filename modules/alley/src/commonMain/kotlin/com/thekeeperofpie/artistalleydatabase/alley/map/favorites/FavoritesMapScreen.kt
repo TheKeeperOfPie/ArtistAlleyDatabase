@@ -125,6 +125,7 @@ object FavoritesMapScreen {
     ) {
         SortFilterBottomScaffold2(
             state = scaffoldState,
+            showFilterFab = false,
             sheetPeekHeight = 102.dp,
             sheetContent = {
                 FavoritesMapFilterSheetContent(

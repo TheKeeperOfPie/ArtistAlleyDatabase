@@ -45,7 +45,9 @@ import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,17 +55,26 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -72,6 +83,7 @@ import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
@@ -79,18 +91,26 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.zIndex
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
+import artistalleydatabase.modules.utils_compose.generated.resources.filters_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.section_expand_all_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_ascending
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_descending
@@ -98,9 +118,11 @@ import artistalleydatabase.modules.utils_compose.generated.resources.sort_direct
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_descending_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_label
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_expand_content_description
+import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ArrowDownward
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ArrowUpward
+import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
 import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldLess
 import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldMore
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
@@ -114,17 +136,22 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.utils_compose.enterAlwaysScrollBehaviorAutoReset
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState.Filter.SelectionMethod
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 private fun Header(
@@ -779,18 +806,26 @@ private fun ascendingText(ascending: Boolean) = stringResource(
 
 @Composable
 fun rememberSortFilterBottomScaffoldState(): SortFilterBottomScaffoldState {
+    val windowSizeClass = currentWindowSizeClass()
+    val usePartiallyExpanded = windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Expanded
+    val enabledSheetValues = if (usePartiallyExpanded) {
+        setOf(SheetValue.PartiallyExpanded, SheetValue.Expanded)
+    } else {
+        setOf(SheetValue.Hidden, SheetValue.Expanded)
+    }
     val sheetState = rememberBottomSheetState(
-        initialValue = SheetValue.Hidden,
-        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+        initialValue = enabledSheetValues.first(),
+        enabledValues = enabledSheetValues,
     )
     val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
-    return remember(scaffoldState) {
-        SortFilterBottomScaffoldState(scaffoldState)
+    return remember(scaffoldState, usePartiallyExpanded) {
+        SortFilterBottomScaffoldState(scaffoldState, usePartiallyExpanded)
     }
 }
 
 class SortFilterBottomScaffoldState internal constructor(
     internal val scaffoldState: BottomSheetScaffoldState,
+    internal val usePartiallyExpanded: Boolean,
 ) {
     val bottomSheetState get() = scaffoldState.bottomSheetState
 }
@@ -800,8 +835,9 @@ fun SortFilterBottomScaffold2(
     modifier: Modifier = Modifier,
     enterAlwaysTopBar: @Composable (() -> Unit)? = null,
     state: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-    sheetPeekHeight: Dp = Dp.Unspecified,
     bottomNavigationState: BottomNavigationState? = null,
+    showFilterFab: Boolean = true,
+    sheetPeekHeight: Dp = Dp.Unspecified,
     sheetContent: @Composable ColumnScope.() -> Unit,
     content: @Composable (scaffoldPadding: PaddingValues, contentPadding: () -> PaddingValues) -> Unit,
 ) {
@@ -812,7 +848,7 @@ fun SortFilterBottomScaffold2(
         enabled = bottomSheetState.targetValue == SheetValue.Expanded
                 && !WindowInsets.isImeVisibleKmp
     ) {
-        scope.launch { bottomSheetState.hide() }
+        scope.launch { bottomSheetState.toggle() }
     }
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehaviorAutoReset()
@@ -832,59 +868,145 @@ fun SortFilterBottomScaffold2(
                 enterAlwaysTopBar()
             }
         }
-        BottomSheetScaffold(
-            scaffoldState = scaffoldState,
-            sheetPeekHeight = (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
-                    (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
-            sheetDragHandle = null,
-            sheetContent = {
-                // Handle compact layouts with a bottom nav bar
-                val extraAnimateHeight = with(LocalDensity.current) { 100.dp.roundToPx() }
-                Column(
-                    modifier = Modifier
-                        .animateEnterExit(
-                            enter = slideInVertically { it + extraAnimateHeight },
-                            exit = slideOutVertically { it + extraAnimateHeight },
-                        )
-                        .renderMaybeInSharedTransitionScopeOverlay(1f)
-                        .sharedElement(
-                            SharedTransitionKey.makeKeyForId("sortFilterBottomSheet"),
-                            ""
-                        )
-                        .clip(BottomSheetDefaults.ExpandedShape)
-                ) {
-                    sheetContent()
-                }
-            },
-            sheetContainerColor = Color.Unspecified,
-            sheetTonalElevation = 4.dp,
-            sheetShadowElevation = 4.dp,
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = null,
-            modifier = Modifier.conditionally(
-                enterAlwaysTopBar != null,
-                Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-            ),
-            content = {
-                val density = LocalDensity.current
-                val windowHeight = LocalWindowInfo.current.containerSize.height
-                content(
-                    it,
-                    {
-                        with(density) {
-                            val heightOffsetLimit = abs(scrollBehavior.fixedHeightOffsetLimit)
-                            if (heightOffsetLimit > 0 && heightOffsetLimit < windowHeight) {
-                                PaddingValues(top = heightOffsetLimit.toDp())
-                            } else {
-                                PaddingValues.Zero
+
+        OptionalFilterFloatingActionButtonWrapper(show = showFilterFab, scaffoldState = state) {
+            val sheetPeekHeight = if (state.usePartiallyExpanded) {
+                sheetPeekHeight.takeOrElse { 56.dp } +
+                        (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
+            } else {
+                0.dp
+            }
+            BottomSheetScaffold(
+                scaffoldState = scaffoldState,
+                sheetPeekHeight = sheetPeekHeight,
+                sheetDragHandle = null,
+                sheetContent = {
+                    // Handle compact layouts with a bottom nav bar
+                    val extraAnimateHeight = with(LocalDensity.current) { 100.dp.roundToPx() }
+                    Column(
+                        modifier = Modifier
+                            .animateEnterExit(
+                                enter = slideInVertically { it + extraAnimateHeight },
+                                exit = slideOutVertically { it + extraAnimateHeight },
+                            )
+                            .renderMaybeInSharedTransitionScopeOverlay(1f)
+                            .sharedElement(
+                                SharedTransitionKey.makeKeyForId("sortFilterBottomSheet"),
+                                ""
+                            )
+                            .clip(BottomSheetDefaults.ExpandedShape)
+                    ) {
+                        sheetContent()
+                    }
+                },
+                sheetContainerColor = Color.Unspecified,
+                sheetTonalElevation = 4.dp,
+                sheetShadowElevation = 4.dp,
+                containerColor = MaterialTheme.colorScheme.background,
+                topBar = null,
+                modifier = Modifier.conditionally(
+                    enterAlwaysTopBar != null,
+                    Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                ),
+                content = {
+                    val density = LocalDensity.current
+                    val windowHeight = LocalWindowInfo.current.containerSize.height
+                    content(
+                        it,
+                        {
+                            with(density) {
+                                val heightOffsetLimit = abs(scrollBehavior.fixedHeightOffsetLimit)
+                                if (heightOffsetLimit > 0 && heightOffsetLimit < windowHeight) {
+                                    PaddingValues(top = heightOffsetLimit.toDp())
+                                } else {
+                                    PaddingValues.Zero
+                                }
                             }
-                        }
-                    },
-                )
-            },
-            // TODO: Error state
-            // snackbarHost = {},
-        )
+                        },
+                    )
+                },
+                // TODO: Error state
+                // snackbarHost = {},
+            )
+        }
+    }
+}
+
+@Composable
+private fun OptionalFilterFloatingActionButtonWrapper(
+    show: Boolean,
+    scaffoldState: SortFilterBottomScaffoldState,
+    content: @Composable () -> Unit,
+) {
+    if (!show) {
+        content()
+        return
+    }
+    var fabVisible by remember { mutableStateOf(true) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                fabVisible = available.y >= 1
+                return Offset.Zero
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { fabVisible }
+            .flatMapLatest {
+                if (it) {
+                    emptyFlow()
+                } else {
+                    interval(5.seconds, 5.seconds)
+                }
+            }
+            .collectLatest { fabVisible = true }
+    }
+    Scaffold(
+        floatingActionButton = {
+            val contentDescription = stringResource(Res.string.filters_content_description)
+            TooltipBox(
+                positionProvider =
+                    TooltipDefaults.rememberTooltipPositionProvider(
+                        TooltipAnchorPosition.Above
+                    ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier =
+                            Modifier.semantics {
+                                liveRegion = LiveRegionMode.Assertive
+                                paneTitle = contentDescription
+                            }
+                    ) {
+                        Text(contentDescription)
+                    }
+                },
+                state = rememberTooltipState(),
+            ) {
+                val scope = rememberCoroutineScope()
+                FloatingActionButton(
+                    modifier =
+                        Modifier.animateFloatingActionButton(
+                            visible = fabVisible,
+                            alignment = Alignment.BottomEnd,
+                        ),
+                    onClick = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
+                ) {
+                    Icon(
+                        Icons.Default.FilterList,
+                        contentDescription = contentDescription,
+                    )
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End,
+        modifier = Modifier.nestedScroll(nestedScrollConnection)
+    ) {
+        content()
     }
 }
 
@@ -910,13 +1032,7 @@ fun SortFilterBottomScaffoldSheetContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        if (sheetState.currentValue == SheetValue.Expanded) {
-                            scope.launch { sheetState.hide() }
-                        } else {
-                            scope.launch { sheetState.expand() }
-                        }
-                    }
+                    .clickable { scope.launch { sheetState.toggle() } }
             ) {
                 if (dragHandle != null) {
                     dragHandle()

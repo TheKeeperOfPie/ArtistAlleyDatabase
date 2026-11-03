@@ -65,7 +65,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
@@ -110,7 +109,7 @@ object BrowseScreen {
                 val merch = tagsViewModel.merch.collectAsLazyPagingItems()
                 SortFilterBottomScaffold2(
                     state = scaffoldState,
-                    sheetPeekHeight = 72.dp,
+                    showFilterFab = false,
                     enterAlwaysTopBar = {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                             TabRow(
@@ -148,13 +147,11 @@ object BrowseScreen {
                                     query.clearText()
                                 }
 
-                                val scope = rememberCoroutineScope()
                                 AlleySearchBar(
                                     onClickBack = null,
                                     query = query,
                                     itemCount = { entries.itemCount },
                                     title = { null },
-                                    onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
                                     modifier = Modifier
                                         .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                                         .fillMaxWidth()

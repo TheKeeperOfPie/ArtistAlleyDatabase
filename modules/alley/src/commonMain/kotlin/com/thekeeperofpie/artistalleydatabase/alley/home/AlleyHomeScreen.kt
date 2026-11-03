@@ -201,6 +201,13 @@ object AlleyHomeScreen {
         if (suiteType == NavigationSuiteType.NavigationRail) {
             Row {
                 NavigationRail(
+                    header = {
+                        AlleyHomeFilterFloatingActionButton(
+                            navigationState = state,
+                            destination = destination,
+                            vibrant = false,
+                        )
+                    },
                     modifier = Modifier
                         .animateEnterExit(
                             enter = slideInHorizontally { -it },
@@ -275,7 +282,7 @@ object AlleyHomeScreen {
                     .nestedScroll(scrollBehavior)
             ) {
                 Box(Modifier.padding(it)) {
-                    AlleyHomeToolbar(
+                    AlleyHomeNavigationToolbar(
                         navigationState = state,
                         scrollBehavior = scrollBehavior,
                         destination = destination,

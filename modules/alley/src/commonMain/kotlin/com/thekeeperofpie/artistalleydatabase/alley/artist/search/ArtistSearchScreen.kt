@@ -90,7 +90,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
@@ -133,6 +132,7 @@ fun ArtistSearchScreen(
         header = { Header(dataYearHeaderState, viewModel::onEvent) },
         scaffoldState = scaffoldState,
         seriesAutocompleteResults = { seriesAutocompleteResults },
+        showFilterFab = !isRoot,
     )
 }
 
@@ -145,6 +145,7 @@ fun ArtistSearchScreen(
     header: @Composable () -> Unit,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     seriesAutocompleteResults: () -> List<SeriesInfo>,
+    showFilterFab: Boolean = true,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     // TODO
@@ -179,13 +180,13 @@ fun ArtistSearchScreen(
 
         SortFilterBottomScaffold2(
             state = scaffoldState,
+            showFilterFab = showFilterFab,
             enterAlwaysTopBar = {
                 AlleySearchBar(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
                     itemCount = { entries.itemCount },
                     title = { title },
-                    onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
                     additionalActions = actions,
                     modifier = Modifier
                         .animateEnterExit(

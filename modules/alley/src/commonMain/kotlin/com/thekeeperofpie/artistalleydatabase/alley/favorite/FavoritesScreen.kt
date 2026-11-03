@@ -93,7 +93,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.VerticalScrollableWithBar
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
@@ -188,6 +187,7 @@ object FavoritesScreen {
             }
             SortFilterBottomScaffold2(
                 state = scaffoldState,
+                showFilterFab = false,
                 enterAlwaysTopBar = {
                     val title = stringResource(Res.string.alley_favorites_search)
                     AlleySearchBar(
@@ -195,7 +195,6 @@ object FavoritesScreen {
                         query = state.query,
                         title = { title },
                         itemCount = { entries.itemCount },
-                        onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
                         modifier = Modifier
                             .animateEnterExit(
                                 enter = slideInVertically { -it },

@@ -47,7 +47,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMayb
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -91,6 +90,7 @@ fun StampRallySearchScreen(
         },
         scaffoldState = scaffoldState,
         seriesAutocompleteResults = { seriesAutocompleteResults },
+        showFilterFab = !isRoot,
     )
 }
 
@@ -102,6 +102,7 @@ fun StampRallySearchScreen(
     header: @Composable () -> Unit,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     seriesAutocompleteResults: () -> List<SeriesInfo>,
+    showFilterFab: Boolean = true,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     // TODO
@@ -134,13 +135,13 @@ fun StampRallySearchScreen(
         }
         SortFilterBottomScaffold2(
             state = scaffoldState,
+            showFilterFab = showFilterFab,
             enterAlwaysTopBar = {
                 AlleySearchBar(
                     onClickBack = { eventSink(Event.Back) },
                     query = state.query,
                     itemCount = { entries.itemCount },
                     title = { title },
-                    onClickFilter = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
                     additionalActions = actions,
                     modifier = Modifier
                         .animateEnterExit(

@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.home
 
 import androidx.compose.material3.AppBarRow
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarExitDirection
 import androidx.compose.material3.FloatingToolbarScrollBehavior
@@ -36,7 +37,67 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun AlleyHomeToolbar(
+internal fun AlleyHomeFilterFloatingActionButton(
+    navigationState: AlleyHomeNavigationState,
+    destination: () -> AlleyHomeDestination,
+    vibrant: Boolean = true,
+) {
+    val contentDescription =
+        stringResource(Res.string.alley_generic_filter_content_description)
+    TooltipBox(
+        positionProvider =
+            TooltipDefaults.rememberTooltipPositionProvider(
+                TooltipAnchorPosition.Above
+            ),
+        tooltip = {
+            PlainTooltip(
+                modifier =
+                    Modifier.semantics {
+                        liveRegion = LiveRegionMode.Assertive
+                        paneTitle = contentDescription
+                    }
+            ) {
+                Text(contentDescription)
+            }
+        },
+        state = rememberTooltipState(),
+    ) {
+        val scope = rememberCoroutineScope()
+        val onClick: () -> Unit = {
+            scope.launch {
+                navigationState.run {
+                    when (destination()) {
+                        AlleyHomeDestination.ARTISTS -> artistsScaffoldState
+                        AlleyHomeDestination.BROWSE -> browseScaffoldState
+                        AlleyHomeDestination.FAVORITES -> favoritesScaffoldState
+                        AlleyHomeDestination.MAP -> mapScaffoldState
+                        AlleyHomeDestination.STAMP_RALLIES -> ralliesScaffoldState
+                    }
+                }.bottomSheetState.toggle()
+            }
+        }
+        val iconContent: @Composable () -> Unit = {
+            Icon(
+                imageVector = Icons.Default.FilterList,
+                contentDescription = contentDescription,
+            )
+        }
+        if (vibrant) {
+            FloatingToolbarDefaults.VibrantFloatingActionButton(
+                onClick = onClick,
+                content = iconContent,
+            )
+        } else {
+            FloatingActionButton(
+                onClick = onClick,
+                content = iconContent,
+            )
+        }
+    }
+}
+
+@Composable
+internal fun AlleyHomeNavigationToolbar(
     navigationState: AlleyHomeNavigationState,
     scrollBehavior: FloatingToolbarScrollBehavior,
     destination: () -> AlleyHomeDestination,
@@ -47,48 +108,7 @@ internal fun AlleyHomeToolbar(
         expanded = true,
         scrollBehavior = scrollBehavior,
         floatingActionButton = {
-            val contentDescription =
-                stringResource(Res.string.alley_generic_filter_content_description)
-            TooltipBox(
-                positionProvider =
-                    TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Above
-                    ),
-                tooltip = {
-                    PlainTooltip(
-                        modifier =
-                            Modifier.semantics {
-                                liveRegion = LiveRegionMode.Assertive
-                                paneTitle = contentDescription
-                            }
-                    ) {
-                        Text(contentDescription)
-                    }
-                },
-                state = rememberTooltipState(),
-            ) {
-                val scope = rememberCoroutineScope()
-                FloatingToolbarDefaults.VibrantFloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            navigationState.run {
-                                when (destination()) {
-                                    AlleyHomeDestination.ARTISTS -> artistsScaffoldState
-                                    AlleyHomeDestination.BROWSE -> browseScaffoldState
-                                    AlleyHomeDestination.FAVORITES -> favoritesScaffoldState
-                                    AlleyHomeDestination.MAP -> mapScaffoldState
-                                    AlleyHomeDestination.STAMP_RALLIES -> ralliesScaffoldState
-                                }
-                            }.bottomSheetState.toggle()
-                        }
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = contentDescription,
-                    )
-                }
-            }
+            AlleyHomeFilterFloatingActionButton(navigationState, destination)
         },
         modifier = modifier
     ) {
@@ -110,7 +130,9 @@ internal fun AlleyHomeToolbar(
                             val checked = item == currentDestination
                             IconToggleButton(
                                 colors = IconButtonDefaults.iconToggleButtonVibrantColors(
-                                    checkedContainerColor = MaterialTheme.colorScheme.surfaceVariant.withSaturation(0.3f)
+                                    checkedContainerColor = MaterialTheme.colorScheme.surfaceVariant.withSaturation(
+                                        0.3f
+                                    )
                                 ),
                                 checked = checked,
                                 onCheckedChange = { if (it) onChangeDestination(item) },
@@ -140,9 +162,9 @@ internal fun AlleyHomeToolbar(
 
 @AlleyPreviewThemes
 @Composable
-private fun AlleyHomeToolbarPreview() {
+private fun AlleyHomeNavigationToolbarPreview() {
     val scaffoldState = rememberSortFilterBottomScaffoldState()
-    AlleyHomeToolbar(
+    AlleyHomeNavigationToolbar(
         navigationState = remember {
             AlleyHomeNavigationState(
                 artistsScaffoldState = scaffoldState,

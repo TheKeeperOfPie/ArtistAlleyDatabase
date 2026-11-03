@@ -107,7 +107,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_changelog
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_show_qr
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_suffix
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_generic_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_settings
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_convention
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_year
@@ -130,7 +129,6 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ChangeHistory
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Error
-import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Settings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
@@ -646,7 +644,6 @@ fun AlleySearchBar(
     itemCount: () -> Int,
     title: () -> String?,
     modifier: Modifier = Modifier,
-    onClickFilter: () -> Unit,
     additionalActions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Column(
@@ -697,14 +694,6 @@ fun AlleySearchBar(
                                 ),
                             )
                         }
-                    }
-                    IconButton(onClick = onClickFilter) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = stringResource(
-                                Res.string.alley_generic_filter_content_description,
-                            ),
-                        )
                     }
                 }
             },
@@ -1069,9 +1058,12 @@ private fun MikuProgressIndicator(modifier: Modifier = Modifier) {
     )
     val painter = rememberVectorPainter(MikuLeek)
     Canvas(modifier.progressSemantics().size(40.dp)) {
-        inset(4.dp.toPx()) {
-            rotate(rotation) {
-                with(painter) { draw(size) }
+        val insetSize = 4.dp.toPx()
+        if (size.width > (insetSize * 2) && size.height > (insetSize * 2)) {
+            inset(insetSize) {
+                rotate(rotation) {
+                    with(painter) { draw(size) }
+                }
             }
         }
     }
