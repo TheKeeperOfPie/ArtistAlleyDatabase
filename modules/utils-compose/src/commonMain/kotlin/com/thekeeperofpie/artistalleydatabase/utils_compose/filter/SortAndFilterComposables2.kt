@@ -48,6 +48,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -138,6 +139,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.utils_compose.enterAlwaysScrollBehaviorAutoReset
+import com.thekeeperofpie.artistalleydatabase.utils_compose.exitAlwaysScrollBehaviorAutoReset
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState.Filter.SelectionMethod
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
@@ -949,7 +951,9 @@ private fun OptionalFilterFloatingActionButtonWrapper(
                 available: Offset,
                 source: NestedScrollSource,
             ): Offset {
-                fabVisible = available.y >= 1
+                if (available.y != 0f) {
+                    fabVisible = available.y >= 0
+                }
                 return Offset.Zero
             }
         }
@@ -966,6 +970,7 @@ private fun OptionalFilterFloatingActionButtonWrapper(
             }
             .collectLatest { fabVisible = true }
     }
+    val scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehaviorAutoReset()
     Scaffold(
         floatingActionButton = {
             val contentDescription = stringResource(Res.string.filters_content_description)
@@ -986,6 +991,7 @@ private fun OptionalFilterFloatingActionButtonWrapper(
                     }
                 },
                 state = rememberTooltipState(),
+                modifier = Modifier.then(scrollBehavior.floatingScrollBehaviorModifier)
             ) {
                 val scope = rememberCoroutineScope()
                 FloatingActionButton(
@@ -1004,7 +1010,7 @@ private fun OptionalFilterFloatingActionButtonWrapper(
             }
         },
         floatingActionButtonPosition = FabPosition.End,
-        modifier = Modifier.nestedScroll(nestedScrollConnection)
+        modifier = Modifier.exitAlwaysScrollBehaviorAutoReset(scrollBehavior)
     ) {
         content()
     }
