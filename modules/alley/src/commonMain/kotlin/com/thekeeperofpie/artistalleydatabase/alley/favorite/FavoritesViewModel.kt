@@ -184,8 +184,7 @@ class FavoritesViewModel(
             .flowOn(dispatchers.io)
             .cachedIn(viewModelScope)
 
-    val seriesSortFilterController =
-        SeriesSortFilterController(viewModelScope, settings, savedStateHandle)
+    val seriesSortFilterController = SeriesSortFilterController(settings, savedStateHandle)
 
     data class SeriesInputs(
         val query: String,

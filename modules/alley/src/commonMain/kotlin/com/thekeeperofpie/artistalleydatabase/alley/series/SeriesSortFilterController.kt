@@ -9,16 +9,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import kotlinx.coroutines.CoroutineScope
 
 class SeriesSortFilterController(
-    scope: CoroutineScope,
     settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
 ) {
     private val persistentState = SeriesSortFilterPersistentState(
         sortFilterSettings = settings,
-        displaySettings = settings,
     )
 
     private val saveableState by savedStateHandle.saved {

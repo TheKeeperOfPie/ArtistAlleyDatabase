@@ -25,7 +25,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState.Section
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplaySettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSectionState
@@ -80,11 +79,10 @@ internal fun SeriesSortFilterSheetContent(
 
         HorizontalDivider()
 
-        val displaySettings = persistentState.displaySettings
         SwitchSection(
             title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
-            enabled = displaySettings::showOnlyConfirmedTags,
-            onEnabledChanged = { displaySettings.showOnlyConfirmedTags = it },
+            enabled = saveableState::showOnlyConfirmedTags,
+            onEnabledChanged = { saveableState.showOnlyConfirmedTags = it },
         )
     }
 }
@@ -117,7 +115,6 @@ class SeriesSortFilterState(
 @Serializable
 class SeriesSortFilterPersistentState(
     val sortFilterSettings: SeriesSortFilterSettings,
-    val displaySettings: DisplaySettings,
 ) {
     companion object {
         @Composable
@@ -125,7 +122,6 @@ class SeriesSortFilterPersistentState(
             assertInPreview()
             return SeriesSortFilterPersistentState(
                 sortFilterSettings = SeriesSortFilterSettings.rememberForPreview(),
-                displaySettings = DisplaySettings.rememberForPreview(),
             )
         }
     }

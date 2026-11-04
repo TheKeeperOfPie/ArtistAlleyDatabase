@@ -72,8 +72,7 @@ class TagsViewModel(
         onItemSelected = { settings.languageOption = it },
     )
 
-    val seriesSortFilterController =
-        SeriesSortFilterController(viewModelScope, settings, savedStateHandle)
+    val seriesSortFilterController = SeriesSortFilterController(settings, savedStateHandle)
 
     val series =
         combine(
