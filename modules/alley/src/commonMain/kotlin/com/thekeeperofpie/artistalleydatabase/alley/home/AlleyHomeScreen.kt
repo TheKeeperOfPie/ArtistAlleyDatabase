@@ -52,7 +52,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.RootStampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.tags.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
@@ -95,24 +97,15 @@ object AlleyHomeScreen {
             assistedMetroViewModel<FavoritesMapViewModel, FavoritesMapViewModel.Factory> {
                 create(it.createSavedStateHandle())
             }
-
-        val scaffoldState = rememberSortFilterBottomScaffoldState()
-        val ralliesScaffoldState = rememberSortFilterBottomScaffoldState()
-        val state = remember(
-            scaffoldState,
-            ralliesScaffoldState,
-        ) {
-            AlleyHomeNavigationState(
-                artistsScaffoldState = scaffoldState,
-                browseScaffoldState = scaffoldState,
-                favoritesScaffoldState = scaffoldState,
-                mapScaffoldState = scaffoldState,
-                ralliesScaffoldState = ralliesScaffoldState,
+        val ralliesViewModel = assistedMetroViewModel<StampRallySearchViewModel, StampRallySearchViewModel.Factory> {
+            create(
+                isRoot = true,
+                savedStateHandle = it.createSavedStateHandle(),
             )
         }
 
+        val scaffoldState = rememberSortFilterBottomScaffoldState()
         NavigationScaffold(
-            state = state,
             scaffoldState = scaffoldState,
             destination = { destination },
             onChangeDestination = {
@@ -140,8 +133,11 @@ object AlleyHomeScreen {
                             mapTransformState = mapTransformState,
                             sheetState = scaffoldState.bottomSheetState,
                         )
-                    AlleyHomeDestination.STAMP_RALLIES,
-                        -> Box {}
+                    AlleyHomeDestination.STAMP_RALLIES ->
+                        StampRallySortFilterSheetContent(
+                            state = ralliesViewModel.state.sortFilterState,
+                            sheetState = scaffoldState.bottomSheetState,
+                        )
                 }
             },
         ) { scaffoldPadding ->
@@ -190,12 +186,7 @@ object AlleyHomeScreen {
                                 },
                             )
                         AlleyHomeDestination.STAMP_RALLIES ->
-                            StampRallySearchScreen(
-                                isRoot = true,
-                                scaffoldState = ralliesScaffoldState,
-                                lockedYear = null,
-                                lockedSeries = null,
-                            )
+                            RootStampRallySearchScreen(viewModel = ralliesViewModel)
                     }
                 }
             }
@@ -204,7 +195,6 @@ object AlleyHomeScreen {
 
     @Composable
     private fun NavigationScaffold(
-        state: AlleyHomeNavigationState,
         scaffoldState: SortFilterBottomScaffoldState,
         destination: () -> AlleyHomeDestination,
         onChangeDestination: (AlleyHomeDestination) -> Unit,
@@ -235,8 +225,7 @@ object AlleyHomeScreen {
                     NavigationRail(
                         header = {
                             AlleyHomeFilterFloatingActionButton(
-                                navigationState = state,
-                                destination = destination,
+                                scaffoldState = scaffoldState,
                                 vibrant = false,
                             )
                         },
@@ -272,7 +261,7 @@ object AlleyHomeScreen {
                 ) {
                     Box(Modifier.padding(it)) {
                         AlleyHomeNavigationToolbar(
-                            navigationState = state,
+                            scaffoldState = scaffoldState,
                             scrollBehavior = scrollBehavior,
                             destination = destination,
                             onChangeDestination = onChangeDestination,

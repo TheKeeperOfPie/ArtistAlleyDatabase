@@ -18,7 +18,6 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -29,6 +28,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_generic_filter_content_description
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.withSaturation
@@ -38,8 +38,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun AlleyHomeFilterFloatingActionButton(
-    navigationState: AlleyHomeNavigationState,
-    destination: () -> AlleyHomeDestination,
+    scaffoldState: SortFilterBottomScaffoldState,
     vibrant: Boolean = true,
 ) {
     val contentDescription =
@@ -65,15 +64,7 @@ internal fun AlleyHomeFilterFloatingActionButton(
         val scope = rememberCoroutineScope()
         val onClick: () -> Unit = {
             scope.launch {
-                navigationState.run {
-                    when (destination()) {
-                        AlleyHomeDestination.ARTISTS -> artistsScaffoldState
-                        AlleyHomeDestination.BROWSE -> browseScaffoldState
-                        AlleyHomeDestination.FAVORITES -> favoritesScaffoldState
-                        AlleyHomeDestination.MAP -> mapScaffoldState
-                        AlleyHomeDestination.STAMP_RALLIES -> ralliesScaffoldState
-                    }
-                }.bottomSheetState.toggle()
+                scaffoldState.bottomSheetState.toggle()
             }
         }
         val iconContent: @Composable () -> Unit = {
@@ -98,7 +89,7 @@ internal fun AlleyHomeFilterFloatingActionButton(
 
 @Composable
 internal fun AlleyHomeNavigationToolbar(
-    navigationState: AlleyHomeNavigationState,
+    scaffoldState: SortFilterBottomScaffoldState,
     scrollBehavior: FloatingToolbarScrollBehavior,
     destination: () -> AlleyHomeDestination,
     onChangeDestination: (AlleyHomeDestination) -> Unit,
@@ -107,9 +98,7 @@ internal fun AlleyHomeNavigationToolbar(
     HorizontalFloatingToolbar(
         expanded = true,
         scrollBehavior = scrollBehavior,
-        floatingActionButton = {
-            AlleyHomeFilterFloatingActionButton(navigationState, destination)
-        },
+        floatingActionButton = { AlleyHomeFilterFloatingActionButton(scaffoldState) },
         modifier = modifier
     ) {
         val itemsWithText =
@@ -165,15 +154,7 @@ internal fun AlleyHomeNavigationToolbar(
 private fun AlleyHomeNavigationToolbarPreview() {
     val scaffoldState = rememberSortFilterBottomScaffoldState()
     AlleyHomeNavigationToolbar(
-        navigationState = remember {
-            AlleyHomeNavigationState(
-                artistsScaffoldState = scaffoldState,
-                browseScaffoldState = scaffoldState,
-                favoritesScaffoldState = scaffoldState,
-                mapScaffoldState = scaffoldState,
-                ralliesScaffoldState = scaffoldState,
-            )
-        },
+        scaffoldState = scaffoldState,
         scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehavior(
             FloatingToolbarExitDirection.Bottom
         ),

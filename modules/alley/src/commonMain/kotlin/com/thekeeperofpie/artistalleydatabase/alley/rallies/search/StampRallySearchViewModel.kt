@@ -58,7 +58,7 @@ class StampRallySearchViewModel(
     private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 
     private var localSavedYear by savedStateHandle.saveable { mutableStateOf(settings.dataYear) }
-    var dataYear: DataYear
+    private var dataYear: DataYear
         get() = lockedYear ?: if (isRoot) {
             settings.dataYear
         } else {
@@ -74,7 +74,7 @@ class StampRallySearchViewModel(
             }
         }
 
-    val lockedSeriesEntry by transform<SeriesInfo?>(null, viewModelScope) {
+    private val lockedSeriesEntry by transform<SeriesInfo?>(null, viewModelScope) {
         produceState<SeriesInfo?>(null, lockedSeries) {
             if (lockedSeries != null) {
                 seriesEntryDao.getSeriesById(lockedSeries)
@@ -83,16 +83,16 @@ class StampRallySearchViewModel(
         }.value
     }
 
-    val sortFilterController = stampRallySortFilterControllerFactory.create(
+    private val sortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
         lockedSeries = ::lockedSeriesEntry,
         dataYear = ::dataYear,
         savedStateHandle = savedStateHandle,
     )
 
-    val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
+    private val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
-    val unfilteredCount by transform(0, viewModelScope) {
+    private val unfilteredCount by transform(0, viewModelScope) {
         val year = dataYear
         val query = query.text.toString()
         produceState(0, year, query) {
@@ -107,15 +107,7 @@ class StampRallySearchViewModel(
         }.value
     }
 
-    init {
-        viewModelScope.launch(CustomDispatchers.IO) {
-            mutationUpdates.collectLatest {
-                userEntryDao.insertStampRallyUserEntry(it)
-            }
-        }
-    }
-
-    val results = snapshotFlow {
+    private val results = snapshotFlow {
         SearchParams(
             year = dataYear,
             searchQuery = StampRallySearchQuery(
@@ -134,6 +126,27 @@ class StampRallySearchViewModel(
     }
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
+
+    val state = StampRallySearchScreen.State(
+        lockedSeriesEntry = ::lockedSeriesEntry,
+        lockedYear = lockedYear,
+        randomSeed = randomSeed,
+        year = ::dataYear,
+        onYearChange = { dataYear = it },
+        query = query,
+        results = results,
+        unfilteredCount = { unfilteredCount },
+        sortFilterState = sortFilterController.state,
+        displayType = { settings.displayType },
+    )
+
+    init {
+        viewModelScope.launch(CustomDispatchers.IO) {
+            mutationUpdates.collectLatest {
+                userEntryDao.insertStampRallyUserEntry(it)
+            }
+        }
+    }
 
     fun onEvent(event: StampRallySearchScreen.Event) {
         StampRallySearchScreenEventHandler.onEvent(
@@ -155,9 +168,9 @@ class StampRallySearchViewModel(
     @ContributesIntoMap(NavigatorScope::class)
     interface Factory : ManualViewModelAssistedFactory {
         fun create(
-            isRoot: Boolean,
-            lockedYear: DataYear?,
-            lockedSeries: String?,
+            isRoot: Boolean = false,
+            lockedYear: DataYear? = null,
+            lockedSeries: String? = null,
             savedStateHandle: SavedStateHandle,
         ): StampRallySearchViewModel
     }

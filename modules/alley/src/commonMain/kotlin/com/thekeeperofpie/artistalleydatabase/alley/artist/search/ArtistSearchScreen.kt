@@ -91,11 +91,7 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun RootArtistSearchScreen(
-    lockedYear: DataYear? = null,
-    lockedSerializedBooths: String? = null,
-    viewModel: ArtistSearchViewModel,
-) {
+fun RootArtistSearchScreen(viewModel: ArtistSearchViewModel) {
     val state = viewModel.state
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
         val entries = state.results.collectAsLazyPagingItems()

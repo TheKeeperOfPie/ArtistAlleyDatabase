@@ -291,7 +291,7 @@ object FavoritesScreen {
             entries = entries,
             unfilteredCount = state.ralliesUnfilteredCount,
             displayType = state.displayType,
-            eventSink = { eventSink(Event.StampRallySearchEvent(it)) },
+            onEvent = { eventSink(Event.StampRallySearchEvent(it)) },
             noResultsItem = noResultsItem,
             modifier = modifier,
         )

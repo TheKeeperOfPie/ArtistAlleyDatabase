@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.lifecycle.createSavedStateHandle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -29,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen.Event
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen.State
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchList
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchMoreResults
@@ -40,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopBarScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
@@ -47,37 +44,65 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
+fun RootStampRallySearchScreen(viewModel: StampRallySearchViewModel) {
+    val state = viewModel.state
+    val dataYearHeaderState = rememberDataYearHeaderState(
+        dataYear = state.year,
+        onDataYearChange = state.onYearChange,
+        lockedYear = state.lockedYear,
+    )
+    CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
+        val entries = state.results.collectAsLazyPagingItems()
+        EnterAlwaysTopBarScaffold(
+            topBar = {
+                StampRallySearchScreenTopBar(state, entries, viewModel::onEvent)
+            }
+        ) { contentPadding ->
+            StampRallySearchScreenContent(
+                sortFilterState = state.sortFilterState,
+                baseContentPadding = contentPadding,
+                header = {
+                    DataYearHeader(
+                        state = dataYearHeaderState,
+                        onOpenChangelog = { viewModel.onEvent(Event.OpenChangelog) },
+                        onOpenSettings = { viewModel.onEvent(Event.OpenSettings) },
+                    )
+                },
+                entries = entries,
+                unfilteredCount = state.unfilteredCount,
+                displayType = state.displayType,
+                onEvent = viewModel::onEvent,
+            )
+        }
+    }
+}
+
+@Composable
 fun StampRallySearchScreen(
-    isRoot: Boolean,
     lockedYear: DataYear?,
     lockedSeries: String?,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     viewModel: StampRallySearchViewModel = assistedMetroViewModel<StampRallySearchViewModel, StampRallySearchViewModel.Factory> {
         create(
-            isRoot = isRoot,
             lockedYear = lockedYear,
             lockedSeries = lockedSeries,
             savedStateHandle = it.createSavedStateHandle(),
         )
     },
 ) {
-    val sortFilterController = viewModel.sortFilterController
-    val state = remember(viewModel, sortFilterController) {
-        StampRallySearchScreen.State(viewModel, sortFilterController)
-    }
+    val state = viewModel.state
     val dataYearHeaderState = rememberDataYearHeaderState(
         dataYear = state.year,
         onDataYearChange = state.onYearChange,
         lockedYear = state.lockedYear,
     )
     StampRallySearchScreen(
-        state = state,
-        eventSink = viewModel::onEvent,
+        state = viewModel.state,
+        onEvent = viewModel::onEvent,
         header = {
             DataYearHeader(
                 state = dataYearHeaderState,
@@ -86,15 +111,14 @@ fun StampRallySearchScreen(
             )
         },
         scaffoldState = scaffoldState,
-        showFilterFab = !isRoot,
+        showFilterFab = true,
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StampRallySearchScreen(
-    state: StampRallySearchScreen.State,
-    eventSink: (Event) -> Unit,
+    state: State,
+    onEvent: (Event) -> Unit,
     header: @Composable () -> Unit,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     showFilterFab: Boolean = true,
@@ -104,47 +128,12 @@ fun StampRallySearchScreen(
 //    sortFilterState.ImmediateScrollResetEffect(gridState)
 
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-        val lockedSeriesEntry = state.lockedSeriesEntry()
         val entries = state.results.collectAsLazyPagingItems()
-        val count = entries.itemCount
-        val title = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
-            ?.let {
-                @Suppress("USELESS_IS_CHECK")
-                if (entries.loadState.refresh is LoadState.Loading) {
-                    it
-                } else {
-                    pluralStringResource(
-                        Res.plurals.alley_search_title_results_suffix,
-                        count,
-                        it,
-                        count,
-                    )
-                }
-            }
-
-        val scope = rememberCoroutineScope()
-        BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-            scope.launch {
-                scaffoldState.bottomSheetState.partialExpand()
-            }
-        }
         SortFilterBottomScaffold2(
             state = scaffoldState,
             showFilterFab = showFilterFab,
             enterAlwaysTopBar = {
-                AlleySearchBar(
-                    onClickBack = { eventSink(Event.Back) },
-                    query = state.query,
-                    itemCount = { entries.itemCount },
-                    title = { title },
-                    additionalActions = actions,
-                    modifier = Modifier
-                        .animateEnterExit(
-                            enter = slideInVertically { -it },
-                            exit = slideOutVertically { -it },
-                        )
-                        .renderMaybeInSharedTransitionScopeOverlay(1f)
-                )
+                StampRallySearchScreenTopBar(state, entries, onEvent, actions)
             },
             sheetContent = {
                 StampRallySortFilterSheetContent(
@@ -160,10 +149,48 @@ fun StampRallySearchScreen(
                 entries = entries,
                 unfilteredCount = state.unfilteredCount,
                 displayType = state.displayType,
-                eventSink = eventSink,
+                onEvent = onEvent,
             )
         }
     }
+}
+
+@Composable
+internal fun StampRallySearchScreenTopBar(
+    state: State,
+    entries: LazyPagingItems<StampRallyWithUserData>,
+    onEvent: (Event) -> Unit,
+    additionalActions: (@Composable RowScope.() -> Unit)? = null,
+) {
+    val count = entries.itemCount
+    val lockedSeriesEntry = state.lockedSeriesEntry()
+    val title = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
+        ?.let {
+            @Suppress("USELESS_IS_CHECK")
+            if (entries.loadState.refresh is LoadState.Loading) {
+                it
+            } else {
+                pluralStringResource(
+                    Res.plurals.alley_search_title_results_suffix,
+                    count,
+                    it,
+                    count,
+                )
+            }
+        }
+    AlleySearchBar(
+        onClickBack = { onEvent(Event.Back) },
+        query = state.query,
+        itemCount = { entries.itemCount },
+        title = { title },
+        additionalActions = additionalActions,
+        modifier = Modifier
+            .animateEnterExit(
+                enter = slideInVertically { -it },
+                exit = slideOutVertically { -it },
+            )
+            .renderMaybeInSharedTransitionScopeOverlay(1f)
+    )
 }
 
 
@@ -174,7 +201,7 @@ internal fun StampRallySearchScreenContent(
     entries: LazyPagingItems<StampRallyWithUserData>,
     unfilteredCount: () -> Int,
     displayType: () -> SearchDisplayType,
-    eventSink: (Event) -> Unit,
+    onEvent: (Event) -> Unit,
     modifier: Modifier = Modifier,
     baseContentPadding: () -> PaddingValues,
     noResultsItem: (@Composable () -> Unit)? = null,
@@ -197,7 +224,7 @@ internal fun StampRallySearchScreenContent(
                 SearchMoreResults(
                     unfilteredCount = unfilteredCount,
                     itemCount = { entries.itemCount },
-                    onClick = { eventSink(Event.ClearFilters) },
+                    onClick = { onEvent(Event.ClearFilters) },
                 )
             },
             modifier = modifier,
@@ -219,10 +246,10 @@ internal fun StampRallySearchScreenContent(
                     showGridByDefault = sortFilterState.persistentState.displaySettings.showGridByDefault,
                     showRandomCatalogImage = sortFilterState.persistentState.displaySettings.showRandomCatalogImage,
                     blockCrossAxisScrolling = { gridState.isScrollInProgress },
-                    onFavoriteToggle = { eventSink(Event.FavoriteToggle(entry, it)) },
-                    onIgnoredToggle = { eventSink(Event.IgnoreToggle(entry, it)) },
+                    onFavoriteToggle = { onEvent(Event.FavoriteToggle(entry, it)) },
+                    onIgnoredToggle = { onEvent(Event.IgnoreToggle(entry, it)) },
                     onClick = { imageIndex ->
-                        eventSink(
+                        onEvent(
                             Event.OpenEntry(
                                 entry,
                                 imageIndex
@@ -230,7 +257,7 @@ internal fun StampRallySearchScreenContent(
                         )
                     },
                     onClickFullscreen = { imageIndex ->
-                        eventSink(Event.OpenImageFullscreen(entry, imageIndex))
+                        onEvent(Event.OpenImageFullscreen(entry, imageIndex))
                     },
                 )
             },
@@ -239,7 +266,7 @@ internal fun StampRallySearchScreenContent(
                 SearchMoreResults(
                     unfilteredCount = unfilteredCount,
                     itemCount = { entries.itemCount },
-                    onClick = { eventSink(Event.ClearFilters) },
+                    onClick = { onEvent(Event.ClearFilters) },
                 )
             },
             modifier = modifier,
@@ -286,23 +313,7 @@ object StampRallySearchScreen {
         val unfilteredCount: () -> Int,
         val sortFilterState: StampRallySortFilterState,
         val displayType: () -> SearchDisplayType,
-    ) {
-        constructor(
-            viewModel: StampRallySearchViewModel,
-            sortFilterController: StampRallySortFilterController,
-        ) : this(
-            lockedSeriesEntry = { viewModel.lockedSeriesEntry },
-            lockedYear = viewModel.lockedYear,
-            randomSeed = viewModel.randomSeed,
-            year = viewModel::dataYear,
-            onYearChange = { viewModel.dataYear = it },
-            query = viewModel.query,
-            results = viewModel.results,
-            unfilteredCount = { viewModel.unfilteredCount },
-            sortFilterState = sortFilterController.state,
-            displayType = { viewModel.settings.displayType },
-        )
-    }
+    )
 
     sealed interface Event {
         data class FavoriteToggle(val stampRally: StampRallyWithUserData, val favorite: Boolean) :
