@@ -148,7 +148,8 @@ object FavoritesMapScreen {
                     viewModel = mapViewModel,
                     transformState = mapTransformState,
                     showSlider = false,
-                    bottomContentPadding = scaffoldPadding.calculateBottomPadding(),
+                    // Add a bit to avoid overlapping bottom nav bar
+                    bottomContentPadding = scaffoldPadding.calculateBottomPadding() + 48.dp,
                     modifier = Modifier.pointerInput(Unit) {
                         awaitEachGesture {
                             val event = awaitPointerEvent(pass = PointerEventPass.Initial)
