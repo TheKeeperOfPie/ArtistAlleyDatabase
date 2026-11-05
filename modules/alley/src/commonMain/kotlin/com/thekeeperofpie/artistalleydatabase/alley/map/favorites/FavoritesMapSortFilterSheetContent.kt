@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map.favorites
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -13,12 +15,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
+import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.TransformState
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
@@ -26,7 +31,10 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.DropdownFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldSheetContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 @Composable
 internal fun FavoritesMapFilterSheetContent(
@@ -35,6 +43,7 @@ internal fun FavoritesMapFilterSheetContent(
     sheetState: SheetState,
     scrollState: ScrollState = rememberScrollState(),
 ) {
+    val scope = rememberCoroutineScope()
     SortFilterBottomScaffoldSheetContent(
         sheetState = sheetState,
         scrollState = scrollState,
@@ -58,7 +67,14 @@ internal fun FavoritesMapFilterSheetContent(
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                 )
             }
-        }
+        },
+        footer = {
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = { scope.launch { sheetState.toggle() } }) {
+                    Text(text = stringResource(UtilsComposeRes.string.close))
+                }
+            }
+        },
     ) {
         DropdownFilterSection(
             options = DataYear.entries,

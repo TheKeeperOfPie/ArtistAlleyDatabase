@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,9 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMe
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Clear
 import com.thekeeperofpie.artistalleydatabase.icons.filled.Search
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -76,10 +75,10 @@ object FavoritesMapScreen {
         settings: ArtistAlleySettings,
         mapTransformState: MapScreen.TransformState,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
-        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-        viewModel: FavoritesMapViewModel = assistedMetroViewModel<FavoritesMapViewModel, FavoritesMapViewModel.Factory> {
-            create(it.createSavedStateHandle())
-        },
+        scaffoldPadding: PaddingValues,
+        bottomSheetState: SheetState,
+        viewModel: FavoritesMapViewModel,
+        modifier: Modifier = Modifier,
         mapViewModel: MapViewModel = assistedMetroViewModel<MapViewModel, MapViewModel.Factory> {
             create({ settings.dataYear }, it.createSavedStateHandle())
         },
@@ -87,11 +86,12 @@ object FavoritesMapScreen {
         val seriesByRowId by viewModel.tagAutocomplete.seriesByRowId.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         FavoritesMapScreen(
-            scaffoldState = scaffoldState,
             filterState = viewModel.filterState,
             query = viewModel.query,
             tagResults = viewModel::tagResults,
             mapTransformState = mapTransformState,
+            scaffoldPadding = scaffoldPadding,
+            bottomSheetState = bottomSheetState,
             highlightedBooths = viewModel::highlightedBooths,
             seriesIdIn = viewModel::seriesRowIdIn,
             merchIdIn = viewModel::merchIdIn,
@@ -121,213 +121,203 @@ object FavoritesMapScreen {
         onMerchSelected: (MerchInfo, Boolean) -> Unit,
         onClearTags: () -> Unit,
         mapViewModel: MapViewModel,
-        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
+        scaffoldPadding: PaddingValues,
+        bottomSheetState: SheetState,
+        modifier: Modifier = Modifier,
     ) {
-        SortFilterBottomScaffold2(
-            state = scaffoldState,
-            showFilterFab = false,
-            sheetPeekHeight = 102.dp,
-            sheetContent = {
-                FavoritesMapFilterSheetContent(
-                    state = filterState,
-                    mapTransformState = mapTransformState,
-                    sheetState = scaffoldState.bottomSheetState,
-                )
-            },
-        ) { scaffoldPadding, _ ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                val highlightedBooths = highlightedBooths()
-                val isFiltered by remember {
-                    derivedStateOf {
-                        merchIdIn().isNotEmpty() || seriesIdIn().isNotEmpty()
-                    }
+        Box(modifier = modifier.fillMaxSize()) {
+            val highlightedBooths = highlightedBooths()
+            val isFiltered by remember {
+                derivedStateOf {
+                    merchIdIn().isNotEmpty() || seriesIdIn().isNotEmpty()
                 }
-                val scope = rememberCoroutineScope()
-                var searchExpanded by rememberSaveable { mutableStateOf(false) }
-                MapScreen(
-                    viewModel = mapViewModel,
-                    transformState = mapTransformState,
-                    showSlider = false,
-                    // Add a bit to avoid overlapping bottom nav bar
-                    bottomContentPadding = scaffoldPadding.calculateBottomPadding() + 48.dp,
-                    modifier = Modifier.pointerInput(Unit) {
-                        awaitEachGesture {
-                            val event = awaitPointerEvent(pass = PointerEventPass.Initial)
-                            if (event.changes.any { it.pressed }) {
-                                searchExpanded = false
-                                if (scaffoldState.bottomSheetState.targetValue != SheetValue.Hidden) {
-                                    scope.launch { scaffoldState.bottomSheetState.hide() }
-                                }
+            }
+            val scope = rememberCoroutineScope()
+            var searchExpanded by rememberSaveable { mutableStateOf(false) }
+            MapScreen(
+                viewModel = mapViewModel,
+                transformState = mapTransformState,
+                showSlider = false,
+                // Add a bit to avoid overlapping bottom nav bar
+                bottomContentPadding = scaffoldPadding.calculateBottomPadding() + 48.dp,
+                modifier = Modifier.pointerInput(Unit) {
+                    awaitEachGesture {
+                        val event =
+                            awaitPointerEvent(pass = PointerEventPass.Initial)
+                        if (event.changes.any { it.pressed }) {
+                            searchExpanded = false
+                            if (bottomSheetState.targetValue != SheetValue.Hidden) {
+                                scope.launch { bottomSheetState.hide() }
                             }
                         }
                     }
-                ) { table ->
-                    HighlightedTableCell(
-                        mapViewModel = mapViewModel,
-                        table = table,
-                        highlight = if (isFiltered) {
-                            table.booth in highlightedBooths
-                        } else {
-                            table.favorite
-                        },
-                        showImages = {
-                            mapTransformState.showImages &&
-                                    (!isFiltered || table.booth in highlightedBooths)
-                        },
-                        showText = { mapTransformState.showText },
-                        showCatalogHighlight = !isFiltered,
-                        showOutdatedCatalogs = mapViewModel::showOutdatedCatalogs,
-                        onArtistClick = onArtistClick,
-                    )
                 }
+            ) { table ->
+                HighlightedTableCell(
+                    mapViewModel = mapViewModel,
+                    table = table,
+                    highlight = if (isFiltered) {
+                        table.booth in highlightedBooths
+                    } else {
+                        table.favorite
+                    },
+                    showImages = {
+                        mapTransformState.showImages &&
+                                (!isFiltered || table.booth in highlightedBooths)
+                    },
+                    showText = { mapTransformState.showText },
+                    showCatalogHighlight = !isFiltered,
+                    showOutdatedCatalogs = mapViewModel::showOutdatedCatalogs,
+                    onArtistClick = onArtistClick,
+                )
+            }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .width(600.dp)
-                        .align(Alignment.TopCenter)
-                ) {
-                    DockedSearchBar(
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                state = query,
-                                onSearch = {
-                                    val [merchResults, seriesResults] = tagResults()
-                                    if (merchResults.isNotEmpty()) {
-                                        onMerchSelected(merchResults.first(), true)
-                                        query.clearText()
-                                    } else if (seriesResults.isNotEmpty()) {
-                                        onSeriesSelected(seriesResults.first(), true)
-                                        query.clearText()
-                                    }
-                                },
-                                expanded = searchExpanded,
-                                onExpandedChange = { searchExpanded = it },
-                                leadingIcon = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .width(600.dp)
+                    .align(Alignment.TopCenter)
+            ) {
+                DockedSearchBar(
+                    inputField = {
+                        SearchBarDefaults.InputField(
+                            state = query,
+                            onSearch = {
+                                val [merchResults, seriesResults] = tagResults()
+                                if (merchResults.isNotEmpty()) {
+                                    onMerchSelected(merchResults.first(), true)
+                                    query.clearText()
+                                } else if (seriesResults.isNotEmpty()) {
+                                    onSeriesSelected(seriesResults.first(), true)
+                                    query.clearText()
+                                }
+                            },
+                            expanded = searchExpanded,
+                            onExpandedChange = { searchExpanded = it },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = stringResource(Res.string.alley_map_search),
+                                )
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    searchExpanded = false
+                                    query.clearText()
+                                }) {
                                     Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = stringResource(Res.string.alley_map_search),
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = stringResource(Res.string.alley_map_search_close),
                                     )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = {
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    expanded = searchExpanded,
+                    onExpandedChange = { searchExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val (merchResults, seriesResults) = tagResults()
+                    val listState = rememberLazyListState()
+                    LaunchedEffect(merchResults, seriesResults) {
+                        listState.scrollToItem(0, 0)
+                    }
+                    LazyColumn(state = listState) {
+                        items(
+                            items = merchResults,
+                            key = { "merch_${it.name}" },
+                            contentType = { "merch" },
+                        ) { merch ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onMerchSelected(merch, true)
                                         searchExpanded = false
                                         query.clearText()
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Clear,
-                                            contentDescription = stringResource(Res.string.alley_map_search_close),
-                                        )
                                     }
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        },
-                        expanded = searchExpanded,
-                        onExpandedChange = { searchExpanded = it },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        val (merchResults, seriesResults) = tagResults()
-                        val listState = rememberLazyListState()
-                        LaunchedEffect(merchResults, seriesResults) {
-                            listState.scrollToItem(0, 0)
-                        }
-                        LazyColumn(state = listState) {
-                            items(
-                                items = merchResults,
-                                key = { "merch_${it.name}" },
-                                contentType = { "merch" },
-                            ) { merch ->
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            onMerchSelected(merch, true)
-                                            searchExpanded = false
-                                            query.clearText()
-                                        }
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Text(text = merch.name)
-                                    val notes = merch.notes
-                                    if (!notes.isNullOrBlank()) {
-                                        Text(
-                                            text = notes,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            modifier = Modifier.padding(start = 24.dp)
-                                        )
-                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(text = merch.name)
+                                val notes = merch.notes
+                                if (!notes.isNullOrBlank()) {
+                                    Text(
+                                        text = notes,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(start = 24.dp)
+                                    )
                                 }
-                                HorizontalDivider()
                             }
-                            items(
-                                items = seriesResults,
-                                key = { "series_${it.id}" },
-                                contentType = { "series" },
-                            ) { series ->
-                                SeriesPrediction(
-                                    query = query.text.toString(),
-                                    series = series,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            onSeriesSelected(series, true)
-                                            searchExpanded = false
-                                            query.clearText()
-                                        }
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                                HorizontalDivider()
-                            }
+                            HorizontalDivider()
+                        }
+                        items(
+                            items = seriesResults,
+                            key = { "series_${it.id}" },
+                            contentType = { "series" },
+                        ) { series ->
+                            SeriesPrediction(
+                                query = query.text.toString(),
+                                series = series,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onSeriesSelected(series, true)
+                                        searchExpanded = false
+                                        query.clearText()
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            HorizontalDivider()
                         }
                     }
+                }
 
-                    val seriesIdIn = seriesIdIn()
-                    val merchIdIn = merchIdIn()
-                    val seriesByRowId = seriesByRowId()
-                    val merchById = merchById()
-                    val languageOptionMedia = LocalLanguageOptionMedia.current
-                    if (merchIdIn.isNotEmpty() || seriesIdIn.isNotEmpty()) {
-                        LazyRow(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.8f),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            item(key = "clear") {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = stringResource(Res.string.alley_map_search_tags_clear),
-                                    modifier = Modifier.clickable(onClick = onClearTags)
-                                )
-                            }
-                            items(
-                                items = merchIdIn,
-                                key = { "merch$it" },
-                                contentType = { "merch" }) {
-                                val merch = merchById[it]
-                                FilterChip(
-                                    selected = true,
-                                    label = { Text(merch?.name.orEmpty()) },
-                                    onClick = { merch?.let { onMerchSelected(it, false) } },
-                                )
-                            }
-                            items(
-                                items = seriesIdIn,
-                                key = { "series$it" },
-                                contentType = { "series" }) {
-                                val series = seriesByRowId[it]
-                                FilterChip(
-                                    selected = true,
-                                    label = { Text(series?.name(languageOptionMedia).orEmpty()) },
-                                    onClick = { series?.let { onSeriesSelected(it, false) } },
-                                )
-                            }
+                val seriesIdIn = seriesIdIn()
+                val merchIdIn = merchIdIn()
+                val seriesByRowId = seriesByRowId()
+                val merchById = merchById()
+                val languageOptionMedia = LocalLanguageOptionMedia.current
+                if (merchIdIn.isNotEmpty() || seriesIdIn.isNotEmpty()) {
+                    LazyRow(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.8f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        item(key = "clear") {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = stringResource(Res.string.alley_map_search_tags_clear),
+                                modifier = Modifier.clickable(onClick = onClearTags)
+                            )
+                        }
+                        items(
+                            items = merchIdIn,
+                            key = { "merch$it" },
+                            contentType = { "merch" }) {
+                            val merch = merchById[it]
+                            FilterChip(
+                                selected = true,
+                                label = { Text(merch?.name.orEmpty()) },
+                                onClick = { merch?.let { onMerchSelected(it, false) } },
+                            )
+                        }
+                        items(
+                            items = seriesIdIn,
+                            key = { "series$it" },
+                            contentType = { "series" }) {
+                            val series = seriesByRowId[it]
+                            FilterChip(
+                                selected = true,
+                                label = { Text(series?.name(languageOptionMedia).orEmpty()) },
+                                onClick = { series?.let { onSeriesSelected(it, false) } },
+                            )
                         }
                     }
                 }

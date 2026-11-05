@@ -821,7 +821,7 @@ fun SortFilterBottomScaffold2(
     state: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     bottomNavigationState: BottomNavigationState? = null,
     showFilterFab: Boolean = true,
-    sheetPeekHeight: Dp = Dp.Unspecified,
+    sheetPeekHeight: () -> Dp = { Dp.Unspecified },
     sheetContent: @Composable ColumnScope.() -> Unit,
     content: @Composable (scaffoldPadding: PaddingValues, contentPadding: () -> PaddingValues) -> Unit,
 ) {
@@ -841,7 +841,7 @@ fun SortFilterBottomScaffold2(
             bottomSheetState = bottomSheetState,
         ) {
             val sheetPeekHeight = if (state.usePartiallyExpanded) {
-                sheetPeekHeight.takeOrElse { 56.dp } +
+                sheetPeekHeight().takeOrElse { 56.dp } +
                         (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
             } else {
                 0.dp

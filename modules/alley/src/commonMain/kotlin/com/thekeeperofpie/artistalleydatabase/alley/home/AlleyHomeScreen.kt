@@ -25,6 +25,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
@@ -46,7 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
@@ -82,23 +87,26 @@ object AlleyHomeScreen {
         val browseViewModel = assistedMetroViewModel<BrowseViewModel, BrowseViewModel.Factory> {
             create(it.createSavedStateHandle())
         }
-        val favoritesViewModel = assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
-            create(it.createSavedStateHandle())
-        }
+        val favoritesViewModel =
+            assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
+                create(it.createSavedStateHandle())
+            }
+        val mapViewModel =
+            assistedMetroViewModel<FavoritesMapViewModel, FavoritesMapViewModel.Factory> {
+                create(it.createSavedStateHandle())
+            }
 
         val scaffoldState = rememberSortFilterBottomScaffoldState()
-        val mapScaffoldState = rememberSortFilterBottomScaffoldState()
         val ralliesScaffoldState = rememberSortFilterBottomScaffoldState()
         val state = remember(
             scaffoldState,
-            mapScaffoldState,
             ralliesScaffoldState,
         ) {
             AlleyHomeNavigationState(
                 artistsScaffoldState = scaffoldState,
                 browseScaffoldState = scaffoldState,
                 favoritesScaffoldState = scaffoldState,
-                mapScaffoldState = mapScaffoldState,
+                mapScaffoldState = scaffoldState,
                 ralliesScaffoldState = ralliesScaffoldState,
             )
         }
@@ -126,18 +134,23 @@ object AlleyHomeScreen {
                         state = favoritesViewModel.state,
                         bottomSheetState = scaffoldState.bottomSheetState,
                     )
-                    AlleyHomeDestination.MAP,
+                    AlleyHomeDestination.MAP ->
+                        FavoritesMapFilterSheetContent(
+                            state = mapViewModel.filterState,
+                            mapTransformState = mapTransformState,
+                            sheetState = scaffoldState.bottomSheetState,
+                        )
                     AlleyHomeDestination.STAMP_RALLIES,
                         -> Box {}
                 }
             },
-        ) {
+        ) { scaffoldPadding ->
             Box(
                 Modifier.fillMaxSize()
                     .padding(
                         // Ignore bottom so that animateEnterExit doesn't clip content
-                        start = it.calculateStartPadding(LocalLayoutDirection.current),
-                        end = it.calculateEndPadding(LocalLayoutDirection.current),
+                        start = scaffoldPadding.calculateStartPadding(LocalLayoutDirection.current),
+                        end = scaffoldPadding.calculateEndPadding(LocalLayoutDirection.current),
                     )
             ) {
                 val saveableStateHolder = rememberSaveableStateHolder()
@@ -167,9 +180,11 @@ object AlleyHomeScreen {
                             )
                         AlleyHomeDestination.MAP ->
                             FavoritesMapScreen(
-                                scaffoldState = mapScaffoldState,
+                                viewModel = mapViewModel,
                                 settings = graph.settings,
                                 mapTransformState = mapTransformState,
+                                scaffoldPadding = scaffoldPadding,
+                                bottomSheetState = scaffoldState.bottomSheetState,
                                 onArtistClick = { entry, imageIndex ->
                                     onOpenArtist(entry.artist, imageIndex)
                                 },
@@ -196,7 +211,21 @@ object AlleyHomeScreen {
         sheetContent: @Composable ColumnScope.() -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        SortFilterBottomScaffold2(state = scaffoldState, showFilterFab = false, sheetContent = sheetContent) { _, _ ->
+        val sheetPeekHeight by remember {
+            derivedStateOf {
+                if (destination() == AlleyHomeDestination.MAP) {
+                    102.dp
+                } else {
+                    Dp.Unspecified
+                }
+            }
+        }
+        SortFilterBottomScaffold2(
+            state = scaffoldState,
+            sheetPeekHeight = { sheetPeekHeight },
+            showFilterFab = false,
+            sheetContent = sheetContent,
+        ) { _, _ ->
             val movableContent = remember { movableContentOf(content) }
             val windowAdaptiveInfo = currentWindowAdaptiveInfo()
             val suiteType =
