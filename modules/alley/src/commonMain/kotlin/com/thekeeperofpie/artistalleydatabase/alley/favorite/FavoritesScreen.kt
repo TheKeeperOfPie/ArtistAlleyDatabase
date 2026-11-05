@@ -19,23 +19,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.createSavedStateHandle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -85,17 +79,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.QrCode2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopBarScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.VerticalScrollableWithBar
-import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -108,32 +97,10 @@ object FavoritesScreen {
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
-        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-        viewModel: FavoritesViewModel = assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
-            create(it.createSavedStateHandle())
-        },
+        viewModel: FavoritesViewModel,
     ) {
         FavoritesScreen(
-            state = remember(viewModel) {
-                State(
-                    randomSeed = viewModel.randomSeed,
-                    tab = viewModel.tab,
-                    query = viewModel.query,
-                    displayType = { viewModel.settings.displayType },
-                    year = viewModel::year,
-                    onYearChange = { viewModel.year = it },
-                    artistsEntries = viewModel.artistEntries,
-                    artistsSortFilterState = viewModel.artistSortFilterController.state,
-                    artistsUnfilteredCount = viewModel::artistsUnfilteredCount,
-                    ralliesEntries = viewModel.stampRallyEntries,
-                    ralliesSortFilterState = viewModel.stampRallySortFilterController.state,
-                    ralliesUnfilteredCount = viewModel::stampRallyUnfilteredCount,
-                    seriesEntries = viewModel.seriesEntries,
-                    seriesSortFilterState = viewModel.seriesSortFilterController.state,
-                    merchEntries = viewModel.merchEntries,
-                )
-            },
-            scaffoldState = scaffoldState,
+            state = viewModel.state,
             series = viewModel.seriesEntryCache::series,
             eventSink = {
                 viewModel.onEvent(
@@ -152,17 +119,8 @@ object FavoritesScreen {
         state: State,
         series: () -> Map<String, GetSeriesTitles>,
         eventSink: (Event) -> Unit,
-        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-            val scope = rememberCoroutineScope()
-            BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-                scope.launch {
-                    scaffoldState.bottomSheetState.partialExpand()
-                }
-            }
-
-            var tab by state.tab.collectAsMutableStateWithLifecycle()
             val artistsEntries = state.artistsEntries.collectAsLazyPagingItems()
             val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItems()
             val seriesEntries = state.seriesEntries.collectAsLazyPagingItems()
@@ -173,16 +131,14 @@ object FavoritesScreen {
                 onDataYearChange = state.onYearChange,
                 lockedYear = null,
             )
-            val entries = when (tab) {
+            val entries = when (state.tab()) {
                 EntryTab.ARTISTS -> artistsEntries
                 EntryTab.RALLIES -> ralliesEntries
                 EntryTab.SERIES -> seriesEntries
                 EntryTab.MERCH -> merchEntries
             }
-            SortFilterBottomScaffold2(
-                state = scaffoldState,
-                showFilterFab = false,
-                enterAlwaysTopBar = {
+            EnterAlwaysTopBarScaffold(
+                topBar = {
                     val title = stringResource(Res.string.alley_favorites_search)
                     AlleySearchBar(
                         onClickBack = null,
@@ -197,28 +153,9 @@ object FavoritesScreen {
                             .renderMaybeInSharedTransitionScopeOverlay(1f)
                     )
                 },
-                sheetContent = {
-                    when (tab) {
-                        EntryTab.ARTISTS -> ArtistSortFilterSheetContent(
-                            state = state.artistsSortFilterState,
-                            sheetState = scaffoldState.bottomSheetState,
-                            showHideFavorited = false,
-                        )
-                        EntryTab.RALLIES -> StampRallySortFilterSheetContent(
-                            state = state.ralliesSortFilterState,
-                            sheetState = scaffoldState.bottomSheetState,
-                            showHideFavorited = false,
-                        )
-                        EntryTab.SERIES -> SeriesSortFilterSheetContent(
-                            state = state.seriesSortFilterState,
-                            sheetState = scaffoldState.bottomSheetState,
-                        )
-                        // TODO: Real merch sort filter?
-                        EntryTab.MERCH -> Box {}
-                    }
-                },
-            ) { _, contentPadding ->
+            ) { contentPadding ->
                 val saveableStateHolder = rememberSaveableStateHolder()
+                val tab = state.tab()
                 saveableStateHolder.SaveableStateProvider(tab) {
                     when (tab) {
                         EntryTab.ARTISTS ->
@@ -231,8 +168,8 @@ object FavoritesScreen {
                                 eventSink = eventSink,
                                 header = {
                                     Header(
-                                        tab = { tab },
-                                        onTabChange = { tab = it },
+                                        tab = state.tab,
+                                        onTabChange = state.onTabChange,
                                         dataYearHeaderState = dataYearHeaderState,
                                         eventSink = eventSink,
                                     )
@@ -248,21 +185,21 @@ object FavoritesScreen {
                                 eventSink = eventSink,
                                 header = {
                                     Header(
-                                        tab = { tab },
-                                        onTabChange = { tab = it },
+                                        tab = state.tab,
+                                        onTabChange = state.onTabChange,
                                         dataYearHeaderState = dataYearHeaderState,
                                         eventSink = eventSink,
                                     )
                                 },
-                                noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
+                                noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
                             )
                         EntryTab.SERIES -> SeriesContent(
                             baseContentPadding = contentPadding,
                             series = seriesEntries,
                             header = {
                                 Header(
-                                    tab = { tab },
-                                    onTabChange = { tab = it },
+                                    tab = state.tab,
+                                    onTabChange = state.onTabChange,
                                     dataYearHeaderState = dataYearHeaderState,
                                     eventSink = eventSink,
                                 )
@@ -274,8 +211,8 @@ object FavoritesScreen {
                             merch = merchEntries,
                             header = {
                                 Header(
-                                    tab = { tab },
-                                    onTabChange = { tab = it },
+                                    tab = state.tab,
+                                    onTabChange = state.onTabChange,
                                     dataYearHeaderState = dataYearHeaderState,
                                     eventSink = eventSink,
                                 )
@@ -285,6 +222,28 @@ object FavoritesScreen {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    fun SheetContent(state: State, bottomSheetState: SheetState) {
+        when (state.tab()) {
+            EntryTab.ARTISTS -> ArtistSortFilterSheetContent(
+                state = state.artistsSortFilterState,
+                sheetState = bottomSheetState,
+                showHideFavorited = false,
+            )
+            EntryTab.RALLIES -> StampRallySortFilterSheetContent(
+                state = state.ralliesSortFilterState,
+                sheetState = bottomSheetState,
+                showHideFavorited = false,
+            )
+            EntryTab.SERIES -> SeriesSortFilterSheetContent(
+                state = state.seriesSortFilterState,
+                sheetState = bottomSheetState,
+            )
+            // TODO: Real merch sort filter?
+            EntryTab.MERCH -> Box {}
         }
     }
 
@@ -556,6 +515,7 @@ object FavoritesScreen {
         }
     }
 
+    @Serializable
     enum class EntryTab(val text: StringResource) {
         ARTISTS(Res.string.alley_favorites_artists),
         RALLIES(Res.string.alley_favorites_rallies),
@@ -566,7 +526,8 @@ object FavoritesScreen {
     @Stable
     class State(
         val randomSeed: Int,
-        val tab: MutableStateFlow<EntryTab>,
+        val tab: () -> EntryTab,
+        val onTabChange: (EntryTab) -> Unit,
         val query: TextFieldState,
         val displayType: () -> SearchDisplayType,
         val year: () -> DataYear,

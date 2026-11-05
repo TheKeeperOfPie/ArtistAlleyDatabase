@@ -4,6 +4,7 @@ import androidx.appstate.transform.transform
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
@@ -23,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen.State
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
@@ -54,7 +56,6 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -81,15 +82,15 @@ class FavoritesViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var year
+    private var year
         get() = settings.dataYear
         set(value) {
             settings.dataYear = value
         }
 
-    val showOutdatedCatalogs = settings.showOutdatedCatalogs
+    private val showOutdatedCatalogs = settings.showOutdatedCatalogs
 
-    val artistSortFilterController = artistSortFilterControllerFactory.create(
+    private val artistSortFilterController = artistSortFilterControllerFactory.create(
         scope = viewModelScope,
         savedStateHandle = savedStateHandle,
         dataYear = ::year,
@@ -97,22 +98,22 @@ class FavoritesViewModel(
         lockedSeries = { null },
     )
 
-    val stampRallySortFilterController = stampRallySortFilterControllerFactory.create(
+    private val stampRallySortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
         lockedSeries = { null },
         dataYear = ::year,
         savedStateHandle = savedStateHandle,
     )
 
-    val tab = MutableStateFlow(FavoritesScreen.EntryTab.ARTISTS)
-    val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
-    val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
+    private var tab by savedStateHandle.saveable { mutableStateOf(FavoritesScreen.EntryTab.ARTISTS) }
+    private val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
+    private val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
     private val inputs by derivedStateOf {
         Triple(query.text.toString(), year, settings.showOnlyConfirmedTags)
     }
 
-    val artistsUnfilteredCount by transform(0, viewModelScope) {
+    private val artistsUnfilteredCount by transform(0, viewModelScope) {
         val year = year
         val query = query.text.toString()
         produceState(0, year, query) {
@@ -128,7 +129,7 @@ class FavoritesViewModel(
         }.value
     }
 
-    val artistEntries = snapshotFlow { inputs to artistSortFilterController.filterParams }
+    private val artistEntries = snapshotFlow { inputs to artistSortFilterController.filterParams }
         .flatMapLatest { [inputs, filterParams] ->
             val [query, year, showOnlyConfirmedTags] = inputs
             Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
@@ -151,7 +152,7 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val stampRallyUnfilteredCount by transform(0, viewModelScope) {
+    private val stampRallyUnfilteredCount by transform(0, viewModelScope) {
         val year = year
         val query = query.text.toString()
         produceState(0, year, query) {
@@ -167,7 +168,7 @@ class FavoritesViewModel(
         }.value
     }
 
-    val stampRallyEntries =
+    private val stampRallyEntries =
         snapshotFlow { inputs to stampRallySortFilterController.filterParams }
             .flatMapLatest { [inputs, filterParams] ->
                 val [query, year, showOnlyConfirmedTags] = inputs
@@ -182,7 +183,7 @@ class FavoritesViewModel(
             .flowOn(dispatchers.io)
             .cachedIn(viewModelScope)
 
-    val seriesSortFilterController = SeriesSortFilterController(settings, savedStateHandle)
+    private val seriesSortFilterController = SeriesSortFilterController(settings, savedStateHandle)
 
     data class SeriesInputs(
         val query: String,
@@ -191,7 +192,7 @@ class FavoritesViewModel(
         val filterParams: SeriesSortFilterController.FilterParams,
     )
 
-    val seriesEntries = snapshotFlow {
+    private val seriesEntries = snapshotFlow {
         SeriesInputs(
             query = query.text.toString(),
             year = year,
@@ -218,7 +219,7 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val merchEntries = snapshotFlow { query.text.toString() to year }
+    private val merchEntries = snapshotFlow { query.text.toString() to year }
         .flatMapLatest { [query, year] ->
             if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
@@ -240,6 +241,25 @@ class FavoritesViewModel(
     private val rallyMutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
     private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
     private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)
+
+    val state = State(
+        randomSeed = randomSeed,
+        tab = ::tab,
+        onTabChange = { tab = it },
+        query = query,
+        displayType = { settings.displayType },
+        year = ::year,
+        onYearChange = { year = it },
+        artistsEntries = artistEntries,
+        artistsSortFilterState = artistSortFilterController.state,
+        artistsUnfilteredCount = ::artistsUnfilteredCount,
+        ralliesEntries = stampRallyEntries,
+        ralliesSortFilterState = stampRallySortFilterController.state,
+        ralliesUnfilteredCount = ::stampRallyUnfilteredCount,
+        seriesEntries = seriesEntries,
+        seriesSortFilterState = seriesSortFilterController.state,
+        merchEntries = merchEntries,
+    )
 
     init {
         viewModelScope.launch(dispatchers.io) {
@@ -286,7 +306,7 @@ class FavoritesViewModel(
         is FavoritesScreen.Event.MerchFavoriteToggle ->
             merchMutationUpdates.tryEmit(event.merch.userEntry.copy(favorite = event.favorite))
         FavoritesScreen.Event.OpenChangelog -> {
-            when (tab.value) {
+            when (tab) {
                 FavoritesScreen.EntryTab.ARTISTS -> navigator.navigate(
                     AlleyDestination.FavoriteArtistsChangelog(year)
                 )

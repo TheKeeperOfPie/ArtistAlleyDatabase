@@ -44,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.RootArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -81,21 +82,22 @@ object AlleyHomeScreen {
         val browseViewModel = assistedMetroViewModel<BrowseViewModel, BrowseViewModel.Factory> {
             create(it.createSavedStateHandle())
         }
+        val favoritesViewModel = assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
+            create(it.createSavedStateHandle())
+        }
 
         val scaffoldState = rememberSortFilterBottomScaffoldState()
-        val favoritesScaffoldState = rememberSortFilterBottomScaffoldState()
         val mapScaffoldState = rememberSortFilterBottomScaffoldState()
         val ralliesScaffoldState = rememberSortFilterBottomScaffoldState()
         val state = remember(
             scaffoldState,
-            favoritesScaffoldState,
             mapScaffoldState,
             ralliesScaffoldState,
         ) {
             AlleyHomeNavigationState(
                 artistsScaffoldState = scaffoldState,
                 browseScaffoldState = scaffoldState,
-                favoritesScaffoldState = favoritesScaffoldState,
+                favoritesScaffoldState = scaffoldState,
                 mapScaffoldState = mapScaffoldState,
                 ralliesScaffoldState = ralliesScaffoldState,
             )
@@ -120,7 +122,10 @@ object AlleyHomeScreen {
                         state = browseViewModel.state,
                         bottomSheetState = scaffoldState.bottomSheetState,
                     )
-                    AlleyHomeDestination.FAVORITES,
+                    AlleyHomeDestination.FAVORITES -> FavoritesScreen.SheetContent(
+                        state = favoritesViewModel.state,
+                        bottomSheetState = scaffoldState.bottomSheetState,
+                    )
                     AlleyHomeDestination.MAP,
                     AlleyHomeDestination.STAMP_RALLIES,
                         -> Box {}
@@ -144,7 +149,7 @@ object AlleyHomeScreen {
                             BrowseScreen(browseViewModel = browseViewModel)
                         AlleyHomeDestination.FAVORITES ->
                             FavoritesScreen(
-                                scaffoldState = favoritesScaffoldState,
+                                viewModel = favoritesViewModel,
                                 onNavigateToArtists = {
                                     destination = AlleyHomeDestination.ARTISTS
                                 },
