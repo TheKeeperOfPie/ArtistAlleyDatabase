@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
@@ -45,6 +46,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.clear
+import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagData
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchTagSection2
@@ -64,10 +66,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSectionState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
@@ -76,10 +80,10 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res as Util
 internal fun StampRallySortFilterSheetContent(
     state: StampRallySortFilterState,
     sheetState: SheetState,
-    seriesAutocompleteResults: () -> List<SeriesInfo>,
     scrollState: ScrollState = rememberScrollState(),
     showHideFavorited: Boolean = true,
 ) {
+    val scope = rememberCoroutineScope()
     SortFilterBottomScaffoldSheetContent(
         sheetState = sheetState,
         scrollState = scrollState,
@@ -104,12 +108,15 @@ internal fun StampRallySortFilterSheetContent(
             )
         },
         footer = {
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = { state.clear() }) {
                     Text(text = stringResource(UtilsComposeRes.string.clear))
                 }
+                TextButton(onClick = { scope.launch { sheetState.toggle() } }) {
+                    Text(text = stringResource(UtilsComposeRes.string.close))
+                }
             }
-        }
+        },
     ) {
         val saveableState = state.saveableState
         val persistentState = state.persistentState
@@ -132,7 +139,7 @@ internal fun StampRallySortFilterSheetContent(
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SERIES) },
             state = saveableState.series,
             lockedSeries = state.lockedSeries,
-            autocompleteResults = seriesAutocompleteResults,
+            autocompleteResults = state.seriesAutocompleteResults,
         )
 
         HorizontalDivider()
@@ -282,6 +289,7 @@ class StampRallySortFilterState(
     val lockedSeries: () -> SeriesInfo?,
     val merchTagData: () -> MerchTagData,
     val merchIdsLockedIn: () -> Set<String>, // TODO: Not wired up
+    val seriesAutocompleteResults: () -> List<SeriesInfo>,
 ) {
     val activeCount get() = saveableState.activeCount
 
@@ -310,6 +318,7 @@ class StampRallySortFilterState(
                     lockedSeries = { null },
                     merchTagData = { MerchTagData(MerchEntryProvider.values.toList()) },
                     merchIdsLockedIn = { emptySet() },
+                    seriesAutocompleteResults = { emptyList() },
                 )
             }
         }
@@ -391,7 +400,6 @@ private fun StampRallySortFilterSheetContentPreview(
         state = state,
         scrollState = scrollState,
         sheetState = rememberBottomSheetState(SheetValue.PartiallyExpanded),
-        seriesAutocompleteResults = { emptyList() },
     )
 }
 

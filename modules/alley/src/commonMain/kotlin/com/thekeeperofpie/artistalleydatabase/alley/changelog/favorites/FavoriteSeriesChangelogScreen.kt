@@ -2,8 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.changelog.favorites
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_series_changelog_title
@@ -33,11 +31,10 @@ object FavoriteSeriesChangelogScreen {
             )
         },
     ) {
-        val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         FavoritesChangelogScreen(
             dataYear = dataYear,
             changes = viewModel::changes,
-            seriesTitles = { seriesTitles },
+            seriesTitles = viewModel.seriesEntryCache::series,
             showOnlyConfirmedTags = viewModel::showOnlyConfirmedTags,
             onChangeShowOnlyConfirmedTags = { viewModel.showOnlyConfirmedTags = it },
             onClickBack = onClickBack,

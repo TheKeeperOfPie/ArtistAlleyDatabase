@@ -53,9 +53,6 @@ sealed interface AlleyDestination : NavKey {
     data class ArtistMap(val year: DataYear, val id: String) : AlleyDestination
 
     @Serializable
-    data class ArtistsList(val year: DataYear, val serializedBooths: String) : AlleyDestination
-
-    @Serializable
     data class ArtistChangelog(val year: DataYear) : AlleyDestination
 
     @Serializable
@@ -225,7 +222,6 @@ sealed interface AlleyDestination : NavKey {
         AboutLibraries -> "libraries"
         is ArtistDetails -> "artist/${year.serializedName}/${id ?: booth}"
         is ArtistMap -> "artist/map/${year.serializedNameOrAll}/$id"
-        is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
         is ArtistChangelog -> "changelog/${year.serializedName}"
         is Export -> "export/${dataYear.serializedName}"
         is FavoritesChangelog -> "changelog/${dataYear.serializedName}/favorites"
@@ -286,12 +282,6 @@ sealed interface AlleyDestination : NavKey {
                         }
                         else -> null
                     }
-                    "artists" -> if (parts.size == 3) {
-                        ArtistsList(
-                            year = parts[1].toDataYearOrLatest(),
-                            serializedBooths = parts[2]
-                        )
-                    } else null
                     "changelog" -> {
                         when (parts.getOrNull(1)) {
                             "series" -> {

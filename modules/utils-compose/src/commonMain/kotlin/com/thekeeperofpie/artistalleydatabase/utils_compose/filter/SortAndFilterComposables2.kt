@@ -68,14 +68,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -84,7 +81,6 @@ import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
@@ -92,13 +88,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.paneTitle
@@ -108,7 +99,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
-import androidx.compose.ui.zIndex
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.filters_content_description
@@ -119,7 +109,6 @@ import artistalleydatabase.modules.utils_compose.generated.resources.sort_direct
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_descending_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_label
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_expand_content_description
-import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ArrowDownward
 import com.thekeeperofpie.artistalleydatabase.icons.filled.ArrowUpward
@@ -130,30 +119,23 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopBarScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.currentWindowSizeClass
-import com.thekeeperofpie.artistalleydatabase.utils_compose.enterAlwaysScrollBehaviorAutoReset
 import com.thekeeperofpie.artistalleydatabase.utils_compose.exitAlwaysScrollBehaviorAutoReset
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState.Filter.SelectionMethod
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.math.abs
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 private fun Header(
@@ -853,25 +835,11 @@ fun SortFilterBottomScaffold2(
         scope.launch { bottomSheetState.toggle() }
     }
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehaviorAutoReset()
-    Box(modifier = modifier) {
-        if (enterAlwaysTopBar != null) {
-            EnterAlwaysTopAppBarHeightChange(
-                scrollBehavior = scrollBehavior,
-                modifier =
-                    Modifier.align(Alignment.TopCenter)
-                        .zIndex(1f)
-                        .animateEnterExit(
-                            enter = slideInVertically { -it * 2 },
-                            exit = slideOutVertically { -it * 2 },
-                        )
-                        .renderMaybeInSharedTransitionScopeOverlay(2f)
-            ) {
-                enterAlwaysTopBar()
-            }
-        }
-
-        OptionalFilterFloatingActionButtonWrapper(show = showFilterFab, scaffoldState = state) {
+    EnterAlwaysTopBarScaffold(topBar = enterAlwaysTopBar, modifier = modifier) { contentPadding ->
+        OptionalFilterFloatingActionButtonWrapper(
+            show = showFilterFab,
+            bottomSheetState = bottomSheetState,
+        ) {
             val sheetPeekHeight = if (state.usePartiallyExpanded) {
                 sheetPeekHeight.takeOrElse { 56.dp } +
                         (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
@@ -906,27 +874,7 @@ fun SortFilterBottomScaffold2(
                 sheetShadowElevation = 4.dp,
                 containerColor = MaterialTheme.colorScheme.background,
                 topBar = null,
-                modifier = Modifier.conditionally(
-                    enterAlwaysTopBar != null,
-                    Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-                ),
-                content = {
-                    val density = LocalDensity.current
-                    val windowHeight = LocalWindowInfo.current.containerSize.height
-                    content(
-                        it,
-                        {
-                            with(density) {
-                                val heightOffsetLimit = abs(scrollBehavior.fixedHeightOffsetLimit)
-                                if (heightOffsetLimit > 0 && heightOffsetLimit < windowHeight) {
-                                    PaddingValues(top = heightOffsetLimit.toDp())
-                                } else {
-                                    PaddingValues.Zero
-                                }
-                            }
-                        },
-                    )
-                },
+                content = { content(it, contentPadding) },
                 // TODO: Error state
                 // snackbarHost = {},
             )
@@ -937,38 +885,12 @@ fun SortFilterBottomScaffold2(
 @Composable
 private fun OptionalFilterFloatingActionButtonWrapper(
     show: Boolean,
-    scaffoldState: SortFilterBottomScaffoldState,
+    bottomSheetState: SheetState,
     content: @Composable () -> Unit,
 ) {
     if (!show) {
         content()
         return
-    }
-    var fabVisible by remember { mutableStateOf(true) }
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(
-                available: Offset,
-                source: NestedScrollSource,
-            ): Offset {
-                if (available.y != 0f) {
-                    fabVisible = available.y >= 0
-                }
-                return Offset.Zero
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        snapshotFlow { fabVisible }
-            .flatMapLatest {
-                if (it) {
-                    emptyFlow()
-                } else {
-                    interval(5.seconds, 5.seconds)
-                }
-            }
-            .collectLatest { fabVisible = true }
     }
     val scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehaviorAutoReset()
     Scaffold(
@@ -995,12 +917,7 @@ private fun OptionalFilterFloatingActionButtonWrapper(
             ) {
                 val scope = rememberCoroutineScope()
                 FloatingActionButton(
-                    modifier =
-                        Modifier.animateFloatingActionButton(
-                            visible = fabVisible,
-                            alignment = Alignment.BottomEnd,
-                        ),
-                    onClick = { scope.launch { scaffoldState.bottomSheetState.toggle() } },
+                    onClick = { scope.launch { bottomSheetState.toggle() } },
                 ) {
                     Icon(
                         Icons.Default.FilterList,

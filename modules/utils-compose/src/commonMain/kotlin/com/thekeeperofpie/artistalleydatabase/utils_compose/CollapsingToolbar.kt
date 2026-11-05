@@ -8,11 +8,14 @@ import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
@@ -39,14 +42,19 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.hoc081098.flowext.interval
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -433,4 +441,50 @@ class FixedTopAppBarScrollBehavior(scrollBehavior: TopAppBarScrollBehavior) :
             primary = scrollBehavior.nestedScrollConnection,
             consumeNone = true,
         )
+}
+
+@Composable
+fun EnterAlwaysTopBarScaffold(
+    modifier: Modifier = Modifier,
+    topBar: (@Composable () -> Unit)? = null,
+    content: @Composable (contentPadding: () -> PaddingValues) -> Unit,
+) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehaviorAutoReset()
+    Box(
+        modifier = modifier.conditionally(
+            topBar != null,
+            Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        )
+    ) {
+        if (topBar != null) {
+            EnterAlwaysTopAppBarHeightChange(
+                scrollBehavior = scrollBehavior,
+                modifier =
+                    Modifier.align(Alignment.TopCenter)
+                        .zIndex(1f)
+                        .animateEnterExit(
+                            enter = slideInVertically { -it * 2 },
+                            exit = slideOutVertically { -it * 2 },
+                        )
+                        .renderMaybeInSharedTransitionScopeOverlay(2f)
+            ) {
+                topBar()
+            }
+        }
+
+        val density = LocalDensity.current
+        val windowHeight = LocalWindowInfo.current.containerSize.height
+        content(
+            {
+                with(density) {
+                    val heightOffsetLimit = abs(scrollBehavior.fixedHeightOffsetLimit)
+                    if (heightOffsetLimit > 0 && heightOffsetLimit < windowHeight) {
+                        PaddingValues(top = heightOffsetLimit.toDp())
+                    } else {
+                        PaddingValues.Zero
+                    }
+                }
+            },
+        )
+    }
 }

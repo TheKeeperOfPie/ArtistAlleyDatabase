@@ -16,11 +16,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_series_changelog_title
@@ -46,9 +44,8 @@ object SeriesChangelogScreen {
             create(it.createSavedStateHandle())
         },
     ) {
-        val changes by viewModel.changes.collectAsStateWithLifecycle()
         SeriesChangelogScreen(
-            changes = { changes },
+            changes = viewModel::changes,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSeries = onClickSeries,

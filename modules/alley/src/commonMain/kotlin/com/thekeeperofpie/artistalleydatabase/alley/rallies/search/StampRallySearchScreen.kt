@@ -13,13 +13,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -77,7 +75,6 @@ fun StampRallySearchScreen(
         onDataYearChange = state.onYearChange,
         lockedYear = state.lockedYear,
     )
-    val seriesAutocompleteResults by viewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
     StampRallySearchScreen(
         state = state,
         eventSink = viewModel::onEvent,
@@ -89,7 +86,6 @@ fun StampRallySearchScreen(
             )
         },
         scaffoldState = scaffoldState,
-        seriesAutocompleteResults = { seriesAutocompleteResults },
         showFilterFab = !isRoot,
     )
 }
@@ -101,7 +97,6 @@ fun StampRallySearchScreen(
     eventSink: (Event) -> Unit,
     header: @Composable () -> Unit,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-    seriesAutocompleteResults: () -> List<SeriesInfo>,
     showFilterFab: Boolean = true,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
@@ -155,7 +150,6 @@ fun StampRallySearchScreen(
                 StampRallySortFilterSheetContent(
                     state = state.sortFilterState,
                     sheetState = scaffoldState.bottomSheetState,
-                    seriesAutocompleteResults = seriesAutocompleteResults
                 )
             },
         ) { _, contentPadding ->

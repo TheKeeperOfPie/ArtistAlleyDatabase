@@ -16,11 +16,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
@@ -67,13 +65,12 @@ object TagChangelogScreen {
             )
         },
     ) {
-        val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         TagChangelogScreen(
             dataYear = dataYear,
             changes = viewModel::changes,
             series = viewModel::series,
             merch = viewModel::merch,
-            seriesTitles = { seriesTitles },
+            seriesTitles = viewModel.seriesEntryCache::series,
             showOnlyConfirmedTags = viewModel::showOnlyConfirmedTags,
             onChangeShowOnlyConfirmedTags = { viewModel.showOnlyConfirmedTags = it },
             onClickBack = onClickBack,

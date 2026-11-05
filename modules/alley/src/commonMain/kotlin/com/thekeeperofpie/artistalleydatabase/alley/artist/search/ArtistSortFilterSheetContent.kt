@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
@@ -47,6 +48,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_type_fil
 import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import artistalleydatabase.modules.utils_compose.generated.resources.clear
+import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
@@ -77,10 +79,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSectionState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
@@ -89,10 +93,10 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res as Util
 internal fun ArtistSortFilterSheetContent(
     state: ArtistSortFilterState,
     sheetState: SheetState,
-    seriesAutocompleteResults: () -> List<SeriesInfo>,
     scrollState: ScrollState = rememberScrollState(),
     showHideFavorited: Boolean = true,
 ) {
+    val scope = rememberCoroutineScope()
     SortFilterBottomScaffoldSheetContent(
         sheetState = sheetState,
         scrollState = scrollState,
@@ -117,12 +121,15 @@ internal fun ArtistSortFilterSheetContent(
             )
         },
         footer = {
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = { state.clear() }) {
                     Text(text = stringResource(UtilsComposeRes.string.clear))
                 }
+                TextButton(onClick = { scope.launch { sheetState.toggle() } }) {
+                    Text(text = stringResource(UtilsComposeRes.string.close))
+                }
             }
-        }
+        },
     ) {
         val saveableState = state.saveableState
         val persistentState = state.persistentState
@@ -146,7 +153,7 @@ internal fun ArtistSortFilterSheetContent(
             onExpandedChange = { saveableState.expandedSections.toggle(Section.SERIES) },
             state = saveableState.series,
             lockedSeries = state.lockedSeries,
-            autocompleteResults = seriesAutocompleteResults,
+            autocompleteResults = state.seriesAutocompleteResults,
             showOnlyConfirmedTagsSection = {
                 ShowOnlyConfirmedTagsSection(
                     enabled = { displaySettings.showOnlyConfirmedTags },
@@ -401,6 +408,7 @@ class ArtistSortFilterState(
     val lockedSeries: () -> SeriesInfo?,
     val merchTagData: () -> MerchTagData,
     val merchIdsLockedIn: () -> Set<String>,
+    val seriesAutocompleteResults: () -> List<SeriesInfo>,
 ) {
     val activeCount: Int
         @Composable get() {
@@ -427,6 +435,7 @@ class ArtistSortFilterState(
                     lockedSeries = { null },
                     merchTagData = { MerchTagData(MerchEntryProvider.values.toList()) },
                     merchIdsLockedIn = { emptySet() },
+                    seriesAutocompleteResults = { emptyList() },
                 )
             }
         }
@@ -526,7 +535,6 @@ private fun ArtistSortFilterSheetContentPreview(
         state = state,
         scrollState = scrollState,
         sheetState = rememberBottomSheetState(SheetValue.PartiallyExpanded),
-        seriesAutocompleteResults = { emptyList() },
     )
 }
 

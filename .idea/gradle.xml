@@ -110,6 +110,7 @@
             <option value="$PROJECT_DIR$/modules/test-utils" />
             <option value="$PROJECT_DIR$/modules/test-utils-compose" />
             <option value="$PROJECT_DIR$/modules/utils" />
+            <option value="$PROJECT_DIR$/modules/utils-app-state" />
             <option value="$PROJECT_DIR$/modules/utils-build-config" />
             <option value="$PROJECT_DIR$/modules/utils-compose" />
             <option value="$PROJECT_DIR$/modules/utils-inject" />

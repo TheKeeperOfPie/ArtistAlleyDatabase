@@ -4,7 +4,6 @@ import androidx.appstate.transform.transform
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.serialization.saved
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchCache
@@ -14,16 +13,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_app_state.rememberDebounced
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
-import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.withContext
 
 @AssistedInject
 class StampRallySortFilterController(
@@ -51,20 +46,23 @@ class StampRallySortFilterController(
 
     private val saveableState by savedStateHandle.saved { StampRallySortFilterSaveableState() }
 
+    private val seriesAutocompleteResults by transform(emptyList<SeriesInfo>(), scope) {
+        val query by rememberDebounced(saveableState.series.query.text.toString())
+        produceState(emptyList(), query) {
+            value = withContext(dispatchers.io) {
+                seriesEntryDao.searchSeriesForAutocomplete(query)
+            }
+        }.value
+    }
+
     val state = StampRallySortFilterState(
         persistentState = persistentState,
         saveableState = saveableState,
         lockedSeries = lockedSeries,
         merchTagData = { merchTagData },
         merchIdsLockedIn = { emptySet() },
+        seriesAutocompleteResults = ::seriesAutocompleteResults,
     )
-
-    val seriesAutocompleteResults =
-        snapshotFlow { state.saveableState.series.query.text.toString() }
-            .debounce(500.milliseconds)
-            .mapLatest(seriesEntryDao::searchSeriesForAutocomplete)
-            .flowOn(dispatchers.io)
-            .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     internal val filterParams by derivedStateOf {
         val seriesIn = setOfNotNull(lockedSeries()?.id) +

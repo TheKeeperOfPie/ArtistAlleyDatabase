@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.MerchChangelogScreen
@@ -272,14 +271,6 @@ object ArtistAlleyAppScreen {
 
             sharedElementEntry<AlleyDestination.ArtistDetails> { route ->
                 ArtistDetailsScreen(route = route)
-            }
-
-            sharedElementEntry<AlleyDestination.ArtistsList> {
-                ArtistSearchScreen(
-                    lockedYear = it.year,
-                    isRoot = false,
-                    lockedSerializedBooths = it.serializedBooths,
-                )
             }
 
             sharedElementEntry<AlleyDestination.ArtistMap> {

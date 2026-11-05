@@ -90,8 +90,6 @@ class StampRallySearchViewModel(
         savedStateHandle = savedStateHandle,
     )
 
-    val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
-
     val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
 
     val unfilteredCount by transform(0, viewModelScope) {

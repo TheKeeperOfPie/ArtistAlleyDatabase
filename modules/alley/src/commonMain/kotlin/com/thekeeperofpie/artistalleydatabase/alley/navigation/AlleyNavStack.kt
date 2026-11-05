@@ -17,7 +17,6 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyDestination.AboutLibraries.serializer())
             subclass(serializer = AlleyDestination.ArtistDetails.serializer())
             subclass(serializer = AlleyDestination.ArtistMap.serializer())
-            subclass(serializer = AlleyDestination.ArtistsList.serializer())
             subclass(serializer = AlleyDestination.ArtistChangelog.serializer())
             subclass(serializer = AlleyDestination.Export.serializer())
             subclass(serializer = AlleyDestination.FavoritesChangelog.serializer())

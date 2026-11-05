@@ -55,6 +55,7 @@ kotlin {
             api(libs.paging.common)
             api(libs.paging.compose)
             api(libs.zoomable)
+            api(projects.modules.utilsAppState)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)

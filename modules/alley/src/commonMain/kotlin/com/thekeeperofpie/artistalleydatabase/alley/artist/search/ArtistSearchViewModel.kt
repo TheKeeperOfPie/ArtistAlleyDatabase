@@ -116,8 +116,6 @@ class ArtistSearchViewModel(
         allowSettingsBasedToggles = lockedMerch == null && lockedSeries == null,
     )
 
-    val seriesAutocompleteResults get() = sortFilterController.seriesAutocompleteResults
-
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
@@ -181,13 +179,28 @@ class ArtistSearchViewModel(
                     DataYear.ANIME_EXPO_2023,
                     DataYear.ANIME_EXPO_2024,
                     DataYear.ANIME_NYC_2024,
-                    DataYear.ANIME_NYC_2025
+                    DataYear.ANIME_NYC_2025,
                         -> Unit
                     else -> value = seriesEntryDao.hasRallies(year, lockedSeries)
                 }
             }
         }.value
     }
+
+    val state = ArtistSearchScreen.State(
+        lockedSeriesEntry = ::lockedSeriesEntry,
+        lockedMerch = lockedMerch,
+        lockedYear = lockedYear,
+        randomSeed = randomSeed,
+        year = ::year,
+        onYearChange = { year = it },
+        query = query,
+        results = results,
+        unfilteredCount = ::unfilteredCount,
+        sortFilterState = sortFilterController.state,
+        displayType = { settings.displayType },
+        series = seriesEntryCache::series,
+    )
 
     init {
         viewModelScope.launch(dispatchers.io) {

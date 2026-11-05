@@ -180,6 +180,7 @@ include(
     ":modules:test-utils",
     ":modules:test-utils-compose",
     ":modules:utils",
+    ":modules:utils-app-state",
     ":modules:utils-build-config",
     ":modules:utils-compose",
     ":modules:utils-inject",

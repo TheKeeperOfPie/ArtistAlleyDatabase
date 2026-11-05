@@ -35,7 +35,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -67,7 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreenContent
@@ -115,8 +113,6 @@ object FavoritesScreen {
             create(it.createSavedStateHandle())
         },
     ) {
-        val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        val seriesAutocompleteResults by viewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
         FavoritesScreen(
             state = remember(viewModel) {
                 State(
@@ -138,8 +134,7 @@ object FavoritesScreen {
                 )
             },
             scaffoldState = scaffoldState,
-            series = { series },
-            seriesAutocompleteResults = { seriesAutocompleteResults },
+            series = viewModel.seriesEntryCache::series,
             eventSink = {
                 viewModel.onEvent(
                     event = it,
@@ -156,7 +151,6 @@ object FavoritesScreen {
     operator fun invoke(
         state: State,
         series: () -> Map<String, GetSeriesTitles>,
-        seriesAutocompleteResults: () -> List<SeriesInfo>,
         eventSink: (Event) -> Unit,
         scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     ) {
@@ -208,13 +202,11 @@ object FavoritesScreen {
                         EntryTab.ARTISTS -> ArtistSortFilterSheetContent(
                             state = state.artistsSortFilterState,
                             sheetState = scaffoldState.bottomSheetState,
-                            seriesAutocompleteResults = seriesAutocompleteResults,
                             showHideFavorited = false,
                         )
                         EntryTab.RALLIES -> StampRallySortFilterSheetContent(
                             state = state.ralliesSortFilterState,
                             sheetState = scaffoldState.bottomSheetState,
-                            seriesAutocompleteResults = seriesAutocompleteResults,
                             showHideFavorited = false,
                         )
                         EntryTab.SERIES -> SeriesSortFilterSheetContent(

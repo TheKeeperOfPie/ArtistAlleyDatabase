@@ -97,8 +97,6 @@ class FavoritesViewModel(
         lockedSeries = { null },
     )
 
-    val seriesAutocompleteResults get() = artistSortFilterController.seriesAutocompleteResults
-
     val stampRallySortFilterController = stampRallySortFilterControllerFactory.create(
         scope = viewModelScope,
         lockedSeries = { null },

@@ -8,7 +8,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -95,16 +94,10 @@ object ArtistMerchScreen {
         onOpenSettings: () -> Unit,
         scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     ) {
-        val sortFilterController = artistSearchViewModel.sortFilterController
-        val state = remember(artistSearchViewModel, sortFilterController) {
-            ArtistSearchScreen.State(artistSearchViewModel, sortFilterController)
-        }
+        val state = artistSearchViewModel.state
         val merchEntry by artistMerchViewModel.merchEntry.collectAsStateWithLifecycle()
-        val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-        val seriesAutocompleteResults by artistSearchViewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
-            series = { series },
             eventSink = artistSearchViewModel::onEvent,
             header = {
                 Header(
@@ -116,7 +109,6 @@ object ArtistMerchScreen {
                 )
             },
             scaffoldState = scaffoldState,
-            seriesAutocompleteResults = { seriesAutocompleteResults },
             actions = {
                 IconButton(onClick = onClickMap) {
                     Icon(

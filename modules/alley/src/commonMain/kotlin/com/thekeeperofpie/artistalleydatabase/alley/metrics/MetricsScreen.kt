@@ -23,14 +23,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_artist_most_merch
@@ -73,13 +71,12 @@ internal fun MetricsScreen(
 ) {
     val dataYearHeaderState =
         rememberDataYearHeaderState(viewModel::dataYear, { viewModel.dataYear = it }, null)
-    val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
     MetricsScreen(
         dataYearHeaderState,
         data = viewModel::data,
         includeInferred = viewModel::includeInferred,
         onIncludeInferredChange = { viewModel.includeInferred = it },
-        seriesTitles = { seriesTitles },
+        seriesTitles = viewModel.seriesEntryCache::series,
         onNavigateBack = onNavigateBack,
         onClickArtist = onClickArtist,
         onClickSeries = onClickSeries,

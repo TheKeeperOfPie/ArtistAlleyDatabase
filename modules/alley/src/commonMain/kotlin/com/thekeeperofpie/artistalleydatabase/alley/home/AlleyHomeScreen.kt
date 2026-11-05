@@ -5,6 +5,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -36,10 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSheetContent
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.RootArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
@@ -50,7 +54,10 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.exitAlwaysScrollBehaviorAutoReset
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,32 +83,57 @@ object AlleyHomeScreen {
 
         // Mirror to support multiple roots, in theory
         var destination by rememberSaveable { mutableStateOf(settings.rootDestination) }
-        val artistsScaffoldState = rememberSortFilterBottomScaffoldState()
+
+        val artistsViewModel =
+            assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
+                create(
+                    isRoot = true,
+                    savedStateHandle = it.createSavedStateHandle(),
+                )
+            }
+
+        val scaffoldState = rememberSortFilterBottomScaffoldState()
         val browseScaffoldState = rememberSortFilterBottomScaffoldState()
         val favoritesScaffoldState = rememberSortFilterBottomScaffoldState()
         val mapScaffoldState = rememberSortFilterBottomScaffoldState()
         val ralliesScaffoldState = rememberSortFilterBottomScaffoldState()
         val state = remember(
-            artistsScaffoldState,
+            scaffoldState,
             browseScaffoldState,
             favoritesScaffoldState,
             mapScaffoldState,
             ralliesScaffoldState,
         ) {
             AlleyHomeNavigationState(
-                artistsScaffoldState = artistsScaffoldState,
+                artistsScaffoldState = scaffoldState,
                 browseScaffoldState = browseScaffoldState,
                 favoritesScaffoldState = favoritesScaffoldState,
                 mapScaffoldState = mapScaffoldState,
                 ralliesScaffoldState = ralliesScaffoldState,
             )
         }
+
         NavigationScaffold(
             state = state,
+            scaffoldState = scaffoldState,
             destination = { destination },
             onChangeDestination = {
                 settings.rootDestination = it
                 destination = it
+            },
+            sheetContent = {
+                when (destination) {
+                    AlleyHomeDestination.ARTISTS ->
+                        ArtistSortFilterSheetContent(
+                            state = artistsViewModel.state.sortFilterState,
+                            sheetState = scaffoldState.bottomSheetState,
+                        )
+                    AlleyHomeDestination.BROWSE,
+                    AlleyHomeDestination.FAVORITES,
+                    AlleyHomeDestination.MAP,
+                    AlleyHomeDestination.STAMP_RALLIES,
+                        -> Box {}
+                }
             },
         ) {
             Box(
@@ -117,10 +149,7 @@ object AlleyHomeScreen {
                 saveableStateHolder.SaveableStateProvider(destination) {
                     when (destination) {
                         AlleyHomeDestination.ARTISTS ->
-                            ArtistSearchScreen(
-                                isRoot = true,
-                                scaffoldState = artistsScaffoldState,
-                            )
+                            RootArtistSearchScreen(viewModel = artistsViewModel)
                         AlleyHomeDestination.BROWSE ->
                             BrowseScreen(
                                 scaffoldState = browseScaffoldState,
@@ -175,71 +204,75 @@ object AlleyHomeScreen {
     @Composable
     private fun NavigationScaffold(
         state: AlleyHomeNavigationState,
+        scaffoldState: SortFilterBottomScaffoldState,
         destination: () -> AlleyHomeDestination,
         onChangeDestination: (AlleyHomeDestination) -> Unit,
+        sheetContent: @Composable ColumnScope.() -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        val movableContent = remember { movableContentOf(content) }
-        val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-        val suiteType =
-            NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
-        if (suiteType == NavigationSuiteType.NavigationRail) {
-            Row {
-                NavigationRail(
-                    header = {
-                        AlleyHomeFilterFloatingActionButton(
-                            navigationState = state,
-                            destination = destination,
-                            vibrant = false,
-                        )
-                    },
-                    modifier = Modifier
-                        .animateEnterExit(
-                            enter = slideInHorizontally { -it },
-                            exit = slideOutHorizontally { -it },
-                        )
-                        .renderMaybeInSharedTransitionScopeOverlay(2f)
-                ) {
-                    AlleyHomeDestination.entries.forEach {
-                        NavigationRailItem(
-                            icon = {
-                                Icon(
-                                    it.icon,
-                                    contentDescription = stringResource(it.textRes)
-                                )
-                            },
-                            label = { Text(stringResource(it.textRes)) },
-                            selected = it == destination(),
-                            onClick = { onChangeDestination(it) },
-                        )
+        SortFilterBottomScaffold2(state = scaffoldState, showFilterFab = false, sheetContent = sheetContent) { _, _ ->
+            val movableContent = remember { movableContentOf(content) }
+            val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+            val suiteType =
+                NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
+            if (suiteType == NavigationSuiteType.NavigationRail) {
+                Row {
+                    NavigationRail(
+                        header = {
+                            AlleyHomeFilterFloatingActionButton(
+                                navigationState = state,
+                                destination = destination,
+                                vibrant = false,
+                            )
+                        },
+                        modifier = Modifier
+                            .animateEnterExit(
+                                enter = slideInHorizontally { -it },
+                                exit = slideOutHorizontally { -it },
+                            )
+                            .renderMaybeInSharedTransitionScopeOverlay(2f)
+                    ) {
+                        AlleyHomeDestination.entries.forEach {
+                            NavigationRailItem(
+                                icon = {
+                                    Icon(
+                                        it.icon,
+                                        contentDescription = stringResource(it.textRes)
+                                    )
+                                },
+                                label = { Text(stringResource(it.textRes)) },
+                                selected = it == destination(),
+                                onClick = { onChangeDestination(it) },
+                            )
+                        }
+                    }
+                    Scaffold(modifier = Modifier.fillMaxSize()) {
+                        movableContent(it)
                     }
                 }
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-                    movableContent(it)
-                }
-            }
-        } else {
-            val scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehaviorAutoReset()
-            Scaffold(
-                modifier = Modifier.exitAlwaysScrollBehaviorAutoReset(scrollBehavior)
-            ) {
-                Box(Modifier.padding(it)) {
-                    AlleyHomeNavigationToolbar(
-                        navigationState = state,
-                        scrollBehavior = scrollBehavior,
-                        destination = destination,
-                        onChangeDestination = onChangeDestination,
-                        modifier = Modifier.align(Alignment.BottomCenter)
-                            .offset(y = -ScreenOffset)
-                            .zIndex(1f)
-                            .animateEnterExit(
-                                enter = slideInVertically { it * 2 },
-                                exit = slideOutVertically { it * 2 },
-                            )
-                            .renderMaybeInSharedTransitionScopeOverlay(2f),
-                    )
+            } else {
+                val scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehaviorAutoReset()
+                Scaffold(
+                    modifier = Modifier.exitAlwaysScrollBehaviorAutoReset(scrollBehavior)
+                ) {
+                    Box(Modifier.padding(it)) {
+                        AlleyHomeNavigationToolbar(
+                            navigationState = state,
+                            scrollBehavior = scrollBehavior,
+                            destination = destination,
+                            onChangeDestination = onChangeDestination,
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                                .offset(y = -ScreenOffset)
+                                .zIndex(1f)
+                                .animateEnterExit(
+                                    enter = slideInVertically { it * 2 },
+                                    exit = slideOutVertically { it * 2 },
+                                )
+                                .renderMaybeInSharedTransitionScopeOverlay(2f),
+                        )
 
-                    movableContent(it)
+                        movableContent(it)
+                    }
                 }
             }
         }

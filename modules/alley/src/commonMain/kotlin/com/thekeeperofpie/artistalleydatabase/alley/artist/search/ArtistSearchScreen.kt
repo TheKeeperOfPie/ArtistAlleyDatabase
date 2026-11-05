@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
@@ -32,15 +31,10 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -70,7 +64,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ConventionCountdownHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.FeedbackHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -83,6 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.filled.Link
 import com.thekeeperofpie.artistalleydatabase.icons.filled.UnfoldMore
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopBarScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
@@ -94,58 +88,51 @@ import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ArtistSearchScreen(
-    isRoot: Boolean,
+fun RootArtistSearchScreen(
     lockedYear: DataYear? = null,
     lockedSerializedBooths: String? = null,
-    scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
     viewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
         create(
             lockedYear = lockedYear,
-            isRoot = isRoot,
+            isRoot = true,
             lockedSerializedBooths = lockedSerializedBooths,
             savedStateHandle = it.createSavedStateHandle(),
         )
     },
 ) {
-    val sortFilterController = viewModel.sortFilterController
-    val state = remember(viewModel, sortFilterController) {
-        State(viewModel, sortFilterController)
+    val state = viewModel.state
+    CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
+        val entries = state.results.collectAsLazyPagingItems()
+        EnterAlwaysTopBarScaffold(
+            topBar = {
+                ArtistSearchScreenTopBar(state, entries, viewModel::onEvent)
+            }
+        ) { contentPadding ->
+            ArtistSearchScreenContent(
+                sortFilterState = state.sortFilterState,
+                baseContentPadding = contentPadding,
+                header = { Header(state, viewModel::onEvent) },
+                entries = entries,
+                series = state.series,
+                unfilteredCount = state.unfilteredCount,
+                displayType = state.displayType,
+                eventSink = viewModel::onEvent,
+            )
+        }
     }
-    val dataYearHeaderState = rememberDataYearHeaderState(
-        dataYear = state.year,
-        onDataYearChange = state.onYearChange,
-        lockedYear = state.lockedYear,
-    )
-    val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
-    val seriesAutocompleteResults by viewModel.seriesAutocompleteResults.collectAsStateWithLifecycle()
-    ArtistSearchScreen(
-        state = state,
-        series = { series },
-        eventSink = viewModel::onEvent,
-        header = { Header(dataYearHeaderState, viewModel::onEvent) },
-        scaffoldState = scaffoldState,
-        seriesAutocompleteResults = { seriesAutocompleteResults },
-        showFilterFab = !isRoot,
-    )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ArtistSearchScreen(
     state: State,
-    series: () -> Map<String, GetSeriesTitles>,
     eventSink: (Event) -> Unit,
     header: @Composable () -> Unit,
     scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-    seriesAutocompleteResults: () -> List<SeriesInfo>,
-    showFilterFab: Boolean = true,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     // TODO
@@ -153,54 +140,15 @@ fun ArtistSearchScreen(
 
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
         val entries = state.results.collectAsLazyPagingItems()
-        val count = entries.itemCount
-        val lockedSeriesEntry = state.lockedSeriesEntry()
-        val title = (lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
-            ?: state.lockedMerch)
-            ?.let {
-                @Suppress("USELESS_IS_CHECK")
-                if (entries.loadState.refresh is LoadState.Loading) {
-                    it
-                } else {
-                    pluralStringResource(
-                        Res.plurals.alley_search_title_results_suffix,
-                        count,
-                        it,
-                        count,
-                    )
-                }
-            }
-
-        val scope = rememberCoroutineScope()
-        BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-            scope.launch {
-                scaffoldState.bottomSheetState.partialExpand()
-            }
-        }
-
         SortFilterBottomScaffold2(
             state = scaffoldState,
-            showFilterFab = showFilterFab,
             enterAlwaysTopBar = {
-                AlleySearchBar(
-                    onClickBack = { eventSink(Event.Back) },
-                    query = state.query,
-                    itemCount = { entries.itemCount },
-                    title = { title },
-                    additionalActions = actions,
-                    modifier = Modifier
-                        .animateEnterExit(
-                            enter = slideInVertically { -it },
-                            exit = slideOutVertically { -it },
-                        )
-                        .renderMaybeInSharedTransitionScopeOverlay(1f)
-                )
+                ArtistSearchScreenTopBar(state, entries, eventSink, actions)
             },
             sheetContent = {
                 ArtistSortFilterSheetContent(
                     state = state.sortFilterState,
                     sheetState = scaffoldState.bottomSheetState,
-                    seriesAutocompleteResults = seriesAutocompleteResults
                 )
             },
         ) { _, contentPadding ->
@@ -209,13 +157,52 @@ fun ArtistSearchScreen(
                 baseContentPadding = contentPadding,
                 header = header,
                 entries = entries,
-                series = series,
+                series = state.series,
                 unfilteredCount = state.unfilteredCount,
                 displayType = state.displayType,
                 eventSink = eventSink,
             )
         }
     }
+}
+
+@Composable
+internal fun ArtistSearchScreenTopBar(
+    state: State,
+    entries: LazyPagingItems<ArtistEntryGridModel>,
+    onEvent: (Event) -> Unit,
+    additionalActions: (@Composable RowScope.() -> Unit)? = null,
+) {
+    val count = entries.itemCount
+    val lockedSeriesEntry = state.lockedSeriesEntry()
+    val title = (lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
+        ?: state.lockedMerch)
+        ?.let {
+            @Suppress("USELESS_IS_CHECK")
+            if (entries.loadState.refresh is LoadState.Loading) {
+                it
+            } else {
+                pluralStringResource(
+                    Res.plurals.alley_search_title_results_suffix,
+                    count,
+                    it,
+                    count,
+                )
+            }
+        }
+    AlleySearchBar(
+        onClickBack = { onEvent(Event.Back) },
+        query = state.query,
+        itemCount = { entries.itemCount },
+        title = { title },
+        additionalActions = additionalActions,
+        modifier = Modifier
+            .animateEnterExit(
+                enter = slideInVertically { -it },
+                exit = slideOutVertically { -it },
+            )
+            .renderMaybeInSharedTransitionScopeOverlay(1f)
+    )
 }
 
 @Composable
@@ -324,10 +311,12 @@ internal fun ArtistSearchScreenContent(
 }
 
 @Composable
-private fun Header(
-    dataYearHeaderState: DataYearHeaderState,
-    eventSink: (Event) -> Unit,
-) {
+private fun Header(state: State, eventSink: (Event) -> Unit) {
+    val dataYearHeaderState = rememberDataYearHeaderState(
+        dataYear = state.year,
+        onDataYearChange = state.onYearChange,
+        lockedYear = state.lockedYear,
+    )
     Column {
         ConventionCountdownHeader(
             dataYearHeaderState.year,
@@ -575,24 +564,8 @@ object ArtistSearchScreen {
         val unfilteredCount: () -> Int,
         val sortFilterState: ArtistSortFilterState,
         val displayType: () -> SearchDisplayType,
-    ) {
-        constructor(
-            viewModel: ArtistSearchViewModel,
-            sortFilterController: ArtistSortFilterController,
-        ) : this(
-            lockedSeriesEntry = viewModel::lockedSeriesEntry,
-            lockedMerch = viewModel.lockedMerch,
-            lockedYear = viewModel.lockedYear,
-            randomSeed = viewModel.randomSeed,
-            year = viewModel::year,
-            onYearChange = { viewModel.year = it },
-            query = viewModel.query,
-            results = viewModel.results,
-            unfilteredCount = viewModel::unfilteredCount,
-            sortFilterState = sortFilterController.state,
-            displayType = { viewModel.settings.displayType },
-        )
-    }
+        val series: () -> Map<String, GetSeriesTitles>,
+    )
 
     sealed interface Event {
         data class FavoriteToggle(val entry: ArtistEntryGridModel, val favorite: Boolean) : Event
@@ -635,6 +608,7 @@ private fun Preview() {
             unfilteredCount = { 1000 },
             sortFilterState = sortFilterState,
             displayType = { SearchDisplayType.CARD },
+            series = { emptyMap() },
         )
     }
 
@@ -645,7 +619,6 @@ private fun Preview() {
     )
     ArtistSearchScreen(
         state = state,
-        series = { emptyMap() },
         eventSink = {},
         header = {
             DataYearHeader(
@@ -654,6 +627,5 @@ private fun Preview() {
                 onOpenSettings = {},
             )
         },
-        seriesAutocompleteResults = { emptyList() },
     )
 }

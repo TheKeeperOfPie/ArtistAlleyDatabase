@@ -55,11 +55,10 @@ internal object ArtistChangelogScreen {
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()
-        val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         var catalogsOnly by viewModel.catalogsOnly.collectAsMutableStateWithLifecycle()
         ArtistChangelogScreen(
             changes = { changes },
-            seriesTitles = { seriesTitles },
+            seriesTitles = viewModel.seriesEntryCache::series,
             catalogsOnly = { catalogsOnly },
             onChangeCatalogsOnly = { catalogsOnly = it },
             onClickBack = onClickBack,

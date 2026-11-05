@@ -45,10 +45,9 @@ internal object StampRallyChangelogScreen {
         },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()
-        val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         StampRallyChangelogScreen(
             changes = { changes },
-            seriesTitles = { seriesTitles },
+            seriesTitles = viewModel.seriesEntryCache::series,
             onClickBack = onClickBack,
             onClickStampRally = onClickStampRally,
             onClickSeries = onClickSeries,
