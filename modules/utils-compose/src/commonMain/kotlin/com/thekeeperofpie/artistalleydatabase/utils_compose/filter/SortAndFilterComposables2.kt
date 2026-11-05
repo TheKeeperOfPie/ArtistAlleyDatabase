@@ -647,7 +647,7 @@ fun RangeDataFilterSection2(
 @Composable
 fun <T> DropdownFilterSection(
     options: List<T>,
-    selected: T,
+    selected: () -> T,
     onSelectedChanged: (T) -> Unit,
     label: @Composable (T) -> Unit,
 ) {
@@ -669,7 +669,7 @@ fun <T> DropdownFilterSection(
                 .align(Alignment.CenterVertically)
         ) {
             ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                label(selected)
+                label(selected())
             }
         }
 
@@ -681,7 +681,7 @@ fun <T> DropdownFilterSection(
             ) {
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
                     ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                        label(selected)
+                        label(selected())
                     }
                 }
 

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,6 +27,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -45,22 +47,29 @@ import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_me
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_series
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.tags.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopBarScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.DropdownFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import org.jetbrains.compose.resources.StringResource
@@ -73,24 +82,30 @@ import org.jetbrains.compose.resources.stringResource
 object BrowseScreen {
 
     @Composable
+    operator fun invoke(browseViewModel: BrowseViewModel,) {
+        val series = browseViewModel.series.collectAsLazyPagingItems()
+        val merch = browseViewModel.merch.collectAsLazyPagingItems()
+        BrowseScreen(
+            state = browseViewModel.state,
+            series = series,
+            merch = merch,
+            onEvent = browseViewModel::onEvent,
+        )
+    }
+
+    @Composable
     operator fun invoke(
-        selectedTabIndex: () -> Int,
-        onSelectedTabIndexChanged: (Int) -> Unit,
-        onSeriesClick: (DataYear, String) -> Unit,
-        onMerchClick: (DataYear, String) -> Unit,
-        onOpenSeriesChangelog: (DataYear) -> Unit,
-        onOpenMerchChangelog: (DataYear) -> Unit,
-        onOpenSettings: () -> Unit,
-        tagsViewModel: TagsViewModel,
+        state: State,
+        series: LazyPagingItems<SeriesWithUserData>,
+        merch: LazyPagingItems<MerchWithUserData>,
+        onEvent: (Event) -> Unit,
     ) {
         val dataYearHeaderState = rememberDataYearHeaderState(
-            dataYear = tagsViewModel::dataYear,
-            onDataYearChange = { tagsViewModel.dataYear = it },
+            dataYear = state.dataYear,
+            onDataYearChange = state.onDataYearChange,
             lockedYear = null,
         )
-        val selectedTabIndex = selectedTabIndex()
-        val series = tagsViewModel.series.collectAsLazyPagingItems()
-        val merch = tagsViewModel.merch.collectAsLazyPagingItems()
+        val selectedTabIndex = state.selectedTabIndex()
 
         EnterAlwaysTopBarScaffold(
             topBar = {
@@ -106,7 +121,7 @@ object BrowseScreen {
                         Tab.entries.forEachIndexed { index, tab ->
                             Tab(
                                 selected = selectedTabIndex == index,
-                                onClick = { onSelectedTabIndexChanged(index) },
+                                onClick = { state.onSelectedTabIndexChange(index) },
                                 text = { Text(stringResource(tab.textRes)) },
                             )
                         }
@@ -119,8 +134,8 @@ object BrowseScreen {
                             .padding(bottom = 8.dp)
                     ) {
                         val query = when (selectedTabIndex) {
-                            0 -> tagsViewModel.seriesQuery
-                            else -> tagsViewModel.merchQuery
+                            0 -> state.seriesQuery
+                            else -> state.merchQuery
                         }
                         val entries = when (selectedTabIndex) {
                             0 -> series
@@ -167,34 +182,33 @@ object BrowseScreen {
                                         textStyle = LocalTextStyle.current,
                                         onFavoriteToggle = {
                                             if (data != null) {
-                                                tagsViewModel.onSeriesFavoriteToggle(
-                                                    data,
-                                                    it
-                                                )
+                                                onEvent(Event.ToggleSeriesFavorite(data, it))
                                             }
                                         },
                                         onClick = {
                                             data?.let {
-                                                onSeriesClick(
-                                                    tagsViewModel.dataYear,
-                                                    it.series.id,
-                                                )
+                                                onEvent(Event.OpenSeries(it.series))
                                             }
                                         },
                                     )
                                 },
-                                onOpenChangelog = onOpenSeriesChangelog,
-                                onOpenSettings = onOpenSettings,
+                                onOpenChangelog = { onEvent(Event.OpenSeriesChangelog) },
+                                onOpenSettings = { onEvent(Event.OpenSettings) },
                                 additionalHeader = {
                                     item(key = "seriesFilterOptions") {
                                         Column {
-                                            tagsViewModel.seriesLanguageSection
-                                                .Content(Modifier.fillMaxWidth())
+                                            DropdownFilterSection(
+                                                options = AniListLanguageOption.entries,
+                                                selected = state.languageOption,
+                                                onSelectedChanged = state.onLanguageOptionChange,
+                                                label = {
+                                                    Text(stringResource(Res.string.alley_settings_series_language))
+                                                },
+                                            )
 
                                             HorizontalDivider()
 
-                                            val saveableState =
-                                                tagsViewModel.seriesSortFilterController.state.saveableState
+                                            val saveableState = state.seriesSortFilterState.saveableState
                                             SwitchSection(
                                                 title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
                                                 enabled = saveableState::showOnlyConfirmedTags,
@@ -217,21 +231,18 @@ object BrowseScreen {
                                     data = data,
                                     onFavoriteToggle = {
                                         if (data != null) {
-                                            tagsViewModel.onMerchFavoriteToggle(data, it)
+                                            onEvent(Event.ToggleMerchFavorite(data, it))
                                         }
                                     },
                                     onClick = {
                                         if (data != null) {
-                                            onMerchClick(
-                                                tagsViewModel.dataYear,
-                                                data.merch.name,
-                                            )
+                                            onEvent(Event.OpenMerch(data.merch))
                                         }
                                     },
                                 )
                             },
-                            onOpenChangelog = onOpenMerchChangelog,
-                            onOpenSettings = onOpenSettings,
+                            onOpenChangelog = { onEvent(Event.OpenMerchChangelog) },
+                            onOpenSettings = { onEvent(Event.OpenSettings) },
                         )
                     }
                 }
@@ -240,14 +251,10 @@ object BrowseScreen {
     }
 
     @Composable
-    fun SheetContent(
-        bottomSheetState: SheetState,
-        seriesState: SeriesSortFilterState,
-        selectedTabIndex: () -> Int,
-    ) {
-        when (selectedTabIndex()) {
+    fun SheetContent(state: State, bottomSheetState: SheetState) {
+        when (state.selectedTabIndex()) {
             0 -> SeriesSortFilterSheetContent(
-                state = seriesState,
+                state = state.seriesSortFilterState,
                 sheetState = bottomSheetState,
             )
             // TODO: Real merch sort filter?
@@ -349,5 +356,28 @@ object BrowseScreen {
     enum class Tab(val textRes: StringResource) {
         SERIES(Res.string.alley_browse_tab_series),
         MERCH(Res.string.alley_browse_tab_merch),
+    }
+
+    @Stable
+    class State(
+        val dataYear: () -> DataYear,
+        val onDataYearChange: (DataYear) -> Unit,
+        val selectedTabIndex: () -> Int,
+        val onSelectedTabIndexChange: (Int) -> Unit,
+        val seriesQuery: TextFieldState,
+        val merchQuery: TextFieldState,
+        val languageOption: () -> AniListLanguageOption,
+        val onLanguageOptionChange: (AniListLanguageOption) -> Unit,
+        val seriesSortFilterState: SeriesSortFilterState,
+    )
+
+    sealed interface Event {
+        data class OpenSeries(val seriesInfo: SeriesInfo) : Event
+        data class OpenMerch(val merch: MerchEntry) : Event
+        data object OpenSeriesChangelog : Event
+        data object OpenMerchChangelog : Event
+        data object OpenSettings : Event
+        data class ToggleMerchFavorite(val data: MerchWithUserData, val favorite: Boolean) : Event
+        data class ToggleSeriesFavorite(val data: SeriesWithUserData, val favorite: Boolean) : Event
     }
 }

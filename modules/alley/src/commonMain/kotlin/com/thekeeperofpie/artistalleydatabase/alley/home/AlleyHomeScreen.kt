@@ -27,7 +27,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,7 +39,6 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.RootArtistSearchScreen
@@ -48,10 +46,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.tags.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.exitAlwaysScrollBehaviorAutoReset
@@ -68,16 +64,6 @@ object AlleyHomeScreen {
     operator fun invoke(
         graph: ArtistAlleyGraph,
         onOpenArtist: (ArtistEntry, Int?) -> Unit,
-        onOpenArtistImageFullscreen: (ArtistEntryGridModel, Int?, showOutdatedCatalogs: Boolean) -> Unit,
-        onOpenSeries: (DataYear, String) -> Unit,
-        onOpenMerch: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
-        onOpenArtistChangelog: (DataYear) -> Unit,
-        onOpenStampRallyChangelog: (DataYear) -> Unit,
-        onOpenSeriesChangelog: (DataYear) -> Unit,
-        onOpenMerchChangelog: (DataYear) -> Unit,
-        onOpenSettings: () -> Unit,
     ) {
         val settings = remember(graph) { graph.settings }
         val mapTransformState = MapScreen.rememberTransformState()
@@ -92,7 +78,7 @@ object AlleyHomeScreen {
                     savedStateHandle = it.createSavedStateHandle(),
                 )
             }
-        val tagsViewModel = assistedMetroViewModel<TagsViewModel, TagsViewModel.Factory> {
+        val browseViewModel = assistedMetroViewModel<BrowseViewModel, BrowseViewModel.Factory> {
             create(it.createSavedStateHandle())
         }
 
@@ -115,7 +101,6 @@ object AlleyHomeScreen {
             )
         }
 
-        var selectedBrowseTabIndex by rememberSaveable { mutableIntStateOf(0) }
         NavigationScaffold(
             state = state,
             scaffoldState = scaffoldState,
@@ -132,8 +117,7 @@ object AlleyHomeScreen {
                             sheetState = scaffoldState.bottomSheetState,
                         )
                     AlleyHomeDestination.BROWSE -> BrowseScreen.SheetContent(
-                        selectedTabIndex = { selectedBrowseTabIndex },
-                        seriesState = tagsViewModel.seriesSortFilterController.state,
+                        state = browseViewModel.state,
                         bottomSheetState = scaffoldState.bottomSheetState,
                     )
                     AlleyHomeDestination.FAVORITES,
@@ -157,16 +141,7 @@ object AlleyHomeScreen {
                         AlleyHomeDestination.ARTISTS ->
                             RootArtistSearchScreen(viewModel = artistsViewModel)
                         AlleyHomeDestination.BROWSE ->
-                            BrowseScreen(
-                                selectedTabIndex = { selectedBrowseTabIndex },
-                                onSelectedTabIndexChanged = { selectedBrowseTabIndex = it },
-                                onSeriesClick = onOpenSeries,
-                                onMerchClick = onOpenMerch,
-                                onOpenSeriesChangelog = onOpenSeriesChangelog,
-                                onOpenMerchChangelog = onOpenMerchChangelog,
-                                onOpenSettings = onOpenSettings,
-                                tagsViewModel = tagsViewModel,
-                            )
+                            BrowseScreen(browseViewModel = browseViewModel)
                         AlleyHomeDestination.FAVORITES ->
                             FavoritesScreen(
                                 scaffoldState = favoritesScaffoldState,

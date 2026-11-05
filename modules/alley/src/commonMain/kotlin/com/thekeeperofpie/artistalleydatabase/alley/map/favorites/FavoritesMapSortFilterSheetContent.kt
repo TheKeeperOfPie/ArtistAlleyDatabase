@@ -62,7 +62,7 @@ internal fun FavoritesMapFilterSheetContent(
     ) {
         DropdownFilterSection(
             options = DataYear.entries,
-            selected = state.dataYear(),
+            selected = state.dataYear,
             onSelectedChanged = state.onDataYearChange,
             label = { Text(stringResource(it.shortName)) },
         )
@@ -89,10 +89,10 @@ internal fun FavoritesMapFilterSheetContent(
 }
 
 class FavoritesMapFilterState(
-    val dataYear: @Composable () -> DataYear,
+    val dataYear: () -> DataYear,
     val onDataYearChange: (DataYear) -> Unit,
-    val showOnlyConfirmedTags: @Composable () -> Boolean,
+    val showOnlyConfirmedTags: () -> Boolean,
     val onShowOnlyConfirmedTagsChanged: (Boolean) -> Unit,
-    val showRandomCatalogImage: @Composable () -> Boolean,
+    val showRandomCatalogImage: () -> Boolean,
     val onShowRandomCatalogImageChanged: (Boolean) -> Unit,
 )

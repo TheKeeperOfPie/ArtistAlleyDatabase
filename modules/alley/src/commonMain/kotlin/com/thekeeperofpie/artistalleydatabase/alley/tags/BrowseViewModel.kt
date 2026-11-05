@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -10,21 +11,23 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.MerchChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.SeriesChangelog
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.navigation.AlleyNavigator
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
-import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
@@ -45,16 +48,16 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @AssistedInject
-class TagsViewModel(
+class BrowseViewModel(
     dispatchers: CustomDispatchers,
     merchEntryDao: MerchEntryDao,
+    private val navigator: AlleyNavigator,
     seriesEntryDao: SeriesEntryDao,
     private val settings: ArtistAlleySettings,
     userEntryDao: UserEntryDao,
@@ -63,14 +66,6 @@ class TagsViewModel(
 
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     val seriesQuery by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
-
-    val seriesLanguageSection = SettingsSection.Dropdown(
-        labelTextRes = Res.string.alley_settings_series_language,
-        options = AniListLanguageOption.entries,
-        optionToText = { stringResource(it.textWithExplanation) },
-        initialSelectedOption = settings.languageOption,
-        onItemSelected = { settings.languageOption = it },
-    )
 
     val seriesSortFilterController = SeriesSortFilterController(settings, savedStateHandle)
 
@@ -125,14 +120,22 @@ class TagsViewModel(
         .enforceUniqueIds { it.merch.name }
         .cachedIn(viewModelScope)
 
-    var dataYear: DataYear
-        get() = settings.dataYear
-        set(value) {
-            settings.dataYear = value
-        }
-
     private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
     private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)
+
+    private var selectedTabIndex by savedStateHandle.saveable { mutableIntStateOf(0) }
+
+    val state = BrowseScreen.State(
+        dataYear = { settings.dataYear },
+        onDataYearChange = { settings.dataYear = it },
+        selectedTabIndex = ::selectedTabIndex,
+        onSelectedTabIndexChange = { selectedTabIndex = it },
+        seriesQuery = seriesQuery,
+        merchQuery = merchQuery,
+        languageOption = { settings.languageOption },
+        onLanguageOptionChange = { settings.languageOption = it },
+        seriesSortFilterState = seriesSortFilterController.state,
+    )
 
     init {
         viewModelScope.launch(dispatchers.io) {
@@ -148,12 +151,20 @@ class TagsViewModel(
         }
     }
 
-    fun onSeriesFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
-        seriesMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
-    }
-
-    fun onMerchFavoriteToggle(data: MerchWithUserData, favorite: Boolean) {
-        merchMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
+    fun onEvent(event: BrowseScreen.Event) = when (event) {
+        is BrowseScreen.Event.OpenSeries ->
+            navigator.navigate(Series(settings.dataYear, event.seriesInfo.id))
+        is BrowseScreen.Event.OpenMerch ->
+            navigator.navigate(Merch(settings.dataYear, event.merch.name))
+        BrowseScreen.Event.OpenSeriesChangelog ->
+            navigator.navigate(SeriesChangelog(settings.dataYear))
+        BrowseScreen.Event.OpenMerchChangelog ->
+            navigator.navigate(MerchChangelog(settings.dataYear))
+        BrowseScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
+        is BrowseScreen.Event.ToggleSeriesFavorite ->
+            seriesMutationUpdates.tryEmit(event.data.userEntry.copy(favorite = event.favorite))
+        is BrowseScreen.Event.ToggleMerchFavorite ->
+            merchMutationUpdates.tryEmit(event.data.userEntry.copy(favorite = event.favorite))
     }
 
     private data class SeriesInputs(
@@ -162,11 +173,10 @@ class TagsViewModel(
         val seriesFilterParams: SeriesSortFilterController.FilterParams,
     )
 
-
     @AssistedFactory
     @ManualViewModelAssistedFactoryKey
     @ContributesIntoMap(NavigatorScope::class)
     interface Factory : ManualViewModelAssistedFactory {
-        fun create(savedStateHandle: SavedStateHandle): TagsViewModel
+        fun create(savedStateHandle: SavedStateHandle): BrowseViewModel
     }
 }

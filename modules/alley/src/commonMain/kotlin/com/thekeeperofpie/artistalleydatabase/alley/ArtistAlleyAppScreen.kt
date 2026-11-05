@@ -252,20 +252,6 @@ object ArtistAlleyAppScreen {
                 AlleyHomeScreen(
                     graph = graph,
                     onOpenArtist = onOpenArtist,
-                    onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
-                    onOpenSeries = onOpenSeries,
-                    onOpenMerch = onOpenMerch,
-                    onOpenStampRally = onOpenStampRally,
-                    onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
-                    onOpenArtistChangelog = onOpenArtistChangelog,
-                    onOpenStampRallyChangelog = onOpenStampRallyChangelog,
-                    onOpenSeriesChangelog = {
-                        navStack.navigate(AlleyDestination.SeriesChangelog(it))
-                    },
-                    onOpenMerchChangelog = {
-                        navStack.navigate(AlleyDestination.MerchChangelog(it))
-                    },
-                    onOpenSettings = onOpenSettings,
                 )
             }
 
