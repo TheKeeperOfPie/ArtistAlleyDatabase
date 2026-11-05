@@ -38,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.navigation.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -48,6 +49,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.WebResourcesConfiguration
 import org.jetbrains.compose.resources.getString
+import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLMetaElement
 import org.w3c.dom.get
 import kotlin.time.Duration.Companion.seconds
@@ -60,6 +62,20 @@ fun App(graph: ArtistAlleyWebGraph) {
 
     SideEffect {
         WebResourcesConfiguration.resourcePathMapping { "${window.location.origin}/$it" }
+    }
+
+    LaunchedEffect(Unit) {
+        // Revert https://github.com/JetBrains/compose-multiplatform-core/pull/3436
+        try {
+            val canvas = document.querySelector("div")
+                ?.shadowRoot
+                ?.querySelector("canvas") as? HTMLCanvasElement
+                ?: return@LaunchedEffect
+            canvas.style.setProperty("touch-action", "none")
+        } catch (t: Throwable) {
+            ConsoleLogger.log("Failed to set canvas touch-action")
+            t.printStackTrace()
+        }
     }
 
     SingletonImageLoader.setSafe { context ->
