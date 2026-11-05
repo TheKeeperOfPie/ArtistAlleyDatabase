@@ -50,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
@@ -91,28 +92,30 @@ object AlleyHomeScreen {
                     savedStateHandle = it.createSavedStateHandle(),
                 )
             }
+        val tagsViewModel = assistedMetroViewModel<TagsViewModel, TagsViewModel.Factory> {
+            create(it.createSavedStateHandle())
+        }
 
         val scaffoldState = rememberSortFilterBottomScaffoldState()
-        val browseScaffoldState = rememberSortFilterBottomScaffoldState()
         val favoritesScaffoldState = rememberSortFilterBottomScaffoldState()
         val mapScaffoldState = rememberSortFilterBottomScaffoldState()
         val ralliesScaffoldState = rememberSortFilterBottomScaffoldState()
         val state = remember(
             scaffoldState,
-            browseScaffoldState,
             favoritesScaffoldState,
             mapScaffoldState,
             ralliesScaffoldState,
         ) {
             AlleyHomeNavigationState(
                 artistsScaffoldState = scaffoldState,
-                browseScaffoldState = browseScaffoldState,
+                browseScaffoldState = scaffoldState,
                 favoritesScaffoldState = favoritesScaffoldState,
                 mapScaffoldState = mapScaffoldState,
                 ralliesScaffoldState = ralliesScaffoldState,
             )
         }
 
+        var selectedBrowseTabIndex by rememberSaveable { mutableIntStateOf(0) }
         NavigationScaffold(
             state = state,
             scaffoldState = scaffoldState,
@@ -128,7 +131,11 @@ object AlleyHomeScreen {
                             state = artistsViewModel.state.sortFilterState,
                             sheetState = scaffoldState.bottomSheetState,
                         )
-                    AlleyHomeDestination.BROWSE,
+                    AlleyHomeDestination.BROWSE -> BrowseScreen.SheetContent(
+                        selectedTabIndex = { selectedBrowseTabIndex },
+                        seriesState = tagsViewModel.seriesSortFilterController.state,
+                        bottomSheetState = scaffoldState.bottomSheetState,
+                    )
                     AlleyHomeDestination.FAVORITES,
                     AlleyHomeDestination.MAP,
                     AlleyHomeDestination.STAMP_RALLIES,
@@ -144,7 +151,6 @@ object AlleyHomeScreen {
                         end = it.calculateEndPadding(LocalLayoutDirection.current),
                     )
             ) {
-                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
                 val saveableStateHolder = rememberSaveableStateHolder()
                 saveableStateHolder.SaveableStateProvider(destination) {
                     when (destination) {
@@ -152,14 +158,14 @@ object AlleyHomeScreen {
                             RootArtistSearchScreen(viewModel = artistsViewModel)
                         AlleyHomeDestination.BROWSE ->
                             BrowseScreen(
-                                scaffoldState = browseScaffoldState,
-                                selectedTabIndex = { selectedTabIndex },
-                                onSelectedTabIndexChanged = { selectedTabIndex = it },
+                                selectedTabIndex = { selectedBrowseTabIndex },
+                                onSelectedTabIndexChanged = { selectedBrowseTabIndex = it },
                                 onSeriesClick = onOpenSeries,
                                 onMerchClick = onOpenMerch,
                                 onOpenSeriesChangelog = onOpenSeriesChangelog,
                                 onOpenMerchChangelog = onOpenMerchChangelog,
                                 onOpenSettings = onOpenSettings,
+                                tagsViewModel = tagsViewModel,
                             )
                         AlleyHomeDestination.FAVORITES ->
                             FavoritesScreen(

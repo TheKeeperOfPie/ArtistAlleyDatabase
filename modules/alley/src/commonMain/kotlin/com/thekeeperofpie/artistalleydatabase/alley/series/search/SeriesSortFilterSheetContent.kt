@@ -1,43 +1,57 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series.search
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.annotation.RememberInComposition
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateSet
+import androidx.compose.ui.Modifier
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_label
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
+import artistalleydatabase.modules.utils_compose.generated.resources.clear
+import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSaveableState.Section
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterSectionState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SectionsExpandIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldSheetContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.SnapshotStateSetSerializer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.rememberSerializable
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import com.thekeeperofpie.artistalleydatabase.utils_preview.assertInPreview
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 @Composable
 internal fun SeriesSortFilterSheetContent(
@@ -45,9 +59,43 @@ internal fun SeriesSortFilterSheetContent(
     sheetState: SheetState,
     scrollState: ScrollState = rememberScrollState(),
 ) {
+    val scope = rememberCoroutineScope()
     SortFilterBottomScaffoldSheetContent(
         sheetState = sheetState,
         scrollState = scrollState,
+        actions = {
+            val expandedSections = state.saveableState.expandedSections
+            val allSectionsExpanded by remember(expandedSections) {
+                derivedStateOf {
+                    expandedSections.containsAll(Section.entries)
+                }
+            }
+            SectionsExpandIndicator(
+                allSectionsExpanded = { allSectionsExpanded },
+                onSectionsExpandedChanged = {
+                    if (it) {
+                        expandedSections.addAll(Section.entries)
+                    } else {
+                        expandedSections.clear()
+                    }
+                },
+                activatedCount = { state.activeCount },
+                targetValue = { sheetState.targetValue },
+            )
+        },
+        footer = {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TextButton(onClick = { state.clear() }) {
+                    Text(text = stringResource(UtilsComposeRes.string.clear))
+                }
+                TextButton(onClick = { scope.launch { sheetState.toggle() } }) {
+                    Text(text = stringResource(UtilsComposeRes.string.close))
+                }
+            }
+        },
     ) {
         val persistentState = state.persistentState
         val saveableState = state.saveableState
@@ -91,6 +139,11 @@ class SeriesSortFilterState(
     val persistentState: SeriesSortFilterPersistentState,
     val saveableState: SeriesSortFilterSaveableState,
 ) {
+    val activeCount: Int get() = saveableState.activeCount
+
+    fun clear() {
+        saveableState.clear()
+    }
 
     companion object {
         @Composable
@@ -136,6 +189,18 @@ class SeriesSortFilterSaveableState @RememberInComposition constructor(
     private var _showOnlyConfirmedTags: MutableState<Boolean>,
 ) {
     var showOnlyConfirmedTags by _showOnlyConfirmedTags
+
+    val activeCount by derivedStateOf {
+        var count = 0
+        if (!sourceIn.isDefault) count++
+        count
+    }
+
+    fun clear() {
+        Snapshot.withMutableSnapshot {
+            sourceIn.clear()
+        }
+    }
 
     enum class Section {
         SORT,

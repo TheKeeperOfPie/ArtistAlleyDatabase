@@ -21,22 +21,20 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.SheetValue
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.createSavedStateHandle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -50,6 +48,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_search_no_res
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterSheetContent
+import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilterState
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
@@ -61,13 +60,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopBarScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SwitchSection
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -86,182 +81,177 @@ object BrowseScreen {
         onOpenSeriesChangelog: (DataYear) -> Unit,
         onOpenMerchChangelog: (DataYear) -> Unit,
         onOpenSettings: () -> Unit,
-        scaffoldState: SortFilterBottomScaffoldState = rememberSortFilterBottomScaffoldState(),
-        tagsViewModel: TagsViewModel = assistedMetroViewModel<TagsViewModel, TagsViewModel.Factory> {
-            create(it.createSavedStateHandle())
-        },
+        tagsViewModel: TagsViewModel,
     ) {
         val dataYearHeaderState = rememberDataYearHeaderState(
             dataYear = tagsViewModel::dataYear,
             onDataYearChange = { tagsViewModel.dataYear = it },
             lockedYear = null,
         )
-        Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                val scope = rememberCoroutineScope()
-                BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-                    scope.launch {
-                        scaffoldState.bottomSheetState.partialExpand()
-                    }
-                }
-                val selectedTabIndex = selectedTabIndex()
-                val series = tagsViewModel.series.collectAsLazyPagingItems()
-                val merch = tagsViewModel.merch.collectAsLazyPagingItems()
-                SortFilterBottomScaffold2(
-                    state = scaffoldState,
-                    showFilterFab = false,
-                    enterAlwaysTopBar = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                            TabRow(
-                                selectedTabIndex = selectedTabIndex,
-                                modifier = Modifier
-                                    .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
-                            ) {
-                                Tab.entries.forEachIndexed { index, tab ->
-                                    Tab(
-                                        selected = selectedTabIndex == index,
-                                        onClick = { onSelectedTabIndexChanged(index) },
-                                        text = { Text(stringResource(tab.textRes)) },
-                                    )
-                                }
-                            }
+        val selectedTabIndex = selectedTabIndex()
+        val series = tagsViewModel.series.collectAsLazyPagingItems()
+        val merch = tagsViewModel.merch.collectAsLazyPagingItems()
 
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier
-                                    .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
-                                    .padding(bottom = 8.dp)
-                            ) {
-                                val query = when (selectedTabIndex) {
-                                    0 -> tagsViewModel.seriesQuery
-                                    else -> tagsViewModel.merchQuery
-                                }
-                                val entries = when (selectedTabIndex) {
-                                    0 -> series
-                                    else -> merch
-                                }
-                                val isNotEmpty by remember {
-                                    derivedStateOf { query.text.isNotEmpty() }
-                                }
-                                BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
-                                    query.clearText()
-                                }
-
-                                AlleySearchBar(
-                                    onClickBack = null,
-                                    query = query,
-                                    itemCount = { entries.itemCount },
-                                    title = { null },
-                                    modifier = Modifier
-                                        .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
-                                        .fillMaxWidth()
-                                        .padding(top = 4.dp),
-                                )
-                            }
-                        }
-                    },
-                    sheetContent = {
-                        when (selectedTabIndex) {
-                            0 -> SeriesSortFilterSheetContent(
-                                state = tagsViewModel.seriesSortFilterController.state,
-                                sheetState = scaffoldState.bottomSheetState,
-                            )
-                            // TODO: Real merch sort filter?
-                            else -> Box {}
-                        }
-                    }
-                ) { _, contentPadding ->
-                    val saveableStateHolder = rememberSaveableStateHolder()
-                    AnimatedContent(
-                        targetState = Tab.entries[selectedTabIndex],
-                        transitionSpec = { fadeIn().togetherWith(fadeOut()) },
-                        label = "Tag screen",
+        EnterAlwaysTopBarScaffold(
+            topBar = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    PrimaryTabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        modifier = Modifier
+                            .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
                     ) {
-                        saveableStateHolder.SaveableStateProvider(it) {
-                            when (it) {
-                                Tab.SERIES -> {
-                                    TabScreen(
-                                        dataYearHeaderState = dataYearHeaderState,
-                                        baseContentPadding = contentPadding,
-                                        values = series,
-                                        itemKey = { it.series.id },
-                                        item = { data ->
-                                            SeriesRow(
-                                                data = data,
-                                                textStyle = LocalTextStyle.current,
-                                                onFavoriteToggle = {
-                                                    if (data != null) {
-                                                        tagsViewModel.onSeriesFavoriteToggle(
-                                                            data,
-                                                            it
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    data?.let {
-                                                        onSeriesClick(
-                                                            tagsViewModel.dataYear,
-                                                            it.series.id,
-                                                        )
-                                                    }
-                                                },
-                                            )
-                                        },
-                                        onOpenChangelog = onOpenSeriesChangelog,
-                                        onOpenSettings = onOpenSettings,
-                                        additionalHeader = {
-                                            item(key = "seriesFilterOptions") {
-                                                Column {
-                                                    tagsViewModel.seriesLanguageSection
-                                                        .Content(Modifier.fillMaxWidth())
-
-                                                    HorizontalDivider()
-
-                                                    val saveableState =
-                                                        tagsViewModel.seriesSortFilterController.state.saveableState
-                                                    SwitchSection(
-                                                        title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
-                                                        enabled = saveableState::showOnlyConfirmedTags,
-                                                        onEnabledChanged = {
-                                                            saveableState.showOnlyConfirmedTags = it
-                                                        },
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
-                                Tab.MERCH -> TabScreen(
-                                    dataYearHeaderState = dataYearHeaderState,
-                                    baseContentPadding = contentPadding,
-                                    values = merch,
-                                    itemKey = { it.merch.name },
-                                    item = { data ->
-                                        MerchRow(
-                                            data = data,
-                                            onFavoriteToggle = {
-                                                if (data != null) {
-                                                    tagsViewModel.onMerchFavoriteToggle(data, it)
-                                                }
-                                            },
-                                            onClick = {
-                                                if (data != null) {
-                                                    onMerchClick(
-                                                        tagsViewModel.dataYear,
-                                                        data.merch.name,
-                                                    )
-                                                }
-                                            },
-                                        )
-                                    },
-                                    onOpenChangelog = onOpenMerchChangelog,
-                                    onOpenSettings = onOpenSettings,
-                                )
-                            }
+                        Tab.entries.forEachIndexed { index, tab ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { onSelectedTabIndexChanged(index) },
+                                text = { Text(stringResource(tab.textRes)) },
+                            )
                         }
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
+                            .padding(bottom = 8.dp)
+                    ) {
+                        val query = when (selectedTabIndex) {
+                            0 -> tagsViewModel.seriesQuery
+                            else -> tagsViewModel.merchQuery
+                        }
+                        val entries = when (selectedTabIndex) {
+                            0 -> series
+                            else -> merch
+                        }
+                        val isNotEmpty by remember {
+                            derivedStateOf { query.text.isNotEmpty() }
+                        }
+                        BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
+                            query.clearText()
+                        }
+
+                        AlleySearchBar(
+                            onClickBack = null,
+                            query = query,
+                            itemCount = { entries.itemCount },
+                            title = { null },
+                            modifier = Modifier
+                                .widthIn(max = DisplayConstants.MAX_CONTENT_WIDTH)
+                                .fillMaxWidth()
+                                .padding(top = 4.dp),
+                        )
                     }
                 }
             }
+        ) { contentPadding ->
+            val saveableStateHolder = rememberSaveableStateHolder()
+            AnimatedContent(
+                targetState = Tab.entries[selectedTabIndex],
+                transitionSpec = { fadeIn().togetherWith(fadeOut()) },
+                label = "Tag screen",
+            ) {
+                saveableStateHolder.SaveableStateProvider(it) {
+                    when (it) {
+                        Tab.SERIES -> {
+                            TabScreen(
+                                dataYearHeaderState = dataYearHeaderState,
+                                baseContentPadding = contentPadding,
+                                values = series,
+                                itemKey = { it.series.id },
+                                item = { data ->
+                                    SeriesRow(
+                                        data = data,
+                                        textStyle = LocalTextStyle.current,
+                                        onFavoriteToggle = {
+                                            if (data != null) {
+                                                tagsViewModel.onSeriesFavoriteToggle(
+                                                    data,
+                                                    it
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            data?.let {
+                                                onSeriesClick(
+                                                    tagsViewModel.dataYear,
+                                                    it.series.id,
+                                                )
+                                            }
+                                        },
+                                    )
+                                },
+                                onOpenChangelog = onOpenSeriesChangelog,
+                                onOpenSettings = onOpenSettings,
+                                additionalHeader = {
+                                    item(key = "seriesFilterOptions") {
+                                        Column {
+                                            tagsViewModel.seriesLanguageSection
+                                                .Content(Modifier.fillMaxWidth())
+
+                                            HorizontalDivider()
+
+                                            val saveableState =
+                                                tagsViewModel.seriesSortFilterController.state.saveableState
+                                            SwitchSection(
+                                                title = { Text(stringResource(Res.string.alley_filter_show_only_confirmed_tags)) },
+                                                enabled = saveableState::showOnlyConfirmedTags,
+                                                onEnabledChanged = {
+                                                    saveableState.showOnlyConfirmedTags = it
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                        Tab.MERCH -> TabScreen(
+                            dataYearHeaderState = dataYearHeaderState,
+                            baseContentPadding = contentPadding,
+                            values = merch,
+                            itemKey = { it.merch.name },
+                            item = { data ->
+                                MerchRow(
+                                    data = data,
+                                    onFavoriteToggle = {
+                                        if (data != null) {
+                                            tagsViewModel.onMerchFavoriteToggle(data, it)
+                                        }
+                                    },
+                                    onClick = {
+                                        if (data != null) {
+                                            onMerchClick(
+                                                tagsViewModel.dataYear,
+                                                data.merch.name,
+                                            )
+                                        }
+                                    },
+                                )
+                            },
+                            onOpenChangelog = onOpenMerchChangelog,
+                            onOpenSettings = onOpenSettings,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun SheetContent(
+        bottomSheetState: SheetState,
+        seriesState: SeriesSortFilterState,
+        selectedTabIndex: () -> Int,
+    ) {
+        when (selectedTabIndex()) {
+            0 -> SeriesSortFilterSheetContent(
+                state = seriesState,
+                sheetState = bottomSheetState,
+            )
+            // TODO: Real merch sort filter?
+            else -> Box {}
         }
     }
 

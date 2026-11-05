@@ -410,10 +410,7 @@ class ArtistSortFilterState(
     val merchIdsLockedIn: () -> Set<String>,
     val seriesAutocompleteResults: () -> List<SeriesInfo>,
 ) {
-    val activeCount: Int
-        @Composable get() {
-            return persistentState.activeCount + saveableState.activeCount
-        }
+    val activeCount get() = persistentState.activeCount + saveableState.activeCount
 
     fun clear() {
         Snapshot.withMutableSnapshot {
@@ -447,15 +444,14 @@ class ArtistSortFilterPersistentState(
     val sortFilterSettings: ArtistSortFilterSettings,
     val displaySettings: DisplaySettings,
 ) {
-    val activeCount: Int
-        @Composable get() {
-            // Sort and advanced options are not reset on clear and thus don't count as active
-            var count = 0
-            if (sortFilterSettings.artistsTagsIn.isNotEmpty()) count++
-            if (sortFilterSettings.artistsTagsNotIn.isNotEmpty()) count++
-            if (displaySettings.showOnlyConfirmedTags) count++
-            return count
-        }
+    val activeCount by derivedStateOf {
+        // Sort and advanced options are not reset on clear and thus don't count as active
+        var count = 0
+        if (sortFilterSettings.artistsTagsIn.isNotEmpty()) count++
+        if (sortFilterSettings.artistsTagsNotIn.isNotEmpty()) count++
+        if (displaySettings.showOnlyConfirmedTags) count++
+        count
+    }
 
     fun clear() {
         sortFilterSettings.artistsTagsIn = emptySet()

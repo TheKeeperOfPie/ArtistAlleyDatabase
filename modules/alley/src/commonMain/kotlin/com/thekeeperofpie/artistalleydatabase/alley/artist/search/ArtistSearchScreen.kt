@@ -35,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.createSavedStateHandle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -85,7 +84,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
-import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.StringResource
@@ -96,14 +94,7 @@ import org.jetbrains.compose.resources.stringResource
 fun RootArtistSearchScreen(
     lockedYear: DataYear? = null,
     lockedSerializedBooths: String? = null,
-    viewModel: ArtistSearchViewModel = assistedMetroViewModel<ArtistSearchViewModel, ArtistSearchViewModel.Factory> {
-        create(
-            lockedYear = lockedYear,
-            isRoot = true,
-            lockedSerializedBooths = lockedSerializedBooths,
-            savedStateHandle = it.createSavedStateHandle(),
-        )
-    },
+    viewModel: ArtistSearchViewModel,
 ) {
     val state = viewModel.state
     CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
