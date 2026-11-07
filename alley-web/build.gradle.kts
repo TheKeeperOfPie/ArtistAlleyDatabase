@@ -536,13 +536,17 @@ tasks.register("buildSite") {
                             request: request,
                             env: env,
                             functionPath: url.pathname,
-                            data: ctx.data,
+                            data: ctx.data || {},
+                            waitUntil: ctx.waitUntil ? ctx.waitUntil.bind(ctx) : () => {},
+                            passThroughOnException: ctx.passThroughOnException ? ctx.passThroughOnException.bind(ctx) : () => {},
                             next: async (nextRequest) => {
                               const innerContext = {
                                 request: nextRequest || request,
                                 env: env,
                                 functionPath: url.pathname,
                                 data: context.data,
+                                waitUntil: ctx.waitUntil ? ctx.waitUntil.bind(ctx) : () => {},
+                                passThroughOnException: ctx.passThroughOnException ? ctx.passThroughOnException.bind(ctx) : () => {},
                               };
                               return Worker.request(innerContext);
                             }
