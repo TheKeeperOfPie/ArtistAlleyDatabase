@@ -439,6 +439,12 @@ tasks.register("buildSite") {
             .replace("\"originJsAlley-web.js\"", "\"/originJsAlley-web.js\"")
         webJs.writeText(webJsEdited)
 
+        val formJs = folder.resolve("alley-form.js")
+        val formJsEdited = formJs.readText()
+            .replace("\"originWasmAlley-form.js\"", "\"/originWasmAlley-form.js\"")
+            .replace("\"originJsAlley-form.js\"", "\"/originJsAlley-form.js\"")
+        formJs.writeText(formJsEdited)
+
         fun replaceFileContentWithHashedName(file: File) {
             var fileContent = file.readText()
             filesToCacheWithHashes.forEach { (oldFile, newFile, revision) ->
