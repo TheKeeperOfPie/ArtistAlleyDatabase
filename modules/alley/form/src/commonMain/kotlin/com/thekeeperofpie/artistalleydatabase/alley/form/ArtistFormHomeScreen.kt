@@ -25,10 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.composables.core.ScrollArea
-import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
+import com.composeunstyled.rememberScrollbarState
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.PrimaryVerticalScrollbar
 
 internal object ArtistFormHomeScreen {
 
@@ -46,22 +45,18 @@ internal object ArtistFormHomeScreen {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         val scrollState = rememberScrollState()
-                        val scrollAreaState = rememberScrollAreaState(scrollState)
-                        ScrollArea(
-                            state = scrollAreaState,
-                            modifier = Modifier.weight(1f, fill = false)
-                        ) {
-                            Box {
-                                Column(
-                                    modifier = Modifier.verticalScroll(scrollState)
-                                ) {
-                                    IntroText(modifier = Modifier.fillMaxWidth().padding(24.dp))
-                                }
-                                Box(modifier = Modifier.matchParentSize()) {
-                                    PrimaryVerticalScrollbar(
-                                        modifier = Modifier.align(Alignment.TopEnd)
-                                    )
-                                }
+                        val scrollbarState = rememberScrollbarState(scrollState)
+                        Box(modifier = Modifier.weight(1f, fill = false)) {
+                            Column(
+                                modifier = Modifier.verticalScroll(scrollState)
+                            ) {
+                                IntroText(modifier = Modifier.fillMaxWidth().padding(24.dp))
+                            }
+                            Box(modifier = Modifier.matchParentSize()) {
+                                PrimaryVerticalScrollbar(
+                                    scrollbarState = scrollbarState,
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                )
                             }
                         }
 

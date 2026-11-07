@@ -113,6 +113,8 @@
     <string name="alley_artist_verification_prompt_dm_on_instagram">DM on Instagram</string>
     <string name="alley_artist_verification_prompt_dm_on_x">DM on X (Twitter)</string>
     <string name="alley_artist_verification_prompt_copy_discord_username">Copy Discord username</string>
+    <string name="alley_artist_verification_booth">Booth</string>
+    <string name="alley_artist_verification_booth_error">Booth must be formatted as (A-Z)[A-Z][0-9][0-9]</string>
 
     <string name="alley_browse_tab_series">Series</string>
     <string name="alley_browse_tab_merch">Merch</string>

@@ -32,7 +32,7 @@ fun rememberUuidValidator(state: EntryForm2.SingleTextState): State<String?> {
 @Composable
 fun rememberLinkValidator(state: EntryForm2.SingleTextState): State<String?> {
     val genericErrorMessage = stringResource(resource = Res.string.entry_error_invalid_link)
-    return remember(state) {
+    return remember(state, genericErrorMessage) {
         derivedStateOf {
             val text = state.value.text
             if (text.isBlank()) return@derivedStateOf null

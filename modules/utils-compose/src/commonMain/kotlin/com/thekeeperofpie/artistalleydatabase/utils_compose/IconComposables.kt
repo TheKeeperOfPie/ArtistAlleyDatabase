@@ -45,8 +45,9 @@ fun FilledTonalButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
+    enabled: Boolean = true,
 ) {
-    FilledTonalButton(onClick = onClick, modifier = modifier) {
+    FilledTonalButton(enabled = enabled, onClick = onClick, modifier = modifier) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,

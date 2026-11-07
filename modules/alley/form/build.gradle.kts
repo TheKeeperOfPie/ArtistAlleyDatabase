@@ -14,7 +14,6 @@ kotlin {
             implementation(libs.coil3.coil.compose)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.jetBrainsCompose.material3.windowSizeClass)
-            implementation(libs.composeunstyled.primitives)
 
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.edit)
@@ -22,6 +21,7 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsBuildConfig)
             implementation(projects.modules.utilsCompose)
+            implementation(projects.modules.utilsScrollbars)
         }
     }
 }

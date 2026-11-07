@@ -7,7 +7,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.ComposeViewport
@@ -35,7 +34,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.jetbrains.compose.resources.WebResourcesConfiguration
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
+@OptIn(ExperimentalCoilApi::class)
 fun main() {
     ComposeInit.init()
     ComposeViewport(document.body!!) {
@@ -88,11 +87,11 @@ private fun Content(graph: ArtistAlleyFormGraph) {
         val navStack = rememberFormTwoWayStack()
         LaunchedEffect(window.location.href) {
             val uri = Uri.parseOrNull(window.location.href)
-            uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
-                ?.let(ArtistFormAccessKey::setKey)
-            uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_ENCRYPTED_PARAM)
-                ?.let { ArtistFormAccessKey.setKeyEncrypted(it) }
-            if (uri?.getQueryParameter("openForm").toBoolean()) {
+            val key = uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
+                ?.also(ArtistFormAccessKey::setKey)
+            val keyEncrypted = uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_ENCRYPTED_PARAM)
+                ?.also { ArtistFormAccessKey.setKeyEncrypted(it) }
+            if (key != null || keyEncrypted != null) {
                 navStack.navigate(AlleyFormDestination.ArtistForm(DataYear.LATEST))
             }
         }

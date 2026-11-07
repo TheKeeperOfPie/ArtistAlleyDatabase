@@ -12,15 +12,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -48,10 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -62,7 +59,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.form.generated.resources.Res
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_done
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_submit_private_key
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_booth_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_commissions_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_form_notes_placeholder
@@ -92,8 +88,6 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_not
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_action_confirm
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_1
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_2
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_link
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_action_add
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_header
@@ -108,9 +102,9 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_sta
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_start_tables_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_table_min_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_tables_placeholder
-import com.composables.core.ScrollArea
-import com.composables.core.rememberScrollAreaState
+import com.composeunstyled.rememberScrollbarState
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTable
+import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistVerificationDialogContent
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
@@ -141,8 +135,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
@@ -158,6 +150,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.LocalBuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DisplayConstants
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
@@ -169,6 +162,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_theme.AlleyTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import io.github.vinceglb.filekit.size
@@ -176,7 +170,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
@@ -213,7 +207,6 @@ object ArtistFormScreen {
             onClickBack = onClickBack,
             onClickDone = viewModel::onClickDone,
             onConfirmMerge = viewModel::onConfirmMerge,
-            onSubmitPrivateKey = viewModel::onSubmitPrivateKey,
             onClickEditAgain = viewModel::onClickEditAgain,
             onClickEditImages = onClickEditImages,
         )
@@ -231,7 +224,6 @@ object ArtistFormScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickDone: () -> Unit,
         onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
-        onSubmitPrivateKey: (String) -> Unit,
         onClickEditAgain: () -> Unit,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
     ) {
@@ -251,8 +243,7 @@ object ArtistFormScreen {
         }
         LaunchedEffect(saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
-                .map { it?.second }
-                .filterNotNull()
+                .mapNotNull { it?.second }
                 .collectLatest {
                     when (it) {
                         is State.SaveResult.ArtistSaveFailed -> {
@@ -359,7 +350,9 @@ object ArtistFormScreen {
                         )
                         PreventUnloadEffect()
                     }
-                    State.Progress.BAD_AUTH -> PrivateKeyPrompt(dataYear, onSubmitPrivateKey)
+                    State.Progress.BAD_AUTH -> PrivateKeyPrompt(
+                        state = state,
+                    )
                     State.Progress.DONE -> DonePrompt(dataYear, onClickEditAgain)
                 }
             }
@@ -768,7 +761,7 @@ object ArtistFormScreen {
                                     if (formState.editorState.deleted) {
                                         formState.editorState.deleted = false
                                     } else {
-                                        val (images, entry) =
+                                        val [images, entry] =
                                             formState.captureDatabaseEntry(dataYear)
                                         // If deleting an empty rally, just remove from list
                                         if (images.isEmpty() &&
@@ -923,55 +916,40 @@ object ArtistFormScreen {
     }
 
     @Composable
-    private fun PrivateKeyPrompt(dataYear: DataYear, onSubmitKey: (String) -> Unit) {
+    private fun PrivateKeyPrompt(state: State) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize().padding(16.dp)
         ) {
             val scrollState = rememberScrollState()
-            val scrollAreaState = rememberScrollAreaState(scrollState)
-            OutlinedCard(modifier = Modifier.widthIn(max = 600.dp)) {
-                ScrollArea(state = scrollAreaState) {
-                    Box {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.verticalScroll(scrollState)
-                                .padding(start = 24.dp, end = 48.dp, top = 24.dp, bottom = 24.dp)
-                        ) {
+            val scrollbarState = rememberScrollbarState(scrollState)
+            OutlinedCard(modifier = Modifier.widthIn(max = DisplayConstants.DETAILS_CONTENT_WIDTH)) {
+                Box {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.verticalScroll(scrollState)
+                            .padding(start = 24.dp, end = 48.dp, top = 24.dp, bottom = 24.dp)
+                    ) {
+                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
                             Text(
-                                text = buildAnnotatedString {
-                                    append(stringResource(Res.string.alley_form_private_key_prompt_1))
-                                    withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
-                                        append(stringResource(Res.string.alley_form_private_key_prompt_link))
-                                    }
-                                    append(
-                                        stringResource(
-                                            Res.string.alley_form_private_key_prompt_2,
-                                            stringResource(dataYear.fullName),
-                                            AlleyUtils.primaryContactDiscordUsername,
-                                        )
-                                    )
-                                },
+                                text = stringResource(Res.string.alley_form_private_key_prompt_1),
                                 style = MaterialTheme.typography.titleMedium,
-                            )
-
-                            Spacer(Modifier.height(16.dp))
-
-                            // Do not use rememberTextFieldState to avoid key being persisted
-                            val state = remember { TextFieldState("") }
-                            OutlinedTextField(state = state, modifier = Modifier.fillMaxWidth())
-
-                            // TODO: Show a new error message if the key is incorrect
-                            FilledTonalButton(onClick = { onSubmitKey(state.text.toString()) }) {
-                                Text(stringResource(Res.string.alley_form_action_submit_private_key))
-                            }
-                        }
-                        Box(modifier = Modifier.matchParentSize()) {
-                            PrimaryVerticalScrollbar(
-                                modifier = Modifier.align(Alignment.TopEnd)
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                         }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        ArtistVerificationDialogContent(state.artistFormState.info.booth,)
+                    }
+                    Box(modifier = Modifier.matchParentSize()) {
+                        PrimaryVerticalScrollbar(
+                            scrollbarState = scrollbarState,
+                            modifier = Modifier.align(Alignment.TopEnd)
+                        )
                     }
                 }
             }
@@ -1172,7 +1150,8 @@ object ArtistFormScreen {
                             val images = state.images.toList()
                             images.size > ImageUploadUtils.maxArtistUploadCount(buildConfig.isDebug) || images.any {
                                 it is EditImage.LocalImage && PlatformImageCache[it.key]?.size()
-                                    ?.asBytes()?.let { it > ImageUtils.maxUploadSize(buildConfig.isDebug) } == true
+                                    ?.asBytes()
+                                    ?.let { it > ImageUtils.maxUploadSize(buildConfig.isDebug) } == true
                             }
                         }
                     }
@@ -1311,8 +1290,8 @@ object ArtistFormScreen {
             val (booth, name, summary, notes) = artistFormState.info.captureValues()
             val (socialLinks, storeLinks, portfolioLinks, catalogLinks, commissions) = artistFormState.links.captureValues()
 
-            val (seriesInferred, seriesConfirmed) = artistFormState.series.captureValues()
-            val (merchInferred, merchConfirmed) = artistFormState.merch.captureValues()
+            val [seriesInferred, seriesConfirmed] = artistFormState.series.captureValues()
+            val [merchInferred, merchConfirmed] = artistFormState.merch.captureValues()
 
             val profileImage = artistFormState.profileImage
             val images = artistFormState.images.toList()

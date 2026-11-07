@@ -319,12 +319,6 @@ class ArtistFormViewModel(
         )
     }
 
-    fun onSubmitPrivateKey(privateKey: String) {
-        progress.value = ArtistFormScreen.State.Progress.LOADING
-        ArtistFormAccessKey.setKey(privateKey)
-        artistJob.launch()
-    }
-
     fun onClickEditAgain() {
         progress.value = ArtistFormScreen.State.Progress.LOADING
         artistJob.launch()

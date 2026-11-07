@@ -7,14 +7,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.allCaps
+import androidx.compose.foundation.text.input.maxLengthTrim
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -32,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_action_close
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_action_is_this_you
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_booth
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_booth_error
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_copy_discord_username
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_dm_on_bluesky
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_dm_on_instagram
@@ -42,9 +52,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_verifi
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_option_login_discord
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_option_login_discord_button
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
+import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.automirrored.filled.Chat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
@@ -62,135 +75,188 @@ fun ArtistVerificationDialog(artist: ArtistEntry, onDismiss: () -> Unit) {
         },
         title = { Text(stringResource(Res.string.alley_artist_verification_action_is_this_you)) },
         text = {
-            Column {
-                Text(
-                    stringResource(
-                        Res.string.alley_artist_verification_prompt_intro,
-                        AlleyUtils.primaryContactDiscordUsername,
-                    )
-                )
-
-                Spacer(Modifier.height(16.dp))
-
-                val booth = artist.booth
-                if (booth != null) {
-                    var discordExpanded by remember { mutableStateOf(false) }
-                    HeaderRow(
-                        expanded = { discordExpanded },
-                        icon = Logo.DISCORD.icon,
-                        text = {
-                            Text(stringResource(Res.string.alley_artist_verification_prompt_option_login_discord))
-                        },
-                        onClick = { discordExpanded = !discordExpanded },
-                    )
-                    if (discordExpanded) {
-                        Text(
-                            text = buildAnnotatedString {
-                                appendLine(
-                                    "By using Discord's connections feature, we can read your linked social " +
-                                            "accounts and grant you access. Note this works even if " +
-                                            "the account is hidden on your profile."
-                                )
-                                appendLine()
-                                append(
-                                    "This will only ask for the connections permission and will never " +
-                                            "ask for your password or other personal information. You can also " +
-                                            "use the bot inside the "
-                                )
-                                withLink(LinkAnnotation.Url(BuildKonfig.serverUrl)) {
-                                    append("AX Discord server")
-                                }
-                                append(
-                                    "."
-                                )
-                            },
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-
-                        val uriHandler = LocalUriHandler.current
-                        FilledTonalButton(
-                            icon = Logo.DISCORD.icon,
-                            text = stringResource(Res.string.alley_artist_verification_prompt_option_login_discord_button),
-                            onClick = {
-                                uriHandler.openUri(BuildKonfig.artistVerifyUrl + "&state=$booth")
-                            },
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                        )
-                    }
-
-                    HorizontalDivider()
-                }
-
-                var dmExpanded by remember { mutableStateOf(false) }
-                HeaderRow(
-                    expanded = { dmExpanded },
-                    icon = Icons.AutoMirrored.Default.Chat,
-                    text = {
-                        Text(stringResource(Res.string.alley_artist_verification_prompt_option_dm_social))
-                    },
-                    onClick = { dmExpanded = !dmExpanded },
-                )
-                if (dmExpanded) {
-                    Text(
-                        text = stringResource(
-                            Res.string.alley_artist_verification_prompt_option_dm_social_description,
-                            BuildKonfig.authorTwoUsername,
-                        ),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                    FlowRow(
-                        horizontalArrangement =
-                            Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(16.dp)
-                    ) {
-                        val uriHandler = LocalUriHandler.current
-                        val socialLinkModels = artist.socialLinkModels
-                        val hasBluesky = socialLinkModels.any { it.logo == Logo.BLUESKY }
-                        val hasInstagram = socialLinkModels.any { it.logo == Logo.INSTAGRAM }
-                        val hasX = socialLinkModels.any { it.logo == Logo.X }
-                        val hasAny = hasBluesky || hasInstagram || hasX
-                        if (hasBluesky || !hasAny) {
-                            FilledTonalButton(
-                                icon = Logo.BLUESKY.icon,
-                                text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_bluesky),
-                                onClick = { uriHandler.openUri(AlleyUtils.contactLinkBluesky) },
-                            )
-                        }
-                        if (hasInstagram || !hasAny) {
-                            FilledTonalButton(
-                                icon = Logo.INSTAGRAM.icon,
-                                text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_instagram),
-                                onClick = { uriHandler.openUri(AlleyUtils.contactLinkInstagram) },
-                            )
-                        }
-                        if (hasX || !hasAny) {
-                            FilledTonalButton(
-                                icon = Logo.X.icon,
-                                text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_x),
-                                onClick = { uriHandler.openUri(AlleyUtils.contactLinkX) },
-                            )
-                        }
-
-                        val clipboardManager = LocalClipboardManager.current
-                        FilledTonalButton(
-                            icon = Logo.DISCORD.icon,
-                            text = stringResource(Res.string.alley_artist_verification_prompt_copy_discord_username),
-                            onClick = {
-                                clipboardManager.setText(
-                                    AnnotatedString(
-                                        AlleyUtils.primaryContactDiscordUsername.removePrefix("@")
-                                    )
-                                )
-                            },
-                        )
-                    }
-                }
-            }
+            ArtistVerificationDialogContent(
+                booth = artist.booth,
+                socialLinkModels = artist.socialLinkModels,
+                boothState = null,
+                showDiscord = !artist.booth.isNullOrBlank(),
+            )
         }
     )
+}
+
+@Composable
+fun ArtistVerificationDialogContent(boothState: EntryForm2.SingleTextState? = null) {
+    ArtistVerificationDialogContent(
+        booth = null,
+        socialLinkModels = null,
+        boothState = boothState,
+        showDiscord = true,
+    )
+}
+
+@Composable
+private fun ArtistVerificationDialogContent(
+    booth: String?,
+    socialLinkModels: List<LinkModel>?,
+    boothState: EntryForm2.SingleTextState?,
+    showDiscord: Boolean,
+) {
+    Column {
+        Text(
+            stringResource(
+                Res.string.alley_artist_verification_prompt_intro,
+                AlleyUtils.primaryContactDiscordUsername,
+            )
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        if (showDiscord) {
+            var discordExpanded by remember { mutableStateOf(false) }
+            HeaderRow(
+                expanded = { discordExpanded },
+                icon = Logo.DISCORD.icon,
+                text = {
+                    Text(stringResource(Res.string.alley_artist_verification_prompt_option_login_discord))
+                },
+                onClick = { discordExpanded = !discordExpanded },
+            )
+            if (discordExpanded) {
+                Text(
+                    text = buildAnnotatedString {
+                        appendLine(
+                            "By using Discord's connections feature, we can read your linked social " +
+                                    "accounts and grant you access. Note this works even if " +
+                                    "the account is hidden on your profile."
+                        )
+                        appendLine()
+                        append(
+                            "This will only ask for the connections permission and will never " +
+                                    "ask for your password or other personal information. You can also " +
+                                    "use the bot inside the "
+                        )
+                        withLink(LinkAnnotation.Url(BuildKonfig.serverUrl)) {
+                            append("AX Discord server")
+                        }
+                        append(
+                            "."
+                        )
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val boothErrorMessage = ifOrNull(boothState != null) {
+                        rememberBoothValidator(boothState).value
+                    }
+                    if (boothState != null) {
+                        println("boothErrorMessage = $boothErrorMessage")
+                        OutlinedTextField(
+                            state = boothState.value,
+                            label = { Text(stringResource(Res.string.alley_artist_verification_booth)) },
+                            supportingText = boothErrorMessage?.let { { Text(it) } },
+                            isError = boothErrorMessage != null,
+                            inputTransformation = InputTransformation.maxLengthTrim(4)
+                                .allCaps(LocalLocale.current),
+                        )
+                    }
+
+                    val uriHandler = LocalUriHandler.current
+                    val hasBooth by remember(booth, boothState, boothErrorMessage) {
+                        derivedStateOf {
+                            booth != null ||
+                                    (boothErrorMessage == null && boothState?.value?.text?.isNotEmpty() == true)
+                        }
+                    }
+                    FilledTonalButton(
+                        enabled = hasBooth,
+                        icon = Logo.DISCORD.icon,
+                        text = stringResource(Res.string.alley_artist_verification_prompt_option_login_discord_button),
+                        onClick = {
+                            val resolvedBooth = booth ?: boothState?.value?.text?.toString()
+                            uriHandler.openUri(BuildKonfig.artistVerifyUrl + "&state=$resolvedBooth")
+                        },
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            HorizontalDivider()
+        }
+
+        var dmExpanded by remember { mutableStateOf(false) }
+        HeaderRow(
+            expanded = { dmExpanded },
+            icon = Icons.AutoMirrored.Default.Chat,
+            text = {
+                Text(stringResource(Res.string.alley_artist_verification_prompt_option_dm_social))
+            },
+            onClick = { dmExpanded = !dmExpanded },
+        )
+        if (dmExpanded) {
+            Text(
+                text = stringResource(
+                    Res.string.alley_artist_verification_prompt_option_dm_social_description,
+                    BuildKonfig.authorTwoUsername,
+                ),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            FlowRow(
+                horizontalArrangement =
+                    Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(16.dp)
+            ) {
+                val uriHandler = LocalUriHandler.current
+                val hasBluesky = socialLinkModels?.any { it.logo == Logo.BLUESKY } ?: false
+                val hasInstagram =
+                    socialLinkModels?.any { it.logo == Logo.INSTAGRAM } ?: false
+                val hasX = socialLinkModels?.any { it.logo == Logo.X } ?: false
+                val hasAny = hasBluesky || hasInstagram || hasX
+                if (hasBluesky || !hasAny) {
+                    FilledTonalButton(
+                        icon = Logo.BLUESKY.icon,
+                        text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_bluesky),
+                        onClick = { uriHandler.openUri(AlleyUtils.contactLinkBluesky) },
+                    )
+                }
+                if (hasInstagram || !hasAny) {
+                    FilledTonalButton(
+                        icon = Logo.INSTAGRAM.icon,
+                        text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_instagram),
+                        onClick = { uriHandler.openUri(AlleyUtils.contactLinkInstagram) },
+                    )
+                }
+                if (hasX || !hasAny) {
+                    FilledTonalButton(
+                        icon = Logo.X.icon,
+                        text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_x),
+                        onClick = { uriHandler.openUri(AlleyUtils.contactLinkX) },
+                    )
+                }
+
+                val clipboardManager = LocalClipboardManager.current
+                FilledTonalButton(
+                    icon = Logo.DISCORD.icon,
+                    text = stringResource(Res.string.alley_artist_verification_prompt_copy_discord_username),
+                    onClick = {
+                        clipboardManager.setText(
+                            AnnotatedString(
+                                AlleyUtils.primaryContactDiscordUsername.removePrefix("@")
+                            )
+                        )
+                    },
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -212,5 +278,20 @@ private fun HeaderRow(
             text()
         }
         TrailingDropdownIcon(expanded = expanded(), contentDescription = null)
+    }
+}
+
+@Composable
+private fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): State<String?> {
+    val errorMessage = stringResource(Res.string.alley_artist_verification_booth_error)
+    return remember(boothState, errorMessage) {
+        derivedStateOf {
+            val booth = boothState.value.text.toString()
+            if (Booth.fromStringOrNull(booth) == null) {
+                errorMessage
+            } else {
+                null
+            }
+        }
     }
 }
