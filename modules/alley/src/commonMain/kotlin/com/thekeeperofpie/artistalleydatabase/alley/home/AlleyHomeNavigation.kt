@@ -28,6 +28,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_generic_filter_content_description
 import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.FilterList
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.rememberSortFilterBottomScaffoldState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.toggle
@@ -91,6 +92,7 @@ internal fun AlleyHomeFilterFloatingActionButton(
 internal fun AlleyHomeNavigationToolbar(
     scaffoldState: SortFilterBottomScaffoldState,
     scrollBehavior: FloatingToolbarScrollBehavior,
+    artistsDataYear: () -> DataYear,
     destination: () -> AlleyHomeDestination,
     onChangeDestination: (AlleyHomeDestination) -> Unit,
     modifier: Modifier = Modifier,
@@ -101,8 +103,11 @@ internal fun AlleyHomeNavigationToolbar(
         floatingActionButton = { AlleyHomeFilterFloatingActionButton(scaffoldState) },
         modifier = modifier
     ) {
+        val hasRallies = artistsDataYear().hasRallies
         val itemsWithText =
-            AlleyHomeDestination.entries.map { it to stringResource(it.textRes) }
+            AlleyHomeDestination.entries
+                .filter { hasRallies || it != AlleyHomeDestination.STAMP_RALLIES }
+                .map { it to stringResource(it.textRes) }
         val currentDestination = destination()
         AppBarRow {
             itemsWithText.forEach { [item, text] ->
@@ -158,6 +163,7 @@ private fun AlleyHomeNavigationToolbarPreview() {
         scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehavior(
             FloatingToolbarExitDirection.Bottom
         ),
+        artistsDataYear = { DataYear.LATEST },
         destination = { AlleyHomeDestination.ARTISTS },
         onChangeDestination = {},
     )

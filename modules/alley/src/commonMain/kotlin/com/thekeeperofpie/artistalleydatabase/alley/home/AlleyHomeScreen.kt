@@ -56,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.RootStampRall
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.tags.BrowseViewModel
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.exitAlwaysScrollBehaviorAutoReset
@@ -97,12 +98,13 @@ object AlleyHomeScreen {
             assistedMetroViewModel<FavoritesMapViewModel, FavoritesMapViewModel.Factory> {
                 create(it.createSavedStateHandle())
             }
-        val ralliesViewModel = assistedMetroViewModel<StampRallySearchViewModel, StampRallySearchViewModel.Factory> {
-            create(
-                isRoot = true,
-                savedStateHandle = it.createSavedStateHandle(),
-            )
-        }
+        val ralliesViewModel =
+            assistedMetroViewModel<StampRallySearchViewModel, StampRallySearchViewModel.Factory> {
+                create(
+                    isRoot = true,
+                    savedStateHandle = it.createSavedStateHandle(),
+                )
+            }
 
         val scaffoldState = rememberSortFilterBottomScaffoldState()
         NavigationScaffold(
@@ -112,6 +114,7 @@ object AlleyHomeScreen {
                 settings.rootDestination = it
                 destination = it
             },
+            artistsDataYear = artistsViewModel.state.year,
             sheetContent = {
                 when (destination) {
                     AlleyHomeDestination.ARTISTS ->
@@ -198,6 +201,7 @@ object AlleyHomeScreen {
         scaffoldState: SortFilterBottomScaffoldState,
         destination: () -> AlleyHomeDestination,
         onChangeDestination: (AlleyHomeDestination) -> Unit,
+        artistsDataYear: () -> DataYear,
         sheetContent: @Composable ColumnScope.() -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
@@ -236,19 +240,22 @@ object AlleyHomeScreen {
                             )
                             .renderMaybeInSharedTransitionScopeOverlay(2f)
                     ) {
-                        AlleyHomeDestination.entries.forEach {
-                            NavigationRailItem(
-                                icon = {
-                                    Icon(
-                                        it.icon,
-                                        contentDescription = stringResource(it.textRes)
-                                    )
-                                },
-                                label = { Text(stringResource(it.textRes)) },
-                                selected = it == destination(),
-                                onClick = { onChangeDestination(it) },
-                            )
-                        }
+                        val hasRallies = artistsDataYear().hasRallies
+                        AlleyHomeDestination.entries
+                            .filter { hasRallies || it != AlleyHomeDestination.STAMP_RALLIES }
+                            .forEach {
+                                NavigationRailItem(
+                                    icon = {
+                                        Icon(
+                                            it.icon,
+                                            contentDescription = stringResource(it.textRes)
+                                        )
+                                    },
+                                    label = { Text(stringResource(it.textRes)) },
+                                    selected = it == destination(),
+                                    onClick = { onChangeDestination(it) },
+                                )
+                            }
                     }
                     Scaffold(modifier = Modifier.fillMaxSize()) {
                         movableContent(it)
@@ -263,6 +270,7 @@ object AlleyHomeScreen {
                         AlleyHomeNavigationToolbar(
                             scaffoldState = scaffoldState,
                             scrollBehavior = scrollBehavior,
+                            artistsDataYear = artistsDataYear,
                             destination = destination,
                             onChangeDestination = onChangeDestination,
                             modifier = Modifier.align(Alignment.BottomCenter)
