@@ -9,19 +9,28 @@ plugins {
 
 kotlin {
     sourceSets {
+        val jvmMain = create("jvmMain") {
+            dependsOn(commonMain.get())
+        }
         commonMain.dependencies {
             api(projects.modules.alley.data)
             implementation(libs.sqldelight.coroutines.extensions)
             implementation(libs.kotlinx.io.core)
             implementation(projects.modules.utils)
         }
-        androidMain.dependencies {
-            implementation(libs.androidx.sqlite)
-            implementation(libs.androidx.sqlite.bundled)
-            implementation(libs.sqldelight.androidx.driver)
+        androidMain{
+            dependsOn(jvmMain)
+            dependencies {
+                implementation(libs.androidx.sqlite)
+                implementation(libs.androidx.sqlite.bundled)
+                implementation(libs.sqldelight.androidx.driver)
+            }
         }
-        getByName("desktopMain").dependencies {
-            implementation(libs.sqldelight.sqlite.driver)
+        getByName("desktopMain"){
+            dependsOn(jvmMain)
+            dependencies {
+                implementation(libs.sqldelight.sqlite.driver)
+            }
         }
         jsMain.dependencies {
             implementation(libs.sqldelight.web.worker.driver.js)

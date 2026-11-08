@@ -2,11 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.alley.favorite
 
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Tab
@@ -25,10 +30,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -51,6 +58,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_mer
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
+import artistalleydatabase.modules.alley.generated.resources.alley_user_login_action
+import artistalleydatabase.modules.alley.generated.resources.alley_user_login_prompt
 import com.composeunstyled.rememberScrollbarState
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
@@ -59,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreenContent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterState
+import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -80,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.icons.Icons
 import com.thekeeperofpie.artistalleydatabase.icons.filled.QrCode2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopBarScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.FilledTonalButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_scrollbars.VerticalScrollableWithBar
@@ -88,7 +99,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 object FavoritesScreen {
 
     @Composable
@@ -99,6 +110,7 @@ object FavoritesScreen {
         onNavigateToMerch: () -> Unit,
         viewModel: FavoritesViewModel,
     ) {
+        val uriHandler = LocalUriHandler.current
         FavoritesScreen(
             state = viewModel.state,
             series = viewModel.seriesEntryCache::series,
@@ -109,6 +121,7 @@ object FavoritesScreen {
                     onNavigateToRallies = onNavigateToRallies,
                     onNavigateToSeries = onNavigateToSeries,
                     onNavigateToMerch = onNavigateToMerch,
+                    uriHandler = uriHandler,
                 )
             },
         )
@@ -156,9 +169,21 @@ object FavoritesScreen {
             ) { contentPadding ->
                 val saveableStateHolder = rememberSaveableStateHolder()
                 val tab = state.tab()
+                val header: @Composable () -> Unit =
+                    remember(state, dataYearHeaderState, eventSink) {
+                        movableContentOf {
+                            Header(
+                                tab = state.tab,
+                                onTabChange = state.onTabChange,
+                                isLoggedIn = state.isLoggedIn,
+                                dataYearHeaderState = dataYearHeaderState,
+                                onEvent = eventSink,
+                            )
+                        }
+                    }
                 saveableStateHolder.SaveableStateProvider(tab) {
                     when (tab) {
-                        EntryTab.ARTISTS ->
+                        EntryTab.ARTISTS -> {
                             ArtistContent(
                                 state = state,
                                 baseContentPadding = contentPadding,
@@ -166,16 +191,10 @@ object FavoritesScreen {
                                 entries = artistsEntries,
                                 series = series,
                                 eventSink = eventSink,
-                                header = {
-                                    Header(
-                                        tab = state.tab,
-                                        onTabChange = state.onTabChange,
-                                        dataYearHeaderState = dataYearHeaderState,
-                                        eventSink = eventSink,
-                                    )
-                                },
+                                header = header,
                                 noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
                             )
+                        }
                         EntryTab.RALLIES ->
                             RalliesContent(
                                 state = state,
@@ -183,40 +202,19 @@ object FavoritesScreen {
                                 sortFilterState = state.ralliesSortFilterState,
                                 entries = ralliesEntries,
                                 eventSink = eventSink,
-                                header = {
-                                    Header(
-                                        tab = state.tab,
-                                        onTabChange = state.onTabChange,
-                                        dataYearHeaderState = dataYearHeaderState,
-                                        eventSink = eventSink,
-                                    )
-                                },
+                                header = header,
                                 noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
                             )
                         EntryTab.SERIES -> SeriesContent(
                             baseContentPadding = contentPadding,
                             series = seriesEntries,
-                            header = {
-                                Header(
-                                    tab = state.tab,
-                                    onTabChange = state.onTabChange,
-                                    dataYearHeaderState = dataYearHeaderState,
-                                    eventSink = eventSink,
-                                )
-                            },
+                            header = header,
                             eventSink = eventSink,
                         )
                         EntryTab.MERCH -> MerchContent(
                             baseContentPadding = contentPadding,
                             merch = merchEntries,
-                            header = {
-                                Header(
-                                    tab = state.tab,
-                                    onTabChange = state.onTabChange,
-                                    dataYearHeaderState = dataYearHeaderState,
-                                    eventSink = eventSink,
-                                )
-                            },
+                            header = header,
                             eventSink = eventSink,
                         )
                     }
@@ -449,15 +447,16 @@ object FavoritesScreen {
         tab: () -> EntryTab,
         onTabChange: (EntryTab) -> Unit,
         dataYearHeaderState: DataYearHeaderState,
-        eventSink: (Event) -> Unit,
+        isLoggedIn: () -> Boolean,
+        onEvent: (Event) -> Unit,
     ) {
         Column {
             DataYearHeader(
                 state = dataYearHeaderState,
-                onOpenChangelog = { eventSink(Event.OpenChangelog) },
-                onOpenSettings = { eventSink(Event.OpenSettings) },
+                onOpenChangelog = { onEvent(Event.OpenChangelog) },
+                onOpenSettings = { onEvent(Event.OpenSettings) },
             ) {
-                IconButton(onClick = { eventSink(Event.OpenExport(dataYearHeaderState.year)) }) {
+                IconButton(onClick = { onEvent(Event.OpenExport(dataYearHeaderState.year)) }) {
                     Icon(
                         imageVector = Icons.Default.QrCode2,
                         contentDescription = stringResource(Res.string.alley_con_upcoming_show_qr),
@@ -472,6 +471,27 @@ object FavoritesScreen {
                         text = { Text(text = stringResource(it.text)) },
                         onClick = { onTabChange(it) },
                     )
+                }
+            }
+
+            if (!isLoggedIn()) {
+                Spacer(Modifier.height(4.dp))
+                OutlinedCard {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            stringResource(Res.string.alley_user_login_prompt),
+                            modifier = Modifier.weight(1f)
+                        )
+                        FilledTonalButton(
+                            icon = Logo.DISCORD.icon,
+                            text = stringResource(Res.string.alley_user_login_action),
+                            onClick = { onEvent(Event.Login) },
+                        )
+                    }
                 }
             }
         }
@@ -532,6 +552,7 @@ object FavoritesScreen {
         val displayType: () -> SearchDisplayType,
         val year: () -> DataYear,
         val onYearChange: (DataYear) -> Unit,
+        val isLoggedIn: () -> Boolean,
         val artistsEntries: Flow<PagingData<ArtistEntryGridModel>>,
         val artistsSortFilterState: ArtistSortFilterState,
         val artistsUnfilteredCount: () -> Int,
@@ -564,5 +585,7 @@ object FavoritesScreen {
             val merch: MerchWithUserData,
             val favorite: Boolean,
         ) : Event
+
+        data object Login : Event
     }
 }

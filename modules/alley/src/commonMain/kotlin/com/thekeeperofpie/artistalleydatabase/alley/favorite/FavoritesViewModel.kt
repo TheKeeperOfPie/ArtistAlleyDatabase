@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.platform.UriHandler
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,6 +17,13 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Export
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.FavoriteArtistsChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.FavoriteMerchChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.FavoriteRalliesChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.FavoriteSeriesChangelog
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -36,13 +44,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserAuth
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
@@ -69,6 +80,7 @@ import kotlin.random.Random
 @AssistedInject
 class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
+    private val buildConfig: BuildConfig,
     stampRallyEntryDao: StampRallyEntryDao,
     merchEntryDao: MerchEntryDao,
     val seriesEntryCache: SeriesEntryCache,
@@ -79,6 +91,7 @@ class FavoritesViewModel(
     artistSortFilterControllerFactory: ArtistSortFilterController.Factory,
     stampRallySortFilterControllerFactory: StampRallySortFilterController.Factory,
     private val navigator: AlleyNavigator,
+    private val userAuth: AlleyUserAuth,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -87,8 +100,6 @@ class FavoritesViewModel(
         set(value) {
             settings.dataYear = value
         }
-
-    private val showOutdatedCatalogs = settings.showOutdatedCatalogs
 
     private val artistSortFilterController = artistSortFilterControllerFactory.create(
         scope = viewModelScope,
@@ -107,7 +118,8 @@ class FavoritesViewModel(
 
     private var tab by savedStateHandle.saveable { mutableStateOf(FavoritesScreen.EntryTab.ARTISTS) }
     private val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
-    private val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
+    private val randomSeed =
+        savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
     private val inputs by derivedStateOf {
         Triple(query.text.toString(), year, settings.showOnlyConfirmedTags)
@@ -250,6 +262,7 @@ class FavoritesViewModel(
         displayType = { settings.displayType },
         year = ::year,
         onYearChange = { year = it },
+        isLoggedIn = userAuth::isLoggedIn,
         artistsEntries = artistEntries,
         artistsSortFilterState = artistSortFilterController.state,
         artistsUnfilteredCount = ::artistsUnfilteredCount,
@@ -291,12 +304,11 @@ class FavoritesViewModel(
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
+        uriHandler: UriHandler,
     ) = when (event) {
-        is FavoritesScreen.Event.OpenMerch -> navigator.navigate(
-            AlleyDestination.Merch(year, event.merch)
-        )
+        is FavoritesScreen.Event.OpenMerch -> navigator.navigate(Merch(year, event.merch))
         is FavoritesScreen.Event.OpenSeries ->
-            navigator.navigate(AlleyDestination.Series(year, event.series))
+            navigator.navigate(Series(year, event.series))
         FavoritesScreen.Event.NavigateToArtists -> onNavigateToArtists()
         FavoritesScreen.Event.NavigateToRallies -> onNavigateToRallies()
         FavoritesScreen.Event.NavigateToSeries -> onNavigateToSeries()
@@ -308,20 +320,20 @@ class FavoritesViewModel(
         FavoritesScreen.Event.OpenChangelog -> {
             when (tab) {
                 FavoritesScreen.EntryTab.ARTISTS -> navigator.navigate(
-                    AlleyDestination.FavoriteArtistsChangelog(year)
+                    FavoriteArtistsChangelog(year)
                 )
                 FavoritesScreen.EntryTab.RALLIES -> navigator.navigate(
-                    AlleyDestination.FavoriteRalliesChangelog(year)
+                    FavoriteRalliesChangelog(year)
                 )
                 FavoritesScreen.EntryTab.SERIES -> navigator.navigate(
-                    AlleyDestination.FavoriteSeriesChangelog(year)
+                    FavoriteSeriesChangelog(year)
                 )
                 FavoritesScreen.EntryTab.MERCH -> navigator.navigate(
-                    AlleyDestination.FavoriteMerchChangelog(year)
+                    FavoriteMerchChangelog(year)
                 )
             }
         }
-        is FavoritesScreen.Event.OpenExport -> navigator.navigate(AlleyDestination.Export(event.dataYear))
+        is FavoritesScreen.Event.OpenExport -> navigator.navigate(Export(event.dataYear))
         FavoritesScreen.Event.OpenSettings -> navigator.navigate(AlleyDestination.Settings)
         is FavoritesScreen.Event.ArtistSearchEvent -> ArtistSearchScreenEventHandler.onEvent(
             navigator = navigator,
@@ -337,6 +349,8 @@ class FavoritesViewModel(
             onMutationUpdate = rallyMutationUpdates::tryEmit,
             event = event.event,
         )
+        FavoritesScreen.Event.Login ->
+            uriHandler.openUri(AlleyUtils.discordLoginUrl(buildConfig.isDebug))
     }
 
     @AssistedFactory

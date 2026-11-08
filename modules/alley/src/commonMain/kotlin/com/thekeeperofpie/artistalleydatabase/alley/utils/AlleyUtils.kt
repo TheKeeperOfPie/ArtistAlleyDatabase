@@ -14,4 +14,10 @@ object AlleyUtils {
     const val serverUrl = BuildKonfig.serverUrl
     const val tmdbApiKey = BuildKonfig.tmdbApiKey
     const val legacySiteDomain = BuildKonfig.legacySiteDomain
+
+    fun discordLoginUrl(isDebug: Boolean) = if (isDebug) {
+        BuildKonfig.discordLoginUrlDebug
+    } else {
+        BuildKonfig.discordLoginUrl
+    }
 }

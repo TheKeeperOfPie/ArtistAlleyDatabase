@@ -467,4 +467,7 @@
     <string name="alley_metrics_popular_series">Popular series</string>
     <string name="alley_metrics_popular_merch">Popular merch</string>
     <string name="alley_metrics_no_data">No data</string>
+
+    <string name="alley_user_login_prompt">Log in with Discord to save your favorites across devices</string>
+    <string name="alley_user_login_action">Login</string>
 </resources>
