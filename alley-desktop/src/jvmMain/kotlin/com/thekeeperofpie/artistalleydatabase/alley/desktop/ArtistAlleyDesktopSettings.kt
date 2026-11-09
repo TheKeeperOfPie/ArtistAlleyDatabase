@@ -3,22 +3,25 @@ package com.thekeeperofpie.artistalleydatabase.alley.desktop
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
+import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
+import dev.zacsweers.metro.binding
 
 @SingleIn(AppScope::class)
-@ContributesBinding(AppScope::class)
+@ContributesBinding(AppScope::class, binding = binding<ArtistAlleySettings>())
+@ContributesBinding(AppScope::class, binding = binding<AlleyUserSettings>())
 class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override var appTheme by mutableStateOf(AppThemeSetting.MIKU)
 
@@ -45,4 +48,6 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override var easterEggEnabled by mutableStateOf(true)
 
     override var rootDestination by mutableStateOf(AlleyHomeDestination.ARTISTS)
+
+    override var pendingUserAuthCode: String? by mutableStateOf(null)
 }

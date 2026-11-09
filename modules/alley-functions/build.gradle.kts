@@ -60,6 +60,12 @@ sqldelight {
             dependency(projects.modules.alley.form.data)
             srcDirs(file("src/commonMain/sqldelight/form"))
         }
+        create("AlleyUserDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions.user")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
+            generateAsync = true
+            srcDirs(file("src/commonMain/sqldelight/user"))
+        }
     }
 }
 

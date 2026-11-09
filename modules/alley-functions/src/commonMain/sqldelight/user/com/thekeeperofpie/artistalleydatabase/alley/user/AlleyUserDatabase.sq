@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS authCode (
+    code TEXT NOT NULL,
+    userId TEXT NOT NULL,
+    PRIMARY KEY (code)
+);

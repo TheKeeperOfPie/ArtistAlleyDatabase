@@ -3,25 +3,24 @@ package com.thekeeperofpie.artistalleydatabase.alley.form
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
+import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
-import io.ktor.client.HttpClient
 
 @SingleIn(AppScope::class)
 @DependencyGraph(AppScope::class)
@@ -30,8 +29,8 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
     @Binds
     val FormImageUploader.bindImageUploader: ImageUploader
 
-    @Provides
-    fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient
+    @Binds
+    val ArtistAlleySettings.bindAlleyUserSettings: AlleyUserSettings
 
     @Provides
     fun provideArtistAlleySettings(): ArtistAlleySettings = object : ArtistAlleySettings {
@@ -60,6 +59,8 @@ internal interface ArtistAlleyFormWasmJsGraph : ArtistAlleyFormGraph {
         override var easterEggEnabled by mutableStateOf(false)
 
         override var rootDestination by mutableStateOf(AlleyHomeDestination.ARTISTS)
+
+        override var pendingUserAuthCode: String? by mutableStateOf(null)
     }
 
     @DependencyGraph.Factory

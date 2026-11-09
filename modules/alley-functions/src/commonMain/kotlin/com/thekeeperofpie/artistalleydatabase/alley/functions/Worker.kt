@@ -23,6 +23,10 @@ class Worker {
                     context = context,
                     path = functionPath.removePrefix("/edit/api"),
                 )
+                functionPath.startsWith("/user/api") -> AlleyUserBackend.handleRequest(
+                    context = context,
+                    path = functionPath.removePrefix("/user/api"),
+                )
                 else -> Response("", ResponseInit(status = 404))
             }
         }

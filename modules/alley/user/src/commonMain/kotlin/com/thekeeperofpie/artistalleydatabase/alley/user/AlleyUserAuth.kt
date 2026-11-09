@@ -1,9 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.alley.user
 
+import androidx.compose.ui.platform.UriHandler
+
 expect class AlleyUserAuth {
 
     var isLoggedIn: Boolean
         private set
+
+    fun startAuth(uriHandler: UriHandler, url: String)
 }
 
 @Suppress("UnusedReceiverParameter")

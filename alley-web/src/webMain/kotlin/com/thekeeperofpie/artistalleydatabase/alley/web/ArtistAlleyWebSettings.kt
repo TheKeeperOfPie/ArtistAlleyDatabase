@@ -3,13 +3,14 @@ package com.thekeeperofpie.artistalleydatabase.alley.web
 import androidx.appstate.transform.listener
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
+import com.thekeeperofpie.artistalleydatabase.alley.home.AlleyHomeDestination
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchDisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
@@ -19,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
+import dev.zacsweers.metro.binding
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,8 +32,9 @@ import org.w3c.dom.StorageEvent
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-@ContributesBinding(AppScope::class)
 @SingleIn(AppScope::class)
+@ContributesBinding(AppScope::class, binding = binding<ArtistAlleySettings>())
+@ContributesBinding(AppScope::class, binding = binding<AlleyUserSettings>())
 class ArtistAlleyWebSettings(
     private val applicationScope: ApplicationScope,
 ) : ArtistAlleySettings {
@@ -165,7 +168,9 @@ class ArtistAlleyWebSettings(
         },
     )
 
-    private fun <T> register(serialize: (T) -> String, deserialize: (String?) -> T) =
+    override var pendingUserAuthCode by registerString(null)
+
+    private fun <T> register(serialize: (T) -> String?, deserialize: (String?) -> T) =
         object : ReadWriteProperty<Any?, T> {
             private lateinit var state: MutableState<T>
             override fun getValue(thisRef: Any?, property: KProperty<*>): T {
@@ -182,8 +187,13 @@ class ArtistAlleyWebSettings(
                         listener {
                             val value = state.value
                             OnChangeEffect(value) {
+                                val serialized = serialize(value)
                                 try {
-                                    localStorage.setItem(key, serialize(value))
+                                    if (serialized == null) {
+                                        localStorage.removeItem(key)
+                                    } else {
+                                        localStorage.setItem(key, serialized)
+                                    }
                                 } catch (t: Throwable) {
                                     ConsoleLogger.log("Failed to write $key = $value to localStorage: ${t.message}")
                                 }
@@ -212,7 +222,7 @@ class ArtistAlleyWebSettings(
         deserialize = { it?.toBoolean() ?: defaultValue },
     )
 
-    private fun registerString(defaultValue: String) = register<String>(
+    private fun registerString(defaultValue: String?) = register(
         serialize = { it },
         deserialize = { it ?: defaultValue },
     )

@@ -21,19 +21,21 @@ class Middleware {
             val pathSegments = URL(context.request.url).pathname.split("/")
             return if (BuildKonfig.debug) {
                 context.next(context.request)
-            } else when {
-                pathSegments.getOrNull(1) == "form" &&
-                        pathSegments.getOrNull(2) == "api" ->
-                    context.next(context.request)
-                pathSegments.getOrNull(1) == "edit" &&
-                        pathSegments.getOrNull(2) == "api" ->
-                    cloudflare.onRequest(
-                        pluginData = PluginArgs(
-                            domain = BuildKonfig.cloudflareAccessDomain,
-                            aud = BuildKonfig.cloudflareAccessEditAudienceTag,
-                        )
-                    )(context)
-                else -> promise { Response("", ResponseInit(status = 404)) }
+            } else {
+                val firstSegment = pathSegments.getOrNull(1)
+                val secondSegment = pathSegments.getOrNull(2)
+                when (firstSegment) {
+                    "user" if secondSegment == "api" -> context.next(context.request)
+                    "form" if secondSegment == "api" -> context.next(context.request)
+                    "edit" if secondSegment == "api" ->
+                        cloudflare.onRequest(
+                            pluginData = PluginArgs(
+                                domain = BuildKonfig.cloudflareAccessDomain,
+                                aud = BuildKonfig.cloudflareAccessEditAudienceTag,
+                            )
+                        )(context)
+                    else -> promise { Response("", ResponseInit(status = 404)) }
+                }
             }
         }
 

@@ -1,0 +1,7 @@
+getUserId:
+SELECT userId FROM authCode
+WHERE code = :code;
+
+insertUserId:
+INSERT OR REPLACE INTO authCode
+VALUES ?;

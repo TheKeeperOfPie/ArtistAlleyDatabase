@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKe
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.cloudflare.WorkerSqlDriver
 
 internal object Databases {
@@ -21,9 +22,13 @@ internal object Databases {
     private fun formSqlDriver(context: EventContext) =
         WorkerSqlDriver(database = context.env.ARTIST_ALLEY_FORM_DB)
 
+    private fun userSqlDriver(context: EventContext) =
+        WorkerSqlDriver(database = context.env.ARTIST_ALLEY_USER_DB)
+
     suspend fun create(context: EventContext) {
         AlleySqlDatabase.Schema.awaitCreate(editSqlDriver(context))
         AlleyFormDatabase.Schema.awaitCreate(formSqlDriver(context))
+        AlleyUserDatabase.Schema.awaitCreate(userSqlDriver(context))
     }
 
     fun editDatabase(context: EventContext) = AlleySqlDatabase(
@@ -152,5 +157,9 @@ internal object Databases {
             afterImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
             timestampAdapter = ColumnAdapters.instantAdapter,
         ),
+    )
+
+    fun userDatabase(context: EventContext) = AlleyUserDatabase(
+        driver = userSqlDriver(context),
     )
 }

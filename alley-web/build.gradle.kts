@@ -353,6 +353,8 @@ tasks.register("buildSite") {
             "package.json",
             "serviceWorker.js",
             "wrangler.toml",
+            ".dev.vars",
+            ".env",
             miniflarePatchFileName,
         )
         val rootFiles = folder.listFiles()!!
@@ -511,6 +513,10 @@ tasks.register("buildSite") {
                 "artistAlleyFormDatabaseId",
                 properties.getProperty("artistAlleyFormDatabaseId")
             )
+            .replace(
+                "artistAlleyUserDatabaseId",
+                properties.getProperty("artistAlleyUserDatabaseId")
+            )
             .replace("artistAlleyCacheKVId", properties.getProperty("artistAlleyCacheKVId"))
             .replace("imagesAccessKeyId", properties.getProperty("imagesAccessKeyId"))
             .replace("imagesSecretAccessKeyId", properties.getProperty("imagesSecretAccessKeyId"))
@@ -521,7 +527,7 @@ tasks.register("buildSite") {
         // git repo, and so this file would be lost between builds.
         val txtFiles = folder.listFiles { it.extension == "txt" }!!.map { it.name }
         folder.resolve(".gitignore")
-            .writeText(txtFiles.joinToString("\n") + "\n.wrangler")
+            .writeText(txtFiles.joinToString("\n") + "\n.wrangler\n.dev.vars\n.env" )
 
         val functionsFolder = folder.resolve("functions").apply { mkdir() }
 
@@ -536,7 +542,9 @@ tasks.register("buildSite") {
             export default {
                 async fetch(request, env, ctx) {
                     const url = new URL(request.url);
-                    if (url.pathname.startsWith("/edit/api") || url.pathname.startsWith("/form/api")) {
+                    if (url.pathname.startsWith("/edit/api") ||
+                        url.pathname.startsWith("/form/api") ||
+                        url.pathname.startsWith("/user/api")) {
                         // Simulate the Pages Functions context
                         const context = {
                             request: request,
@@ -579,6 +587,8 @@ tasks.register("buildSite") {
             "wrangler",
             "package.json",
             "node_modules",
+            ".dev.vars",
+            ".env",
             miniflarePatchFileName,
         )
         folder.listFiles()!!

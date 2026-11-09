@@ -350,7 +350,7 @@ class FavoritesViewModel(
             event = event.event,
         )
         FavoritesScreen.Event.Login ->
-            uriHandler.openUri(AlleyUtils.discordLoginUrl(buildConfig.isDebug))
+            userAuth.startAuth(uriHandler, AlleyUtils.discordLoginUrl(buildConfig.isDebug))
     }
 
     @AssistedFactory

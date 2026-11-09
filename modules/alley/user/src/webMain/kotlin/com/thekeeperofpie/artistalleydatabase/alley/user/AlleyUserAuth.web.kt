@@ -3,14 +3,23 @@ package com.thekeeperofpie.artistalleydatabase.alley.user
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.UriHandler
+import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.web.cookieStore
 import dev.zacsweers.metro.Inject
+import kotlinx.browser.localStorage
+import kotlinx.browser.window
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 
 @Inject
-actual class AlleyUserAuth(appScope: ApplicationScope) {
+actual class AlleyUserAuth(
+    private val appScope: ApplicationScope,
+    private val settings: AlleyUserSettings,
+    private val userApi: AlleyUserApi,
+) {
 
     actual var isLoggedIn: Boolean by mutableStateOf(false)
         private set
@@ -34,6 +43,24 @@ actual class AlleyUserAuth(appScope: ApplicationScope) {
             } catch (t: Throwable) {
                 t.printStackTrace()
             }
+        }
+
+        appScope.launch {
+            val pendingUserAuthCode = settings.pendingUserAuthCode
+            if (!pendingUserAuthCode.isNullOrEmpty()) {
+                userApi.exchangeAuthCode(pendingUserAuthCode)
+                settings.pendingUserAuthCode = null
+            }
+        }
+    }
+
+    actual fun startAuth(uriHandler: UriHandler, url: String) {
+        appScope.launch {
+            val keys = AlleyCryptography.generateOneTimeEncryptionKeys()
+            // Writes backing the state are async, so navigating can stop the window before it
+            // gets written, instead access the API directly to write the raw value
+            localStorage.setItem("pendingUserAuthCode", keys.publicKey)
+            window.location.href = url + "&state=${Uri.encode(keys.publicKey)}"
         }
     }
 }

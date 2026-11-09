@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleyAboutLibraries
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.NavigatorScope
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfig
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.GraphExtension
 import dev.zacsweers.metro.IntoSet
@@ -17,6 +18,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.ViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
+import io.ktor.client.HttpClient
 import kotlin.reflect.KClass
 
 interface ArtistAlleyGraph {
@@ -30,6 +32,9 @@ interface ArtistAlleyGraph {
     val aboutLibrariesProviders: Set<AboutLibrariesProvider>
     
     val navigatorGraphFactory: ArtistAlleyNavigatorGraph.Factory
+
+    @Provides
+    fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient
 
     @IntoSet
     @Provides

@@ -21,10 +21,16 @@ external interface PluginData {
 external interface Env {
     val ARTIST_ALLEY_DB: D1Database
     val ARTIST_ALLEY_FORM_DB: D1Database
+    val ARTIST_ALLEY_USER_DB: D1Database
     val ARTIST_ALLEY_IMAGES_BUCKET: R2Bucket
     val ARTIST_ALLEY_CACHE_KV: KeyValueStore
     val IMAGES_ACCESS_KEY_ID: String
     val IMAGES_SECRET_ACCESS_KEY_ID: String
     val IMAGES_CLOUDFLARE_URL: String
     val LAST_VIEWED_SERVER: DurableObjectNamespace
+
+    val DISCORD_APP_ID: String
+    val DISCORD_CLIENT_SECRET: String
+    val DISCORD_TOKEN: String
+    val DISCORD_REDIRECT_URL: String
 }
