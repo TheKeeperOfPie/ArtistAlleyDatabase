@@ -55,6 +55,8 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
         userEntry = SeriesUserEntry(
             seriesId = id,
             favorite = false,
+            generation = 0,
+            updatedAt = null,
         ),
     )
 }

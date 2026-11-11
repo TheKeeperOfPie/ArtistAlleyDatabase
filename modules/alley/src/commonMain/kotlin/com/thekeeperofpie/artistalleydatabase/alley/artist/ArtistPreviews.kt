@@ -94,6 +94,8 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                     dataYear = DataYear.ANIME_EXPO_2025,
                     favorite = index % 2 == 1,
                     ignored = index % 3 == 2,
+                    generation = 0,
+                    updatedAt = null,
                 ),
             )
         }

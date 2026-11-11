@@ -9,7 +9,7 @@ SELECT rowid AS rowid, * FROM seriesEntry
 WHERE id = :id;
 
 getSeriesByIdWithUserData:
-SELECT seriesEntry.rowid AS rowid, seriesEntry.*, seriesUserEntry.favorite FROM seriesEntry
+SELECT seriesEntry.rowid AS rowid, seriesEntry.*, seriesUserEntry.favorite, seriesUserEntry.updatedAt FROM seriesEntry
 LEFT OUTER JOIN seriesUserEntry
 ON seriesEntry.uuid = seriesUserEntry.seriesId
 WHERE id = :id;
@@ -19,7 +19,7 @@ SELECT seriesEntry.* FROM seriesEntry
 WHERE id IN :ids;
 
 getSeriesByIdsWithUserData:
-SELECT seriesEntry.rowid AS rowid, seriesEntry.*, seriesUserEntry.favorite FROM seriesEntry
+SELECT seriesEntry.rowid AS rowid, seriesEntry.*, seriesUserEntry.favorite, seriesUserEntry.updatedAt FROM seriesEntry
 LEFT OUTER JOIN seriesUserEntry
 ON seriesEntry.uuid = seriesUserEntry.seriesId
 WHERE id IN :ids;

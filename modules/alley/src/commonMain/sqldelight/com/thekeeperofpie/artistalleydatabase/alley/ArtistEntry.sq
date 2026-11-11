@@ -4,7 +4,7 @@ FROM artistEntry
 WHERE dataYear = :dataYear;
 
 getEntry:
-SELECT artistEntry.*, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry
+SELECT artistEntry.*, artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.updatedAt FROM artistEntry
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear
 WHERE artistEntry.dataYear = :dataYear AND artistEntry.id = :id;

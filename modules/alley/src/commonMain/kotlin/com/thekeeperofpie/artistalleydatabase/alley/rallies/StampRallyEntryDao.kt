@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
+import androidx.compose.foundation.layout.Column
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import app.cash.sqldelight.async.coroutines.awaitAsList
@@ -81,6 +82,8 @@ fun SqlCursor.toStampRallyWithUserData(dataYear: DataYear): StampRallyWithUserDa
             stampRallyId = stampRallyId,
             favorite = getBooleanFixed(17),
             ignored = getBooleanFixed(18),
+            generation = 0,
+            updatedAt = getString(19)?.let(ColumnAdapters.instantAdapter::decode),
         )
     )
 }
@@ -113,6 +116,8 @@ private fun GetEntry.toStampRallyWithUserData() = StampRallyWithUserData(
         stampRallyId = id,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
         ignored = DaoUtils.coerceBooleanForJs(ignored),
+        generation = 0,
+        updatedAt = updatedAt,
     )
 )
 
@@ -268,7 +273,7 @@ class StampRallyEntryDao(
             StampRallySearchSortOption.TOTAL_COST ->
                 "ORDER BY stampRallyEntry.totalCost $ascending NULLS LAST"
         }
-        val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
+        val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyUserEntry.updatedAt"
         val imageSubquery = StampRallyUtils.imageSubquery("stampRallyEntry.rowid", year)
         val selectFields = listOf(
             "stampRallyEntry.id",

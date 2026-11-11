@@ -91,6 +91,8 @@ private fun GetEntry.toArtistWithUserData(dataYear: DataYear) = ArtistWithUserDa
         dataYear = dataYear,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
         ignored = DaoUtils.coerceBooleanForJs(ignored),
+        generation = 0, // TODO: Read real generation/lastUpdated?
+        updatedAt = updatedAt,
     )
 )
 
@@ -284,7 +286,7 @@ class ArtistEntryDao(
             ArtistSearchSortOption.ARTIST -> "ORDER BY artistEntry.name COLLATE NOCASE"
             ArtistSearchSortOption.RANDOM -> "ORDER BY SIN(artistEntry.rowid + ${searchQuery.randomSeed})"
         } + " $ascending" + " NULLS LAST"
-        val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored"
+        val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.updatedAt"
 
         val joinStatement = """
                 LEFT OUTER JOIN artistUserEntry

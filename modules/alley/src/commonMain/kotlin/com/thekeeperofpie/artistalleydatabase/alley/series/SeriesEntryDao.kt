@@ -64,6 +64,8 @@ fun GetSeriesByIdWithUserData.toSeriesWithUserData() = SeriesWithUserData(
     userEntry = SeriesUserEntry(
         seriesId = uuid,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
+        generation = 0,
+        updatedAt = updatedAt,
     )
 )
 
@@ -92,6 +94,8 @@ fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
     userEntry = SeriesUserEntry(
         seriesId = uuid,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
+        generation = 0,
+        updatedAt = updatedAt,
     )
 )
 
@@ -292,7 +296,7 @@ class SeriesEntryDao(
                 $whereStatement
             """.trimIndent()
             val statement = """
-                SELECT $selectFields, seriesUserEntry.favorite
+                SELECT $selectFields, seriesUserEntry.favorite, seriesUserEntry.updatedAt
                 FROM seriesEntry
                 $joinStatement
                 $whereStatement
@@ -468,6 +472,8 @@ class SeriesEntryDao(
         userEntry = SeriesUserEntry(
             seriesId = id,
             favorite = false,
+            generation = 0,
+            updatedAt = null,
         )
     )
 }

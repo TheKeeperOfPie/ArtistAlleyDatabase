@@ -10,6 +10,7 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetMerchById
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
+import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
@@ -38,6 +39,8 @@ fun SqlCursor.toMerchWithUserData(): MerchWithUserData {
         userEntry = MerchUserEntry(
             merchId = uuid,
             favorite = getBooleanFixed(5),
+            generation = 0,
+            updatedAt = getString(6)?.let(ColumnAdapters.instantAdapter::decode),
         )
     )
 }
@@ -53,6 +56,8 @@ fun GetMerchById.toMerchWithUserData() = MerchWithUserData(
     userEntry = MerchUserEntry(
         merchId = uuid,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
+        generation = 0,
+        updatedAt = updatedAt,
     )
 )
 
@@ -106,7 +111,7 @@ class MerchEntryDao(
             WHERE $favoritePrefix $yearFilter
         """.trimIndent()
         val statement = """
-            SELECT $selectFields, merchUserEntry.favorite FROM merchEntry
+            SELECT $selectFields, merchUserEntry.favorite, merchUserEntry.updatedAt FROM merchEntry
             $joinStatement
             WHERE $favoritePrefix $yearFilter
             ORDER BY name COLLATE NOCASE

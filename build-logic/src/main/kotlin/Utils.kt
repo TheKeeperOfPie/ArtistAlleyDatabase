@@ -16,6 +16,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnect
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyNotes
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.build_logic.form.BuildLogicFormDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.ArtistEntry2023
@@ -379,9 +383,11 @@ internal object Utils {
             ),
             artistNotesAdapter = ArtistNotes.Adapter(
                 dataYearAdapter = dataYearAdapter,
+                updatedAtAdapter = instantAdapter,
             ),
             artistUserEntryAdapter = ArtistUserEntry.Adapter(
                 dataYearAdapter = dataYearAdapter,
+                updatedAtAdapter = instantAdapter,
             ),
             seriesEntryAdapter = SeriesEntry.Adapter(
                 sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
@@ -403,17 +409,29 @@ internal object Utils {
             seriesEntryChangelogAdapter = SeriesEntryChangelog.Adapter(
                 seriesIdsAdapter = setStringAdapter,
             ),
+            seriesUserEntryAdapter = SeriesUserEntry.Adapter(
+                updatedAtAdapter = instantAdapter,
+            ),
             stampRallySeriesConnectionAdapter = StampRallySeriesConnection.Adapter(
                 dataYearAdapter = dataYearAdapter,
             ),
             stampRallyMerchConnectionAdapter = StampRallyMerchConnection.Adapter(
                 dataYearAdapter = dataYearAdapter,
             ),
+            stampRallyNotesAdapter = StampRallyNotes.Adapter(
+                updatedAtAdapter = instantAdapter,
+            ),
             stampRallyPrizeMerchConnectionAdapter = StampRallyPrizeMerchConnection.Adapter(
                 dataYearAdapter = dataYearAdapter,
             ),
+            stampRallyUserEntryAdapter = StampRallyUserEntry.Adapter(
+                updatedAtAdapter = instantAdapter,
+            ),
             merchEntryChangelogAdapter = MerchEntryChangelog.Adapter(
                 merchIdsAdapter = setStringAdapter,
+            ),
+            merchUserEntryAdapter = MerchUserEntry.Adapter(
+                updatedAtAdapter = instantAdapter,
             ),
         )
         return database

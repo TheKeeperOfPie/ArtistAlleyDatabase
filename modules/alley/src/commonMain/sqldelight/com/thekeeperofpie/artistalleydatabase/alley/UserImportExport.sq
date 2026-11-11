@@ -22,7 +22,18 @@ WHERE artistEntry.dataYear = :dataYear
 ORDER BY artistEntry.id ASC;
 
 getExportFullArtists:
-SELECT artistEntry.booth, artistEntry.name, artistEntry.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry
+SELECT
+    artistEntry.booth,
+    artistEntry.name,
+    artistEntry.id,
+    artistUserEntry.favorite,
+    artistUserEntry.ignored,
+    artistUserEntry.generation,
+    artistUserEntry.updatedAt,
+    artistNotes.notes,
+    artistNotes.generation,
+    artistNotes.updatedAt
+FROM artistEntry
 LEFT OUTER JOIN artistUserEntry
 ON (artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear)
 LEFT OUTER JOIN artistNotes
@@ -38,7 +49,18 @@ WHERE stampRallyEntry.dataYear = :dataYear
 ORDER BY stampRallyEntry.id ASC;
 
 getExportFullStampRallies:
-SELECT stampRallyEntry.fandom, stampRallyEntry.tables, stampRallyEntry.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry
+SELECT
+    stampRallyEntry.fandom,
+    stampRallyEntry.tables,
+    stampRallyEntry.id,
+    stampRallyUserEntry.favorite,
+    stampRallyUserEntry.ignored,
+    stampRallyUserEntry.generation,
+    stampRallyUserEntry.updatedAt,
+    stampRallyNotes.notes,
+    stampRallyNotes.generation,
+    stampRallyNotes.updatedAt
+FROM stampRallyEntry
 LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
 LEFT OUTER JOIN stampRallyNotes

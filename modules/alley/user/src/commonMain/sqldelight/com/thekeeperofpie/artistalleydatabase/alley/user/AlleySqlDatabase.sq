@@ -1,11 +1,14 @@
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
 import kotlin.Boolean;
+import kotlin.time.Instant;
 
 CREATE TABLE IF NOT EXISTS artistUserEntry (
     artistId TEXT NOT NULL,
     dataYear TEXT AS DataYear NOT NULL DEFAULT 'AX2025',
     favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
     ignored INTEGER AS Boolean NOT NULL DEFAULT 0,
+    generation INTEGER NOT NULL DEFAULT 0,
+    updatedAt TEXT AS Instant DEFAULT NULL,
     PRIMARY KEY (artistId, dataYear)
 );
 
@@ -13,6 +16,8 @@ CREATE TABLE IF NOT EXISTS stampRallyUserEntry (
     stampRallyId TEXT NOT NULL,
     favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
     ignored INTEGER AS Boolean NOT NULL DEFAULT 0,
+    generation INTEGER NOT NULL DEFAULT 0,
+    updatedAt TEXT AS Instant DEFAULT NULL,
     PRIMARY KEY (stampRallyId)
 );
 
@@ -20,6 +25,8 @@ CREATE TABLE IF NOT EXISTS artistNotes (
     artistId TEXT NOT NULL,
     dataYear TEXT AS DataYear NOT NULL,
     notes TEXT,
+    generation INTEGER NOT NULL DEFAULT 0,
+    updatedAt TEXT AS Instant DEFAULT NULL,
     PRIMARY KEY (artistId, dataYear)
 );
 
@@ -29,6 +36,8 @@ CREATE TABLE IF NOT EXISTS artistNotes (
 CREATE TABLE IF NOT EXISTS stampRallyNotes (
     stampRallyId TEXT NOT NULL,
     notes TEXT,
+    generation INTEGER NOT NULL DEFAULT 0,
+    updatedAt TEXT AS Instant DEFAULT NULL,
     PRIMARY KEY (stampRallyId)
 );
 
@@ -43,11 +52,15 @@ CREATE TABLE IF NOT EXISTS imageEntry (
 CREATE TABLE IF NOT EXISTS seriesUserEntry (
     seriesId TEXT NOT NULL,
     favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    generation INTEGER NOT NULL DEFAULT 0,
+    updatedAt TEXT AS Instant DEFAULT NULL,
     PRIMARY KEY (seriesId)
 );
 
 CREATE TABLE IF NOT EXISTS merchUserEntry (
     merchId TEXT NOT NULL,
     favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    generation INTEGER NOT NULL DEFAULT 0,
+    updatedAt TEXT AS Instant DEFAULT NULL,
     PRIMARY KEY (merchId)
 );

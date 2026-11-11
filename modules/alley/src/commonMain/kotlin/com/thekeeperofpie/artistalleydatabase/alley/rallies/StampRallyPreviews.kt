@@ -36,6 +36,8 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 stampRallyId = "stampRallyId",
                 favorite = false,
                 ignored = false,
+                generation = 0,
+                updatedAt = null,
             ),
         )
     )

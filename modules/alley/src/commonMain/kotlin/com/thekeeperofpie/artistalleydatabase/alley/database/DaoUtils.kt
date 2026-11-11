@@ -9,6 +9,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyNotes
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 
 // TODO: On js target, "1" isn't coerced to true properly
@@ -24,16 +28,31 @@ object DaoUtils {
         stampRallyEntryAdapter = ColumnAdapters.stampRallyEntryAdapter,
         artistNotesAdapter = ArtistNotes.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
+            updatedAtAdapter = ColumnAdapters.instantAdapter,
         ),
         artistUserEntryAdapter = ArtistUserEntry.Adapter(
-            dataYearAdapter = ColumnAdapters.dataYearAdapter),
+            dataYearAdapter = ColumnAdapters.dataYearAdapter,
+            updatedAtAdapter = ColumnAdapters.instantAdapter,
+        ),
         seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
         seriesEntryChangelogAdapter = ColumnAdapters.seriesEntryChangelogAdapter,
         stampRallySeriesConnectionAdapter = ColumnAdapters.stampRallySeriesConnectionAdapter,
         stampRallyMerchConnectionAdapter = ColumnAdapters.stampRallyMerchConnectionAdapter,
         stampRallyPrizeMerchConnectionAdapter = ColumnAdapters.stampRallyPrizeMerchConnectionAdapter,
         stampRallyChangelogEntryAdapter = ColumnAdapters.stampRallyChangelogEntryAdapter,
+        stampRallyNotesAdapter = StampRallyNotes.Adapter(
+            updatedAtAdapter = ColumnAdapters.instantAdapter,
+        ),
+        stampRallyUserEntryAdapter = StampRallyUserEntry.Adapter(
+            updatedAtAdapter = ColumnAdapters.instantAdapter,
+        ),
         merchEntryChangelogAdapter = ColumnAdapters.merchEntryChangelogAdapter,
+        merchUserEntryAdapter = MerchUserEntry.Adapter(
+            updatedAtAdapter = ColumnAdapters.instantAdapter,
+        ),
+        seriesUserEntryAdapter = SeriesUserEntry.Adapter(
+            updatedAtAdapter = ColumnAdapters.instantAdapter,
+        ),
     )
 
     fun <T : Any> queryPagingSource(

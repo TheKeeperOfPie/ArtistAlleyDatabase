@@ -2,7 +2,7 @@ getMerch:
 SELECT * FROM merchEntry;
 
 getMerchById:
-SELECT merchEntry.*, merchUserEntry.favorite FROM merchEntry
+SELECT merchEntry.*, merchUserEntry.favorite, merchUserEntry.updatedAt FROM merchEntry
 LEFT OUTER JOIN merchUserEntry
 ON merchEntry.uuid = merchUserEntry.merchId
 WHERE name = :id;
