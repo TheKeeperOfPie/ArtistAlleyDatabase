@@ -1,23 +1,36 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.AuthToken
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.cookies
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.createAuthToken
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.createRefreshToken
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.crypto
+import com.thekeeperofpie.artistalleydatabase.alley.functions.discord.DiscordAuthApi
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyAuthorization
 import com.thekeeperofpie.artistalleydatabase.alley.user.AuthCode
+import com.thekeeperofpie.artistalleydatabase.alley.user.User
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
 import kotlinx.coroutines.await
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.w3c.dom.url.URL
-import org.w3c.dom.url.URLSearchParams
-import org.w3c.fetch.FOLLOW
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Request
-import org.w3c.fetch.RequestInit
-import org.w3c.fetch.RequestRedirect
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
-import kotlin.js.Promise
+import kotlin.time.Clock
 
 internal object AlleyUserBackend {
+
+    private val forbidden
+        get() = Response("", ResponseInit(status = 403, headers = Headers().apply {
+            attachAuthToken(null)
+        }))
+
+    private val unauthorized
+        get() = Response("", ResponseInit(status = 403, headers = Headers().apply {
+            attachRefreshToken(null)
+        }))
 
     suspend fun handleRequest(context: EventContext, path: String): Response {
         val pathSegments = path.removePrefix("/").split("/")
@@ -25,7 +38,9 @@ internal object AlleyUserBackend {
 
         return when (firstSegment) {
             "login" -> handleLogin(context, context.request)
+            "refresh" -> handleAuthRefresh(context, context.request)
             "auth" -> handleAuthCode(context, context.request)
+            "check" -> checkAuth(context, context.request)
             else -> Response("", ResponseInit(status = 404))
         }
     }
@@ -55,7 +70,7 @@ internal object AlleyUserBackend {
             }
         } ?: return Response("", ResponseInit(status = 404))
 
-        Databases.userDatabase(context).authCodeQueries.insertUserId(AuthCode(state, userId))
+        Databases.userDatabase(context).authCodeQueries.insertCode(AuthCode(state, userId))
 
         return Response("", ResponseInit(status = 302, headers = Headers().apply {
             // TODO: Redirect back to exact caller page?
@@ -65,117 +80,99 @@ internal object AlleyUserBackend {
 
     private suspend fun handleAuthCode(context: EventContext, request: Request): Response {
         val authCode = request.text().await()
-        val userId =
-            Databases.userDatabase(context).authCodeQueries.getUserId(authCode).awaitAsOneOrNull()
-                ?: return Response("", ResponseInit(status = 403))
+        val database = Databases.userDatabase(context)
+
+        // TODO: Hash
+        val userId = database.authCodeQueries.consumeCode(authCode).awaitAsOneOrNull()
+            ?: return Response("", ResponseInit(status = 403))
+        val refreshToken = crypto.createRefreshToken()
+        database.userQueries.provisionUser(
+            User(
+                userId = userId,
+                refreshToken = refreshToken,
+                createdAt = Clock.System.now(),
+                deviceIdentifier = request.headers.get("User-Agent"),
+            )
+        )
+
+        val authToken = crypto.createAuthToken()
+        database.userSessionQueries.createSession(
+            UserSession(
+                userId = userId,
+                authToken = authToken,
+                createdAt = Clock.System.now(),
+            )
+        )
 
         return Response("", ResponseInit(status = 200, headers = Headers().apply {
-            append(
-                "Set-Cookie",
-                "AADB_Authorization=$userId; Max-Age=31536000; Path=/user/api; Secure; HttpOnly; SameSite=Strict"
-            )
-            append(
-                "Set-Cookie",
-                "AADB_Authorized=1; Path=/; Max-Age=31536000; Secure; SameSite=Strict"
-            )
+            attachRefreshToken(refreshToken)
+            attachAuthToken(authToken)
         }))
     }
 
-    private object DiscordAuthApi {
-        private val json = Json {
-            encodeDefaults = false
-            ignoreUnknownKeys = true
-            isLenient = true
+    private suspend fun handleAuthRefresh(context: EventContext, request: Request): Response {
+        // TODO: Pass the userId and only check that row
+        val database = Databases.userDatabase(context)
+        val cookies = request.headers.cookies
+        val refreshToken = cookies[AlleyAuthorization.COOKIE_REFRESH_TOKEN]
+            ?.let(::RefreshToken)
+            ?: return unauthorized
+
+        val userId = database.userQueries.checkRefreshToken(refreshToken).awaitAsOneOrNull()
+            ?: return unauthorized
+
+        val oldAuthToken = cookies[AlleyAuthorization.COOKIE_AUTH_TOKEN]
+        if (oldAuthToken != null) {
+            database.userSessionQueries.revokeAuthToken(userId, AuthToken(oldAuthToken))
         }
 
-        suspend fun getAuth(env: Env, authCode: String): AuthTokenResponse {
-            val result = fetch(
-                Request(
-                    "https://discord.com/api/oauth2/token",
-                    RequestInit(
-                        method = "POST",
-                        headers = Headers().apply {
-                            this.set("Authorization", "Bot ${env.DISCORD_TOKEN}")
-                            this.set("Content-Type", "application/x-www-form-urlencoded")
-                        },
-                        body = URLSearchParams().apply {
-                            set("client_id", env.DISCORD_APP_ID)
-                            set("client_secret", env.DISCORD_CLIENT_SECRET)
-                            set("grant_type", "authorization_code")
-                            set("code", authCode)
-                            set("redirect_uri", env.DISCORD_REDIRECT_URL)
-                        },
-                        cache = undefined,
-                        integrity = undefined,
-                        redirect = RequestRedirect.FOLLOW,
-                    )
-                )
-            ).await().text().await()
-            return json.decodeFromString<AuthTokenResponse>(result)
-        }
+        val newAuthToken = crypto.createAuthToken()
+        database.userSessionQueries.createSession(
+            UserSession(
+                userId = userId,
+                authToken = newAuthToken,
+                createdAt = Clock.System.now(),
+            )
+        )
 
-        suspend fun getUserId(accessToken: String): String? {
-            val result = fetch(
-                Request(
-                    "https://discord.com/api/v10/users/@me",
-                    RequestInit(
-                        method = "GET",
-                        headers = Headers().apply {
-                            this.set("Authorization", "Bearer $accessToken")
-                            this.set("Content-Type", "application/json")
-                        },
-                        cache = undefined,
-                        integrity = undefined,
-                        redirect = RequestRedirect.FOLLOW,
-                    )
-                )
-            ).await()
-            if (!result.ok) return null
-            val body = result.text().await()
-            return json.decodeFromString<User>(body).id
-        }
-
-        suspend fun revokeToken(env: Env, token: String, isRefreshToken: Boolean) {
-            fetch(
-                Request(
-                    "https://discord.com/api/oauth2/token/revoke",
-                    RequestInit(
-                        method = "POST",
-                        headers = Headers().apply {
-                            this.set("Authorization", "Bot ${env.DISCORD_TOKEN}")
-                            this.set("Content-Type", "application/x-www-form-urlencoded")
-                        },
-                        body = URLSearchParams().apply {
-                            set("client_id", env.DISCORD_APP_ID)
-                            set("client_secret", env.DISCORD_CLIENT_SECRET)
-                            set("token", token)
-                            set(
-                                "token_type_hint",
-                                if (isRefreshToken) "refresh_token" else "access_token"
-                            )
-                        },
-                        cache = undefined,
-                        integrity = undefined,
-                        redirect = RequestRedirect.FOLLOW,
-                    )
-                )
-            ).await()
-        }
+        return Response("", ResponseInit(status = 200, headers = Headers().apply {
+            attachAuthToken(newAuthToken)
+        }))
     }
 
-    // TODO: Share this with the bot?
-    @Serializable
-    private data class AuthTokenResponse(
-        @SerialName("access_token")
-        val accessToken: String,
-        @SerialName("refresh_token")
-        val refreshToken: String,
-    )
+    private suspend fun checkAuth(context: EventContext, request: Request): Response {
+        val database = Databases.userDatabase(context)
+        val authToken = request.headers.cookies[AlleyAuthorization.COOKIE_AUTH_TOKEN]
+            ?: return forbidden
+        database.userSessionQueries.checkAuthToken(AuthToken(authToken)).awaitAsOneOrNull()
+            ?: return forbidden
+        // TODO: Time based expiry
+        return Response("", ResponseInit(status = 200, headers = Headers()))
+    }
 
-    @Serializable
-    private data class User(
-        val id: String?,
-    )
+    private fun Headers.attachRefreshToken(refreshToken: RefreshToken?) {
+        if (refreshToken == null) {
+            attachAuthToken(null)
+        }
+
+        val maxAge = if (refreshToken == null) 0 else 31536000
+        append(
+            "Set-Cookie",
+            "${AlleyAuthorization.COOKIE_REFRESH_TOKEN}=${refreshToken?.token.orEmpty()}; Max-Age=$maxAge; Path=/user/api/refresh; Secure; HttpOnly; SameSite=Strict"
+        )
+        val authorized = if (refreshToken == null) 0 else 1
+        append(
+            "Set-Cookie",
+            "${AlleyAuthorization.COOKIE_INSECURE_AUTHORIZED}=$authorized; Path=/; Max-Age=$maxAge; Secure; SameSite=Strict"
+        )
+
+    }
+
+    private fun Headers.attachAuthToken(authToken: AuthToken?) {
+        val maxAge = if (authToken == null) 0 else 86400
+        append(
+            "Set-Cookie",
+            "${AlleyAuthorization.COOKIE_AUTH_TOKEN}=${authToken?.token.orEmpty()}; Max-Age=$maxAge; Path=/user/api; Secure; HttpOnly; SameSite=Strict"
+        )
+    }
 }
-
-private external fun fetch(request: Request): Promise<Response>

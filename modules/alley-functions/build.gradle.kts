@@ -29,6 +29,7 @@ kotlin {
             implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
             implementation(libs.whyoleg.cryptography.core)
             implementation(libs.whyoleg.cryptography.provider.optimal)
+            implementation(libs.kotlinx.browser)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.sqldelight.coroutines.extensions)
 

@@ -14,7 +14,7 @@ import kotlinx.browser.window
 actual class AlleyUserApi(private val ktorClient: HttpClient) {
     actual suspend fun exchangeAuthCode(authCode: String): String? {
         val response = ktorClient.post(window.origin + "/user/api/auth") {
-            contentType(ContentType.Application.Json)
+            contentType(ContentType.Text.Plain)
             setBody(authCode)
         }
         if (response.status != HttpStatusCode.OK) {
@@ -22,5 +22,13 @@ actual class AlleyUserApi(private val ktorClient: HttpClient) {
             return null
         }
         return response.bodyAsText()
+    }
+
+    // TODO: Remove, just rely on sync to revoke authorization
+    suspend fun checkAuth() {
+        val response = ktorClient.post(window.origin + "/user/api/check")
+        if (response.status == HttpStatusCode.Forbidden) {
+            ktorClient.post(window.origin + "/user/api/refresh")
+        }
     }
 }

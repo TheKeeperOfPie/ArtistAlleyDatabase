@@ -1,7 +1,8 @@
-getUserId:
-SELECT userId FROM authCode
-WHERE code = :code;
+consumeCode:
+DELETE FROM authCode
+WHERE code = :code
+RETURNING userId;
 
-insertUserId:
+insertCode:
 INSERT OR REPLACE INTO authCode
 VALUES ?;

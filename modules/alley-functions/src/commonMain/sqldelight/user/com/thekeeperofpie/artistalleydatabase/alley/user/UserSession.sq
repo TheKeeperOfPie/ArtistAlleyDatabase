@@ -1,0 +1,11 @@
+createSession:
+INSERT INTO userSession
+VALUES ?;
+
+revokeAuthToken:
+DELETE FROM userSession
+WHERE userId = :userID AND authToken = :authToken;
+
+checkAuthToken:
+SELECT userId FROM userSession
+WHERE authToken = :authToken;

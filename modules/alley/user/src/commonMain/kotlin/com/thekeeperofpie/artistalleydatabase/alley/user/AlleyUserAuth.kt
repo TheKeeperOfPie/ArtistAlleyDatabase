@@ -8,6 +8,8 @@ expect class AlleyUserAuth {
         private set
 
     fun startAuth(uriHandler: UriHandler, url: String)
+
+    fun checkAuth()
 }
 
 @Suppress("UnusedReceiverParameter")

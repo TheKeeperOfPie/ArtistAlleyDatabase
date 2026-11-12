@@ -15,4 +15,6 @@ actual class AlleyUserAuth {
     actual fun startAuth(uriHandler: UriHandler, url: String) {
         uriHandler.openUri(url)
     }
+
+    actual fun checkAuth() {}
 }

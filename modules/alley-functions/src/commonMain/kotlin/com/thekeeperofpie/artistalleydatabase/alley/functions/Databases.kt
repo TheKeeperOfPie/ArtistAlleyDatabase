@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
+import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.async.coroutines.awaitCreate
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.BackendColumnAdapters
@@ -10,8 +11,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntryHistory
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.AuthToken
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.user.User
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
 import com.thekeeperofpie.artistalleydatabase.cloudflare.WorkerSqlDriver
 
 internal object Databases {
@@ -161,5 +166,19 @@ internal object Databases {
 
     fun userDatabase(context: EventContext) = AlleyUserDatabase(
         driver = userSqlDriver(context),
+        userAdapter = User.Adapter(
+            createdAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
+            refreshTokenAdapter = object : ColumnAdapter<RefreshToken, String> {
+                override fun decode(databaseValue: String) = RefreshToken(databaseValue)
+                override fun encode(value: RefreshToken) = value.token
+            },
+        ),
+        userSessionAdapter = UserSession.Adapter(
+            authTokenAdapter = object : ColumnAdapter<AuthToken, String> {
+                override fun decode(databaseValue: String) = AuthToken(databaseValue)
+                override fun encode(value: AuthToken) = value.token
+            },
+            createdAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
+        ),
     )
 }

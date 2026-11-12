@@ -106,7 +106,12 @@ fun main() {
         val url = URL(event.request.url)
         val urlPath = url.pathname
         val urlPathWithoutSlash = urlPath.removePrefix("/")
-        if (url.host.contains("anilist.co") || url.host.contains("wikipedia.org")) {
+        if (url.origin == self.location.origin &&
+            (url.pathname.startsWith("/edit/api") ||
+                    url.pathname.startsWith("/form/api") ||
+                    url.pathname.startsWith("/user/api"))){
+            event.respondWith(self.fetch(request))
+        } else if (url.host.contains("anilist.co") || url.host.contains("wikipedia.org")) {
             event.respondWith(self.fetch(request))
         } else {
             event.respondWith(

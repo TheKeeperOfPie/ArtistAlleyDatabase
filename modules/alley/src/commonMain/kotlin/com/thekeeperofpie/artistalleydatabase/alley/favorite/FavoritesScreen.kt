@@ -29,6 +29,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
@@ -134,6 +135,9 @@ object FavoritesScreen {
         eventSink: (Event) -> Unit,
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
+            LaunchedEffect(state, eventSink) {
+                eventSink(Event.Shown)
+            }
             val artistsEntries = state.artistsEntries.collectAsLazyPagingItems()
             val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItems()
             val seriesEntries = state.seriesEntries.collectAsLazyPagingItems()
@@ -587,5 +591,6 @@ object FavoritesScreen {
         ) : Event
 
         data object Login : Event
+        data object Shown : Event
     }
 }

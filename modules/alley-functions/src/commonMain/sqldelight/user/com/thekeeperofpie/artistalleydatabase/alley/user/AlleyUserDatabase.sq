@@ -1,5 +1,24 @@
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.AuthToken;
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken;
+import kotlin.time.Instant;
+
 CREATE TABLE IF NOT EXISTS authCode (
     code TEXT NOT NULL,
     userId TEXT NOT NULL,
     PRIMARY KEY (code)
+);
+
+CREATE TABLE IF NOT EXISTS user (
+    userId TEXT NOT NULL,
+    refreshToken TEXT AS RefreshToken NOT NULL,
+    createdAt INTEGER AS Instant NOT NULL,
+    deviceIdentifier TEXT,
+    PRIMARY KEY (userId, refreshToken)
+);
+
+CREATE TABLE IF NOT EXISTS userSession (
+    userId TEXT NOT NULL,
+    authToken TEXT AS AuthToken NOT NULL,
+    createdAt INTEGER AS Instant NOT NULL,
+    PRIMARY KEY (userId, authToken)
 );

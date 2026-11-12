@@ -11,8 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.utils.web.cookieStore
 import dev.zacsweers.metro.Inject
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 @Inject
 actual class AlleyUserAuth(
@@ -23,6 +26,10 @@ actual class AlleyUserAuth(
 
     actual var isLoggedIn: Boolean by mutableStateOf(false)
         private set
+
+    // Block other requests until the auth code is checked,
+    // otherwise a parallel request could clear the token
+    private var checkedAuthCode = CompletableDeferred<Unit>()
 
     init {
         appScope.launch {
@@ -50,7 +57,9 @@ actual class AlleyUserAuth(
             if (!pendingUserAuthCode.isNullOrEmpty()) {
                 userApi.exchangeAuthCode(pendingUserAuthCode)
                 settings.pendingUserAuthCode = null
+                delay(1.seconds)
             }
+            checkedAuthCode.complete(Unit)
         }
     }
 
@@ -61,6 +70,13 @@ actual class AlleyUserAuth(
             // gets written, instead access the API directly to write the raw value
             localStorage.setItem("pendingUserAuthCode", keys.publicKey)
             window.location.href = url + "&state=${Uri.encode(keys.publicKey)}"
+        }
+    }
+
+    actual fun checkAuth() {
+        appScope.launch {
+            checkedAuthCode.await()
+            userApi.checkAuth()
         }
     }
 }

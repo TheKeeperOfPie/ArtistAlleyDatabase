@@ -351,6 +351,7 @@ class FavoritesViewModel(
         )
         FavoritesScreen.Event.Login ->
             userAuth.startAuth(uriHandler, AlleyUtils.discordLoginUrl(buildConfig.isDebug))
+        FavoritesScreen.Event.Shown -> userAuth.checkAuth()
     }
 
     @AssistedFactory

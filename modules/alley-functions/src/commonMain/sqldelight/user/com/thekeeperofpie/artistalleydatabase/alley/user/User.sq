@@ -1,0 +1,7 @@
+provisionUser:
+INSERT INTO user
+VALUES ?;
+
+checkRefreshToken:
+SELECT userId FROM user
+WHERE refreshToken = :refreshToken;

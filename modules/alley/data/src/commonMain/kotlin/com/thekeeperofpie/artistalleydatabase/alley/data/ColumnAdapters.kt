@@ -58,6 +58,16 @@ object ColumnAdapters {
         override fun encode(value: Instant) = value.toString()
     }
 
+    val instantEpochSecondsAdapter = object : ColumnAdapter<Instant, Long> {
+        override fun decode(databaseValue: Long) = try {
+            Instant.fromEpochSeconds(databaseValue)
+        } catch (_: IllegalArgumentException) {
+            Instant.DISTANT_PAST
+        }
+
+        override fun encode(value: Instant) = value.epochSeconds
+    }
+
     val uuidAdapter = object : ColumnAdapter<Uuid, String> {
         override fun decode(databaseValue: String) = Uuid.parse(databaseValue)
 
