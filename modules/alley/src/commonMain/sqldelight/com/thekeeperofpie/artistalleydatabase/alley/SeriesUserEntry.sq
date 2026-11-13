@@ -1,0 +1,13 @@
+getSeriesUserEntry:
+SELECT * FROM seriesUserEntry
+WHERE seriesId = :seriesId;
+
+insertSeriesUserEntry:
+INSERT OR REPLACE INTO seriesUserEntry
+VALUES ?;
+
+getSeriesFavorites:
+SELECT seriesEntry.id FROM seriesUserEntry
+LEFT OUTER JOIN seriesEntry
+ON seriesEntry.uuid = seriesUserEntry.seriesId
+WHERE seriesUserEntry.favorite = 1;

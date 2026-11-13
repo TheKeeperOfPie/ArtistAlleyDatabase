@@ -1,0 +1,11 @@
+insertStampRallyUserEntry:
+INSERT OR REPLACE INTO stampRallyUserEntry
+VALUES ?;
+
+getStampRallyUserEntry:
+SELECT * FROM stampRallyUserEntry
+WHERE stampRallyId = :stampRallyId;
+
+getStampRallyFavorites:
+SELECT stampRallyId FROM stampRallyUserEntry
+WHERE favorite = 1;

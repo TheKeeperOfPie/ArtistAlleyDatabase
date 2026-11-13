@@ -126,6 +126,7 @@ import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
+import kotlin.time.Instant
 
 object ArtistDetailsScreen {
 
@@ -156,6 +157,7 @@ object ArtistDetailsScreen {
             seriesInferred = viewModel::seriesInferred,
             seriesConfirmed = viewModel::seriesConfirmed,
             userNotesTextState = viewModel.userNotes,
+            userNotesUpdatedAt = viewModel::userNotesUpdatedAt,
             imagePagerState = imagePagerState,
             catalog = viewModel::catalog,
             seriesImages = viewModel::seriesImages,
@@ -172,6 +174,7 @@ object ArtistDetailsScreen {
         seriesInferred: () -> List<SeriesWithUserData>?,
         seriesConfirmed: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
+        userNotesUpdatedAt: () -> Instant?,
         imagePagerState: PagerState,
         catalog: () -> DetailsScreenCatalog,
         seriesImages: () -> Map<String, String>,
@@ -596,7 +599,7 @@ object ArtistDetailsScreen {
                 }
 
                 item("artistUserNotes", GridUtils.maxSpanFunction) {
-                    UserNotesText(state = userNotesTextState)
+                    UserNotesText(state = userNotesTextState, updatedAt = userNotesUpdatedAt)
                 }
 
                 item("artistFooter", GridUtils.maxSpanFunction) {
@@ -849,6 +852,7 @@ private fun ArtistDetailsScreenPreview(
         seriesInferred = { seriesInferred },
         seriesConfirmed = { seriesConfirmed },
         userNotesTextState = rememberTextFieldState(),
+        userNotesUpdatedAt = { null },
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
         catalog = { catalog },

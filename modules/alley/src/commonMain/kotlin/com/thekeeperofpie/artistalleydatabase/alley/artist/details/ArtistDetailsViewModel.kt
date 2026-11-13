@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 @OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @AssistedInject
@@ -187,6 +188,13 @@ class ArtistDetailsViewModel(
 
     val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver.Fixed) {
         mutableStateOf(TextFieldState())
+    }
+
+    val userNotesUpdatedAt by transform<Instant?>(null, viewModelScope) {
+        produceState<Instant?>(null) {
+            val id = snapshotFlow { id }.filterNotNull().first()
+            userNotesDao.artistNotes(id, year).collectLatest { value = it?.updatedAt }
+        }.value
     }
 
     init {

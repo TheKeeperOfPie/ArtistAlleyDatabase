@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 @OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @AssistedInject
@@ -113,6 +114,12 @@ class StampRallyDetailsViewModel(
 
     val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver.Fixed) {
         mutableStateOf(TextFieldState())
+    }
+
+    val userNotesUpdatedAt by transform<Instant?>(null, viewModelScope) {
+        produceState<Instant?>(null) {
+            userNotesDao.stampRallyNotes(id).collectLatest { value = it?.updatedAt }
+        }.value
     }
 
     private val mutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)

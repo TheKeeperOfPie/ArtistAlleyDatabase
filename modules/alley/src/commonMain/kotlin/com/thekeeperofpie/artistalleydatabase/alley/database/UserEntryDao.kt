@@ -7,8 +7,11 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites
-import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.MerchUserEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesUserEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
@@ -26,6 +29,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
 private fun GetBoothsWithFavorites.toBoothWithFavorite() =
@@ -47,39 +51,46 @@ private fun GetBoothsWithFavorites.toBoothWithFavorite() =
 class UserEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val dao: suspend () -> UserEntryQueries = { database().userEntryQueries },
+    private val artistUserEntryDao: suspend () -> ArtistUserEntryQueries = { database().artistUserEntryQueries },
+    private val rallyUserEntryDao: suspend () -> StampRallyUserEntryQueries = { database().stampRallyUserEntryQueries },
+    private val seriesUserEntryDao: suspend () -> SeriesUserEntryQueries = { database().seriesUserEntryQueries },
+    private val merchUserEntryDao: suspend () -> MerchUserEntryQueries = { database().merchUserEntryQueries },
+    private val clock: Clock = Clock.System,
 ) {
     companion object {
         private val NOTIFY_DELAY = 350.milliseconds
     }
 
     @Inject
-    constructor(
-        database: ArtistAlleyDatabase,
-    ) : this(driver = database::driver, database = database::database)
+    constructor(database: ArtistAlleyDatabase) : this(
+        driver = database::driver,
+        database = database::database,
+    )
 
-    fun getArtistFavorites(dataYear: DataYear) = flowFromSuspend { dao() }
+    fun getArtistFavorites(dataYear: DataYear) = flowFromSuspend(artistUserEntryDao)
         .flatMapLatest { it.getArtistFavorites(dataYear).asFlow() }
         .mapToList(PlatformDispatchers.IO)
 
-    fun getAllArtistFavorites() = flowFromSuspend { dao() }
+    fun getAllArtistFavorites() = flowFromSuspend(artistUserEntryDao)
         .flatMapLatest { it.getAllArtistFavorites().asFlow() }
         .mapToList(PlatformDispatchers.IO)
 
-    fun getBoothsWithFavorites(year: DataYear) = flowFromSuspend { dao() }
-        .flatMapLatest { dao().getBoothsWithFavorites(year) .asFlow() }
+    fun getBoothsWithFavorites(year: DataYear) = flowFromSuspend(artistUserEntryDao)
+        .flatMapLatest { it.getBoothsWithFavorites(year).asFlow() }
         .mapToList(PlatformDispatchers.IO)
         .map { it.map { it.toBoothWithFavorite() } }
 
     suspend fun insertArtistUserEntry(entry: ArtistUserEntry) {
         PersistentStorageRequester.requestPersistent()
-        dao().run {
+        artistUserEntryDao().run {
             transaction {
                 val existing =
                     getArtistUserEntry(entry.artistId, entry.dataYear).awaitAsOneOrNull() ?: entry
                 val newEntry = existing.copy(
                     favorite = entry.favorite,
                     ignored = entry.ignored,
+                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    updatedAt = clock.now(),
                 )
                 insertArtistUserEntry(newEntry)
             }
@@ -90,13 +101,15 @@ class UserEntryDao(
 
     suspend fun insertStampRallyUserEntry(entry: StampRallyUserEntry) {
         PersistentStorageRequester.requestPersistent()
-        dao().run {
+        rallyUserEntryDao().run {
             transaction {
                 val existing = getStampRallyUserEntry(entry.stampRallyId).awaitAsOneOrNull()
                     ?: entry
                 val newEntry = existing.copy(
                     favorite = entry.favorite,
                     ignored = entry.ignored,
+                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    updatedAt = clock.now(),
                 )
                 insertStampRallyUserEntry(newEntry)
             }
@@ -107,11 +120,15 @@ class UserEntryDao(
 
     suspend fun insertSeriesUserEntry(entry: SeriesUserEntry) {
         PersistentStorageRequester.requestPersistent()
-        dao().run {
+        seriesUserEntryDao().run {
             transaction {
                 val existing = getSeriesUserEntry(entry.seriesId).awaitAsOneOrNull()
                     ?: entry
-                val newEntry = existing.copy(favorite = entry.favorite)
+                val newEntry = existing.copy(
+                    favorite = entry.favorite,
+                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    updatedAt = clock.now(),
+                )
                 insertSeriesUserEntry(newEntry)
             }
             delay(NOTIFY_DELAY)
@@ -121,11 +138,15 @@ class UserEntryDao(
 
     suspend fun insertMerchUserEntry(entry: MerchUserEntry) {
         PersistentStorageRequester.requestPersistent()
-        dao().run {
+        merchUserEntryDao().run {
             transaction {
                 val existing = getMerchUserEntry(entry.merchId).awaitAsOneOrNull()
                     ?: entry
-                val newEntry = existing.copy(favorite = entry.favorite)
+                val newEntry = existing.copy(
+                    favorite = entry.favorite,
+                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    updatedAt = clock.now(),
+                )
                 insertMerchUserEntry(newEntry)
             }
             delay(NOTIFY_DELAY)
@@ -139,21 +160,21 @@ class UserEntryDao(
         ::TagFavorites,
     )
 
-    fun getSeriesFavorites() = flowFromSuspend { dao() }
+    fun getSeriesFavorites() = flowFromSuspend(seriesUserEntryDao)
         .flatMapLatest {
             it.getSeriesFavorites().asFlow()
                 .mapLatest { it.awaitAsList().mapNotNull { it.id }.toSet() }
         }
 
-    fun getMerchFavorites() = flowFromSuspend { dao() }
+    fun getMerchFavorites() = flowFromSuspend(merchUserEntryDao)
         .flatMapLatest {
             it.getMerchFavorites().asFlow()
                 .mapLatest { it.awaitAsList().mapNotNull { it.name }.toSet() }
         }
 
-    fun getRallyFavorites() = flowFromSuspend { dao() }
+    fun getRallyFavorites() = flowFromSuspend(rallyUserEntryDao)
         .flatMapLatest {
-            it.getRallyFavorites().asFlow()
+            it.getStampRallyFavorites().asFlow()
                 .mapLatest { it.awaitAsList().toSet() }
         }
 

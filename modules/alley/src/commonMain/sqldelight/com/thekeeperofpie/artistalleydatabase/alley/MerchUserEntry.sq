@@ -1,0 +1,13 @@
+getMerchUserEntry:
+SELECT * FROM merchUserEntry
+WHERE merchId = :merchId;
+
+insertMerchUserEntry:
+INSERT OR REPLACE INTO merchUserEntry
+VALUES ?;
+
+getMerchFavorites:
+SELECT merchEntry.name FROM merchUserEntry
+LEFT OUTER JOIN merchEntry
+ON merchEntry.uuid = merchUserEntry.merchId
+WHERE merchUserEntry.favorite = 1;

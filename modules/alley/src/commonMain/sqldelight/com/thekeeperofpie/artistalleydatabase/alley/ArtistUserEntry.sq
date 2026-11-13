@@ -1,0 +1,23 @@
+insertArtistUserEntry:
+INSERT OR REPLACE INTO artistUserEntry
+VALUES ?;
+
+getArtistUserEntry:
+SELECT * FROM artistUserEntry
+WHERE artistId = :artistId AND dataYear = :dataYear;
+
+getBoothsWithFavorites:
+SELECT artistEntry.id, artistEntry.dataYear, artistEntry.booth, artistEntry.name, artistEntry.images, artistEntry.fallbackImageYear, artistEntry.tempImages, artistEntry.embeds, artistUserEntry.favorite, artistNotes.notes FROM artistEntry
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear
+LEFT OUTER JOIN artistNotes
+ON artistEntry.id = artistNotes.artistId AND artistNotes.dataYear = :dataYear
+WHERE artistEntry.dataYear = :dataYear;
+
+getArtistFavorites:
+SELECT artistId FROM artistUserEntry
+WHERE favorite = 1 AND dataYear = :dataYear;
+
+getAllArtistFavorites:
+SELECT artistId FROM artistUserEntry
+WHERE favorite = 1;

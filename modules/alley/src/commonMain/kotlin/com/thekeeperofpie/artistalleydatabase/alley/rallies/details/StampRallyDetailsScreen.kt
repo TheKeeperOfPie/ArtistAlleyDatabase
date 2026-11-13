@@ -104,6 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_preview.AlleyPreview
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 
 object StampRallyDetailsScreen {
 
@@ -140,6 +141,7 @@ object StampRallyDetailsScreen {
             entry = viewModel::entry,
             series = viewModel::series,
             userNotesTextState = viewModel.userNotes,
+            userNotesUpdatedAt = viewModel::userNotesUpdatedAt,
             images = viewModel::images,
             imagePagerState = imagePagerState,
             eventSink = {
@@ -181,6 +183,7 @@ object StampRallyDetailsScreen {
         entry: () -> StampRallyDetailsViewModel.Entry?,
         series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
+        userNotesUpdatedAt: () -> Instant?,
         images: () -> List<CatalogImage>,
         imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
@@ -204,6 +207,7 @@ object StampRallyDetailsScreen {
                 entry = entry(),
                 series = series,
                 userNotesTextState = userNotesTextState,
+                userNotesUpdatedAt = userNotesUpdatedAt,
                 eventSink = eventSink,
                 onClickOpenUri = {
                     try {
@@ -219,6 +223,7 @@ object StampRallyDetailsScreen {
         entry: StampRallyDetailsViewModel.Entry?,
         series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
+        userNotesUpdatedAt: () -> Instant?,
         eventSink: (Event) -> Unit,
         onClickOpenUri: (String) -> Unit,
     ) {
@@ -511,7 +516,7 @@ object StampRallyDetailsScreen {
             }
 
             item("stampRallyUserNotes", GridUtils.maxSpanFunction) {
-                UserNotesText(state = userNotesTextState)
+                UserNotesText(state = userNotesTextState, updatedAt = userNotesUpdatedAt)
             }
 
             item("stampRallyButtons", GridUtils.maxSpanFunction) {
@@ -668,6 +673,7 @@ private fun PhoneLayout() {
         },
         series = { emptyList() },
         userNotesTextState = rememberTextFieldState(),
+        userNotesUpdatedAt = { null },
         images = { images },
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},

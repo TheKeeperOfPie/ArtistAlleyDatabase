@@ -1,0 +1,9 @@
+getLastGeneration:
+SELECT MAX(
+    (SELECT MAX(generation) FROM artistUserEntry),
+    (SELECT MAX(generation) FROM stampRallyUserEntry),
+    (SELECT MAX(generation) FROM seriesUserEntry),
+    (SELECT MAX(generation) FROM merchUserEntry),
+    (SELECT MAX(generation) FROM artistNotes),
+    (SELECT MAX(generation) FROM stampRallyNotes)
+) AS lastGeneration;
