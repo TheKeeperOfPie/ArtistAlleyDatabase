@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
+import com.thekeeperofpie.artistalleydatabase.alley.database.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.Booth
@@ -45,7 +45,12 @@ class MapViewModel(
         val showOutdatedCatalogs = settings.showOutdatedCatalogs
         val showRandomCatalogImage = settings.showRandomCatalogImage
         val dataYear = dataYear()
-        produceState(LoadingResult.loading(), showOutdatedCatalogs, showRandomCatalogImage, dataYear) {
+        produceState(
+            LoadingResult.loading(),
+            showOutdatedCatalogs,
+            showRandomCatalogImage,
+            dataYear
+        ) {
             // TODO: This is very inefficient to respond to favorites updates
             // TODO: Pass in DataYear
             userEntryDao.getBoothsWithFavorites(dataYear)
@@ -158,16 +163,17 @@ class MapViewModel(
         val primaryArtist =
             artists.firstOrNull { it.images.isNotEmpty() && it.fallbackImageYear == null }
                 ?: artists.first()
-        val images = if (primaryArtist.fallbackImageYear != null && showOutdatedCatalogs) {
+        val primaryFallbackImageYear = primaryArtist.fallbackImageYear
+        val images = if (primaryFallbackImageYear != null && showOutdatedCatalogs) {
             AlleyImageUtils.getArtistImages(
-                year = primaryArtist.fallbackImageYear,
+                year = primaryFallbackImageYear,
                 images = primaryArtist.images,
             )
         } else {
             AlleyImageUtils.getArtistImagesWithEmbedFallback(
                 year = primaryArtist.year,
                 images = primaryArtist.images
-                    .takeIf { primaryArtist.fallbackImageYear == null }
+                    .takeIf { primaryFallbackImageYear == null }
                     .orEmpty(),
                 tempImages = primaryArtist.tempImages,
                 embeds = primaryArtist.embeds,
@@ -192,7 +198,7 @@ class MapViewModel(
                 gridX = gridX,
                 gridY = gridY,
                 isFinalCatalog = primaryArtist.images.isNotEmpty() &&
-                        primaryArtist.fallbackImageYear == null,
+                        primaryFallbackImageYear == null,
                 hasNotes = hasNotes,
             )
         } else {
@@ -207,7 +213,7 @@ class MapViewModel(
                 gridX = gridX,
                 gridY = gridY,
                 isFinalCatalog = artists.any {
-                    primaryArtist.images.isNotEmpty() && primaryArtist.fallbackImageYear == null
+                    primaryArtist.images.isNotEmpty() && primaryFallbackImageYear == null
                 },
                 hasNotes = hasNotes,
             )

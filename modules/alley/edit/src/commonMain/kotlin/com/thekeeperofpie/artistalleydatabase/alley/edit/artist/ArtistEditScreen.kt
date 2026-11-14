@@ -325,8 +325,12 @@ object ArtistEditScreen {
                                         )
                                     }
                                 }
+
                                 val alpha by produceState(alpha(), timestamp) {
-                                    interval(initialDelay = ACTIVE_DELAY_STEP, period = ACTIVE_DELAY_STEP)
+                                    interval(
+                                        initialDelay = ACTIVE_DELAY_STEP,
+                                        period = ACTIVE_DELAY_STEP
+                                    )
                                         .collectLatest { value = alpha() }
                                 }
                                 TooltipBox(
@@ -894,7 +898,8 @@ object ArtistEditScreen {
         var loading by remember(formLink()) { mutableStateOf(false) }
 
         @Suppress("SimplifyBooleanWithConstants")
-        val isDebug = PlatformSpecificConfig.type == PlatformType.DESKTOP || LocalBuildConfig.current.isDebug
+        val isDebug =
+            PlatformSpecificConfig.type == PlatformType.DESKTOP || LocalBuildConfig.current.isDebug
         AlertDialog(
             onDismissRequest = onDismiss,
             icon = if (formMetadata?.hasFormLink == true) {

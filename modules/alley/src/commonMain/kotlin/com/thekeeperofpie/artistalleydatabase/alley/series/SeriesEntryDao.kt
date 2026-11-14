@@ -9,12 +9,12 @@ import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdsWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesByIdWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesByIdsWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.database.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId

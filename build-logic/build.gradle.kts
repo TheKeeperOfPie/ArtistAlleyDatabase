@@ -20,11 +20,11 @@ sqldelight {
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             srcDirs(
                 project.layout.projectDirectory
-                    .dir("../modules/alley/src/commonMain/sqldelight"),
-                project.layout.projectDirectory
                     .dir("../modules/alley/data/src/commonMain/sqldelight"),
                 project.layout.projectDirectory
                     .dir("../modules/alley/user/src/commonMain/sqldelight"),
+                project.layout.projectDirectory
+                    .dir("../modules/alley/database/src/commonMain/sqldelight"),
                 project.layout.projectDirectory
                     .dir("src/main/sqldelight/edit"),
             )

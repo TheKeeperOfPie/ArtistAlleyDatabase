@@ -96,7 +96,8 @@ abstract class ImageUploader(
                             localImage.width,
                             localImage.height
                         )
-                        uploadedImages[localImage] = ImageUtils.toEditImage(buildConfig.isDebug, catalogImage)
+                        uploadedImages[localImage] =
+                            ImageUtils.toEditImage(buildConfig.isDebug, catalogImage)
                         catalogImage
                     }
                 }
@@ -118,7 +119,8 @@ abstract class ImageUploader(
                             localImage.width,
                             localImage.height
                         )
-                        uploadedImages[localImage] = ImageUtils.toEditImage(buildConfig.isDebug, catalogImage)
+                        uploadedImages[localImage] =
+                            ImageUtils.toEditImage(buildConfig.isDebug, catalogImage)
                         catalogImage
                     }
                 }

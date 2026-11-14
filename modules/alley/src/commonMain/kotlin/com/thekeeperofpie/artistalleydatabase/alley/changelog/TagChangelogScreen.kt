@@ -25,7 +25,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_o
 import artistalleydatabase.modules.alley.generated.resources.alley_tag_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData

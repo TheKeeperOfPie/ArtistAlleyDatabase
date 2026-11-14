@@ -24,7 +24,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_series_changelog_title
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SmallSeriesCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar

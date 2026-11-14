@@ -107,6 +107,7 @@ include(
     ":modules:alley",
     ":modules:alley:backend:data",
     ":modules:alley:data",
+    ":modules:alley:database",
     ":modules:alley:edit",
     ":modules:alley:form",
     ":modules:alley:form:data",

@@ -1,17 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
-import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.database.MerchQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @SingleIn(AppScope::class)
 class TagEntryDao(

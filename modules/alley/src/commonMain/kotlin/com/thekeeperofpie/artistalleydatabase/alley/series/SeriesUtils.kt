@@ -20,8 +20,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_source
 import artistalleydatabase.modules.alley.generated.resources.alley_series_source_web_novel
 import artistalleydatabase.modules.alley.generated.resources.alley_series_source_web_series
 import artistalleydatabase.modules.alley.generated.resources.alley_series_source_webtoon
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeries
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesById
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeries
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesById
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId

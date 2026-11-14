@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.artist
+package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DatabaseImage

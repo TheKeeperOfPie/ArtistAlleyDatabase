@@ -1,7 +1,4 @@
-
 import com.codingfeline.buildkonfig.compiler.FieldSpec
-import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
-import java.lang.module.ModuleFinder.compose
 import java.util.Properties
 
 plugins {
@@ -24,6 +21,7 @@ kotlin {
         }
         commonMain.dependencies {
             api(projects.modules.alley.data)
+            api(projects.modules.alley.database)
             api(projects.modules.alley.models)
             api(projects.modules.alley.user)
             api(projects.modules.anilist.data)
@@ -121,18 +119,6 @@ apollo {
         codegenModels.set("responseBased")
         decapitalizeFields.set(true)
         plugin(projects.modules.apollo)
-    }
-}
-
-sqldelight {
-    databases {
-        create("AlleySqlDatabase") {
-            packageName.set("com.thekeeperofpie.artistalleydatabase.alley")
-            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
-            generateAsync = true
-            dependency(projects.modules.alley.user)
-            dependency(projects.modules.alley.data)
-        }
     }
 }
 

@@ -9,18 +9,18 @@ import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistChangelogEntryQueries
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryEditQueries
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistTag
-import com.thekeeperofpie.artistalleydatabase.alley.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistChangelogEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistEntryEditQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
@@ -286,7 +286,8 @@ class ArtistEntryDao(
             ArtistSearchSortOption.ARTIST -> "ORDER BY artistEntry.name COLLATE NOCASE"
             ArtistSearchSortOption.RANDOM -> "ORDER BY SIN(artistEntry.rowid + ${searchQuery.randomSeed})"
         } + " $ascending" + " NULLS LAST"
-        val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.updatedAt"
+        val selectSuffix =
+            ", artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.updatedAt"
 
         val joinStatement = """
                 LEFT OUTER JOIN artistUserEntry

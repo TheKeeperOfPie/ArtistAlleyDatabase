@@ -20,12 +20,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_changelog_tit
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.artistChangelogDay
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.changelogDayHeader
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.stampRallyChangelogDay
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -86,7 +86,7 @@ object FavoritesChangelogScreen {
         onClickStampRallyImage: (StampRallyChangelogEntry, CatalogImage) -> Unit,
         title: @Composable () -> Unit = { Text(stringResource(Res.string.alley_changelog_title)) },
 
-    ) {
+        ) {
         Scaffold(
             topBar = {
                 TopAppBar(

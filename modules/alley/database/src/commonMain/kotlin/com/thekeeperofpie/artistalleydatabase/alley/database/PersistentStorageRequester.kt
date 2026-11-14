@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.utils
+package com.thekeeperofpie.artistalleydatabase.alley.database
 
 expect object PersistentStorageRequester {
     suspend fun requestPersistent()

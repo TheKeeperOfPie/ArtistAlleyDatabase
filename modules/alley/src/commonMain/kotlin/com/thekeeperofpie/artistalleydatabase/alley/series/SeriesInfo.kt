@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 

@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -27,6 +26,6 @@ class ArtistAlleyDatabase(
     }.flowOn(PlatformDispatchers.IO)
         .shareIn(applicationScope, SharingStarted.Eagerly, replay = 1)
 
-    internal suspend fun database() = (database.replayCache.firstOrNull() ?: database.first()).second
-    internal suspend fun driver() = (database.replayCache.firstOrNull() ?: database.first()).first
+    suspend fun database() = (database.replayCache.firstOrNull() ?: database.first()).second
+    suspend fun driver() = (database.replayCache.firstOrNull() ?: database.first()).first
 }

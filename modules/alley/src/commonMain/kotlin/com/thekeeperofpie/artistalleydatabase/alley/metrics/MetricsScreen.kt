@@ -40,8 +40,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_metrics_popul
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_popular_series
 import artistalleydatabase.modules.alley.generated.resources.alley_metrics_title
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesId
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader

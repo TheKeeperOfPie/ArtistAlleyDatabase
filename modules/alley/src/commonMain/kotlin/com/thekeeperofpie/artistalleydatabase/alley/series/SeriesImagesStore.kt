@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyAniListApi
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyTmdbApi
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyWikipediaApi
-import com.thekeeperofpie.artistalleydatabase.alley.GetImageEntries
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetImageEntries
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageType
@@ -249,7 +249,10 @@ class SeriesImagesStore(
         return newOpenLibraryImages.mapKeys { it.key }
     }
 
-    private suspend fun loadSteamImages(now: Instant, ids: List<SteamImageId>): Map<String, String> {
+    private suspend fun loadSteamImages(
+        now: Instant,
+        ids: List<SteamImageId>,
+    ): Map<String, String> {
         if (ids.isEmpty()) return emptyMap()
         val newSteamImages = ids.associate {
             val path = it.imagePath?.removePrefix("/") ?: "library_600x900.jpg"

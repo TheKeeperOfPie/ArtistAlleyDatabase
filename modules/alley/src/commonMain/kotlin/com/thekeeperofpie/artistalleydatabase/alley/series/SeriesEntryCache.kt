@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 import androidx.appstate.transform.transform
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject

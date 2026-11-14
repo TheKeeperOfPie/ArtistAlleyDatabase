@@ -1,8 +1,6 @@
-
 import ImageUtils.parseScaledImageWidthHeight
 import app.cash.sqldelight.Query
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistSeriesConnection
@@ -14,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyChangelogEntr
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyPrizeMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
+import com.thekeeperofpie.artistalleydatabase.alley.database.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.edit.BuildLogicEditDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.edit.MutationQueries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
@@ -485,7 +484,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     ) {
                         logger.error("Duplicate failure for artist ${artist.booth} - ${artist.name}")
                     }
-                    val inference = ArtistInferenceProvider(database, artist.id.toString(), dataYear)
+                    val inference =
+                        ArtistInferenceProvider(database, artist.id.toString(), dataYear)
                     val socialLinks = artist.socialLinks.ifEmpty { inference.socialLinks }
                     val storeLinks = artist.storeLinks.ifEmpty { inference.storeLinks }
                     val seriesInferred = artist.seriesInferred

@@ -62,13 +62,13 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_ser
 import artistalleydatabase.modules.alley.generated.resources.alley_user_login_action
 import artistalleydatabase.modules.alley.generated.resources.alley_user_login_prompt
 import com.composeunstyled.rememberScrollbarState
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreenContent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterSheetContent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterState
+import com.thekeeperofpie.artistalleydatabase.alley.database.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData

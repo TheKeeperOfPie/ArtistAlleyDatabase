@@ -1,14 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.alley.utils
+package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.await
 import kotlinx.browser.window
 import org.w3c.dom.Navigator
-import kotlin.js.JsAny
-import kotlin.js.JsBoolean
 import kotlin.js.Promise
-import kotlin.js.js
-import kotlin.js.toBoolean
 
 private external object StorageManager : JsAny {
     fun persist(): Promise<JsBoolean>
@@ -17,6 +13,7 @@ private external object StorageManager : JsAny {
 
 private fun storage(): StorageManager = js("navigator.storage")
 
+@Suppress("UnusedReceiverParameter")
 private val Navigator.storage: StorageManager
     get() = storage()
 

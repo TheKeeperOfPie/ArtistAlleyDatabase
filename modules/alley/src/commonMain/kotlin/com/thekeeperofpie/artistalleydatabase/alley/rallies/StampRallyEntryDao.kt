@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import androidx.compose.foundation.layout.Column
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import app.cash.sqldelight.async.coroutines.awaitAsList
@@ -9,22 +8,22 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrDefault
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
-import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyChangelogEntryQueries
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyChangelogEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.StampRallyChangelogEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.StampRallyEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
+import com.thekeeperofpie.artistalleydatabase.alley.database.stampRallyEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
-import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
@@ -74,7 +73,11 @@ fun SqlCursor.toStampRallyWithUserData(dataYear: DataYear): StampRallyWithUserDa
             lastEditTime = null,
         ),
         seriesImageInfo = Json.decodeFromString<List<SeriesImageInfo>>(getString(15)!!),
-        _artistBoothsToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(getString(16)!!)
+        _artistBoothsToProfileImages = Json.decodeFromString<List<BoothAndProfileImage>>(
+            getString(
+                16
+            )!!
+        )
             .associate {
                 it.booth.orEmpty() to it.profileImage?.let(ColumnAdapters.databaseImageAdapter::decode)
             },
@@ -273,7 +276,8 @@ class StampRallyEntryDao(
             StampRallySearchSortOption.TOTAL_COST ->
                 "ORDER BY stampRallyEntry.totalCost $ascending NULLS LAST"
         }
-        val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyUserEntry.updatedAt"
+        val selectSuffix =
+            ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyUserEntry.updatedAt"
         val imageSubquery = StampRallyUtils.imageSubquery("stampRallyEntry.rowid", year)
         val selectFields = listOf(
             "stampRallyEntry.id",

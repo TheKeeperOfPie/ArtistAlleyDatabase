@@ -6,16 +6,9 @@ import app.cash.sqldelight.Query
 import app.cash.sqldelight.TransactionCallbacks
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
-import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
-
-private val globalDatabaseMutex = Mutex()
 
 // Copied out from androidx-paging3-extensions since it doesn't publish a wasmJs target
 class OffsetQueryPagingSource<RowType : Any>(
@@ -36,36 +29,43 @@ class OffsetQueryPagingSource<RowType : Any>(
             is LoadParams.Prepend<*> -> minOf(key, params.loadSize)
             else -> params.loadSize
         }
-        val getPagingSourceLoadResult: suspend TransactionCallbacks.() -> LoadResult.Page<Int, RowType> = {
-            val count = countQuery().awaitAsOne()
-            val offset = when (params) {
-                is LoadParams.Prepend<*> -> maxOf(0, key - params.loadSize)
-                is LoadParams.Append<*> -> key
-                is LoadParams.Refresh<*> -> if (key >= count) maxOf(0, count - params.loadSize) else key
+        val getPagingSourceLoadResult: suspend TransactionCallbacks.() -> LoadResult.Page<Int, RowType> =
+            {
+                val count = countQuery().awaitAsOne()
+                val offset = when (params) {
+                    is LoadParams.Prepend<*> -> maxOf(0, key - params.loadSize)
+                    is LoadParams.Append<*> -> key
+                    is LoadParams.Refresh<*> -> if (key >= count) maxOf(
+                        0,
+                        count - params.loadSize
+                    ) else key
+                }
+                val data = queryProvider(transacter(), limit, offset)
+                    .also { currentQuery = it }
+                    .awaitAsList()
+                val nextPosToLoad = offset + data.size
+                LoadResult.Page(
+                    data = data,
+                    prevKey = offset.takeIf { it > 0 && data.isNotEmpty() },
+                    nextKey = nextPosToLoad.takeIf { data.isNotEmpty() && data.size >= limit && it < count },
+                    itemsBefore = offset,
+                    itemsAfter = maxOf(0, count - nextPosToLoad),
+                )
             }
-            val data = queryProvider(transacter(), limit, offset)
-                .also { currentQuery = it }
-                .awaitAsList()
-            val nextPosToLoad = offset + data.size
-            LoadResult.Page(
-                data = data,
-                prevKey = offset.takeIf { it > 0 && data.isNotEmpty() },
-                nextKey = nextPosToLoad.takeIf { data.isNotEmpty() && data.size >= limit && it < count },
-                itemsBefore = offset,
-                itemsAfter = maxOf(0, count - nextPosToLoad),
-            )
-        }
 
         // TODO: Multi-threading not safe with parallel transactions. This doesn't block other
         //  database accesses, and is a really bad hack.
         //  https://github.com/eygraber/sqldelight-androidx-driver/issues/25
-        val loadResult = if (PlatformSpecificConfig.type == PlatformType.ANDROID) {
-            globalDatabaseMutex.withLock {
-                transacter().transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
-            }
-        } else {
-            transacter().transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
-        }
+        // TODO: PlatformSpecificConfig not accessible from here
+//        val loadResult = if (PlatformSpecificConfig.type == PlatformType.ANDROID) {
+//            globalDatabaseMutex.withLock {
+//                transacter().transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
+//            }
+//        } else {
+//            transacter().transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
+//        }
+        val loadResult = transacter()
+            .transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
         (if (invalid) LoadResult.Invalid() else loadResult)
     }
 
