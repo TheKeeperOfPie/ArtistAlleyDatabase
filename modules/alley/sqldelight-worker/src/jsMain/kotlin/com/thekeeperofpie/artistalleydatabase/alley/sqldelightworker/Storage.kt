@@ -4,10 +4,6 @@ import org.khronos.webgl.DataView
 import org.khronos.webgl.Uint8Array
 import kotlin.js.Promise
 
-external interface Navigator {
-    val storage: StorageManager
-}
-
 external interface StorageManager {
     fun getDirectory(): Promise<FileSystemDirectoryHandle>
 }

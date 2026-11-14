@@ -3,7 +3,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.sqldelightworker
 
 import kotlinx.browser.localStorage
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.await
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.khronos.webgl.ArrayBuffer
@@ -16,6 +20,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine
 import kotlin.js.Promise
+
+external interface Navigator {
+    val locks: LockManager
+    val storage: StorageManager
+}
 
 external val self: DedicatedWorkerGlobalScope
 external val navigator: Navigator
@@ -39,22 +48,29 @@ private const val READ_ONLY_INPUT_HASH_PATH =
 private const val READ_ONLY_DATABASE_PATH = "alleyArtist.sqlite"
 private const val READ_ONLY_DATABASE_HASH_PATH = "alleyArtistHash.txt"
 
-private lateinit var database: Sqlite3Db
 private val mutex = Mutex()
+private val database = CompletableDeferred<Sqlite3Db>()
 
 fun main() {
     if (js("typeof importScripts === 'function'").unsafeCast<Boolean>()) {
+        @Suppress("OPT_IN_USAGE")
+        GlobalScope.launch {
+            navigator.locks.request("AADB_database") {
+                promise {
+                    database.complete(createDatabase())
+                    awaitCancellation()
+                }
+            }
+        }
         self.onmessage = { event: dynamic ->
             val data = event.data
-            promise { createDatabase() }
-                .then { handleMessage(data) }
+            promise { handleMessage(data) }
                 .catch { postMessage(WorkerErrorResponse(id = data?.id, error = it)) }
         }
     }
 }
 
-private suspend fun createDatabase(): Unit = mutex.withLock {
-    if (::database.isInitialized) return@withLock
+private suspend fun createDatabase(): Sqlite3Db = mutex.withLock {
     val initOptions = Sqlite3InitOptions(print = console::log, printErr = console::error)
     val sqlite3 = sqlite3InitModule(initOptions).await()
     var opfsRoot: FileSystemDirectoryHandle? = null
@@ -105,12 +121,13 @@ private suspend fun createDatabase(): Unit = mutex.withLock {
         }
         hashHandle.close()
 
-        database = sqlite3.oo1.createOpfsDb(MUTABLE_DATABASE_PATH, "c")
-        database.exec("ATTACH DATABASE 'file:$READ_ONLY_DATABASE_PATH?vfs=opfs&immutable=1' AS readOnly;")
+        sqlite3.oo1.createOpfsDb(MUTABLE_DATABASE_PATH, "c").also {
+            it.exec("ATTACH DATABASE 'file:$READ_ONLY_DATABASE_PATH?vfs=opfs&immutable=1' AS readOnly;")
+        }
     } else {
         // TODO: Show warning that persistence is not supported for favorites (or just disable)
         console.log("OPFS not initialized")
-        database = sqlite3.oo1.createDb()
+        val database = sqlite3.oo1.createDb()
         val response = fetch(READ_ONLY_INPUT_PATH).await()
         val fileBuffer = response.arrayBuffer().await()
         val data = sqlite3.wasm.allocFromTypedArray(fileBuffer)
@@ -126,11 +143,12 @@ private suspend fun createDatabase(): Unit = mutex.withLock {
             mFlags = deserializeFlags,
         )
         database.checkRc(rc)
+        database
     }
 }
 
-private fun handleMessage(data: dynamic) {
-    if (!::database.isInitialized) throw IllegalStateException("Database not initialized")
+private suspend fun handleMessage(data: dynamic) {
+    val database = database.await()
     when (val action = data?.action?.unsafeCast<String?>()) {
         "exec" -> {
             val sql = data["sql"]
