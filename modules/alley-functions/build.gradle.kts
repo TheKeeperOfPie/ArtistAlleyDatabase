@@ -1,8 +1,11 @@
 
 import com.codingfeline.buildkonfig.compiler.FieldSpec
+import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
+import org.jetbrains.kotlin.gradle.internal.config.AnalysisFlags.optIn
 
 plugins {
+    id("library-desktop")
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("app.cash.sqldelight")
@@ -29,7 +32,6 @@ kotlin {
             implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
             implementation(libs.whyoleg.cryptography.core)
             implementation(libs.whyoleg.cryptography.provider.optimal)
-            implementation(libs.kotlinx.browser)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.sqldelight.coroutines.extensions)
 
@@ -37,6 +39,9 @@ kotlin {
             implementation(projects.modules.alley.data)
             implementation(projects.modules.alley.form.data)
             implementation(projects.modules.alley.models)
+        }
+        jsMain.dependencies {
+            implementation(libs.kotlinx.browser)
             implementation(projects.modules.cloudflare)
             implementation(npm("@cloudflare/pages-plugin-cloudflare-access", "1.0.5"))
             implementation(npm("@noble/curves", "2.0.1"))

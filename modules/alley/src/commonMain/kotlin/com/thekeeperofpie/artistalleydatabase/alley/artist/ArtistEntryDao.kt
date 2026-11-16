@@ -27,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesRowId
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
@@ -104,16 +103,15 @@ fun com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry.toArtistEntry(
 class ArtistEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val settings: ArtistAlleySettings,
     private val dao: suspend () -> ArtistEntryQueries = { database().artistEntryQueries },
     private val daoChangelog: suspend () -> ArtistChangelogEntryQueries = { database().artistChangelogEntryQueries },
     private val daoEdit: suspend () -> ArtistEntryEditQueries = { database().artistEntryEditQueries },
 ) {
     @Inject
-    constructor(
-        database: ArtistAlleyDatabase,
-        settings: ArtistAlleySettings,
-    ) : this(driver = database::driver, database = database::database, settings = settings)
+    constructor(database: ArtistAlleyDatabase) : this(
+        driver = database::driver,
+        database = database::database,
+    )
 
     suspend fun getEntriesByBooth(year: DataYear, booth: String) =
         dao().getEntriesByBooth(year, booth)

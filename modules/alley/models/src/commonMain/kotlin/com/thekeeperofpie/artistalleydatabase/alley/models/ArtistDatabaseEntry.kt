@@ -107,55 +107,6 @@ interface ArtistDatabaseEntry {
                 lastEditTime = null,
                 lastEditor = null,
             )
-
-        fun legacy(
-            year: DataYear,
-            id: String,
-            booth: String?,
-            name: String,
-            summary: String?,
-            socialLinks: List<String>,
-            storeLinks: List<String>,
-            catalogLinks: List<String>,
-            driveLink: String?,
-            notes: String?,
-            commissions: List<String>,
-            seriesInferred: List<String>,
-            seriesConfirmed: List<String>,
-            merchInferred: List<String>,
-            merchConfirmed: List<String>,
-            images: List<DatabaseImage>,
-            fallbackImageYear: DataYear?,
-            newArtist: Boolean,
-        ) = Impl(
-            year = year,
-            id = id,
-            booth = booth,
-            name = name,
-            summary = summary,
-            socialLinks = socialLinks,
-            storeLinks = storeLinks,
-            portfolioLinks = catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
-            catalogLinks = catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
-            driveLink = driveLink,
-            notes = notes,
-            commissions = commissions,
-            seriesInferred = seriesInferred,
-            seriesConfirmed = seriesConfirmed,
-            merchInferred = merchInferred,
-            merchConfirmed = merchConfirmed,
-            _images = images,
-            fallbackImageYear = fallbackImageYear,
-            tempImages = emptyList(),
-            profileImage = null,
-            embeds = emptyMap(),
-            status = ArtistStatus.UNKNOWN,
-            editorNotes = null,
-            lastEditor = null,
-            lastEditTime = null,
-            verifiedArtist = false,
-            newArtist = newArtist,
-        )
     }
 }
 
@@ -185,3 +136,7 @@ fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(
     merchConfirmed = merchConfirmed,
     images = images,
 )
+
+fun ArtistDatabaseEntry.toDatabaseEntry() {
+
+}

@@ -50,4 +50,5 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override var rootDestination by mutableStateOf(AlleyHomeDestination.ARTISTS)
 
     override var pendingUserAuthCode: String? by mutableStateOf(null)
+    override var lastSyncGeneration: Long? by mutableStateOf(null)
 }

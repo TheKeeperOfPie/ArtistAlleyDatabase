@@ -1,0 +1,43 @@
+package com.thekeeperofpie.artistalleydatabase.alley.sync
+
+import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.database.GenerationQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserDataSyncQueries
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.SingleIn
+
+@SingleIn(AppScope::class)
+class UserDataSyncDao(
+    private val database: suspend () -> AlleySqlDatabase,
+    private val generationDao: suspend () -> GenerationQueries = { database().generationQueries },
+    private val syncDao: suspend () -> UserDataSyncQueries = { database().userDataSyncQueries },
+) {
+    suspend fun getPayload(lastSyncGeneration: Long): SyncPayload {
+        val syncDao = syncDao()
+        val generationDao = generationDao()
+        return syncDao.transactionWithResult {
+            val lastGeneration = generationDao.getLastGeneration().awaitAsOneOrNull()?.lastGeneration
+            SyncPayload(
+                lastGeneration = lastGeneration,
+                artistChangesSince = syncDao.getArtistChangesSince(lastSyncGeneration).awaitAsList(),
+                rallyChangesSince = syncDao.getStampRallyChangesSince(lastSyncGeneration).awaitAsList(),
+                seriesChangesSince = syncDao.getSeriesChangesSince(lastSyncGeneration).awaitAsList(),
+                merchChangesSince = syncDao.getMerchChangesSince(lastSyncGeneration).awaitAsList(),
+            )
+        }
+    }
+
+    data class SyncPayload(
+        val lastGeneration: Long?,
+        val artistChangesSince: List<ArtistUserEntry>,
+        val rallyChangesSince: List<StampRallyUserEntry>,
+        val seriesChangesSince: List<SeriesUserEntry>,
+        val merchChangesSince: List<MerchUserEntry>,
+    )
+}

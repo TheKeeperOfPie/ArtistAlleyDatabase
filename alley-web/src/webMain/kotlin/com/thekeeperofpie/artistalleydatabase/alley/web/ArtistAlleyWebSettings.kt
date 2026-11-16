@@ -169,6 +169,7 @@ class ArtistAlleyWebSettings(
     )
 
     override var pendingUserAuthCode by registerString(null)
+    override var lastSyncGeneration: Long? by registerLong(null)
 
     private fun <T> register(serialize: (T) -> String?, deserialize: (String?) -> T) =
         object : ReadWriteProperty<Any?, T> {
@@ -227,8 +228,8 @@ class ArtistAlleyWebSettings(
         deserialize = { it ?: defaultValue },
     )
 
-    private fun registerLong(defaultValue: Long) = register<Long>(
-        serialize = Long::toString,
+    private fun registerLong(defaultValue: Long?) = register(
+        serialize = { it?.toString() },
         deserialize = { it?.toLongOrNull() ?: defaultValue },
     )
 }

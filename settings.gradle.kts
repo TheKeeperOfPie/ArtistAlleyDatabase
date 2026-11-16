@@ -114,6 +114,7 @@ include(
     ":modules:alley:models",
     ":modules:alley:service-worker",
     ":modules:alley:sqldelight-worker",
+    ":modules:alley:sync",
     ":modules:alley:user",
     ":modules:alley-discord",
     ":modules:alley-durableobject",
