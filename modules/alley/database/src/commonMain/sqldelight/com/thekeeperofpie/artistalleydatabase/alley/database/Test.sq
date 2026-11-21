@@ -24,3 +24,6 @@ ORDER BY artistNotes.artistId, artistNotes.dataYear;
 getStampRallyNotes:
 SELECT stampRallyNotes.* FROM stampRallyNotes
 ORDER BY stampRallyNotes.stampRallyId;
+
+getArtistUserEntries:
+SELECT * FROM artistUserEntry;

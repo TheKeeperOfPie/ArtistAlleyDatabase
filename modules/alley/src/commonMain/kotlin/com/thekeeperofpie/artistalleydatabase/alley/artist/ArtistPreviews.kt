@@ -91,7 +91,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 artist = ArtistEntry(databaseEntry),
                 userEntry = ArtistUserEntry(
                     artistId = databaseEntry.id,
-                    dataYear = DataYear.ANIME_EXPO_2025,
+                    dataYear = DataYear.LATEST,
                     favorite = index % 2 == 1,
                     ignored = index % 3 == 2,
                     generation = 0,

@@ -6,11 +6,13 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -43,6 +45,7 @@ private fun GetBoothsWithFavorites.toBoothWithFavorite() =
 class UserEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
+    private val settings: AlleyUserSettings,
     private val artistUserEntryDao: suspend () -> ArtistUserEntryQueries = { database().artistUserEntryQueries },
     private val rallyUserEntryDao: suspend () -> StampRallyUserEntryQueries = { database().stampRallyUserEntryQueries },
     private val seriesUserEntryDao: suspend () -> SeriesUserEntryQueries = { database().seriesUserEntryQueries },
@@ -54,9 +57,10 @@ class UserEntryDao(
     }
 
     @Inject
-    constructor(database: ArtistAlleyDatabase) : this(
+    constructor(database: ArtistAlleyDatabase, settings: AlleyUserSettings) : this(
         driver = database::driver,
         database = database::database,
+        settings = settings,
     )
 
     fun getArtistFavorites(dataYear: DataYear) = flowFromSuspend(artistUserEntryDao)
@@ -81,7 +85,7 @@ class UserEntryDao(
                 val newEntry = existing.copy(
                     favorite = entry.favorite,
                     ignored = entry.ignored,
-                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    generation = (settings.lastSyncGeneration ?: 0) + 1,
                     updatedAt = clock.now(),
                 )
                 insertArtistUserEntry(newEntry)
@@ -100,7 +104,7 @@ class UserEntryDao(
                 val newEntry = existing.copy(
                     favorite = entry.favorite,
                     ignored = entry.ignored,
-                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    generation = (settings.lastSyncGeneration ?: 0) + 1,
                     updatedAt = clock.now(),
                 )
                 insertStampRallyUserEntry(newEntry)
@@ -118,7 +122,7 @@ class UserEntryDao(
                     ?: entry
                 val newEntry = existing.copy(
                     favorite = entry.favorite,
-                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    generation = (settings.lastSyncGeneration ?: 0) + 1,
                     updatedAt = clock.now(),
                 )
                 insertSeriesUserEntry(newEntry)
@@ -136,13 +140,35 @@ class UserEntryDao(
                     ?: entry
                 val newEntry = existing.copy(
                     favorite = entry.favorite,
-                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    generation = (settings.lastSyncGeneration ?: 0) + 1,
                     updatedAt = clock.now(),
                 )
                 insertMerchUserEntry(newEntry)
             }
             delay(NOTIFY_DELAY)
             driver().notifyListeners("merchEntry", "merchUserEntry")
+        }
+    }
+
+    suspend fun insertSyncPayload(payload: UserDataSyncPayload) {
+        database().transactionWithResult {
+            val artistUserEntryDao = artistUserEntryDao()
+            payload.artists?.forEach {
+                val userEntry =
+                    artistUserEntryDao.getArtistUserEntry(it.id, it.dataYear).awaitAsOneOrNull()
+                if (userEntry == null || userEntry.generation <= it.generation) {
+                    artistUserEntryDao.insertArtistUserEntry(
+                        ArtistUserEntry(
+                            artistId = it.id,
+                            dataYear = it.dataYear,
+                            favorite = it.favorite ?: userEntry?.favorite ?: false,
+                            ignored = it.ignored ?: userEntry?.ignored ?: false,
+                            generation = it.generation,
+                            updatedAt = it.updatedAt,
+                        )
+                    )
+                }
+            }
         }
     }
 

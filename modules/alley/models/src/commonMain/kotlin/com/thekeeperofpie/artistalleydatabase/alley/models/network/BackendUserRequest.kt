@@ -16,7 +16,7 @@ sealed interface BackendUserRequest {
 
         @Serializable
         data class Response(
-            val latestGeneration: Long?,
+            val payload: UserDataSyncPayload,
         )
     }
 }

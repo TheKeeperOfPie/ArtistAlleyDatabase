@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
@@ -14,6 +15,7 @@ import kotlin.time.Clock
 class UserNotesDao(
     private val database: suspend () -> AlleySqlDatabase,
     private val dispatchers: CustomDispatchers,
+    private val settings: AlleyUserSettings,
     private val notesDao: suspend () -> NotesQueries = { database().notesQueries },
     private val clock: Clock = Clock.System,
 ) {
@@ -21,7 +23,8 @@ class UserNotesDao(
     constructor(
         database: ArtistAlleyDatabase,
         dispatchers: CustomDispatchers,
-    ) : this(database = database::database, dispatchers = dispatchers)
+        settings: AlleyUserSettings,
+    ) : this(database = database::database, dispatchers = dispatchers, settings = settings)
 
     companion object {
         const val MAX_CHARACTER_COUNT = 1000
@@ -50,7 +53,7 @@ class UserNotesDao(
             transaction {
                 this@run.updateArtistNotes(
                     artistId, year, notes.take(MAX_CHARACTER_COUNT),
-                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    generation = (settings.lastSyncGeneration ?: 0) + 1,
                     updatedAt = clock.now(),
                 )
             }
@@ -64,7 +67,7 @@ class UserNotesDao(
                 this@run.updateStampRallyNotes(
                     stampRallyId,
                     notes.take(MAX_CHARACTER_COUNT),
-                    generation = AlleyDatabaseUtils.getNextGeneration(database),
+                    generation = (settings.lastSyncGeneration ?: 0) + 1,
                     updatedAt = clock.now(),
                 )
             }

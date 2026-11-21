@@ -3,7 +3,12 @@ SELECT MAX(
     (SELECT MAX(generation) FROM userArtist WHERE userId = :userId)
 ) AS lastGeneration;
 
-getUserGeneration:
-SELECT generation
-FROM userGeneration
-WHERE userId = :userId;
+provisionGeneration:
+INSERT OR IGNORE INTO userGeneration
+VALUES ?;
+
+incrementUserGeneration:
+UPDATE userGeneration
+SET generation = generation + 1
+WHERE userId = :userId
+RETURNING generation;

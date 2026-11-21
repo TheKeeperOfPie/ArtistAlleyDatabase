@@ -202,13 +202,13 @@ internal object AlleyUserBackend {
             context.env.ARTIST_ALLEY_USER_DB
         )
         val database = BackendDatabases.userDatabase(context, driver)
-        val nextGeneration = UserDataHandler.syncFromClient(
+        val payload = UserDataHandler.syncFromClient(
             clock = Clock.System,
             userId = userId,
             payload = request.syncPayload,
             database = database,
         )
-        return request.makeResponse(BackendUserRequest.Sync.Response(latestGeneration = nextGeneration))
+        return request.makeResponse(BackendUserRequest.Sync.Response(payload))
     }
 
     private suspend fun readUserIdFromAuthToken(context: EventContext): UserId? {

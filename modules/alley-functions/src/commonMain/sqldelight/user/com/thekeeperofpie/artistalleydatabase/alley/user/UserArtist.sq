@@ -10,3 +10,11 @@ WHERE (
     generation > excluded.generation OR
     updatedAt > excluded.updatedAt
 );
+
+getChangesBetween:
+SELECT generation, dataYear, artistId, favorite, ignored, updatedAt FROM userArtist
+WHERE (
+    userId = :userId AND
+    generation > :lowerGeneration AND
+    generation <= :upperGeneration
+);

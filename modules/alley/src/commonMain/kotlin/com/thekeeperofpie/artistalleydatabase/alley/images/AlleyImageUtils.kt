@@ -187,7 +187,8 @@ object AlleyImageUtils {
             Res.getUri(path)
         } catch (t: Throwable) {
             if (PlatformSpecificConfig.type == PlatformType.DESKTOP) {
-                t.printStackTrace()
+                // TODO: Commented out to make tests easier to read
+                // t.printStackTrace()
             }
             // Previews won't load resources, return fake
             "blob:$path"
