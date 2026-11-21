@@ -183,13 +183,13 @@ object AlleyEditBackend {
         Utils.jsonResponse<Response>(response)
     }
 
-    private suspend fun databaseCreate(context: EventContext) = Databases.create(context)
+    private suspend fun databaseCreate(context: EventContext) = BackendDatabases.create(context)
 
     private suspend fun loadArtists(
         context: EventContext,
         request: BackendRequest.Artists,
     ): List<ArtistSummary> =
-        Databases.editDatabase(context).artistEntryQueries
+        BackendDatabases.editDatabase(context).artistEntryQueries
             .getArtistsByYear(request.dataYear)
             .awaitAsList()
             .map {
@@ -214,7 +214,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.Artist,
     ): ArtistDatabaseEntry.Impl? =
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .artistEntryQueries
             .getArtist(request.dataYear, request.artistId)
             .awaitAsOneOrNull()
@@ -225,14 +225,14 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.ArtistWithFormMetadata,
     ): BackendRequest.ArtistWithFormMetadata.Response? =
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .artistEntryQueries
             .getArtist(request.dataYear, request.artistId)
             .awaitAsOneOrNull()
             ?.toArtistDatabaseEntry()
             ?.fixForJs()
             ?.let {
-                val formDatabase = Databases.formDatabase(context)
+                val formDatabase = BackendDatabases.formDatabase(context)
                 val formEntry = formDatabase.artistFormEntryQueries
                     .getFormEntry(request.dataYear, request.artistId)
                     .awaitAsOneOrNull()
@@ -251,7 +251,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.ArtistFormQueue,
     ): List<ArtistFormQueueEntry> =
-        Databases.formDatabase(context)
+        BackendDatabases.formDatabase(context)
             .artistFormEntryQueries
             .getFormQueue(request.dataYear)
             .awaitAsList()
@@ -267,7 +267,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.ArtistFormHistory,
     ): List<ArtistFormHistoryEntry> =
-        Databases.formDatabase(context)
+        BackendDatabases.formDatabase(context)
             .artistFormEntryQueries
             .getFormHistory(request.dataYear)
             .awaitAsList()
@@ -336,7 +336,7 @@ object AlleyEditBackend {
             BackendRequest.ArtistSave.Response.Success -> Unit
         }
 
-        Databases.formDatabase(context).artistFormEntryQueries.run {
+        BackendDatabases.formDatabase(context).artistFormEntryQueries.run {
             // D1 only supports transactions in a batched statement, which is hard to set up
             // A single write and delete should be consistent enough that it shouldn't matter
             val artistId = Uuid.parse(request.updated.id)
@@ -396,7 +396,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.ArtistDelete,
     ): BackendRequest.ArtistDelete.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentArtist =
             database.artistEntryQueries
                 .getArtist(request.dataYear, Uuid.parse(request.expected.id))
@@ -418,7 +418,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.ArtistHistory,
     ): List<ArtistHistoryEntry> =
-        Databases.editDatabase(context).artistEntryQueries
+        BackendDatabases.editDatabase(context).artistEntryQueries
             .getHistory(request.dataYear, request.artistId.toString())
             .awaitAsList()
             .map { it.toHistoryEntry() }
@@ -429,7 +429,7 @@ object AlleyEditBackend {
         formTimestamp: Instant?,
         remoteTimestamp: Instant?,
     ): BackendRequest.ArtistSave.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentArtist =
             database.artistEntryQueries
                 .getArtist(request.dataYear, Uuid.parse(request.updated.id))
@@ -492,7 +492,7 @@ object AlleyEditBackend {
     private suspend fun artistCatalogsQueue(
         context: EventContext,
         request: BackendRequest.ArtistCatalogsQueue,
-    ): List<Triple<Uuid, String, String>> = Databases.editDatabase(context)
+    ): List<Triple<Uuid, String, String>> = BackendDatabases.editDatabase(context)
         .artistCatalogQueueEntryQueries
         .getCatalogEntries(request.year)
         .awaitAsList()
@@ -503,7 +503,7 @@ object AlleyEditBackend {
         request: BackendRequest.QueueArtistCatalog,
     ) {
         val link = request.link
-        val queries = Databases.editDatabase(context)
+        val queries = BackendDatabases.editDatabase(context)
             .artistCatalogQueueEntryQueries
         if (link == null) {
             queries.deleteCatalogEntry(request.dataYear, request.artistId)
@@ -523,7 +523,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.GenerateFormKey,
     ): String? {
-        val database = Databases.formDatabase(context)
+        val database = BackendDatabases.formDatabase(context)
         val keys = AlleyCryptography.generate()
         if (!request.forceRegenerate && database.alleyFormPublicKeyQueries.hasPublicKey(request.artistId)
                 .awaitAsOne()
@@ -555,7 +555,7 @@ object AlleyEditBackend {
     }
 
     private suspend fun deleteFakeArtistData(context: EventContext) {
-        Databases.formDatabase(context).fakeArtistDataQueries.run {
+        BackendDatabases.formDatabase(context).fakeArtistDataQueries.run {
             deleteFakeArtistFormEntry()
             deleteFakeArtistFormEntryHistory()
             deleteFakeArtistPublicKey()
@@ -573,7 +573,7 @@ object AlleyEditBackend {
     }
 
     private suspend fun loadSeriesIntoCache(context: EventContext) =
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .seriesEntryQueries
             .getSeries()
             .awaitAsList()
@@ -584,7 +584,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.SeriesSave,
     ): BackendRequest.SeriesSave.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentSeries =
             database.seriesEntryQueries.getSeriesById(request.updated.id)
                 .awaitAsOneOrNull()?.toSeriesInfo()
@@ -600,7 +600,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.SeriesDelete,
     ): BackendRequest.SeriesDelete.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentSeries =
             database.seriesEntryQueries.getSeriesById(request.expected.id)
                 .awaitAsOneOrNull()?.toSeriesInfo()
@@ -613,7 +613,7 @@ object AlleyEditBackend {
     }
 
     private suspend fun loadMerch(context: EventContext): List<MerchInfo> =
-        Databases.editDatabase(context).merchEntryQueries
+        BackendDatabases.editDatabase(context).merchEntryQueries
             .getMerch()
             .awaitAsList()
             .map { it.toMerchInfo() }
@@ -622,7 +622,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.MerchSave,
     ): BackendRequest.MerchSave.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.updated.name)
                 .awaitAsOneOrNull()?.toMerchInfo()
@@ -637,7 +637,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.MerchDelete,
     ): BackendRequest.MerchDelete.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.expected.name)
                 .awaitAsOneOrNull()?.toMerchInfo()
@@ -664,7 +664,7 @@ object AlleyEditBackend {
         request: BackendRequest.StampRallySave,
         formTimestamp: Instant?,
     ): BackendRequest.StampRallySave.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentStampRally =
             database.stampRallyEntryQueries
                 .getStampRally(request.dataYear, request.updated.id)
@@ -704,7 +704,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.StampRallyDelete,
     ): BackendRequest.StampRallyDelete.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentStampRally =
             database.stampRallyEntryQueries
                 .getStampRally(request.dataYear, request.expected.id)
@@ -725,7 +725,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.StampRallyDeleteFromForm,
     ): BackendRequest.StampRallyDeleteFromForm.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val currentStampRally =
             database.stampRallyEntryQueries
                 .getStampRally(request.dataYear, request.expected.id)
@@ -755,7 +755,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.StampRallyHistory,
     ): List<StampRallyHistoryEntry> =
-        Databases.editDatabase(context).stampRallyEntryQueries
+        BackendDatabases.editDatabase(context).stampRallyEntryQueries
             .getHistory(request.dataYear, request.stampRallyId)
             .awaitAsList()
             .map { it.toHistoryEntry() }
@@ -764,7 +764,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.DeleteStampRallyQueueEntry,
     ) {
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .stampRallyQueueEntryQueries
             .deleteStampRallyQueueEntry(request.dataYear, request.link)
     }
@@ -773,7 +773,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.QueueStampRally,
     ) {
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .stampRallyQueueEntryQueries
             .insertStampRallyQueueEntry(
                 com.thekeeperofpie.artistalleydatabase.alley.backend.data.StampRallyQueueEntry(
@@ -789,7 +789,7 @@ object AlleyEditBackend {
         request: BackendRequest.StampRalliesQueue,
     ): List<StampRallyQueueEntry> =
         when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).stampRallyQueueEntryQueries
+            DataYear.ANIME_EXPO_2026 -> BackendDatabases.editDatabase(context).stampRallyQueueEntryQueries
                 .getStampRallyQueueEntries(request.dataYear)
                 .awaitAsList()
                 .map { StampRallyQueueEntry(it.link, it.booths) }
@@ -803,7 +803,7 @@ object AlleyEditBackend {
         }
 
     private suspend fun loadStampRallyFormQueue(context: EventContext): List<StampRallyFormQueueEntry> =
-        Databases.formDatabase(context)
+        BackendDatabases.formDatabase(context)
             .stampRallyFormEntryQueries
             .getFormQueue()
             .awaitAsList()
@@ -818,7 +818,7 @@ object AlleyEditBackend {
             }
 
     private suspend fun loadStampRallyFormHistory(context: EventContext): List<StampRallyFormHistoryEntry> =
-        Databases.formDatabase(context)
+        BackendDatabases.formDatabase(context)
             .stampRallyFormEntryQueries
             .getFormHistory()
             .awaitAsList()
@@ -916,7 +916,7 @@ object AlleyEditBackend {
         stampRallyId: String,
         formEntryTimestamp: Instant,
     ) {
-        Databases.formDatabase(context).stampRallyFormEntryQueries.run {
+        BackendDatabases.formDatabase(context).stampRallyFormEntryQueries.run {
             // D1 only supports transactions in a batched statement, which is hard to set up
             // A single write and delete should be consistent enough that it shouldn't matter
             val formEntry = getFormEntryWithTimestamp(
@@ -973,7 +973,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.RemoteArtistData,
     ): List<ArtistRemoteSummary> =
-        Databases.editDatabase(context).artistRemoteDataQueries
+        BackendDatabases.editDatabase(context).artistRemoteDataQueries
             .getEntrySummaries(request.dataYear)
             .awaitAsList()
             .map {
@@ -989,7 +989,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.RemoteArtistDataEntry,
     ): ArtistRemoteEntry? =
-        Databases.editDatabase(context).artistRemoteDataQueries
+        BackendDatabases.editDatabase(context).artistRemoteDataQueries
             .getEntry(dataYear = request.dataYear, booth = request.id.booth, name = request.id.name)
             .awaitAsOneOrNull()
             ?.let {
@@ -1007,7 +1007,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.RemoteArtistDataForDiff,
     ): Map<ArtistRemoteEntry.Id, ArtistRemoteEntry> {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val queries = database.artistRemoteDataQueries
         val history = queries.getMostRecentHistoryEntries(request.dataYear)
             .awaitAsList()
@@ -1043,7 +1043,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.RemoteArtistDataHistory,
     ): List<ArtistRemoteSummary> =
-        Databases.editDatabase(context).artistRemoteDataQueries
+        BackendDatabases.editDatabase(context).artistRemoteDataQueries
             .getMostRecentHistorySummaries(request.dataYear)
             .awaitAsList()
             .map {
@@ -1059,7 +1059,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.RemoteArtistDataHistoryEntry,
     ): ArtistRemoteEntry? {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val timestamp = request.timestamp
         return if (timestamp == null) {
             database.artistRemoteDataQueries
@@ -1106,7 +1106,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.SubmitRemoteArtistData,
     ) {
-        val queries = Databases.editDatabase(context).artistRemoteDataQueries
+        val queries = BackendDatabases.editDatabase(context).artistRemoteDataQueries
         request.data
             .map {
                 ArtistRemoteData(
@@ -1126,7 +1126,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.SaveRemoteArtistData,
     ): BackendRequest.SaveRemoteArtistData.Response {
-        val database = Databases.editDatabase(context)
+        val database = BackendDatabases.editDatabase(context)
         val saveRequest = BackendRequest.ArtistSave(
             dataYear = request.dataYear,
             initial = request.initial,

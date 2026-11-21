@@ -1,24 +1,45 @@
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.AuthToken;
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken;
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserArtistId;
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
+import kotlin.Boolean;
 import kotlin.time.Instant;
 
 CREATE TABLE IF NOT EXISTS authCode (
     code TEXT NOT NULL,
-    userId TEXT NOT NULL,
+    userId TEXT AS UserId NOT NULL,
     PRIMARY KEY (code)
 );
 
 CREATE TABLE IF NOT EXISTS user (
-    userId TEXT NOT NULL,
+    userId TEXT AS UserId NOT NULL,
     refreshToken TEXT AS RefreshToken NOT NULL,
     createdAt INTEGER AS Instant NOT NULL,
     deviceIdentifier TEXT,
     PRIMARY KEY (userId, refreshToken)
 );
 
+CREATE TABLE IF NOT EXISTS userGeneration (
+    userId TEXT AS UserId NOT NULL,
+    generation INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (userId)
+);
+
 CREATE TABLE IF NOT EXISTS userSession (
-    userId TEXT NOT NULL,
+    userId TEXT AS UserId NOT NULL,
     authToken TEXT AS AuthToken NOT NULL,
     createdAt INTEGER AS Instant NOT NULL,
     PRIMARY KEY (userId, authToken)
+);
+
+CREATE TABLE IF NOT EXISTS userArtist (
+    userId TEXT AS UserId NOT NULL,
+    dataYear TEXT AS DataYear NOT NULL,
+    artistId TEXT NOT NULL,
+    favorite INTEGER AS Boolean,
+    ignored INTEGER AS Boolean,
+    generation INTEGER NOT NULL,
+    updatedAt INTEGER AS Instant NOT NULL,
+    PRIMARY KEY (userId, dataYear, artistId)
 );

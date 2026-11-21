@@ -1,0 +1,3 @@
+getAllArtists:
+SELECT * FROM userArtist
+WHERE userId = :userId;

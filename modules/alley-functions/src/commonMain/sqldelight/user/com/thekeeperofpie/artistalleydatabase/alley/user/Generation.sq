@@ -1,0 +1,9 @@
+getLastGeneration:
+SELECT MAX(
+    (SELECT MAX(generation) FROM userArtist WHERE userId = :userId)
+) AS lastGeneration;
+
+getUserGeneration:
+SELECT generation
+FROM userGeneration
+WHERE userId = :userId;

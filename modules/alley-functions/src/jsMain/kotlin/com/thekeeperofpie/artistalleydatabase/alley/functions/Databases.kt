@@ -1,184 +1,24 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
-import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.async.coroutines.awaitCreate
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQueueEntry
-import com.thekeeperofpie.artistalleydatabase.alley.backend.data.BackendColumnAdapters
-import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
-import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntry
-import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
-import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormNonce
-import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
-import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntry
-import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntryHistory
-import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.AuthToken
-import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken
+import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.user.User
-import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
-import com.thekeeperofpie.artistalleydatabase.cloudflare.WorkerSqlDriver
 
-internal object Databases {
-
-    private fun editSqlDriver(context: EventContext) =
-        WorkerSqlDriver(database = context.env.ARTIST_ALLEY_DB)
-
-    private fun formSqlDriver(context: EventContext) =
-        WorkerSqlDriver(database = context.env.ARTIST_ALLEY_FORM_DB)
-
-    private fun userSqlDriver(context: EventContext) =
-        WorkerSqlDriver(database = context.env.ARTIST_ALLEY_USER_DB)
-
-    suspend fun create(context: EventContext) {
-        AlleySqlDatabase.Schema.awaitCreate(editSqlDriver(context))
-        AlleyFormDatabase.Schema.awaitCreate(formSqlDriver(context))
-        AlleyUserDatabase.Schema.awaitCreate(userSqlDriver(context))
-    }
-
-    fun editDatabase(context: EventContext) = AlleySqlDatabase(
-        driver = editSqlDriver(context),
-        artistCatalogQueueEntryAdapter = ArtistCatalogQueueEntry.Adapter(
-            dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-        ),
-        artistEntryAdapter = ColumnAdapters.artistEntryAdapter,
-        artistHistoryEntryAdapter = BackendColumnAdapters.artistHistoryEntryAdapter,
-        artistRemoteDataAdapter = BackendColumnAdapters.artistRemoteDataAdapter,
-        artistRemoteDataHistoryAdapter = BackendColumnAdapters.artistRemoteDataHistoryAdapter,
-        seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
-        stampRallyEntryAdapter = ColumnAdapters.stampRallyEntryAdapter,
-        stampRallyHistoryEntryAdapter = BackendColumnAdapters.stampRallyHistoryEntryAdapter,
-        stampRallyQueueEntryAdapter = BackendColumnAdapters.stampRallyQueueEntryAdapter,
-    )
-
-    fun formDatabase(context: EventContext) = AlleyFormDatabase(
-        driver = formSqlDriver(context),
-        artistFormEntryAdapter = ArtistFormEntry.Adapter(
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-            dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            beforeSocialLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeStoreLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforePortfolioLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeCatalogLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeCommissionsAdapter = ColumnAdapters.listStringAdapter,
-            beforeSeriesInferredAdapter = ColumnAdapters.listStringAdapter,
-            beforeSeriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            beforeMerchInferredAdapter = ColumnAdapters.listStringAdapter,
-            beforeMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            beforeImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            beforeProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
-            afterSocialLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterStoreLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterPortfolioLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterCatalogLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterCommissionsAdapter = ColumnAdapters.listStringAdapter,
-            afterSeriesInferredAdapter = ColumnAdapters.listStringAdapter,
-            afterSeriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            afterMerchInferredAdapter = ColumnAdapters.listStringAdapter,
-            afterMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            afterImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            afterProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
-            timestampAdapter = ColumnAdapters.instantAdapter,
-        ),
-        artistFormEntryHistoryAdapter = ArtistFormEntryHistory.Adapter(
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-            dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            beforeSocialLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeStoreLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforePortfolioLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeCatalogLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeCommissionsAdapter = ColumnAdapters.listStringAdapter,
-            beforeSeriesInferredAdapter = ColumnAdapters.listStringAdapter,
-            beforeSeriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            beforeMerchInferredAdapter = ColumnAdapters.listStringAdapter,
-            beforeMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            beforeImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            beforeProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
-            afterSocialLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterStoreLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterPortfolioLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterCatalogLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterCommissionsAdapter = ColumnAdapters.listStringAdapter,
-            afterSeriesInferredAdapter = ColumnAdapters.listStringAdapter,
-            afterSeriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            afterMerchInferredAdapter = ColumnAdapters.listStringAdapter,
-            afterMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
-            afterImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            afterProfileImageAdapter = ColumnAdapters.databaseImageAdapter,
-            timestampAdapter = ColumnAdapters.instantAdapter,
-        ),
-        artistFormNonceAdapter = ArtistFormNonce.Adapter(
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-            nonceAdapter = ColumnAdapters.uuidAdapter,
-            timestampAdapter = ColumnAdapters.instantAdapter,
-        ),
-        artistFormPublicKeyAdapter = ArtistFormPublicKey.Adapter(
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-        ),
-        stampRallyFormEntryAdapter = StampRallyFormEntry.Adapter(
-            dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-            beforeTablesAdapter = ColumnAdapters.listStringAdapter,
-            beforeStartTablesAdapter = ColumnAdapters.setStringAdapter,
-            beforeEndTablesAdapter = ColumnAdapters.setStringAdapter,
-            beforeLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeTableMinAdapter = ColumnAdapters.tableMinAdapter,
-            beforePrizeMerchAdapter = ColumnAdapters.listStringAdapter,
-            beforeSeriesAdapter = ColumnAdapters.listStringAdapter,
-            beforeMerchAdapter = ColumnAdapters.listStringAdapter,
-            beforeImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            afterTablesAdapter = ColumnAdapters.listStringAdapter,
-            afterLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterTableMinAdapter = ColumnAdapters.tableMinAdapter,
-            afterStartTablesAdapter = ColumnAdapters.setStringAdapter,
-            afterEndTablesAdapter = ColumnAdapters.setStringAdapter,
-            afterPrizeMerchAdapter = ColumnAdapters.listStringAdapter,
-            afterSeriesAdapter = ColumnAdapters.listStringAdapter,
-            afterMerchAdapter = ColumnAdapters.listStringAdapter,
-            afterImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            timestampAdapter = ColumnAdapters.instantAdapter,
-        ),
-        stampRallyFormEntryHistoryAdapter = StampRallyFormEntryHistory.Adapter(
-            dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            artistIdAdapter = ColumnAdapters.uuidAdapter,
-            beforeTablesAdapter = ColumnAdapters.listStringAdapter,
-            beforeStartTablesAdapter = ColumnAdapters.setStringAdapter,
-            beforeEndTablesAdapter = ColumnAdapters.setStringAdapter,
-            beforeLinksAdapter = ColumnAdapters.listStringAdapter,
-            beforeTableMinAdapter = ColumnAdapters.tableMinAdapter,
-            beforePrizeMerchAdapter = ColumnAdapters.listStringAdapter,
-            beforeSeriesAdapter = ColumnAdapters.listStringAdapter,
-            beforeMerchAdapter = ColumnAdapters.listStringAdapter,
-            beforeImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            afterTablesAdapter = ColumnAdapters.listStringAdapter,
-            afterStartTablesAdapter = ColumnAdapters.setStringAdapter,
-            afterEndTablesAdapter = ColumnAdapters.setStringAdapter,
-            afterLinksAdapter = ColumnAdapters.listStringAdapter,
-            afterTableMinAdapter = ColumnAdapters.tableMinAdapter,
-            afterPrizeMerchAdapter = ColumnAdapters.listStringAdapter,
-            afterSeriesAdapter = ColumnAdapters.listStringAdapter,
-            afterMerchAdapter = ColumnAdapters.listStringAdapter,
-            afterImagesAdapter = ColumnAdapters.listDatabaseImageAdapter,
-            timestampAdapter = ColumnAdapters.instantAdapter,
-        ),
-    )
-
-    fun userDatabase(context: EventContext) = AlleyUserDatabase(
-        driver = userSqlDriver(context),
-        userAdapter = User.Adapter(
-            createdAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
-            refreshTokenAdapter = object : ColumnAdapter<RefreshToken, String> {
-                override fun decode(databaseValue: String) = RefreshToken(databaseValue)
-                override fun encode(value: RefreshToken) = value.token
-            },
-        ),
-        userSessionAdapter = UserSession.Adapter(
-            authTokenAdapter = object : ColumnAdapter<AuthToken, String> {
-                override fun decode(databaseValue: String) = AuthToken(databaseValue)
-                override fun encode(value: AuthToken) = value.token
-            },
-            createdAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
-        ),
-    )
+@Suppress("UnusedReceiverParameter")
+internal suspend fun BackendDatabases.create(context: EventContext) {
+    AlleySqlDatabase.Schema.awaitCreate(DatabaseDrivers.editSqlDriver(context))
+    AlleyFormDatabase.Schema.awaitCreate(DatabaseDrivers.formSqlDriver(context))
+    AlleyUserDatabase.Schema.awaitCreate(DatabaseDrivers.userSqlDriver(context))
 }
+
+internal fun BackendDatabases.editDatabase(context: EventContext) =
+    editDatabase(DatabaseDrivers.editSqlDriver(context))
+
+internal fun BackendDatabases.formDatabase(context: EventContext) =
+    formDatabase(DatabaseDrivers.formSqlDriver(context))
+
+internal fun BackendDatabases.userDatabase(
+    context: EventContext,
+    driver: SqlDriver = DatabaseDrivers.userSqlDriver(context),
+) = userDatabase(driver)

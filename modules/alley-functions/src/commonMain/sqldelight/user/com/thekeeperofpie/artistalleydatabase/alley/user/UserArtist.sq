@@ -1,0 +1,12 @@
+insertUserArtist:
+INSERT INTO userArtist
+VALUES ?
+ON CONFLICT(userId, dataYear, artistId) DO UPDATE SET
+    favorite = IFNULL(excluded.favorite, favorite),
+    ignored = IFNULL(excluded.ignored, ignored),
+    generation = excluded.generation,
+    updatedAt = excluded.updatedAt
+WHERE (
+    generation > excluded.generation OR
+    updatedAt > excluded.updatedAt
+);

@@ -12,6 +12,24 @@ import org.khronos.webgl.Uint8Array
 class WorkerSqlDriver(
     private val database: D1Database,
 ) : SqlDriver {
+
+    fun makeQuery(
+        sql: String,
+        parameters: Int,
+        binders: (SqlPreparedStatement.() -> Unit)?,
+    ): D1PreparedStatement {
+        val statement = database.prepare(sql)
+        val collectingStatement = CollectingStatement()
+        binders?.invoke(collectingStatement)
+        return statement.run {
+            if (parameters > 0) {
+                bind(*collectingStatement.values.toTypedArray())
+            } else {
+                this
+            }
+        }
+    }
+
     override fun <R> executeQuery(
         identifier: Int?,
         sql: String,
@@ -19,19 +37,9 @@ class WorkerSqlDriver(
         parameters: Int,
         binders: (SqlPreparedStatement.() -> Unit)?,
     ): QueryResult<R> {
-        val statement = database.prepare(sql)
-        val collectingStatement = CollectingStatement()
-        binders?.invoke(collectingStatement)
+        val statement = makeQuery(sql, parameters, binders)
         return QueryResult.AsyncValue {
-            val result = statement.run {
-                if (parameters > 0) {
-                    bind(*collectingStatement.values.toTypedArray())
-                } else {
-                    this
-                }
-            }
-                .raw()
-                .await()
+            val result = statement.raw().await()
             mapper(WorkerSqlCursor(result)).await()
         }
     }
@@ -42,18 +50,9 @@ class WorkerSqlDriver(
         parameters: Int,
         binders: (SqlPreparedStatement.() -> Unit)?,
     ): QueryResult<Long> {
-        val statement = database.prepare(sql)
-        val collectingStatement = CollectingStatement()
-        binders?.invoke(collectingStatement)
+        val statement = makeQuery(sql, parameters, binders)
         return QueryResult.AsyncValue {
-            statement.run {
-                if (parameters > 0) {
-                    bind(*collectingStatement.values.toTypedArray())
-                } else {
-                    this
-                }
-            }
-                .run()
+            statement.run()
                 .await()
                 .meta
                 .changes

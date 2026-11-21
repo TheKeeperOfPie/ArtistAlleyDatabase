@@ -71,7 +71,7 @@ internal object AlleyFormBackend {
         )
         val signatureBytes = signature.hexToByteString().toByteArray()
 
-        val formDatabase = Databases.formDatabase(context)
+        val formDatabase = BackendDatabases.formDatabase(context)
         val publicKeyQueries = formDatabase.alleyFormPublicKeyQueries
 
         suspend fun tryRecoverPublicKey(recoveryByte: Byte): Pair<Uuid, String>? {
@@ -186,7 +186,7 @@ internal object AlleyFormBackend {
         request: BackendFormRequest.ArtistSave,
         artistId: Uuid,
     ): BackendFormRequest.ArtistSave.Response {
-        val database = Databases.formDatabase(context)
+        val database = BackendDatabases.formDatabase(context)
         try {
             val expectedNonce =
                 database.alleyFormNonceQueries.getNonce(artistId).awaitAsOneOrNull()
@@ -350,7 +350,7 @@ internal object AlleyFormBackend {
         deletedStampRallies.forEach {
             database.stampRallyFormEntryQueries.insertFormEntry(it)
         }
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .artistEntryQueries
             .markArtistHasSubmittedForm(request.dataYear, artistId)
         return BackendFormRequest.ArtistSave.Response.Success(finalizedStampRallies)

@@ -48,7 +48,7 @@ internal fun coerceBooleanForJs(value: Boolean?) = value == true || value.toStri
 internal object BackendUtils {
 
     suspend fun loadArtist(context: EventContext, dataYear: DataYear, artistId: Uuid) =
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .artistEntryQueries
             .getArtist(dataYear, artistId)
             .awaitAsOneOrNull()
@@ -60,7 +60,7 @@ internal object BackendUtils {
         dataYear: DataYear,
         artistId: Uuid,
     ): ArtistEntryDiff? {
-        val formEntry = Databases.formDatabase(context)
+        val formEntry = BackendDatabases.formDatabase(context)
             .artistFormEntryQueries
             .getFormEntry(dataYear, artistId)
             .awaitAsOneOrNull()
@@ -128,7 +128,7 @@ internal object BackendUtils {
         artistId: Uuid,
         timestamp: Instant,
     ): ArtistEntryDiff? {
-        val formEntry = Databases.formDatabase(context)
+        val formEntry = BackendDatabases.formDatabase(context)
             .artistFormEntryQueries
             .getFormHistoryEntry(dataYear, artistId, timestamp)
             .awaitAsOneOrNull()
@@ -194,7 +194,7 @@ internal object BackendUtils {
         context: EventContext,
         request: BackendRequest.StampRally,
     ): StampRallyDatabaseEntry? =
-        Databases.editDatabase(context)
+        BackendDatabases.editDatabase(context)
             .stampRallyEntryQueries
             .getStampRally(request.dataYear, request.stampRallyId)
             .awaitAsOneOrNull()
@@ -205,7 +205,7 @@ internal object BackendUtils {
         context: EventContext,
         dataYear: DataYear,
         artistId: Uuid,
-    ): List<StampRallyEntryDiff> = Databases.formDatabase(context)
+    ): List<StampRallyEntryDiff> = BackendDatabases.formDatabase(context)
         .stampRallyFormEntryQueries
         .getFormEntriesByArtist(dataYear, artistId)
         .awaitAsList()
@@ -255,7 +255,7 @@ internal object BackendUtils {
         dataYear: DataYear,
         artistId: Uuid,
         stampRallyId: String,
-    ): StampRallyEntryDiff? = Databases.formDatabase(context)
+    ): StampRallyEntryDiff? = BackendDatabases.formDatabase(context)
         .stampRallyFormEntryQueries
         .getFormEntriesByStampRally(dataYear, artistId, stampRallyId)
         .awaitAsOneOrNull()
@@ -306,7 +306,7 @@ internal object BackendUtils {
         artistId: Uuid,
         stampRallyId: String,
         timestamp: Instant,
-    ): StampRallyEntryDiff? = Databases.formDatabase(context)
+    ): StampRallyEntryDiff? = BackendDatabases.formDatabase(context)
         .stampRallyFormEntryQueries
         .getFormHistoryEntry(dataYear, artistId, stampRallyId, timestamp)
         .awaitAsOneOrNull()
@@ -407,7 +407,7 @@ internal object BackendUtils {
             return cachedStampRalliesJson to null
         }
 
-        val stampRallies = Databases.editDatabase(context).stampRallyEntryQueries
+        val stampRallies = BackendDatabases.editDatabase(context).stampRallyEntryQueries
             .getStampRallies(dataYear)
             .awaitAsList()
             .map {

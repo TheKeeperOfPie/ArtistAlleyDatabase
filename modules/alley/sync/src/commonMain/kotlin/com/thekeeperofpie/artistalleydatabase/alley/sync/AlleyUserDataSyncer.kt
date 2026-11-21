@@ -11,9 +11,11 @@ class AlleyUserDataSyncer(
         val lastSyncGeneration = settings.lastSyncGeneration ?: -1L
         val payload = userDataSyncDao.getPayload(lastSyncGeneration)
         return UserDataSyncPayload(
+            lastSyncGeneration = lastSyncGeneration,
             artists = payload.artistChangesSince.map {
                 UserDataSyncPayload.Artist(
                     generation = payload.lastGeneration ?: 0L,
+                    dataYear = it.dataYear,
                     id = it.artistId,
                     favorite = it.favorite,
                     ignored = it.ignored,

@@ -2,8 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.cloudflare
 
 import kotlin.js.Promise
 
+@OptIn(ExperimentalWasmJsInterop::class)
 external interface D1Database {
     fun prepare(statement: String): D1PreparedStatement
+    fun batch(statements: JsArray<D1PreparedStatement>): Promise<JsArray<*>>
 }
 
 external interface D1PreparedStatement {

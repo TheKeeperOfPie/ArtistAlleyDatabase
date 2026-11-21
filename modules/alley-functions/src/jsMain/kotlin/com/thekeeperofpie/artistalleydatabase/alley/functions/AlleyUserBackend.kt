@@ -3,16 +3,20 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.AuthToken
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserDataHandler
+import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.cookies
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.createAuthToken
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.createRefreshToken
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.crypto
 import com.thekeeperofpie.artistalleydatabase.alley.functions.discord.DiscordAuthApi
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyAuthorization
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendUserRequest
 import com.thekeeperofpie.artistalleydatabase.alley.user.AuthCode
 import com.thekeeperofpie.artistalleydatabase.alley.user.User
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
 import kotlinx.coroutines.await
+import kotlinx.serialization.json.Json
 import org.w3c.dom.url.URL
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Request
@@ -37,6 +41,12 @@ internal object AlleyUserBackend {
         val firstSegment = pathSegments.getOrNull(0)
 
         return when (firstSegment) {
+            "", null -> Json.decodeFromString<BackendUserRequest>(context.request.text().await())
+                .run {
+                    when (this) {
+                        is BackendUserRequest.Sync -> handleSync(context, this)
+                    }
+                }
             "login" -> handleLogin(context, context.request)
             "refresh" -> handleAuthRefresh(context, context.request)
             "auth" -> handleAuthCode(context, context.request)
@@ -70,7 +80,13 @@ internal object AlleyUserBackend {
             }
         } ?: return Response("", ResponseInit(status = 404))
 
-        Databases.userDatabase(context).authCodeQueries.insertCode(AuthCode(state, userId))
+        // TODO: Hash user ID
+        BackendDatabases.userDatabase(context).authCodeQueries.insertCode(
+            AuthCode(
+                state,
+                UserId(userId)
+            )
+        )
 
         return Response("", ResponseInit(status = 302, headers = Headers().apply {
             // TODO: Redirect back to exact caller page?
@@ -80,7 +96,7 @@ internal object AlleyUserBackend {
 
     private suspend fun handleAuthCode(context: EventContext, request: Request): Response {
         val authCode = request.text().await()
-        val database = Databases.userDatabase(context)
+        val database = BackendDatabases.userDatabase(context)
 
         // TODO: Hash
         val userId = database.authCodeQueries.consumeCode(authCode).awaitAsOneOrNull()
@@ -112,7 +128,7 @@ internal object AlleyUserBackend {
 
     private suspend fun handleAuthRefresh(context: EventContext, request: Request): Response {
         // TODO: Pass the userId and only check that row
-        val database = Databases.userDatabase(context)
+        val database = BackendDatabases.userDatabase(context)
         val cookies = request.headers.cookies
         val refreshToken = cookies[AlleyAuthorization.COOKIE_REFRESH_TOKEN]
             ?.let(::RefreshToken)
@@ -141,7 +157,7 @@ internal object AlleyUserBackend {
     }
 
     private suspend fun checkAuth(context: EventContext, request: Request): Response {
-        val database = Databases.userDatabase(context)
+        val database = BackendDatabases.userDatabase(context)
         val authToken = request.headers.cookies[AlleyAuthorization.COOKIE_AUTH_TOKEN]
             ?: return forbidden
         database.userSessionQueries.checkAuthToken(AuthToken(authToken)).awaitAsOneOrNull()
@@ -174,5 +190,39 @@ internal object AlleyUserBackend {
             "Set-Cookie",
             "${AlleyAuthorization.COOKIE_AUTH_TOKEN}=${authToken?.token.orEmpty()}; Max-Age=$maxAge; Path=/user/api; Secure; HttpOnly; SameSite=Strict"
         )
+    }
+
+    private suspend fun handleSync(
+        context: EventContext,
+        request: BackendUserRequest.Sync,
+    ): Response {
+        val userId = readUserIdFromAuthToken(context) ?: return forbidden
+        val driver = ManualTransactionSqlDriver(
+            DatabaseDrivers.userSqlDriver(context),
+            context.env.ARTIST_ALLEY_USER_DB
+        )
+        val database = BackendDatabases.userDatabase(context, driver)
+        val nextGeneration = UserDataHandler.syncFromClient(
+            clock = Clock.System,
+            userId = userId,
+            payload = request.syncPayload,
+            database = database,
+        )
+        return request.makeResponse(BackendUserRequest.Sync.Response(latestGeneration = nextGeneration))
+    }
+
+    private suspend fun readUserIdFromAuthToken(context: EventContext): UserId? {
+        val database = BackendDatabases.userDatabase(context)
+        val authToken = context.request.headers.cookies[AlleyAuthorization.COOKIE_AUTH_TOKEN]
+            ?: return null
+        return database.userSessionQueries.checkAuthToken(AuthToken(authToken)).awaitAsOneOrNull()
+    }
+
+    private inline fun <reified Request : BackendUserRequest.WithResponse<Response>, reified Response> Request.makeResponse(
+        response: Response?,
+    ): org.w3c.fetch.Response = if (response == null) {
+        Utils.jsonResponse(null)
+    } else {
+        Utils.jsonResponse<Response>(response)
     }
 }
