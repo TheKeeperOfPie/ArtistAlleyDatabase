@@ -202,13 +202,16 @@ internal object AlleyUserBackend {
             context.env.ARTIST_ALLEY_USER_DB
         )
         val database = BackendDatabases.userDatabase(context, driver)
-        val payload = UserDataHandler.syncFromClient(
+        val [httpStatus, payload] = UserDataHandler.syncFromClient(
             clock = Clock.System,
             userId = userId,
             payload = request.syncPayload,
             database = database,
         )
-        return request.makeResponse(BackendUserRequest.Sync.Response(payload))
+        return request.makeResponse(
+            response = BackendUserRequest.Sync.Response(payload),
+            status = httpStatus,
+        )
     }
 
     private suspend fun readUserIdFromAuthToken(context: EventContext): UserId? {
@@ -218,11 +221,13 @@ internal object AlleyUserBackend {
         return database.userSessionQueries.checkAuthToken(AuthToken(authToken)).awaitAsOneOrNull()
     }
 
+    @Suppress("UnusedReceiverParameter")
     private inline fun <reified Request : BackendUserRequest.WithResponse<Response>, reified Response> Request.makeResponse(
         response: Response?,
+        status: Short = 200,
     ): org.w3c.fetch.Response = if (response == null) {
-        Utils.jsonResponse(null)
+        Utils.jsonResponse(value = null, status = status)
     } else {
-        Utils.jsonResponse<Response>(response)
+        Utils.jsonResponse<Response>(value = response, status = status)
     }
 }

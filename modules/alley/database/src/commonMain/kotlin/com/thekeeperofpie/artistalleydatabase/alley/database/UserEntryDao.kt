@@ -46,6 +46,7 @@ class UserEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val settings: AlleyUserSettings,
+    private val generationDao: suspend () -> GenerationQueries = { database().generationQueries },
     private val artistUserEntryDao: suspend () -> ArtistUserEntryQueries = { database().artistUserEntryQueries },
     private val rallyUserEntryDao: suspend () -> StampRallyUserEntryQueries = { database().stampRallyUserEntryQueries },
     private val seriesUserEntryDao: suspend () -> SeriesUserEntryQueries = { database().seriesUserEntryQueries },
@@ -150,13 +151,29 @@ class UserEntryDao(
         }
     }
 
-    suspend fun insertSyncPayload(payload: UserDataSyncPayload) {
+    suspend fun insertSyncPayload(status: Short, payload: UserDataSyncPayload) {
         database().transactionWithResult {
+            // On a 409 Conflict, the server rejected client changes, preserve them by
+            // rebasing them, incrementing their generation above the server one. Further down,
+            // any values inside the payload which are higher generation than the local copy
+            // or have a later updatedAt will overwrite anything rebased here
+            if (status == 409.toShort()) {
+                generationDao().rebaseGeneration(
+                    serverGeneration = payload.generation ?: 0,
+                    lastSyncGeneration = settings.lastSyncGeneration ?: 0
+                ).await()
+            }
+
             val artistUserEntryDao = artistUserEntryDao()
             payload.artists?.forEach {
                 val userEntry =
                     artistUserEntryDao.getArtistUserEntry(it.id, it.dataYear).awaitAsOneOrNull()
-                if (userEntry == null || userEntry.generation <= it.generation) {
+                val currentUpdatedAt = userEntry?.updatedAt
+                val incomingUpdatedAt = it.updatedAt
+                if (userEntry == null ||
+                    userEntry.generation < it.generation ||
+                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+                ) {
                     artistUserEntryDao.insertArtistUserEntry(
                         ArtistUserEntry(
                             artistId = it.id,
@@ -164,10 +181,15 @@ class UserEntryDao(
                             favorite = it.favorite ?: userEntry?.favorite ?: false,
                             ignored = it.ignored ?: userEntry?.ignored ?: false,
                             generation = it.generation,
-                            updatedAt = it.updatedAt,
+                            updatedAt = incomingUpdatedAt,
                         )
                     )
                 }
+            }
+
+            afterCommit {
+                // TODO: Also schedule a sync if there's anything remaining unsynced
+                settings.lastSyncGeneration = payload.generation
             }
         }
     }

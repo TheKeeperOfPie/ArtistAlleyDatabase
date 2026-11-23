@@ -23,7 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.User
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
-import io.kotest.matchers.collections.shouldContainAllInAnyOrder
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
@@ -90,24 +90,28 @@ class UserDataSyncTest {
         val payload = syncer.getPayload()
         payload.artists
             .shouldNotBeNull()
-            .shouldContainAllInAnyOrder(
-                artistData[0].toPayload(ORIGIN, generation = expectedGeneration),
-                artistData[1].toPayload(ORIGIN + 3.seconds, generation = expectedGeneration),
-                artistData[2].toPayload(ORIGIN + 3.seconds + 5.seconds, generation = expectedGeneration),
+            .shouldContainExactlyInAnyOrder(
+                artistData[0].toPayload(ORIGIN, expectedGeneration),
+                artistData[1].toPayload(ORIGIN + 3.seconds, expectedGeneration),
+                artistData[2].toPayload(ORIGIN + 8.seconds, expectedGeneration),
             )
 
-        val reconcilePayload =
+        val [httpStatus, reconcilePayload] =
             UserDataHandler.syncFromClient(clock, USER_ID, payload, serverDatabase)
-        reconcilePayload.lastSyncGeneration.shouldBe(expectedGeneration)
-        reconcilePayload.artists.shouldContainAllInAnyOrder(artistData.map {
-            it.toPayload(ORIGIN + 8.seconds, expectedGeneration)
-        })
+        httpStatus.shouldBe(200)
+        reconcilePayload.generation.shouldBe(expectedGeneration)
+        reconcilePayload.artists
+            .shouldContainExactlyInAnyOrder(
+                artistData[0].toPayload(ORIGIN, expectedGeneration),
+                artistData[1].toPayload(ORIGIN + 3.seconds, expectedGeneration),
+                artistData[2].toPayload(ORIGIN + 8.seconds, expectedGeneration),
+            )
 
         serverDatabase.testQueries.getAllUserArtists(USER_ID).awaitAsList()
-            .shouldContainAllInAnyOrder(
-                artistData.map {
-                    it.toServerModel(USER_ID, ORIGIN + 8.seconds, expectedGeneration)
-                }
+            .shouldContainExactlyInAnyOrder(
+                artistData[0].toServerModel(USER_ID, ORIGIN, expectedGeneration),
+                artistData[1].toServerModel(USER_ID, ORIGIN + 3.seconds, expectedGeneration),
+                artistData[2].toServerModel(USER_ID, ORIGIN + 8.seconds, expectedGeneration),
             )
     }
 
@@ -129,22 +133,24 @@ class UserDataSyncTest {
 
         artistData.map { it.toServerModel(USER_ID, ORIGIN + 3.seconds, 1) }
             .forEach { serverDatabase.userArtistQueries.insertUserArtist(it) }
+        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
 
         val expectedGeneration = 1L
-        val payload =
+        val [httpStatus, payload] =
             UserDataHandler.syncFromClient(clock, USER_ID, UserDataSyncPayload(), serverDatabase)
-        payload.lastSyncGeneration.shouldBe(expectedGeneration)
+        httpStatus.shouldBe(409)
+        payload.generation.shouldBe(expectedGeneration)
         payload.artists
-            .shouldContainAllInAnyOrder(
+            .shouldContainExactlyInAnyOrder(
                 artistData.map {
                     it.toPayload(ORIGIN + 3.seconds, expectedGeneration)
                 }
             )
 
-        syncer.syncFromServer(payload)
+        syncer.syncFromServer(httpStatus, payload)
 
         clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
-            .shouldContainAllInAnyOrder(
+            .shouldContainExactlyInAnyOrder(
                 artistData.map {
                     it.source.userEntry.copy(
                         generation = 1L,
@@ -189,32 +195,367 @@ class UserDataSyncTest {
         serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
             .shouldBe(1L)
 
-        val clientPayload = syncer.getPayload()
-        clientPayload.lastSyncGeneration.shouldBe(0L)
-        clientPayload.artists.shouldContainAllInAnyOrder(
+        val clientPayload1 = syncer.getPayload()
+        clientPayload1.generation.shouldBe(0L)
+        clientPayload1.artists.shouldContainExactlyInAnyOrder(
             artistDataClient.map { it.toPayload(ORIGIN + 3.seconds, 1L) }
         )
 
-        val expectedGeneration = 2L
-        val payload =
-            UserDataHandler.syncFromClient(clock, USER_ID, syncer.getPayload(), serverDatabase)
-        payload.lastSyncGeneration.shouldBe(expectedGeneration)
-        payload.artists
-            .shouldContainAllInAnyOrder(
-                artistDataClient.map {
-                    it.toPayload(ORIGIN + 3.seconds, expectedGeneration)
-                } + artistDataServer.map {
+        val [httpStatus1, reconcilePayload1] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload1, serverDatabase)
+        httpStatus1.shouldBe(409)
+        reconcilePayload1.generation.shouldBe(1L)
+        reconcilePayload1.artists
+            .shouldContainExactlyInAnyOrder(
+                artistDataServer.map {
                     it.toPayload(ORIGIN - 3.seconds, 1L)
                 }
             )
 
-        syncer.syncFromServer(payload)
+        syncer.syncFromServer(httpStatus1, reconcilePayload1)
 
         clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
-            .shouldContainAllInAnyOrder(
+            .shouldContainExactlyInAnyOrder(
                 artistDataClient.map {
                     it.source.userEntry.copy(
-                        generation = expectedGeneration,
+                        generation = 2L,
+                        updatedAt = ORIGIN + 3.seconds,
+                    )
+                } + artistDataServer.map {
+                    it.source.userEntry.copy(
+                        generation = 1L,
+                        updatedAt = ORIGIN - 3.seconds,
+                    )
+                }
+            )
+
+        // TODO: When re-schedule sync is added, assert that a new client sync is sent to server
+
+        val clientPayload2 = syncer.getPayload()
+        val [httpStatus2, reconcilePayload2] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload2, serverDatabase)
+        httpStatus2.shouldBe(200)
+        reconcilePayload2.generation.shouldBe(2L)
+        reconcilePayload2.artists
+            .shouldContainExactlyInAnyOrder(
+                artistDataClient.map {
+                    it.toPayload(ORIGIN + 3.seconds, 2L)
+                }
+            )
+
+        syncer.syncFromServer(httpStatus2, reconcilePayload2)
+
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artistDataClient.map {
+                    it.source.userEntry.copy(
+                        generation = 2L,
+                        updatedAt = ORIGIN + 3.seconds,
+                    )
+                } + artistDataServer.map {
+                    it.source.userEntry.copy(
+                        generation = 1L,
+                        updatedAt = ORIGIN - 3.seconds,
+                    )
+                }
+            )
+    }
+
+    @Test
+    fun singleDevice_uploadConflict_lastWins() = runTest {
+        val (clientDriver, clientDatabase, serverDatabase, artistData) = createDatabases()
+
+        val settings = Settings()
+        val userEntryDao = UserEntryDao(
+            driver = { clientDriver },
+            database = { clientDatabase },
+            clock = clock,
+            settings = settings,
+        )
+        val syncer = AlleyUserDataSyncer(
+            userEntryDao = userEntryDao,
+            userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
+            settings = settings,
+        )
+
+        val artist = artistData.first().toEdited(favorite = false, ignored = false)
+
+        // Insert a local non-favorited artist
+        userEntryDao.insertArtistUserEntry(artist.source.userEntry)
+
+        // Insert a higher generation on the server which favorites the artist
+        serverDatabase.userArtistQueries.insertUserArtist(
+            artist.toEdited(favorite = true, ignored = false)
+                .toServerModel(USER_ID, ORIGIN + 3.seconds, 2L)
+        )
+        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+            .shouldBe(2L)
+
+        val clientPayload1 = syncer.getPayload()
+        clientPayload1.artists.shouldContainExactlyInAnyOrder(
+            artist.toPayload(ORIGIN, 1L)
+        )
+
+        timeSource += 3.seconds
+
+        // Upload a diff that the server has a higher generation for (2L)
+        val [httpStatus1, reconcilePayload1] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload1, serverDatabase)
+        reconcilePayload1.generation.shouldBe(2L)
+        reconcilePayload1.artists.shouldContainExactlyInAnyOrder(
+            artist.toEdited(favorite = true, ignored = false)
+                .toPayload(ORIGIN + 3.seconds, 2L)
+        )
+
+        // Fails, rejecting the diff, requiring the client to rebase
+        httpStatus1.shouldBe(409)
+        syncer.syncFromServer(httpStatus1,reconcilePayload1)
+
+        // Assert the client now has the artist favorited
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artist.toEdited(favorite = true, ignored = false)
+                    .source.userEntry.copy(updatedAt = ORIGIN + 3.seconds, generation = 2L)
+            )
+
+        timeSource += 3.seconds
+
+        // Have the client mark the artist ignored and push a newer update to the server
+        // Insert multiple times to ensure generation only shifts once to 3
+        arrayOf(
+            artist.toEdited(favorite = true, ignored = true),
+            artist.toEdited(favorite = false, ignored = false),
+            artist.toEdited(favorite = true, ignored = true),
+        ).forEach {
+            userEntryDao.insertArtistUserEntry(it.source.userEntry)
+        }
+
+        val clientPayload2 = syncer.getPayload()
+        clientPayload2.artists.shouldContainExactlyInAnyOrder(
+            artist.toEdited(favorite = true, ignored = true)
+                .toPayload(ORIGIN + 6.seconds, 3L)
+        )
+
+        timeSource += 3.seconds
+
+        val [httpStatus2, reconcilePayload2] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload2, serverDatabase)
+        reconcilePayload2.generation.shouldBe(3L)
+        reconcilePayload2.artists.shouldContainExactlyInAnyOrder(
+            artist.toEdited(favorite = true, ignored = true)
+                .toPayload(ORIGIN + 6.seconds, 3L)
+        )
+
+        syncer.syncFromServer(httpStatus2, reconcilePayload2)
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artist.toEdited(favorite = true, ignored = true)
+                    .source.userEntry.copy(updatedAt = ORIGIN + 6.seconds, generation = 3L)
+            )
+    }
+
+    @Test
+    fun singleDevice_uploadConflict_keepsHigherLocalGeneration() = runTest {
+        val (clientDriver, clientDatabase, serverDatabase, artistData) = createDatabases()
+
+        val settings = Settings()
+        val userEntryDao = UserEntryDao(
+            driver = { clientDriver },
+            database = { clientDatabase },
+            clock = clock,
+            settings = settings,
+        )
+        val syncer = AlleyUserDataSyncer(
+            userEntryDao = userEntryDao,
+            userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
+            settings = settings,
+        )
+
+        val artist1 = artistData[0].toEdited(favorite = false, ignored = true)
+        val artist2 = artistData[1].toEdited(favorite = false, ignored = true)
+
+        arrayOf(artist1, artist2).forEach {
+            userEntryDao.insertArtistUserEntry(it.source.userEntry)
+        }
+
+        // Insert a higher generation on the server which favorites artists
+        arrayOf(artist1, artist2).forEach {
+            serverDatabase.userArtistQueries.insertUserArtist(
+                it.toEdited(favorite = true, ignored = true)
+                    .toServerModel(USER_ID, ORIGIN + 3.seconds, 2L)
+            )
+        }
+
+        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+            .shouldBe(2L)
+
+        val clientPayload = syncer.getPayload()
+        clientPayload.artists.shouldContainExactlyInAnyOrder(
+            artist1.toPayload(ORIGIN, 1L),
+            artist2.toPayload(ORIGIN, 1L),
+        )
+
+        timeSource += 3.seconds
+
+        // Upload a diff that the server and return a payload updating both locally
+        val [httpStatus1, reconcilePayload1] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload, serverDatabase)
+        httpStatus1.shouldBe(409)
+        reconcilePayload1.generation.shouldBe(2L)
+        reconcilePayload1.artists.shouldContainExactlyInAnyOrder(
+            artist1.toEdited(favorite = true, ignored = true)
+                .toPayload(ORIGIN + 3.seconds, 2L),
+            artist2.toEdited(favorite = true, ignored = true)
+                .toPayload(ORIGIN + 3.seconds, 2L),
+        )
+
+        // Pretending that the user edited something before the server returned,
+        // update artist2 locally to disagree with the server
+        timeSource += 3.seconds
+        userEntryDao.insertArtistUserEntry(
+            artist2.toEdited(favorite = true, ignored = false).source.userEntry
+        )
+
+        // Assert the client ignored the artist2 update from the server
+        syncer.syncFromServer(httpStatus1, reconcilePayload1)
+        settings.lastSyncGeneration.shouldBe(2L)
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artist1.toEdited(favorite = true, ignored = true)
+                    .source.userEntry.copy(updatedAt = ORIGIN + 3.seconds, generation = 2L),
+                artist2.toEdited(favorite = true, ignored = false)
+                    .source.userEntry.copy(updatedAt = ORIGIN + 6.seconds, generation = 3L)
+            )
+
+        // TODO: When re-schedule sync is added, assert that a new client sync is sent to server
+
+        // Try to re-upload artist2 to the server
+        val clientPayload2 = syncer.getPayload()
+        val [httpStatus2, reconcilePayload2] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload2, serverDatabase)
+        httpStatus2.shouldBe(200)
+        reconcilePayload2.generation.shouldBe(3L)
+        reconcilePayload2.artists
+            .shouldContainExactlyInAnyOrder(
+                artist2.toEdited(favorite = true, ignored = false)
+                    .toPayload(ORIGIN + 6.seconds, 3L),
+            )
+
+        syncer.syncFromServer(httpStatus2, reconcilePayload2)
+
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artist1.toEdited(favorite = true, ignored = true)
+                    .source.userEntry.copy(updatedAt = ORIGIN + 3.seconds, generation = 2L),
+                artist2.toEdited(favorite = true, ignored = false)
+                    .source.userEntry.copy(updatedAt = ORIGIN + 6.seconds, generation = 3L)
+            )
+
+        serverDatabase.testQueries.getAllUserArtists(USER_ID).awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artist1.toEdited(favorite = true, ignored = true)
+                    .toServerModel(USER_ID, updatedAt = ORIGIN + 3.seconds, generation = 2L),
+                artist2.toEdited(favorite = true, ignored = false)
+                    .toServerModel(USER_ID, updatedAt = ORIGIN + 6.seconds, generation = 3L)
+            )
+    }
+
+    @Test
+    fun singleDevice_syncButServerWasReset() = runTest {
+        val (clientDriver, clientDatabase, serverDatabase, artistData) =
+            createDatabases(artistData = artistData.take(6).toList())
+
+        val settings = Settings()
+        val userEntryDao = UserEntryDao(
+            driver = { clientDriver },
+            database = { clientDatabase },
+            clock = clock,
+            settings = settings,
+        )
+        val syncer = AlleyUserDataSyncer(
+            userEntryDao = userEntryDao,
+            userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
+            settings = settings,
+        )
+
+        val artistDataClient = artistData.take(3)
+        val artistDataServer = artistData.drop(3)
+
+        artistDataServer.forEach {
+            serverDatabase.userArtistQueries.insertUserArtist(
+                it.toServerModel(
+                    USER_ID,
+                    ORIGIN - 3.seconds,
+                    1L
+                )
+            )
+        }
+        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+            .shouldBe(1L)
+
+        timeSource += 3.seconds
+
+        // Client outpaces server
+        settings.lastSyncGeneration = 10L
+        artistDataClient.forEach { userEntryDao.insertArtistUserEntry(it.source.userEntry) }
+
+        val clientPayload1 = syncer.getPayload()
+        clientPayload1.generation.shouldBe(10L)
+        clientPayload1.artists.shouldContainExactlyInAnyOrder(
+            artistDataClient.map { it.toPayload(ORIGIN + 3.seconds, 11L) }
+        )
+
+        val [httpStatus1, reconcilePayload1] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload1, serverDatabase)
+        httpStatus1.shouldBe(409)
+        reconcilePayload1.generation.shouldBe(1L)
+        reconcilePayload1.artists
+            .shouldContainExactlyInAnyOrder(
+                artistDataServer.map {
+                    it.toPayload(ORIGIN - 3.seconds, 1L)
+                }
+            )
+
+        syncer.syncFromServer(httpStatus1, reconcilePayload1)
+
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artistDataClient.map {
+                    it.source.userEntry.copy(
+                        generation = 2L,
+                        updatedAt = ORIGIN + 3.seconds,
+                    )
+                } + artistDataServer.map {
+                    it.source.userEntry.copy(
+                        generation = 1L,
+                        updatedAt = ORIGIN - 3.seconds,
+                    )
+                }
+            )
+
+        // TODO: When re-schedule sync is added, assert that a new client sync is sent to server
+
+        val clientPayload2 = syncer.getPayload()
+        val [httpStatus2, reconcilePayload2] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload2, serverDatabase)
+        httpStatus2.shouldBe(200)
+        reconcilePayload2.generation.shouldBe(2L)
+        reconcilePayload2.artists
+            .shouldContainExactlyInAnyOrder(
+                artistDataClient.map {
+                    it.toPayload(ORIGIN + 3.seconds, 2L)
+                }
+            )
+
+        syncer.syncFromServer(httpStatus2, reconcilePayload2)
+
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artistDataClient.map {
+                    it.source.userEntry.copy(
+                        generation = 2L,
                         updatedAt = ORIGIN + 3.seconds,
                     )
                 } + artistDataServer.map {
@@ -274,6 +615,12 @@ class UserDataSyncTest {
     )
 
     private data class ArtistData(val source: ArtistWithUserData) {
+
+        fun toEdited(favorite: Boolean, ignored: Boolean) = copy(
+            source = source.copy(
+                userEntry = source.userEntry.copy(favorite = favorite, ignored = ignored)
+            )
+        )
 
         fun toPayload(updatedAt: Instant, generation: Long) = UserDataSyncPayload.Artist(
             generation = generation,

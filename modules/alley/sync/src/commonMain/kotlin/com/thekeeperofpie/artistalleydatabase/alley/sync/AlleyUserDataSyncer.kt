@@ -13,7 +13,7 @@ class AlleyUserDataSyncer(
         val lastSyncGeneration = settings.lastSyncGeneration ?: 0L
         val payload = userDataSyncDao.getPayload(lastSyncGeneration)
         return UserDataSyncPayload(
-            lastSyncGeneration = lastSyncGeneration,
+            generation = lastSyncGeneration,
             artists = payload.artistChangesSince.map {
                 UserDataSyncPayload.Artist(
                     generation = it.generation,
@@ -52,8 +52,7 @@ class AlleyUserDataSyncer(
         )
     }
 
-    suspend fun syncFromServer(syncPayload: UserDataSyncPayload) {
-        userEntryDao.insertSyncPayload(syncPayload)
-        settings.lastSyncGeneration = syncPayload.lastSyncGeneration
+    suspend fun syncFromServer(status: Short, syncPayload: UserDataSyncPayload) {
+        userEntryDao.insertSyncPayload(status, syncPayload)
     }
 }

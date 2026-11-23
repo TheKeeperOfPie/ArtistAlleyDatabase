@@ -7,3 +7,24 @@ SELECT MAX(
     (SELECT MAX(generation) FROM artistNotes),
     (SELECT MAX(generation) FROM stampRallyNotes)
 ) AS lastGeneration;
+
+rebaseGeneration {
+    UPDATE artistUserEntry
+    SET generation = generation + (:serverGeneration - :lastSyncGeneration)
+    WHERE generation > :lastSyncGeneration;
+    UPDATE stampRallyUserEntry
+    SET generation = generation + (:serverGeneration - :lastSyncGeneration)
+    WHERE generation > :lastSyncGeneration;
+    UPDATE seriesUserEntry
+    SET generation = generation + (:serverGeneration - :lastSyncGeneration)
+    WHERE generation > :lastSyncGeneration;
+    UPDATE merchUserEntry
+    SET generation = generation + (:serverGeneration - :lastSyncGeneration)
+    WHERE generation > :lastSyncGeneration;
+    UPDATE artistNotes
+    SET generation = generation + (:serverGeneration - :lastSyncGeneration)
+    WHERE generation > :lastSyncGeneration;
+    UPDATE stampRallyNotes
+    SET generation = generation + (:serverGeneration - :lastSyncGeneration)
+    WHERE generation > :lastSyncGeneration;
+}

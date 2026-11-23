@@ -13,39 +13,53 @@ object UserDataHandler {
         userId: UserId,
         payload: UserDataSyncPayload,
         database: AlleyUserDatabase,
-    ): UserDataSyncPayload {
-        val newGeneration = database.transactionWithResult {
-            val nextGeneration =
-                database.generationQueries.incrementUserGeneration(userId).awaitAsOne()
-            // TODO: Compare and handle mismatched last sync generation
-
-            // TODO: Handle deletions
-            payload.artists?.forEach {
-                database.userArtistQueries.insertUserArtist(
-                    UserArtist(
-                        userId = userId,
-                        dataYear = it.dataYear,
-                        artistId = it.id,
-                        favorite = it.favorite,
-                        ignored = it.ignored,
-                        generation = nextGeneration,
-                        // Reduces accuracy, but ignores broken client time
-                        updatedAt = clock.now(),
-                    )
-                )
-            }
-            nextGeneration
+    ): Pair<Short, UserDataSyncPayload> {
+        val currentGeneration =
+            database.generationQueries.getUserGeneration(userId).awaitAsOne()
+        val httpStatus = when {
+            // Server was reset, rebase everything
+            currentGeneration < (payload.generation ?: 0) -> 409
+            // Client isn't up to date with the server, just return a sync payload
+            payload.generation != currentGeneration -> 409
+            else -> 200
         }
 
+        val lowerGeneration = when {
+            // Server was reset, set lower to 0 and send everything
+            currentGeneration < (payload.generation ?: 0) -> 0
+            else -> payload.generation ?: 0L
+        }
+
+        val upperGeneration = when {
+            currentGeneration < (payload.generation ?: 0) -> currentGeneration
+            payload.generation != currentGeneration -> currentGeneration
+            payload.isEmpty() -> currentGeneration
+            else -> commitDiff(clock, database, userId, payload)
+        }
+
+        return httpStatus.toShort() to getChangesBetween(
+            database = database,
+            userId = userId,
+            lowerGeneration = lowerGeneration,
+            upperGeneration = upperGeneration,
+        )
+    }
+
+    private suspend fun getChangesBetween(
+        database: AlleyUserDatabase,
+        userId: UserId,
+        lowerGeneration: Long,
+        upperGeneration: Long,
+    ): UserDataSyncPayload {
         val artistChanges = database.userArtistQueries.getChangesBetween(
             userId = userId,
-            lowerGeneration = payload.lastSyncGeneration ?: 0,
-            upperGeneration = newGeneration,
+            lowerGeneration = lowerGeneration,
+            upperGeneration = upperGeneration,
         ).awaitAsList()
 
         // TODO: Remove the client's own uploaded changes so only the diff is passed back
         return UserDataSyncPayload(
-            lastSyncGeneration = newGeneration,
+            generation = upperGeneration,
             artists = artistChanges.map {
                 UserDataSyncPayload.Artist(
                     generation = it.generation,
@@ -57,5 +71,34 @@ object UserDataHandler {
                 )
             },
         )
+    }
+
+    private suspend fun commitDiff(
+        clock: Clock,
+        database: AlleyUserDatabase,
+        userId: UserId,
+        payload: UserDataSyncPayload,
+    ): Long {
+        // Must be queried outside transaction because Cloudflare D1 cannot return results in batch
+        val nextGeneration =
+            database.generationQueries.incrementUserGeneration(userId).awaitAsOne()
+        return database.transactionWithResult {
+            // TODO: Handle deletions
+            payload.artists?.forEach {
+                val now = clock.now()
+                database.userArtistQueries.insertUserArtist(
+                    UserArtist(
+                        userId = userId,
+                        dataYear = it.dataYear,
+                        artistId = it.id,
+                        favorite = it.favorite,
+                        ignored = it.ignored,
+                        generation = nextGeneration,
+                        updatedAt = it.updatedAt?.coerceAtMost(now) ?: now,
+                    )
+                )
+            }
+            nextGeneration
+        }
     }
 }

@@ -12,3 +12,7 @@ UPDATE userGeneration
 SET generation = generation + 1
 WHERE userId = :userId
 RETURNING generation;
+
+getUserGeneration:
+SELECT generation FROM userGeneration
+WHERE userId = :userId;

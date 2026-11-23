@@ -10,9 +10,9 @@ internal object Utils {
     val unauthorizedResponse
         get() = Response(null, ResponseInit(status = 403))
 
-    inline fun <reified T> jsonResponse(value: T) = Response(
+    inline fun <reified T> jsonResponse(value: T, status: Short = 200) = Response(
         body = Json.encodeToString(value),
-        init = ResponseInit(status = 200, headers = Headers().apply {
+        init = ResponseInit(status = status, headers = Headers().apply {
             set("Content-Type", "application/json")
         })
     )

@@ -2,14 +2,10 @@ insertUserArtist:
 INSERT INTO userArtist
 VALUES ?
 ON CONFLICT(userId, dataYear, artistId) DO UPDATE SET
-    favorite = IFNULL(excluded.favorite, favorite),
-    ignored = IFNULL(excluded.ignored, ignored),
-    generation = excluded.generation,
-    updatedAt = excluded.updatedAt
-WHERE (
-    generation > excluded.generation OR
-    updatedAt > excluded.updatedAt
-);
+    favorite = IIF(excluded.updatedAt > updatedAt, IFNULL(excluded.favorite, favorite), favorite),
+    ignored = IIF(excluded.updatedAt > updatedAt, IFNULL(excluded.ignored, ignored), ignored),
+    updatedAt = MAX(excluded.updatedAt, updatedAt),
+    generation = excluded.generation;
 
 getChangesBetween:
 SELECT generation, dataYear, artistId, favorite, ignored, updatedAt FROM userArtist

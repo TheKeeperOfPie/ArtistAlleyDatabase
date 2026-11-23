@@ -5,12 +5,18 @@ import kotlin.time.Instant
 
 @Serializable
 data class UserDataSyncPayload(
-    val lastSyncGeneration: Long? = null,
+    val generation: Long? = null,
     val artists: List<Artist>? = null,
     val rallies: List<StampRally>? = null,
     val series: List<Series>? = null,
     val merch: List<Merch>? = null,
 ) {
+
+    fun isEmpty() = artists.isNullOrEmpty() &&
+            rallies.isNullOrEmpty() &&
+            series.isNullOrEmpty() &&
+            merch.isNullOrEmpty()
+
     // TODO: Use value class for all IDs
     @Serializable
     data class Artist(
