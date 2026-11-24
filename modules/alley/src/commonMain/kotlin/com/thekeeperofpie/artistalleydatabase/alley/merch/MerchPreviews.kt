@@ -14,7 +14,7 @@ object MerchEntryProvider : PreviewParameterProvider<MerchEntry> {
             "Shirts" to listOf("Apparel")
         )
         val random = Random(39)
-        merch.forEach { (name, categories) ->
+        merch.forEach { [name, categories] ->
             yield(
                 MerchEntry(
                     name = name,

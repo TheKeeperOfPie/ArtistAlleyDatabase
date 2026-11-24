@@ -52,3 +52,12 @@ CREATE TABLE IF NOT EXISTS userSeries (
     updatedAt INTEGER AS Instant NOT NULL,
     PRIMARY KEY (userId, seriesId)
 );
+
+CREATE TABLE IF NOT EXISTS userMerch (
+    userId TEXT AS UserId NOT NULL,
+    merchId TEXT NOT NULL,
+    favorite INTEGER AS Boolean,
+    generation INTEGER NOT NULL,
+    updatedAt INTEGER AS Instant NOT NULL,
+    PRIMARY KEY (userId, merchId)
+);

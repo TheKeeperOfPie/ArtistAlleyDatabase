@@ -208,6 +208,27 @@ class UserEntryDao(
                 }
             }
 
+            val merchUserEntryDao = merchUserEntryDao()
+            payload.merch?.forEach {
+                val userEntry =
+                    merchUserEntryDao.getMerchUserEntry(it.id).awaitAsOneOrNull()
+                val currentUpdatedAt = userEntry?.updatedAt
+                val incomingUpdatedAt = it.updatedAt
+                if (userEntry == null ||
+                    userEntry.generation < it.generation ||
+                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+                ) {
+                    merchUserEntryDao.insertMerchUserEntry(
+                        MerchUserEntry(
+                            merchId = it.id,
+                            favorite = it.favorite ?: userEntry?.favorite ?: false,
+                            generation = it.generation,
+                            updatedAt = incomingUpdatedAt,
+                        )
+                    )
+                }
+            }
+
             afterCommit {
                 // TODO: Also schedule a sync if there's anything remaining unsynced
                 settings.lastSyncGeneration = payload.generation

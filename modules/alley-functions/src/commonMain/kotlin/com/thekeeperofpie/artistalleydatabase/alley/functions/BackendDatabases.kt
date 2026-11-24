@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.AuthCode
 import com.thekeeperofpie.artistalleydatabase.alley.user.User
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
 
@@ -178,6 +179,10 @@ object BackendDatabases {
         ),
         userGenerationAdapter = UserGeneration.Adapter(
             userIdAdapter = userIdAdapter,
+        ),
+        userMerchAdapter = UserMerch.Adapter(
+            userIdAdapter = userIdAdapter,
+            updatedAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
         ),
         userSeriesAdapter = UserSeries.Adapter(
             userIdAdapter = userIdAdapter,

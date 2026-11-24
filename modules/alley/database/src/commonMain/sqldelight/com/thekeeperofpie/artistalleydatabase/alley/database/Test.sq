@@ -34,3 +34,10 @@ VALUES ?;
 
 getSeriesUserEntries:
 SELECT * FROM seriesUserEntry;
+
+insertMerch:
+INSERT OR REPLACE INTO merchEntry
+VALUES ?;
+
+getMerchUserEntries:
+SELECT * FROM merchUserEntry;

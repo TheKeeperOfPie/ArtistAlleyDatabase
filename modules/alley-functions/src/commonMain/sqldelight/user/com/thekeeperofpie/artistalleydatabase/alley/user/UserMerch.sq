@@ -1,0 +1,15 @@
+insertUserMerch:
+INSERT INTO userMerch
+VALUES ?
+ON CONFLICT(userId, merchId) DO UPDATE SET
+    favorite = IIF(excluded.updatedAt > updatedAt, IFNULL(excluded.favorite, favorite), favorite),
+    updatedAt = MAX(excluded.updatedAt, updatedAt),
+    generation = excluded.generation;
+
+getChangesBetween:
+SELECT generation, merchId, favorite, updatedAt FROM userMerch
+WHERE (
+    userId = :userId AND
+    generation > :lowerGeneration AND
+    generation <= :upperGeneration
+);

@@ -20,12 +20,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserDataHandler
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.User
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -74,6 +78,22 @@ class UserDataSyncTest {
             SeriesData(data.copy(userEntry = data.userEntry.copy(favorite = favorite)))
         }
 
+    private val merchData = MerchEntryProvider.values
+        .mapIndexed { index, data ->
+            val favorite = index % 2 == 0
+            MerchData(
+                MerchWithUserData(
+                    merch = data,
+                    userEntry = MerchUserEntry(
+                        merchId = data.uuid,
+                        favorite = favorite,
+                        generation = 0L,
+                        updatedAt = null,
+                    )
+                )
+            )
+        }
+
     // TODO: Replace with Burst when it supports Kotlin 2.5.0
     @Test
     fun singleDevice_uploadOnce_artists() = runTest {
@@ -83,6 +103,11 @@ class UserDataSyncTest {
     @Test
     fun singleDevice_uploadOnce_series() = runTest {
         singleDevice_uploadOnce(ParametersSeries)
+    }
+
+    @Test
+    fun singleDevice_uploadOnce_merch() = runTest {
+        singleDevice_uploadOnce(ParametersMerch)
     }
 
     private fun <Source, UserEntry, Payload, ServerModel> singleDevice_uploadOnce(parameters: Parameters<Source, UserEntry, Payload, ServerModel>) =
@@ -157,6 +182,11 @@ class UserDataSyncTest {
     @Test
     fun singleDevice_downloadOnce_series() = runTest {
         singleDevice_downloadOnce(ParametersSeries)
+    }
+
+    @Test
+    fun singleDevice_downloadOnce_merch() = runTest {
+        singleDevice_downloadOnce(ParametersMerch)
     }
 
     private fun <Source, UserEntry, Payload, ServerModel> singleDevice_downloadOnce(parameters: Parameters<Source, UserEntry, Payload, ServerModel>) =
@@ -645,7 +675,7 @@ class UserDataSyncTest {
         serverDatabase.testQueries.getAllUserArtists(USER_ID).awaitAsList()
             .shouldContainExactlyInAnyOrder(
                 artist.toEdited(favorite = false, ignored = true)
-                    .toServerModel( ORIGIN + 3.seconds, 2L)
+                    .toServerModel(ORIGIN + 3.seconds, 2L)
             )
     }
 
@@ -786,6 +816,19 @@ class UserDataSyncTest {
         toServerModel = SeriesData::toServerModel,
     )
 
+    private val ParametersMerch = Parameters(
+        data = { this.merchData.take(3).toList() },
+        field = { it.merch },
+        insertBaseEntry = { insertMerch(it.source.merch) },
+        insertUserEntry = { insertMerchUserEntry(it.source.userEntry) },
+        insertServerEntry = { userMerchQueries.insertUserMerch(it) },
+        getClientEntries = { testQueries.getMerchUserEntries().awaitAsList() },
+        getServerEntries = { testQueries.getAllUserMerch(USER_ID).awaitAsList() },
+        toUserEntry = MerchData::toUserEntry,
+        toPayload = MerchData::toPayload,
+        toServerModel = MerchData::toServerModel,
+    )
+
     data class Parameters<Source, UserEntry, Payload, ServerModel>(
         val data: () -> List<Source>,
         val field: (UserDataSyncPayload) -> List<Payload>?,
@@ -858,6 +901,33 @@ class UserDataSyncTest {
         fun toServerModel(updatedAt: Instant, generation: Long) = UserSeries(
             userId = USER_ID,
             seriesId = source.series.uuid.toString(),
+            favorite = source.userEntry.favorite,
+            updatedAt = updatedAt,
+            generation = generation,
+        )
+    }
+
+    private data class MerchData(val source: MerchWithUserData) {
+
+        fun toEdited(favorite: Boolean) = copy(
+            source = source.copy(
+                userEntry = source.userEntry.copy(favorite = favorite)
+            )
+        )
+
+        fun toUserEntry(updatedAt: Instant, generation: Long) =
+            source.userEntry.copy(updatedAt = updatedAt, generation = generation)
+
+        fun toPayload(updatedAt: Instant, generation: Long) = UserDataSyncPayload.Merch(
+            generation = generation,
+            id = source.merch.uuid,
+            favorite = source.userEntry.favorite,
+            updatedAt = updatedAt,
+        )
+
+        fun toServerModel(updatedAt: Instant, generation: Long) = UserMerch(
+            userId = USER_ID,
+            merchId = source.merch.uuid,
             favorite = source.userEntry.favorite,
             updatedAt = updatedAt,
             generation = generation,
