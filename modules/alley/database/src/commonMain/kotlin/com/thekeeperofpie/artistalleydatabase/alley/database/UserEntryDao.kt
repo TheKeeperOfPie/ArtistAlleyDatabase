@@ -187,6 +187,27 @@ class UserEntryDao(
                 }
             }
 
+            val seriesUserEntryDao = seriesUserEntryDao()
+            payload.series?.forEach {
+                val userEntry =
+                    seriesUserEntryDao.getSeriesUserEntry(it.id).awaitAsOneOrNull()
+                val currentUpdatedAt = userEntry?.updatedAt
+                val incomingUpdatedAt = it.updatedAt
+                if (userEntry == null ||
+                    userEntry.generation < it.generation ||
+                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+                ) {
+                    seriesUserEntryDao.insertSeriesUserEntry(
+                        SeriesUserEntry(
+                            seriesId = it.id,
+                            favorite = it.favorite ?: userEntry?.favorite ?: false,
+                            generation = it.generation,
+                            updatedAt = incomingUpdatedAt,
+                        )
+                    )
+                }
+            }
+
             afterCommit {
                 // TODO: Also schedule a sync if there's anything remaining unsynced
                 settings.lastSyncGeneration = payload.generation

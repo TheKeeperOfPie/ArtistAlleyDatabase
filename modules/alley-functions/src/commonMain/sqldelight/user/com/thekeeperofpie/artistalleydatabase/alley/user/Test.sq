@@ -1,3 +1,7 @@
 getAllUserArtists:
 SELECT * FROM userArtist
 WHERE userId = :userId;
+
+getAllUserSeries:
+SELECT * FROM userSeries
+WHERE userId = :userId;

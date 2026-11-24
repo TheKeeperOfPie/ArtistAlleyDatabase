@@ -4,6 +4,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import kotlin.time.Clock
 
@@ -57,6 +58,12 @@ object UserDataHandler {
             upperGeneration = upperGeneration,
         ).awaitAsList()
 
+        val seriesChanges = database.userSeriesQueries.getChangesBetween(
+            userId = userId,
+            lowerGeneration = lowerGeneration,
+            upperGeneration = upperGeneration,
+        ).awaitAsList()
+
         // TODO: Remove the client's own uploaded changes so only the diff is passed back
         return UserDataSyncPayload(
             generation = upperGeneration,
@@ -67,6 +74,14 @@ object UserDataHandler {
                     id = it.artistId,
                     favorite = it.favorite,
                     ignored = it.ignored,
+                    updatedAt = it.updatedAt,
+                )
+            },
+            series = seriesChanges.map {
+                UserDataSyncPayload.Series(
+                    generation = it.generation,
+                    id = it.seriesId,
+                    favorite = it.favorite,
                     updatedAt = it.updatedAt,
                 )
             },
@@ -93,6 +108,18 @@ object UserDataHandler {
                         artistId = it.id,
                         favorite = it.favorite,
                         ignored = it.ignored,
+                        generation = nextGeneration,
+                        updatedAt = it.updatedAt?.coerceAtMost(now) ?: now,
+                    )
+                )
+            }
+            payload.series?.forEach {
+                val now = clock.now()
+                database.userSeriesQueries.insertUserSeries(
+                    UserSeries(
+                        userId = userId,
+                        seriesId = it.id,
+                        favorite = it.favorite,
                         generation = nextGeneration,
                         updatedAt = it.updatedAt?.coerceAtMost(now) ?: now,
                     )

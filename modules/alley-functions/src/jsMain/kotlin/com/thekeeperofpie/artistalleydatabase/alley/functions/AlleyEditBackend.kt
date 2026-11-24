@@ -7,10 +7,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistCatalogQu
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteData
 import com.thekeeperofpie.artistalleydatabase.alley.backend.data.ArtistRemoteDataHistory
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
+import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntryHistory
@@ -1260,39 +1260,6 @@ object AlleyEditBackend {
         init = ResponseInit(status = 200, headers = Headers().apply {
             set("Content-Type", "application/json")
         })
-    )
-
-    private fun SeriesInfo.toSeriesEntry() = SeriesEntry(
-        id = id,
-        uuid = uuid.toString(),
-        notes = notes,
-        aniListId = aniListId,
-        aniListType = aniListType.takeUnless { it == AniListType.NONE }?.name,
-        wikipediaId = wikipediaId,
-        tmdbId = tmdbId,
-        tmdbType = tmdbType,
-        steamId = steamId,
-        steamImagePath = steamImagePath,
-        openLibraryId = openLibraryId,
-        source = source,
-        titlePreferred = titlePreferred,
-        titleEnglish = titleEnglish,
-        titleRomaji = titleRomaji,
-        titleNative = titleNative,
-        synonyms = synonyms,
-        link = link,
-        inferred2024 = 0, // TODO: Recalculate counts when adding to local database
-        inferred2025 = 0,
-        inferredAnimeExpo2026 = 0,
-        inferredAnimeNyc2024 = 0,
-        inferredAnimeNyc2025 = 0,
-        inferredAnimeNyc2026 = 0,
-        confirmed2024 = 0,
-        confirmed2025 = 0,
-        confirmedAnimeExpo2026 = 0,
-        confirmedAnimeNyc2024 = 0,
-        confirmedAnimeNyc2025 = 0,
-        confirmedAnimeNyc2026 = 0,
     )
 
     private fun MerchInfo.toMerchEntry() = MerchEntry(

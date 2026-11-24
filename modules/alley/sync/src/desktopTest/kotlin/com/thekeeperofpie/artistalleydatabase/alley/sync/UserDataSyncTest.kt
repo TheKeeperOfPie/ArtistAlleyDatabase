@@ -10,18 +10,23 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.TestQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.functions.BackendDatabases
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserDataHandler
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.User
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -63,97 +68,142 @@ class UserDataSyncTest {
             )
         }
 
+    private val seriesData = SeriesWithUserDataProvider.values
+        .mapIndexed { index, data ->
+            val favorite = index % 2 == 0
+            SeriesData(data.copy(userEntry = data.userEntry.copy(favorite = favorite)))
+        }
+
+    // TODO: Replace with Burst when it supports Kotlin 2.5.0
     @Test
-    fun singleDevice_uploadOnce() = runTest {
-        val (clientDriver, clientDatabase, serverDatabase, artistData) = createDatabases()
-        val settings = Settings()
-        val userEntryDao = UserEntryDao(
-            driver = { clientDriver },
-            database = { clientDatabase },
-            settings = settings,
-            clock = clock,
-        )
-        val syncer = AlleyUserDataSyncer(
-            userEntryDao = userEntryDao,
-            userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
-            settings = settings,
-        )
-
-        userEntryDao.insertArtistUserEntry(artistData[0].source.userEntry)
-        timeSource += 3.seconds
-        userEntryDao.insertArtistUserEntry(artistData[1].source.userEntry)
-        timeSource += 5.seconds
-        userEntryDao.insertArtistUserEntry(artistData[2].source.userEntry)
-
-        val expectedServerGeneration = 1L
-        syncer.sendClientPayloadToServerAndSync(
-            serverDatabase = serverDatabase,
-            expectedClientGeneration = 0L,
-            expectedPayloadArtists = listOf(
-                artistData[0].toPayload(ORIGIN, expectedServerGeneration),
-                artistData[1].toPayload(ORIGIN + 3.seconds, expectedServerGeneration),
-                artistData[2].toPayload(ORIGIN + 8.seconds, expectedServerGeneration),
-            ),
-            expectedHttpStatus = 200,
-            expectedServerGeneration = 1L,
-            expectedServerPayloadArtists = listOf(
-                artistData[0].toPayload(ORIGIN, expectedServerGeneration),
-                artistData[1].toPayload(ORIGIN + 3.seconds, expectedServerGeneration),
-                artistData[2].toPayload(ORIGIN + 8.seconds, expectedServerGeneration),
-            ),
-        )
-
-        serverDatabase.testQueries.getAllUserArtists(USER_ID).awaitAsList()
-            .shouldContainExactlyInAnyOrder(
-                artistData[0].toServerModel(USER_ID, ORIGIN, expectedServerGeneration),
-                artistData[1].toServerModel(USER_ID, ORIGIN + 3.seconds, expectedServerGeneration),
-                artistData[2].toServerModel(USER_ID, ORIGIN + 8.seconds, expectedServerGeneration),
-            )
+    fun singleDevice_uploadOnce_artists() = runTest {
+        singleDevice_uploadOnce(ParametersArtists)
     }
 
     @Test
-    fun singleDevice_downloadOnce() = runTest {
-        val (clientDriver, clientDatabase, serverDatabase, artistData) = createDatabases()
-        val settings = Settings()
-        val userEntryDao = UserEntryDao(
-            driver = { clientDriver },
-            database = { clientDatabase },
-            clock = clock,
-            settings = settings,
-        )
-        val syncer = AlleyUserDataSyncer(
-            userEntryDao = userEntryDao,
-            userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
-            settings = settings,
-        )
+    fun singleDevice_uploadOnce_series() = runTest {
+        singleDevice_uploadOnce(ParametersSeries)
+    }
 
-        artistData.map { it.toServerModel(USER_ID, ORIGIN + 3.seconds, 1) }
-            .forEach { serverDatabase.userArtistQueries.insertUserArtist(it) }
-        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+    private fun <Source, UserEntry, Payload, ServerModel> singleDevice_uploadOnce(parameters: Parameters<Source, UserEntry, Payload, ServerModel>) =
+        runTest {
+            val (clientDriver, clientDatabase, serverDatabase, data) = createDatabases(parameters)
+            val settings = Settings()
+            val userEntryDao = UserEntryDao(
+                driver = { clientDriver },
+                database = { clientDatabase },
+                settings = settings,
+                clock = clock,
+            )
+            val syncer = AlleyUserDataSyncer(
+                userEntryDao = userEntryDao,
+                userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
+                settings = settings,
+            )
 
-        val expectedGeneration = 1L
+            with(parameters) {
+                userEntryDao.insertUserEntry(data[0])
+                timeSource += 3.seconds
+                userEntryDao.insertUserEntry(data[1])
+                timeSource += 5.seconds
+                userEntryDao.insertUserEntry(data[2])
+            }
 
-        syncer.sendClientPayloadToServerAndSync(
-            serverDatabase = serverDatabase,
-            expectedClientGeneration = 0L,
-            expectedPayloadArtists = emptyList(),
-            expectedHttpStatus = 409,
-            expectedServerGeneration = expectedGeneration,
-            expectedServerPayloadArtists = artistData.map {
-                it.toPayload(ORIGIN + 3.seconds, expectedGeneration)
-            },
-        )
-
-        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
-            .shouldContainExactlyInAnyOrder(
-                artistData.map {
-                    it.source.userEntry.copy(
-                        generation = 1L,
-                        updatedAt = ORIGIN + 3.seconds,
+            val expectedServerGeneration = 1L
+            syncer.sendClientPayloadToServerAndSync2(
+                parameters = parameters,
+                serverDatabase = serverDatabase,
+                expectedClientGeneration = 0L,
+                expectedPayload = with(parameters) {
+                    listOf(
+                        data[0].toPayload(ORIGIN, expectedServerGeneration),
+                        data[1].toPayload(ORIGIN + 3.seconds, expectedServerGeneration),
+                        data[2].toPayload(ORIGIN + 8.seconds, expectedServerGeneration),
                     )
-                }
+                },
+                expectedHttpStatus = 200,
+                expectedServerGeneration = 1L,
+                expectedServerPayload = with(parameters) {
+                    listOf(
+                        data[0].toPayload(ORIGIN, expectedServerGeneration),
+                        data[1].toPayload(ORIGIN + 3.seconds, expectedServerGeneration),
+                        data[2].toPayload(ORIGIN + 8.seconds, expectedServerGeneration),
+                    )
+                },
             )
+
+            with(parameters) {
+                serverDatabase.getServerEntries()
+                    .shouldContainExactlyInAnyOrder(
+                        data[0].toServerModel(ORIGIN, expectedServerGeneration),
+                        data[1].toServerModel(ORIGIN + 3.seconds, expectedServerGeneration),
+                        data[2].toServerModel(ORIGIN + 8.seconds, expectedServerGeneration),
+                    )
+
+                clientDatabase.getClientEntries()
+                    .shouldContainExactlyInAnyOrder(
+                        data[0].toUserEntry(ORIGIN, expectedServerGeneration),
+                        data[1].toUserEntry(ORIGIN + 3.seconds, expectedServerGeneration),
+                        data[2].toUserEntry(ORIGIN + 8.seconds, expectedServerGeneration),
+                    )
+            }
+        }
+
+    @Test
+    fun singleDevice_downloadOnce_artists() = runTest {
+        singleDevice_downloadOnce(ParametersArtists)
     }
+
+    @Test
+    fun singleDevice_downloadOnce_series() = runTest {
+        singleDevice_downloadOnce(ParametersSeries)
+    }
+
+    private fun <Source, UserEntry, Payload, ServerModel> singleDevice_downloadOnce(parameters: Parameters<Source, UserEntry, Payload, ServerModel>) =
+        runTest {
+            val (clientDriver, clientDatabase, serverDatabase, data) = createDatabases(parameters)
+            val settings = Settings()
+            val userEntryDao = UserEntryDao(
+                driver = { clientDriver },
+                database = { clientDatabase },
+                clock = clock,
+                settings = settings,
+            )
+            val syncer = AlleyUserDataSyncer(
+                userEntryDao = userEntryDao,
+                userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
+                settings = settings,
+            )
+
+            with(parameters) {
+                data.map { it.toServerModel(ORIGIN + 3.seconds, 1) }
+                    .forEach { serverDatabase.insertServerEntry(it) }
+            }
+            serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+
+            val expectedGeneration = 1L
+
+            syncer.sendClientPayloadToServerAndSync2(
+                parameters = parameters,
+                serverDatabase = serverDatabase,
+                expectedClientGeneration = 0L,
+                expectedPayload = emptyList(),
+                expectedHttpStatus = 409,
+                expectedServerGeneration = expectedGeneration,
+                expectedServerPayload = with(parameters) {
+                    data.map { it.toPayload(ORIGIN + 3.seconds, expectedGeneration) }
+                },
+            )
+
+            with(parameters) {
+                clientDatabase.getClientEntries()
+                    .shouldContainExactlyInAnyOrder(
+                        data.map {
+                            it.toUserEntry(ORIGIN + 3.seconds, 1L)
+                        }
+                    )
+            }
+        }
 
     @Test
     fun singleDevice_uploadExclusiveAndDownloadReconciled() = runTest {
@@ -180,11 +230,7 @@ class UserDataSyncTest {
         artistDataClient.forEach { userEntryDao.insertArtistUserEntry(it.source.userEntry) }
         artistDataServer.forEach {
             serverDatabase.userArtistQueries.insertUserArtist(
-                it.toServerModel(
-                    USER_ID,
-                    ORIGIN - 3.seconds,
-                    1L
-                )
+                it.toServerModel(ORIGIN - 3.seconds, 1L)
             )
         }
         serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
@@ -274,7 +320,7 @@ class UserDataSyncTest {
         // Insert a higher generation on the server which favorites the artist
         serverDatabase.userArtistQueries.insertUserArtist(
             artist.toEdited(favorite = true, ignored = false)
-                .toServerModel(USER_ID, ORIGIN + 3.seconds, 2L)
+                .toServerModel(ORIGIN + 3.seconds, 2L)
         )
         serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
         serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
@@ -367,7 +413,7 @@ class UserDataSyncTest {
         arrayOf(artist1, artist2).forEach {
             serverDatabase.userArtistQueries.insertUserArtist(
                 it.toEdited(favorite = true, ignored = true)
-                    .toServerModel(USER_ID, ORIGIN + 3.seconds, 2L)
+                    .toServerModel(ORIGIN + 3.seconds, 2L)
             )
         }
 
@@ -444,9 +490,9 @@ class UserDataSyncTest {
         serverDatabase.testQueries.getAllUserArtists(USER_ID).awaitAsList()
             .shouldContainExactlyInAnyOrder(
                 artist1.toEdited(favorite = true, ignored = true)
-                    .toServerModel(USER_ID, updatedAt = ORIGIN + 3.seconds, generation = 2L),
+                    .toServerModel(updatedAt = ORIGIN + 3.seconds, generation = 2L),
                 artist2.toEdited(favorite = true, ignored = false)
-                    .toServerModel(USER_ID, updatedAt = ORIGIN + 6.seconds, generation = 3L)
+                    .toServerModel(updatedAt = ORIGIN + 6.seconds, generation = 3L)
             )
     }
 
@@ -473,11 +519,7 @@ class UserDataSyncTest {
 
         artistDataServer.forEach {
             serverDatabase.userArtistQueries.insertUserArtist(
-                it.toServerModel(
-                    USER_ID,
-                    ORIGIN - 3.seconds,
-                    1L
-                )
+                it.toServerModel(ORIGIN - 3.seconds, 1L)
             )
         }
         serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
@@ -566,7 +608,7 @@ class UserDataSyncTest {
         // In the future relative to client, make an edit on the server
         serverDatabase.userArtistQueries.insertUserArtist(
             artist.toEdited(favorite = false, ignored = true)
-                .toServerModel(USER_ID, ORIGIN + 3.seconds, 1L)
+                .toServerModel(ORIGIN + 3.seconds, 1L)
         )
         serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
             .shouldBe(1L)
@@ -603,19 +645,31 @@ class UserDataSyncTest {
         serverDatabase.testQueries.getAllUserArtists(USER_ID).awaitAsList()
             .shouldContainExactlyInAnyOrder(
                 artist.toEdited(favorite = false, ignored = true)
-                    .toServerModel(USER_ID, ORIGIN + 3.seconds, 2L)
+                    .toServerModel( ORIGIN + 3.seconds, 2L)
             )
     }
 
     private suspend fun createDatabases(
         artistData: List<ArtistData> = this.artistData.take(3).toList(),
-    ): TestData {
+    ): TestData<ArtistData> {
         val clientDriver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         return TestData(
             clientDriver = clientDriver,
             clientDatabase = createClientDatabase(clientDriver, artistData),
             serverDatabase = createServerDatabase(),
-            artistData = artistData,
+            data = artistData,
+        )
+    }
+
+    private suspend fun <Source> createDatabases(
+        parameters: Parameters<Source, *, *, *>,
+    ): TestData<Source> {
+        val clientDriver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        return TestData(
+            clientDriver = clientDriver,
+            clientDatabase = createClientDatabase(clientDriver, parameters),
+            serverDatabase = createServerDatabase(),
+            data = parameters.data(),
         )
     }
 
@@ -627,6 +681,20 @@ class UserDataSyncTest {
         return DaoUtils.createAlleySqlDatabase(driver).apply {
             artistData.forEach {
                 testQueries.insertArtist(it.source.artist.databaseEntry.toArtistEntry(it.source.artist.year))
+            }
+        }
+    }
+
+    private suspend fun <Source> createClientDatabase(
+        driver: SqlDriver,
+        parameters: Parameters<Source, *, *, *>,
+    ): AlleySqlDatabase {
+        AlleySqlDatabase.Schema.create(driver).await()
+        return DaoUtils.createAlleySqlDatabase(driver).apply {
+            with(parameters) {
+                data().forEach {
+                    testQueries.insertBaseEntry(it)
+                }
             }
         }
     }
@@ -668,11 +736,74 @@ class UserDataSyncTest {
         syncFromServer(httpStatus, serverPayload)
     }
 
-    private data class TestData(
+    private suspend fun <Payload> AlleyUserDataSyncer.sendClientPayloadToServerAndSync2(
+        parameters: Parameters<*, *, Payload, *>,
+        serverDatabase: AlleyUserDatabase,
+        expectedClientGeneration: Long,
+        expectedPayload: List<Payload>,
+        expectedHttpStatus: Short,
+        expectedServerGeneration: Long,
+        expectedServerPayload: List<Payload>,
+    ) {
+        val clientPayload = getPayload()
+        clientPayload.generation.shouldBe(expectedClientGeneration)
+        parameters.field(clientPayload).shouldContainExactlyInAnyOrder(expectedPayload)
+
+        val [httpStatus, serverPayload] =
+            UserDataHandler.syncFromClient(clock, USER_ID, clientPayload, serverDatabase)
+        httpStatus.shouldBe(expectedHttpStatus)
+        serverPayload.generation.shouldBe(expectedServerGeneration)
+        parameters.field(serverPayload).shouldContainExactlyInAnyOrder(expectedServerPayload)
+
+        syncFromServer(httpStatus, serverPayload)
+    }
+
+    private val ParametersArtists = Parameters(
+        data = { this.artistData.take(3).toList() },
+        field = { it.artists },
+        insertBaseEntry = {
+            insertArtist(it.source.artist.databaseEntry.toArtistEntry(it.source.artist.year))
+        },
+        insertUserEntry = { insertArtistUserEntry(it.source.userEntry) },
+        insertServerEntry = { userArtistQueries.insertUserArtist(it) },
+        getClientEntries = { testQueries.getArtistUserEntries().awaitAsList() },
+        getServerEntries = { testQueries.getAllUserArtists(USER_ID).awaitAsList() },
+        toUserEntry = ArtistData::toUserEntry,
+        toPayload = ArtistData::toPayload,
+        toServerModel = ArtistData::toServerModel,
+    )
+
+    private val ParametersSeries = Parameters(
+        data = { this.seriesData.take(3).toList() },
+        field = { it.series },
+        insertBaseEntry = { insertSeries(it.source.series.toSeriesEntry()) },
+        insertUserEntry = { insertSeriesUserEntry(it.source.userEntry) },
+        insertServerEntry = { userSeriesQueries.insertUserSeries(it) },
+        getClientEntries = { testQueries.getSeriesUserEntries().awaitAsList() },
+        getServerEntries = { testQueries.getAllUserSeries(USER_ID).awaitAsList() },
+        toUserEntry = SeriesData::toUserEntry,
+        toPayload = SeriesData::toPayload,
+        toServerModel = SeriesData::toServerModel,
+    )
+
+    data class Parameters<Source, UserEntry, Payload, ServerModel>(
+        val data: () -> List<Source>,
+        val field: (UserDataSyncPayload) -> List<Payload>?,
+        val insertBaseEntry: suspend TestQueries.(Source) -> Unit,
+        val insertUserEntry: suspend UserEntryDao.(Source) -> Unit,
+        val insertServerEntry: suspend AlleyUserDatabase.(ServerModel) -> Unit,
+        val getClientEntries: suspend AlleySqlDatabase.() -> List<UserEntry>,
+        val getServerEntries: suspend AlleyUserDatabase.() -> List<ServerModel>,
+        val toUserEntry: Source.(updatedAt: Instant, generation: Long) -> UserEntry,
+        val toPayload: Source.(updatedAt: Instant, generation: Long) -> Payload,
+        val toServerModel: Source.(updatedAt: Instant, generation: Long) -> ServerModel,
+    )
+
+    private data class TestData<Source>(
         val clientDriver: SqlDriver,
         val clientDatabase: AlleySqlDatabase,
         val serverDatabase: AlleyUserDatabase,
-        val artistData: List<ArtistData>,
+        val data: List<Source>,
     )
 
     private data class ArtistData(val source: ArtistWithUserData) {
@@ -683,6 +814,9 @@ class UserDataSyncTest {
             )
         )
 
+        fun toUserEntry(updatedAt: Instant, generation: Long) =
+            source.userEntry.copy(updatedAt = updatedAt, generation = generation)
+
         fun toPayload(updatedAt: Instant, generation: Long) = UserDataSyncPayload.Artist(
             generation = generation,
             dataYear = source.artist.year,
@@ -692,12 +826,39 @@ class UserDataSyncTest {
             updatedAt = updatedAt,
         )
 
-        fun toServerModel(userId: UserId, updatedAt: Instant, generation: Long) = UserArtist(
-            userId = userId,
+        fun toServerModel(updatedAt: Instant, generation: Long) = UserArtist(
+            userId = USER_ID,
             dataYear = source.artist.year,
             artistId = source.artist.id,
             favorite = source.userEntry.favorite,
             ignored = source.userEntry.ignored,
+            updatedAt = updatedAt,
+            generation = generation,
+        )
+    }
+
+    private data class SeriesData(val source: SeriesWithUserData) {
+
+        fun toEdited(favorite: Boolean) = copy(
+            source = source.copy(
+                userEntry = source.userEntry.copy(favorite = favorite)
+            )
+        )
+
+        fun toUserEntry(updatedAt: Instant, generation: Long) =
+            source.userEntry.copy(updatedAt = updatedAt, generation = generation)
+
+        fun toPayload(updatedAt: Instant, generation: Long) = UserDataSyncPayload.Series(
+            generation = generation,
+            id = source.series.uuid.toString(),
+            favorite = source.userEntry.favorite,
+            updatedAt = updatedAt,
+        )
+
+        fun toServerModel(updatedAt: Instant, generation: Long) = UserSeries(
+            userId = USER_ID,
+            seriesId = source.series.uuid.toString(),
+            favorite = source.userEntry.favorite,
             updatedAt = updatedAt,
             generation = generation,
         )

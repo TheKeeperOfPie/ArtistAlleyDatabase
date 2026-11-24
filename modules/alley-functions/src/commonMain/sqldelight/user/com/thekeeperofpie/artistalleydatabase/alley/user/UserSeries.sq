@@ -1,0 +1,15 @@
+insertUserSeries:
+INSERT INTO userSeries
+VALUES ?
+ON CONFLICT(userId, seriesId) DO UPDATE SET
+    favorite = IIF(excluded.updatedAt > updatedAt, IFNULL(excluded.favorite, favorite), favorite),
+    updatedAt = MAX(excluded.updatedAt, updatedAt),
+    generation = excluded.generation;
+
+getChangesBetween:
+SELECT generation, seriesId, favorite, updatedAt FROM userSeries
+WHERE (
+    userId = :userId AND
+    generation > :lowerGeneration AND
+    generation <= :upperGeneration
+);

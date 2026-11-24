@@ -2,14 +2,21 @@ insertArtist:
 INSERT OR REPLACE INTO artistEntry
 VALUES ?;
 
-insertStampRally:
-INSERT OR REPLACE INTO stampRallyEntry
-VALUES ?;
-
 getArtistUserData:
 SELECT artistEntry.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear;
+
+getArtistNotes:
+SELECT artistNotes.* FROM artistNotes
+ORDER BY artistNotes.artistId, artistNotes.dataYear;
+
+getArtistUserEntries:
+SELECT * FROM artistUserEntry;
+
+insertStampRally:
+INSERT OR REPLACE INTO stampRallyEntry
+VALUES ?;
 
 getStampRallyUserData:
 SELECT stampRallyEntry.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry
@@ -17,13 +24,13 @@ LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
 WHERE stampRallyEntry.dataYear = :dataYear;
 
-getArtistNotes:
-SELECT artistNotes.* FROM artistNotes
-ORDER BY artistNotes.artistId, artistNotes.dataYear;
-
 getStampRallyNotes:
 SELECT stampRallyNotes.* FROM stampRallyNotes
 ORDER BY stampRallyNotes.stampRallyId;
 
-getArtistUserEntries:
-SELECT * FROM artistUserEntry;
+insertSeries:
+INSERT OR REPLACE INTO seriesEntry
+VALUES ?;
+
+getSeriesUserEntries:
+SELECT * FROM seriesUserEntry;
