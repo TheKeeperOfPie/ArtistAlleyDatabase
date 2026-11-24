@@ -544,6 +544,69 @@ class UserDataSyncTest {
             )
     }
 
+    @Test
+    fun singleDevice_uploadOutdated_preservesServerValue() = runTest {
+        val (clientDriver, clientDatabase, serverDatabase, artistData) = createDatabases()
+
+        val settings = Settings()
+        val userEntryDao = UserEntryDao(
+            driver = { clientDriver },
+            database = { clientDatabase },
+            clock = clock,
+            settings = settings,
+        )
+        val syncer = AlleyUserDataSyncer(
+            userEntryDao = userEntryDao,
+            userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
+            settings = settings,
+        )
+
+        val artist = artistData.first()
+
+        // In the future relative to client, make an edit on the server
+        serverDatabase.userArtistQueries.insertUserArtist(
+            artist.toEdited(favorite = false, ignored = true)
+                .toServerModel(USER_ID, ORIGIN + 3.seconds, 1L)
+        )
+        serverDatabase.generationQueries.incrementUserGeneration(USER_ID).awaitAsOne()
+            .shouldBe(1L)
+
+        // Create a client conflict
+        settings.lastSyncGeneration = 1L
+        userEntryDao.insertArtistUserEntry(
+            artist.toEdited(favorite = true, ignored = true).source.userEntry
+        )
+
+        syncer.sendClientPayloadToServerAndSync(
+            serverDatabase = serverDatabase,
+            expectedClientGeneration = 1L,
+            expectedPayloadArtists = listOf(
+                artist.toEdited(favorite = true, ignored = true)
+                    .toPayload(ORIGIN, 2L)
+            ),
+            expectedHttpStatus = 200,
+            expectedServerGeneration = 2L,
+            expectedServerPayloadArtists = listOf(
+                artist.toEdited(favorite = false, ignored = true)
+                    .toPayload(ORIGIN + 3.seconds, 2L)
+            ),
+        )
+
+        // Client should be up to date with server
+        clientDatabase.testQueries.getArtistUserEntries().awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artist.toEdited(favorite = false, ignored = true)
+                    .source.userEntry.copy(updatedAt = ORIGIN + 3.seconds, generation = 2L)
+            )
+
+        // Server should have generation bumped but preserve state
+        serverDatabase.testQueries.getAllUserArtists(USER_ID).awaitAsList()
+            .shouldContainExactlyInAnyOrder(
+                artist.toEdited(favorite = false, ignored = true)
+                    .toServerModel(USER_ID, ORIGIN + 3.seconds, 2L)
+            )
+    }
+
     private suspend fun createDatabases(
         artistData: List<ArtistData> = this.artistData.take(3).toList(),
     ): TestData {
