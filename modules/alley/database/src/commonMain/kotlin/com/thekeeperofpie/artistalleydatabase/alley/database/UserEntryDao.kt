@@ -187,6 +187,28 @@ class UserEntryDao(
                 }
             }
 
+            val stampRallyUserEntryDao = rallyUserEntryDao()
+            payload.rallies?.forEach {
+                val userEntry =
+                    stampRallyUserEntryDao.getStampRallyUserEntry(it.id).awaitAsOneOrNull()
+                val currentUpdatedAt = userEntry?.updatedAt
+                val incomingUpdatedAt = it.updatedAt
+                if (userEntry == null ||
+                    userEntry.generation < it.generation ||
+                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+                ) {
+                    stampRallyUserEntryDao.insertStampRallyUserEntry(
+                        StampRallyUserEntry(
+                            stampRallyId = it.id,
+                            favorite = it.favorite ?: userEntry?.favorite ?: false,
+                            ignored = it.ignored ?: userEntry?.ignored ?: false,
+                            generation = it.generation,
+                            updatedAt = incomingUpdatedAt,
+                        )
+                    )
+                }
+            }
+
             val seriesUserEntryDao = seriesUserEntryDao()
             payload.series?.forEach {
                 val userEntry =

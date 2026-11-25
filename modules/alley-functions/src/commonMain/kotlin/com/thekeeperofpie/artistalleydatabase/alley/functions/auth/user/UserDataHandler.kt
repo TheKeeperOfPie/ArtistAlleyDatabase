@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import kotlin.time.Clock
 
@@ -59,6 +60,12 @@ object UserDataHandler {
             upperGeneration = upperGeneration,
         ).awaitAsList()
 
+        val stampRallyChanges = database.userStampRallyQueries.getChangesBetween(
+            userId = userId,
+            lowerGeneration = lowerGeneration,
+            upperGeneration = upperGeneration,
+        ).awaitAsList()
+
         val seriesChanges = database.userSeriesQueries.getChangesBetween(
             userId = userId,
             lowerGeneration = lowerGeneration,
@@ -79,6 +86,15 @@ object UserDataHandler {
                     generation = it.generation,
                     dataYear = it.dataYear,
                     id = it.artistId,
+                    favorite = it.favorite,
+                    ignored = it.ignored,
+                    updatedAt = it.updatedAt,
+                )
+            },
+            rallies = stampRallyChanges.map {
+                UserDataSyncPayload.StampRally(
+                    generation = it.generation,
+                    id = it.stampRallyId,
                     favorite = it.favorite,
                     ignored = it.ignored,
                     updatedAt = it.updatedAt,
@@ -121,6 +137,20 @@ object UserDataHandler {
                         userId = userId,
                         dataYear = it.dataYear,
                         artistId = it.id,
+                        favorite = it.favorite,
+                        ignored = it.ignored,
+                        generation = nextGeneration,
+                        updatedAt = it.updatedAt?.coerceAtMost(now) ?: now,
+                    )
+                )
+            }
+
+            payload.rallies?.forEach {
+                val now = clock.now()
+                database.userStampRallyQueries.insertUserStampRally(
+                    UserStampRally(
+                        userId = userId,
+                        stampRallyId = it.id,
                         favorite = it.favorite,
                         ignored = it.ignored,
                         generation = nextGeneration,

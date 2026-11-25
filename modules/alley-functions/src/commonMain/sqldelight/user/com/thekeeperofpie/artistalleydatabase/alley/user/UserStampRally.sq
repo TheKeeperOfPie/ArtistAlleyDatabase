@@ -1,0 +1,16 @@
+insertUserStampRally:
+INSERT INTO userStampRally
+VALUES ?
+ON CONFLICT(userId, stampRallyId) DO UPDATE SET
+    favorite = IIF(excluded.updatedAt > updatedAt, IFNULL(excluded.favorite, favorite), favorite),
+    ignored = IIF(excluded.updatedAt > updatedAt, IFNULL(excluded.ignored, ignored), ignored),
+    updatedAt = MAX(excluded.updatedAt, updatedAt),
+    generation = excluded.generation;
+
+getChangesBetween:
+SELECT generation, stampRallyId, favorite, ignored, updatedAt FROM userStampRally
+WHERE (
+    userId = :userId AND
+    generation > :lowerGeneration AND
+    generation <= :upperGeneration
+);

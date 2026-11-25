@@ -44,6 +44,16 @@ CREATE TABLE IF NOT EXISTS userArtist (
     PRIMARY KEY (userId, dataYear, artistId)
 );
 
+CREATE TABLE IF NOT EXISTS userStampRally (
+    userId TEXT AS UserId NOT NULL,
+    stampRallyId TEXT NOT NULL,
+    favorite INTEGER AS Boolean,
+    ignored INTEGER AS Boolean,
+    generation INTEGER NOT NULL,
+    updatedAt INTEGER AS Instant NOT NULL,
+    PRIMARY KEY (userId, stampRallyId)
+);
+
 CREATE TABLE IF NOT EXISTS userSeries (
     userId TEXT AS UserId NOT NULL,
     seriesId TEXT NOT NULL,

@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
 
 object BackendDatabases {
 
@@ -195,6 +196,10 @@ object BackendDatabases {
                 override fun encode(value: AuthToken) = value.token
             },
             createdAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
+        ),
+        userStampRallyAdapter = UserStampRally.Adapter(
+            userIdAdapter = userIdAdapter,
+            updatedAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
         ),
     )
 }

@@ -37,8 +37,8 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
     }
 
     override val values =
-        artistIds.zip(booths).zip(names).mapIndexed { index, (idAndBooth, name) ->
-            val (artistId, booth) = idAndBooth
+        artistIds.zip(booths).zip(names).mapIndexed { index, [idAndBooth, name] ->
+            val [artistId, booth] = idAndBooth
             val databaseEntry = ArtistDatabaseEntry.Impl(
                 year = DataYear.LATEST,
                 id = artistId,

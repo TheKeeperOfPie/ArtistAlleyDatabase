@@ -15,7 +15,15 @@ data class Booth(val letters: String, val number: Int) : Comparable<Booth> {
         }
     }
 
-    operator fun rangeTo(endInclusive: Booth): ClosedRange<Booth> = BoothRange(this, endInclusive)
+    operator fun rangeTo(endInclusive: Booth): BoothRange = BoothRange(this, endInclusive)
+
+    operator fun plus(value: Int): Booth {
+        var booth = this
+        repeat(value) {
+            booth = booth.generateNext()
+        }
+        return booth
+    }
 
     override operator fun compareTo(other: Booth): Int {
         val byLetter = letters.compareTo(other.letters)
@@ -32,7 +40,7 @@ data class Booth(val letters: String, val number: Int) : Comparable<Booth> {
     override fun toString() = "$letters${number.toString().padStart(2, '0')}"
 }
 
-private class BoothRange(
+class BoothRange(
     override val start: Booth,
     override val endInclusive: Booth,
 ) : ClosedRange<Booth>, Iterable<Booth> {

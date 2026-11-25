@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.TestQueries
@@ -22,6 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
@@ -31,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -72,6 +76,24 @@ class UserDataSyncTest {
             )
         }
 
+    private val stampRallyData = StampRallyWithUserDataProvider.values
+        .mapIndexed { index, data ->
+            val [favorite, ignored] = when (index % 3) {
+                0 -> true to false
+                1 -> true to true
+                2 -> false to true
+                else -> throw IllegalStateException()
+            }
+            StampRallyData(
+                data.copy(
+                    userEntry = data.userEntry.copy(
+                        favorite = favorite,
+                        ignored = ignored
+                    )
+                )
+            )
+        }
+
     private val seriesData = SeriesWithUserDataProvider.values
         .mapIndexed { index, data ->
             val favorite = index % 2 == 0
@@ -98,6 +120,11 @@ class UserDataSyncTest {
     @Test
     fun singleDevice_uploadOnce_artists() = runTest {
         singleDevice_uploadOnce(ParametersArtists)
+    }
+
+    @Test
+    fun singleDevice_uploadOnce_rallies() = runTest {
+        singleDevice_uploadOnce(ParametersStampRallies)
     }
 
     @Test
@@ -177,6 +204,11 @@ class UserDataSyncTest {
     @Test
     fun singleDevice_downloadOnce_artists() = runTest {
         singleDevice_downloadOnce(ParametersArtists)
+    }
+
+    @Test
+    fun singleDevice_downloadOnce_rallies() = runTest {
+        singleDevice_downloadOnce(ParametersStampRallies)
     }
 
     @Test
@@ -803,6 +835,21 @@ class UserDataSyncTest {
         toServerModel = ArtistData::toServerModel,
     )
 
+    private val ParametersStampRallies = Parameters(
+        data = { this.stampRallyData.take(3).toList() },
+        field = { it.rallies },
+        insertBaseEntry = {
+            insertStampRally(it.source.stampRally.toStampRallyEntry(it.source.stampRally.year))
+        },
+        insertUserEntry = { insertStampRallyUserEntry(it.source.userEntry) },
+        insertServerEntry = { userStampRallyQueries.insertUserStampRally(it) },
+        getClientEntries = { testQueries.getStampRallyUserEntries().awaitAsList() },
+        getServerEntries = { testQueries.getAllUserStampRallies(USER_ID).awaitAsList() },
+        toUserEntry = StampRallyData::toUserEntry,
+        toPayload = StampRallyData::toPayload,
+        toServerModel = StampRallyData::toServerModel,
+    )
+
     private val ParametersSeries = Parameters(
         data = { this.seriesData.take(3).toList() },
         field = { it.series },
@@ -873,6 +920,35 @@ class UserDataSyncTest {
             userId = USER_ID,
             dataYear = source.artist.year,
             artistId = source.artist.id,
+            favorite = source.userEntry.favorite,
+            ignored = source.userEntry.ignored,
+            updatedAt = updatedAt,
+            generation = generation,
+        )
+    }
+
+    private data class StampRallyData(val source: StampRallyWithUserData) {
+
+        fun toEdited(favorite: Boolean, ignored: Boolean) = copy(
+            source = source.copy(
+                userEntry = source.userEntry.copy(favorite = favorite, ignored = ignored)
+            )
+        )
+
+        fun toUserEntry(updatedAt: Instant, generation: Long) =
+            source.userEntry.copy(updatedAt = updatedAt, generation = generation)
+
+        fun toPayload(updatedAt: Instant, generation: Long) = UserDataSyncPayload.StampRally(
+            generation = generation,
+            id = source.stampRally.id,
+            favorite = source.userEntry.favorite,
+            ignored = source.userEntry.ignored,
+            updatedAt = updatedAt,
+        )
+
+        fun toServerModel(updatedAt: Instant, generation: Long) = UserStampRally(
+            userId = USER_ID,
+            stampRallyId = source.stampRally.id,
             favorite = source.userEntry.favorite,
             ignored = source.userEntry.ignored,
             updatedAt = updatedAt,

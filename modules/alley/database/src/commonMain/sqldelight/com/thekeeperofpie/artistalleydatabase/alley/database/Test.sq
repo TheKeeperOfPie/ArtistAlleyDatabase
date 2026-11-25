@@ -28,6 +28,9 @@ getStampRallyNotes:
 SELECT stampRallyNotes.* FROM stampRallyNotes
 ORDER BY stampRallyNotes.stampRallyId;
 
+getStampRallyUserEntries:
+SELECT * FROM stampRallyUserEntry;
+
 insertSeries:
 INSERT OR REPLACE INTO seriesEntry
 VALUES ?;

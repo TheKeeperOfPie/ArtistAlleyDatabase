@@ -2,6 +2,10 @@ getAllUserArtists:
 SELECT * FROM userArtist
 WHERE userId = :userId;
 
+getAllUserStampRallies:
+SELECT * FROM userStampRally
+WHERE userId = :userId;
+
 getAllUserSeries:
 SELECT * FROM userSeries
 WHERE userId = :userId;
