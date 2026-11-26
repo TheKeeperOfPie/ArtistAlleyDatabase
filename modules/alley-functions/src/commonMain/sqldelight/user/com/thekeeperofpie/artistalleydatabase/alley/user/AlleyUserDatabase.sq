@@ -3,6 +3,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.RefreshToken;
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserArtistId;
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedArtistId;
 import kotlin.Boolean;
 import kotlin.time.Instant;
 
@@ -39,6 +40,16 @@ CREATE TABLE IF NOT EXISTS userArtist (
     artistId TEXT NOT NULL,
     favorite INTEGER AS Boolean,
     ignored INTEGER AS Boolean,
+    generation INTEGER NOT NULL,
+    updatedAt INTEGER AS Instant NOT NULL,
+    PRIMARY KEY (userId, dataYear, artistId)
+);
+
+CREATE TABLE IF NOT EXISTS userArtistNotes (
+    userId TEXT AS UserId NOT NULL,
+    dataYear TEXT AS DataYear NOT NULL,
+    artistId TEXT AS EncryptedArtistId NOT NULL,
+    notes TEXT,
     generation INTEGER NOT NULL,
     updatedAt INTEGER AS Instant NOT NULL,
     PRIMARY KEY (userId, dataYear, artistId)

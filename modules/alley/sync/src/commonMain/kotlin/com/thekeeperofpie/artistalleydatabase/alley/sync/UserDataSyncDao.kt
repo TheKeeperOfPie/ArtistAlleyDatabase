@@ -5,6 +5,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.GenerationQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserDataSyncQueries
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
@@ -26,6 +27,7 @@ class UserDataSyncDao(
             SyncPayload(
                 lastGeneration = lastGeneration,
                 artistChangesSince = syncDao.getArtistChangesSince(lastSyncGeneration).awaitAsList(),
+                artistNotesChangesSince = syncDao.getArtistNotesChangesSince(lastSyncGeneration).awaitAsList(),
                 rallyChangesSince = syncDao.getStampRallyChangesSince(lastSyncGeneration).awaitAsList(),
                 seriesChangesSince = syncDao.getSeriesChangesSince(lastSyncGeneration).awaitAsList(),
                 merchChangesSince = syncDao.getMerchChangesSince(lastSyncGeneration).awaitAsList(),
@@ -36,6 +38,7 @@ class UserDataSyncDao(
     data class SyncPayload(
         val lastGeneration: Long?,
         val artistChangesSince: List<ArtistUserEntry>,
+        val artistNotesChangesSince: List<ArtistNotes>,
         val rallyChangesSince: List<StampRallyUserEntry>,
         val seriesChangesSince: List<SeriesUserEntry>,
         val merchChangesSince: List<MerchUserEntry>,

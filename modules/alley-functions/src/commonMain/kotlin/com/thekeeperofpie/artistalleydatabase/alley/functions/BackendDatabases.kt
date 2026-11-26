@@ -20,17 +20,24 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.AuthCode
 import com.thekeeperofpie.artistalleydatabase.alley.user.User
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedArtistId
 
 object BackendDatabases {
 
     private val userIdAdapter = object : ColumnAdapter<UserId, String> {
         override fun decode(databaseValue: String) = UserId(databaseValue)
         override fun encode(value: UserId) = value.obfuscatedId
+    }
+
+    private val encryptedArtistIdAdapter = object : ColumnAdapter<EncryptedArtistId, String> {
+        override fun decode(databaseValue: String) = EncryptedArtistId(databaseValue)
+        override fun encode(value: EncryptedArtistId) = value.id
     }
 
     internal fun editDatabase(driver: SqlDriver) = AlleySqlDatabase(
@@ -176,6 +183,12 @@ object BackendDatabases {
         userArtistAdapter = UserArtist.Adapter(
             userIdAdapter = userIdAdapter,
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
+            updatedAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
+        ),
+        userArtistNotesAdapter = UserArtistNotes.Adapter(
+            userIdAdapter = userIdAdapter,
+            dataYearAdapter = ColumnAdapters.dataYearAdapter,
+            artistIdAdapter = encryptedArtistIdAdapter,
             updatedAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
         ),
         userGenerationAdapter = UserGeneration.Adapter(

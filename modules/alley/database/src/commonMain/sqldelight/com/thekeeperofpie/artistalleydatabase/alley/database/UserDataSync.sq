@@ -2,6 +2,10 @@ getArtistChangesSince:
 SELECT * FROM artistUserEntry
 WHERE generation > :lastSyncGeneration;
 
+getArtistNotesChangesSince:
+SELECT * FROM artistNotes
+WHERE generation > :lastSyncGeneration;
+
 getStampRallyChangesSince:
 SELECT * FROM stampRallyUserEntry
 WHERE generation > :lastSyncGeneration;

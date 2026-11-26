@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
+import app.cash.sqldelight.SuspendingTransactionWithReturn
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
@@ -17,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -40,7 +40,6 @@ private fun GetBoothsWithFavorites.toBoothWithFavorite() =
         hasNotes = !notes.isNullOrBlank(),
     )
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SingleIn(AppScope::class)
 class UserEntryDao(
     private val driver: suspend () -> SqlDriver,
@@ -151,109 +150,92 @@ class UserEntryDao(
         }
     }
 
-    suspend fun insertSyncPayload(status: Short, payload: UserDataSyncPayload) {
-        database().transactionWithResult {
-            // On a 409 Conflict, the server rejected client changes, preserve them by
-            // rebasing them, incrementing their generation above the server one. Further down,
-            // any values inside the payload which are higher generation than the local copy
-            // or have a later updatedAt will overwrite anything rebased here
-            if (status == 409.toShort()) {
-                generationDao().rebaseGeneration(
-                    serverGeneration = payload.generation ?: 0,
-                    lastSyncGeneration = settings.lastSyncGeneration ?: 0
-                ).await()
-            }
-
-            val artistUserEntryDao = artistUserEntryDao()
-            payload.artists?.forEach {
-                val userEntry =
-                    artistUserEntryDao.getArtistUserEntry(it.id, it.dataYear).awaitAsOneOrNull()
-                val currentUpdatedAt = userEntry?.updatedAt
-                val incomingUpdatedAt = it.updatedAt
-                if (userEntry == null ||
-                    userEntry.generation < it.generation ||
-                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
-                ) {
-                    artistUserEntryDao.insertArtistUserEntry(
-                        ArtistUserEntry(
-                            artistId = it.id,
-                            dataYear = it.dataYear,
-                            favorite = it.favorite ?: userEntry?.favorite ?: false,
-                            ignored = it.ignored ?: userEntry?.ignored ?: false,
-                            generation = it.generation,
-                            updatedAt = incomingUpdatedAt,
-                        )
+    context(_: SuspendingTransactionWithReturn<Unit>)
+    suspend fun insertSyncPayload(payload: UserDataSyncPayload) {
+        val artistUserEntryDao = artistUserEntryDao()
+        payload.artists?.forEach {
+            val userEntry =
+                artistUserEntryDao.getArtistUserEntry(it.id, it.dataYear).awaitAsOneOrNull()
+            val currentUpdatedAt = userEntry?.updatedAt
+            val incomingUpdatedAt = it.updatedAt
+            if (userEntry == null ||
+                userEntry.generation < it.generation ||
+                (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+            ) {
+                artistUserEntryDao.insertArtistUserEntry(
+                    ArtistUserEntry(
+                        artistId = it.id,
+                        dataYear = it.dataYear,
+                        favorite = it.favorite ?: userEntry?.favorite ?: false,
+                        ignored = it.ignored ?: userEntry?.ignored ?: false,
+                        generation = it.generation,
+                        updatedAt = incomingUpdatedAt,
                     )
-                }
+                )
             }
+        }
 
-            val stampRallyUserEntryDao = rallyUserEntryDao()
-            payload.rallies?.forEach {
-                val userEntry =
-                    stampRallyUserEntryDao.getStampRallyUserEntry(it.id).awaitAsOneOrNull()
-                val currentUpdatedAt = userEntry?.updatedAt
-                val incomingUpdatedAt = it.updatedAt
-                if (userEntry == null ||
-                    userEntry.generation < it.generation ||
-                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
-                ) {
-                    stampRallyUserEntryDao.insertStampRallyUserEntry(
-                        StampRallyUserEntry(
-                            stampRallyId = it.id,
-                            favorite = it.favorite ?: userEntry?.favorite ?: false,
-                            ignored = it.ignored ?: userEntry?.ignored ?: false,
-                            generation = it.generation,
-                            updatedAt = incomingUpdatedAt,
-                        )
+        val stampRallyUserEntryDao = rallyUserEntryDao()
+        payload.rallies?.forEach {
+            val userEntry =
+                stampRallyUserEntryDao.getStampRallyUserEntry(it.id).awaitAsOneOrNull()
+            val currentUpdatedAt = userEntry?.updatedAt
+            val incomingUpdatedAt = it.updatedAt
+            if (userEntry == null ||
+                userEntry.generation < it.generation ||
+                (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+            ) {
+                stampRallyUserEntryDao.insertStampRallyUserEntry(
+                    StampRallyUserEntry(
+                        stampRallyId = it.id,
+                        favorite = it.favorite ?: userEntry?.favorite ?: false,
+                        ignored = it.ignored ?: userEntry?.ignored ?: false,
+                        generation = it.generation,
+                        updatedAt = incomingUpdatedAt,
                     )
-                }
+                )
             }
+        }
 
-            val seriesUserEntryDao = seriesUserEntryDao()
-            payload.series?.forEach {
-                val userEntry =
-                    seriesUserEntryDao.getSeriesUserEntry(it.id).awaitAsOneOrNull()
-                val currentUpdatedAt = userEntry?.updatedAt
-                val incomingUpdatedAt = it.updatedAt
-                if (userEntry == null ||
-                    userEntry.generation < it.generation ||
-                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
-                ) {
-                    seriesUserEntryDao.insertSeriesUserEntry(
-                        SeriesUserEntry(
-                            seriesId = it.id,
-                            favorite = it.favorite ?: userEntry?.favorite ?: false,
-                            generation = it.generation,
-                            updatedAt = incomingUpdatedAt,
-                        )
+        val seriesUserEntryDao = seriesUserEntryDao()
+        payload.series?.forEach {
+            val userEntry =
+                seriesUserEntryDao.getSeriesUserEntry(it.id).awaitAsOneOrNull()
+            val currentUpdatedAt = userEntry?.updatedAt
+            val incomingUpdatedAt = it.updatedAt
+            if (userEntry == null ||
+                userEntry.generation < it.generation ||
+                (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+            ) {
+                seriesUserEntryDao.insertSeriesUserEntry(
+                    SeriesUserEntry(
+                        seriesId = it.id,
+                        favorite = it.favorite ?: userEntry?.favorite ?: false,
+                        generation = it.generation,
+                        updatedAt = incomingUpdatedAt,
                     )
-                }
+                )
             }
+        }
 
-            val merchUserEntryDao = merchUserEntryDao()
-            payload.merch?.forEach {
-                val userEntry =
-                    merchUserEntryDao.getMerchUserEntry(it.id).awaitAsOneOrNull()
-                val currentUpdatedAt = userEntry?.updatedAt
-                val incomingUpdatedAt = it.updatedAt
-                if (userEntry == null ||
-                    userEntry.generation < it.generation ||
-                    (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
-                ) {
-                    merchUserEntryDao.insertMerchUserEntry(
-                        MerchUserEntry(
-                            merchId = it.id,
-                            favorite = it.favorite ?: userEntry?.favorite ?: false,
-                            generation = it.generation,
-                            updatedAt = incomingUpdatedAt,
-                        )
+        val merchUserEntryDao = merchUserEntryDao()
+        payload.merch?.forEach {
+            val userEntry =
+                merchUserEntryDao.getMerchUserEntry(it.id).awaitAsOneOrNull()
+            val currentUpdatedAt = userEntry?.updatedAt
+            val incomingUpdatedAt = it.updatedAt
+            if (userEntry == null ||
+                userEntry.generation < it.generation ||
+                (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+            ) {
+                merchUserEntryDao.insertMerchUserEntry(
+                    MerchUserEntry(
+                        merchId = it.id,
+                        favorite = it.favorite ?: userEntry?.favorite ?: false,
+                        generation = it.generation,
+                        updatedAt = incomingUpdatedAt,
                     )
-                }
-            }
-
-            afterCommit {
-                // TODO: Also schedule a sync if there's anything remaining unsynced
-                settings.lastSyncGeneration = payload.generation
+                )
             }
         }
     }

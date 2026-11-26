@@ -6,14 +6,10 @@ getStampRallyNotes:
 SELECT * FROM stampRallyNotes
 WHERE stampRallyId = :stampRallyId;
 
-updateArtistNotes:
-INSERT INTO artistNotes(artistId, dataYear, notes, generation, updatedAt)
-VALUES(:artistId, :dataYear, :notes, :generation, :updatedAt)
-ON CONFLICT(artistId, dataYear)
-DO UPDATE SET notes = excluded.notes;
+insertArtistNotes:
+INSERT OR REPLACE INTO artistNotes
+VALUES ?;
 
-updateStampRallyNotes:
-INSERT INTO stampRallyNotes(stampRallyId, notes, generation, updatedAt)
-VALUES(:stampRallyId, :notes, :generation, :updatedAt)
-ON CONFLICT(stampRallyId)
-DO UPDATE SET notes = excluded.notes;
+insertStampRallyNotes:
+INSERT OR REPLACE INTO stampRallyNotes
+VALUES ?;

@@ -14,7 +14,7 @@ data class MerchInfo(
     companion object {
         fun fake(id: String) = MerchInfo(
             name = id,
-            uuid = Utils.uuidFromRandomBytes(id),
+            uuid = Uuid.fromRandomWithSeed(id),
             categories = null,
             notes = null,
             faked = true,

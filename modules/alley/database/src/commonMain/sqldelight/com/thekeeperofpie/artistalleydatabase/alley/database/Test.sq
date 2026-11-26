@@ -7,6 +7,10 @@ SELECT artistEntry.id, artistUserEntry.favorite, artistUserEntry.ignored FROM ar
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry.id = artistUserEntry.artistId AND artistUserEntry.dataYear = :dataYear;
 
+insertArtistNotes:
+INSERT OR REPLACE INTO artistNotes
+VALUES ?;
+
 getArtistNotes:
 SELECT artistNotes.* FROM artistNotes
 ORDER BY artistNotes.artistId, artistNotes.dataYear;

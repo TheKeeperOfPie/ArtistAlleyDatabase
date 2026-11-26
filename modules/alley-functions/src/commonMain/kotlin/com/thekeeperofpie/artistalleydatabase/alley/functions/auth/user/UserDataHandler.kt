@@ -4,6 +4,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
@@ -60,6 +61,12 @@ object UserDataHandler {
             upperGeneration = upperGeneration,
         ).awaitAsList()
 
+        val artistNotesChanges = database.userArtistNotesQueries.getChangesBetween(
+            userId = userId,
+            lowerGeneration = lowerGeneration,
+            upperGeneration = upperGeneration,
+        ).awaitAsList()
+
         val stampRallyChanges = database.userStampRallyQueries.getChangesBetween(
             userId = userId,
             lowerGeneration = lowerGeneration,
@@ -88,6 +95,15 @@ object UserDataHandler {
                     id = it.artistId,
                     favorite = it.favorite,
                     ignored = it.ignored,
+                    updatedAt = it.updatedAt,
+                )
+            },
+            artistNotes = artistNotesChanges.map {
+                UserDataSyncPayload.ArtistNotes(
+                    generation = it.generation,
+                    dataYear = it.dataYear,
+                    artistId = it.artistId,
+                    notes = it.notes,
                     updatedAt = it.updatedAt,
                 )
             },
@@ -129,9 +145,9 @@ object UserDataHandler {
         val nextGeneration =
             database.generationQueries.incrementUserGeneration(userId).awaitAsOne()
         return database.transactionWithResult {
+            val now = clock.now()
             // TODO: Handle deletions
             payload.artists?.forEach {
-                val now = clock.now()
                 database.userArtistQueries.insertUserArtist(
                     UserArtist(
                         userId = userId,
@@ -144,9 +160,20 @@ object UserDataHandler {
                     )
                 )
             }
+            payload.artistNotes?.forEach {
+                database.userArtistNotesQueries.insertUserArtistNotes(
+                    UserArtistNotes(
+                        userId = userId,
+                        dataYear = it.dataYear,
+                        artistId = it.artistId,
+                        notes = it.notes,
+                        generation = nextGeneration,
+                        updatedAt = it.updatedAt?.coerceAtMost(now) ?: now,
+                    )
+                )
+            }
 
             payload.rallies?.forEach {
-                val now = clock.now()
                 database.userStampRallyQueries.insertUserStampRally(
                     UserStampRally(
                         userId = userId,
@@ -160,7 +187,6 @@ object UserDataHandler {
             }
 
             payload.series?.forEach {
-                val now = clock.now()
                 database.userSeriesQueries.insertUserSeries(
                     UserSeries(
                         userId = userId,
@@ -173,7 +199,6 @@ object UserDataHandler {
             }
 
             payload.merch?.forEach {
-                val now = clock.now()
                 database.userMerchQueries.insertUserMerch(
                     UserMerch(
                         userId = userId,

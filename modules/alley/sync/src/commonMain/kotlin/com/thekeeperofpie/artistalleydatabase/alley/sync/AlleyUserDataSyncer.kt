@@ -1,12 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.alley.sync
 
+import com.thekeeperofpie.artistalleydatabase.alley.database.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedArtistId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 
 class AlleyUserDataSyncer(
-    private val userEntryDao: UserEntryDao,
     private val userDataSyncDao: UserDataSyncDao,
+    private val userEntryDao: UserEntryDao,
+    private val userNotesDao: UserNotesDao,
+    private val database: () -> AlleySqlDatabase,
     private val settings: AlleyUserSettings,
 ) {
     suspend fun getPayload(): UserDataSyncPayload {
@@ -21,6 +26,15 @@ class AlleyUserDataSyncer(
                     id = it.artistId,
                     favorite = it.favorite,
                     ignored = it.ignored,
+                    updatedAt = it.updatedAt,
+                )
+            },
+            artistNotes = payload.artistNotesChangesSince.map {
+                UserDataSyncPayload.ArtistNotes(
+                    generation = it.generation,
+                    dataYear = it.dataYear,
+                    artistId = EncryptedArtistId(it.artistId),
+                    notes = it.notes,
                     updatedAt = it.updatedAt,
                 )
             },
@@ -53,6 +67,24 @@ class AlleyUserDataSyncer(
     }
 
     suspend fun syncFromServer(status: Short, syncPayload: UserDataSyncPayload) {
-        userEntryDao.insertSyncPayload(status, syncPayload)
+        // On a 409 Conflict, the server rejected client changes, preserve them by
+        // rebasing them, incrementing their generation above the server one. Further down,
+        // any values inside the payload which are higher generation than the local copy
+        // or have a later updatedAt will overwrite anything rebased here
+        if (status == 409.toShort()) {
+            database().generationQueries.rebaseGeneration(
+                serverGeneration = syncPayload.generation ?: 0,
+                lastSyncGeneration = settings.lastSyncGeneration ?: 0
+            ).await()
+        }
+        database().transactionWithResult {
+            userEntryDao.insertSyncPayload(syncPayload)
+            userNotesDao.insertSyncPayload(syncPayload)
+
+            afterCommit {
+                // TODO: Also schedule a sync if there's anything remaining unsynced
+                settings.lastSyncGeneration = syncPayload.generation
+            }
+        }
     }
 }

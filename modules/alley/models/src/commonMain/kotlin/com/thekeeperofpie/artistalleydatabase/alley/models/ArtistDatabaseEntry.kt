@@ -136,7 +136,3 @@ fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(
     merchConfirmed = merchConfirmed,
     images = images,
 )
-
-fun ArtistDatabaseEntry.toDatabaseEntry() {
-
-}

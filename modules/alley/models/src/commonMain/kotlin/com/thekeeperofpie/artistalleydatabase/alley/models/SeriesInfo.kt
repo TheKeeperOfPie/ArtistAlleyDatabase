@@ -46,7 +46,7 @@ data class SeriesInfo(
         fun fake(id: String) = SeriesInfo(
             rowid = SeriesRowId(0),
             id = id,
-            uuid = Utils.uuidFromRandomBytes(id),
+            uuid = Uuid.fromRandomWithSeed(id),
             notes = null,
             aniListId = null,
             aniListType = AniListType.NONE,
