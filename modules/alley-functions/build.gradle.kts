@@ -43,9 +43,9 @@ kotlin {
         jsMain.dependencies {
             implementation(libs.kotlinx.browser)
             implementation(projects.modules.cloudflare)
-            implementation(npm("@cloudflare/pages-plugin-cloudflare-access", "1.0.5"))
-            implementation(npm("@noble/curves", "2.0.1"))
-            implementation(npm("aws4fetch", "1.0.20"))
+            npm("@cloudflare/pages-plugin-cloudflare-access", "1.0.5")
+            npm("@noble/curves", "2.0.1")
+            npm("aws4fetch", "1.0.20")
         }
     }
 }

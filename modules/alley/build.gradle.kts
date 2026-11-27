@@ -84,8 +84,8 @@ kotlin {
             implementation(libs.sqldelight.web.worker.driver.wasm.js)
         }
         webMain.dependencies {
-            implementation(devNpm("copy-webpack-plugin", "9.1.0"))
-            implementation(npm("@sqlite.org/sqlite-wasm", "3.49.1-build2"))
+            npmDev("copy-webpack-plugin", "9.1.0")
+            npm("@sqlite.org/sqlite-wasm", "3.49.1-build2")
         }
     }
 }

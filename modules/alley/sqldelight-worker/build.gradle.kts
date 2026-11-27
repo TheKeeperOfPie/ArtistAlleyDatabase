@@ -19,7 +19,7 @@ kotlin {
         jsMain.dependencies {
             implementation(libs.kotlinx.browser)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(npm("@sqlite.org/sqlite-wasm", "^3.47.2-build1"))
+            npm("@sqlite.org/sqlite-wasm", "^3.47.2-build1")
         }
     }
 }

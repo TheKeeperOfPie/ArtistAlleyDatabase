@@ -19,7 +19,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.secrets)
-            implementation(npm("@cloudflare/pages-plugin-cloudflare-access", "1.0.5"))
+            npm("@cloudflare/pages-plugin-cloudflare-access", "1.0.5")
         }
     }
 }
