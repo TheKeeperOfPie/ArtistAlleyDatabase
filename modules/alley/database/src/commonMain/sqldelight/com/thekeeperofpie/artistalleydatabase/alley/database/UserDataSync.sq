@@ -10,6 +10,10 @@ getStampRallyChangesSince:
 SELECT * FROM stampRallyUserEntry
 WHERE generation > :lastSyncGeneration;
 
+getStampRallyNotesChangesSince:
+SELECT * FROM stampRallyNotes
+WHERE generation > :lastSyncGeneration;
+
 getSeriesChangesSince:
 SELECT * FROM seriesUserEntry
 WHERE generation > :lastSyncGeneration;

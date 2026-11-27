@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRallyNotes
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import kotlin.time.Clock
 
@@ -73,6 +74,12 @@ object UserDataHandler {
             upperGeneration = upperGeneration,
         ).awaitAsList()
 
+        val stampRallyNotesChanges = database.userStampRallyNotesQueries.getChangesBetween(
+            userId = userId,
+            lowerGeneration = lowerGeneration,
+            upperGeneration = upperGeneration,
+        ).awaitAsList()
+
         val seriesChanges = database.userSeriesQueries.getChangesBetween(
             userId = userId,
             lowerGeneration = lowerGeneration,
@@ -113,6 +120,14 @@ object UserDataHandler {
                     id = it.stampRallyId,
                     favorite = it.favorite,
                     ignored = it.ignored,
+                    updatedAt = it.updatedAt,
+                )
+            },
+            rallyNotes = stampRallyNotesChanges.map {
+                UserDataSyncPayload.StampRallyNotes(
+                    generation = it.generation,
+                    stampRallyId = it.stampRallyId,
+                    notes = it.notes,
                     updatedAt = it.updatedAt,
                 )
             },
@@ -180,6 +195,18 @@ object UserDataHandler {
                         stampRallyId = it.id,
                         favorite = it.favorite,
                         ignored = it.ignored,
+                        generation = nextGeneration,
+                        updatedAt = it.updatedAt?.coerceAtMost(now) ?: now,
+                    )
+                )
+            }
+
+            payload.rallyNotes?.forEach {
+                database.userStampRallyNotesQueries.insertUserStampRallyNotes(
+                    UserStampRallyNotes(
+                        userId = userId,
+                        stampRallyId = it.stampRallyId,
+                        notes = it.notes,
                         generation = nextGeneration,
                         updatedAt = it.updatedAt?.coerceAtMost(now) ?: now,
                     )

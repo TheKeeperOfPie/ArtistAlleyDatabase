@@ -26,18 +26,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRallyNotes
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedArtistId
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedStampRallyId
 
 object BackendDatabases {
 
     private val userIdAdapter = object : ColumnAdapter<UserId, String> {
         override fun decode(databaseValue: String) = UserId(databaseValue)
         override fun encode(value: UserId) = value.obfuscatedId
-    }
-
-    private val encryptedArtistIdAdapter = object : ColumnAdapter<EncryptedArtistId, String> {
-        override fun decode(databaseValue: String) = EncryptedArtistId(databaseValue)
-        override fun encode(value: EncryptedArtistId) = value.id
     }
 
     internal fun editDatabase(driver: SqlDriver) = AlleySqlDatabase(
@@ -188,7 +185,10 @@ object BackendDatabases {
         userArtistNotesAdapter = UserArtistNotes.Adapter(
             userIdAdapter = userIdAdapter,
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
-            artistIdAdapter = encryptedArtistIdAdapter,
+            artistIdAdapter = object : ColumnAdapter<EncryptedArtistId, String> {
+                override fun decode(databaseValue: String) = EncryptedArtistId(databaseValue)
+                override fun encode(value: EncryptedArtistId) = value.id
+            },
             updatedAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
         ),
         userGenerationAdapter = UserGeneration.Adapter(
@@ -212,6 +212,14 @@ object BackendDatabases {
         ),
         userStampRallyAdapter = UserStampRally.Adapter(
             userIdAdapter = userIdAdapter,
+            updatedAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
+        ),
+        userStampRallyNotesAdapter = UserStampRallyNotes.Adapter(
+            userIdAdapter = userIdAdapter,
+            stampRallyIdAdapter = object : ColumnAdapter<EncryptedStampRallyId, String> {
+                override fun decode(databaseValue: String) = EncryptedStampRallyId(databaseValue)
+                override fun encode(value: EncryptedStampRallyId) = value.id
+            },
             updatedAtAdapter = ColumnAdapters.instantEpochSecondsAdapter,
         ),
     )

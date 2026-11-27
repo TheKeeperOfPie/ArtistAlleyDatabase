@@ -28,6 +28,10 @@ LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
 WHERE stampRallyEntry.dataYear = :dataYear;
 
+insertStampRallyNotes:
+INSERT OR REPLACE INTO stampRallyNotes
+VALUES ?;
+
 getStampRallyNotes:
 SELECT stampRallyNotes.* FROM stampRallyNotes
 ORDER BY stampRallyNotes.stampRallyId;

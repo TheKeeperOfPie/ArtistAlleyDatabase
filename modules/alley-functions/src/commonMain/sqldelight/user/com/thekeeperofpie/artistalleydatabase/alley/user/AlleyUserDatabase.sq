@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserArti
 import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedArtistId;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedStampRallyId;
 import kotlin.Boolean;
 import kotlin.time.Instant;
 
@@ -60,6 +61,15 @@ CREATE TABLE IF NOT EXISTS userStampRally (
     stampRallyId TEXT NOT NULL,
     favorite INTEGER AS Boolean,
     ignored INTEGER AS Boolean,
+    generation INTEGER NOT NULL,
+    updatedAt INTEGER AS Instant NOT NULL,
+    PRIMARY KEY (userId, stampRallyId)
+);
+
+CREATE TABLE IF NOT EXISTS userStampRallyNotes (
+    userId TEXT AS UserId NOT NULL,
+    stampRallyId TEXT AS EncryptedStampRallyId NOT NULL,
+    notes TEXT,
     generation INTEGER NOT NULL,
     updatedAt INTEGER AS Instant NOT NULL,
     PRIMARY KEY (userId, stampRallyId)

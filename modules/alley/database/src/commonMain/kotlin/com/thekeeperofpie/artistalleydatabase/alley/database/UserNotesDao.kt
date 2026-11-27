@@ -104,5 +104,23 @@ class UserNotesDao(
                 )
             }
         }
+        payload.rallyNotes?.forEach {
+            val userEntry = notesDao.getStampRallyNotes(it.stampRallyId.id).awaitAsOneOrNull()
+            val currentUpdatedAt = userEntry?.updatedAt
+            val incomingUpdatedAt = it.updatedAt
+            if (userEntry == null ||
+                userEntry.generation < it.generation ||
+                (currentUpdatedAt != null && incomingUpdatedAt != null && currentUpdatedAt < incomingUpdatedAt)
+            ) {
+                notesDao.insertStampRallyNotes(
+                    StampRallyNotes(
+                        stampRallyId = it.stampRallyId.id,
+                        notes = it.notes ?: userEntry?.notes,
+                        generation = it.generation,
+                        updatedAt = incomingUpdatedAt,
+                    )
+                )
+            }
+        }
     }
 }

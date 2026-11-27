@@ -1,0 +1,15 @@
+insertUserStampRallyNotes:
+INSERT INTO userStampRallyNotes
+VALUES ?
+ON CONFLICT(userId, stampRallyId) DO UPDATE SET
+    notes = IIF(excluded.updatedAt > updatedAt, IFNULL(excluded.notes, notes), notes),
+    updatedAt = MAX(excluded.updatedAt, updatedAt),
+    generation = excluded.generation;
+
+getChangesBetween:
+SELECT generation, stampRallyId, notes, updatedAt FROM userStampRallyNotes
+WHERE (
+    userId = :userId AND
+    generation > :lowerGeneration AND
+    generation <= :upperGeneration
+);

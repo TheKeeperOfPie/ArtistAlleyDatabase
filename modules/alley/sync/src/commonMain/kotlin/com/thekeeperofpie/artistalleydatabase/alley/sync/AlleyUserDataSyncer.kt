@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedArtistId
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedStampRallyId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 
 class AlleyUserDataSyncer(
@@ -44,6 +45,14 @@ class AlleyUserDataSyncer(
                     id = it.stampRallyId,
                     favorite = it.favorite,
                     ignored = it.ignored,
+                    updatedAt = it.updatedAt,
+                )
+            },
+            rallyNotes = payload.rallyNotesChangesSince.map {
+                UserDataSyncPayload.StampRallyNotes(
+                    generation = it.generation,
+                    stampRallyId = EncryptedStampRallyId(it.stampRallyId),
+                    notes = it.notes,
                     updatedAt = it.updatedAt,
                 )
             },

@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.SingleIn
@@ -29,6 +30,7 @@ class UserDataSyncDao(
                 artistChangesSince = syncDao.getArtistChangesSince(lastSyncGeneration).awaitAsList(),
                 artistNotesChangesSince = syncDao.getArtistNotesChangesSince(lastSyncGeneration).awaitAsList(),
                 rallyChangesSince = syncDao.getStampRallyChangesSince(lastSyncGeneration).awaitAsList(),
+                rallyNotesChangesSince = syncDao.getStampRallyNotesChangesSince(lastSyncGeneration).awaitAsList(),
                 seriesChangesSince = syncDao.getSeriesChangesSince(lastSyncGeneration).awaitAsList(),
                 merchChangesSince = syncDao.getMerchChangesSince(lastSyncGeneration).awaitAsList(),
             )
@@ -40,6 +42,7 @@ class UserDataSyncDao(
         val artistChangesSince: List<ArtistUserEntry>,
         val artistNotesChangesSince: List<ArtistNotes>,
         val rallyChangesSince: List<StampRallyUserEntry>,
+        val rallyNotesChangesSince: List<StampRallyNotes>,
         val seriesChangesSince: List<SeriesUserEntry>,
         val merchChangesSince: List<MerchUserEntry>,
     )

@@ -28,6 +28,7 @@ fun StampRallyEntry.toStampRallyDatabaseEntry() =
         lastEditTime = lastEditTime,
     )
 
+// TODO: It should be possible to remove the DataYear parameter
 fun StampRallyDatabaseEntry.toStampRallyEntry(dataYear: DataYear) =
     StampRallyEntry(
         id = id,

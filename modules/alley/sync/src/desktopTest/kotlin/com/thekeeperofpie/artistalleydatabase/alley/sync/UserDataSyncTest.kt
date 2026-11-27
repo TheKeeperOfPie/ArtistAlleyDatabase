@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.auth.user.UserId
 import com.thekeeperofpie.artistalleydatabase.alley.functions.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryProvider
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
@@ -33,6 +34,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyNotes
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.User
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtist
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserArtistNotes
@@ -40,7 +43,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserMerch
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSeries
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRally
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserStampRallyNotes
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedArtistId
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedStampRallyId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -117,6 +122,22 @@ class UserDataSyncTest {
             )
         }
 
+    private val stampRallyNotesData = stampRallyData
+        .mapIndexed { index, data ->
+            StampRallyNotesData(
+                Triple(
+                    data.source.stampRally,
+                    data.source.userEntry,
+                    StampRallyNotes(
+                        stampRallyId = data.source.stampRally.id,
+                        notes = "notes-$index",
+                        generation = 0,
+                        updatedAt = null,
+                    ),
+                )
+            )
+        }
+
     private val seriesData = SeriesWithUserDataProvider.values
         .mapIndexed { index, data ->
             val favorite = index % 2 == 0
@@ -153,6 +174,11 @@ class UserDataSyncTest {
     @Test
     fun singleDevice_uploadOnce_rallies() = runTest {
         singleDevice_uploadOnce(ParametersStampRallies)
+    }
+
+    @Test
+    fun singleDevice_uploadOnce_rallyNotes() = runTest {
+        singleDevice_uploadOnce(ParametersStampRallyNotes)
     }
 
     @Test
@@ -222,8 +248,18 @@ class UserDataSyncTest {
     }
 
     @Test
+    fun singleDevice_downloadOnce_artistNotes() = runTest {
+        singleDevice_downloadOnce(ParametersArtistNotes)
+    }
+
+    @Test
     fun singleDevice_downloadOnce_rallies() = runTest {
         singleDevice_downloadOnce(ParametersStampRallies)
+    }
+
+    @Test
+    fun singleDevice_downloadOnce_rallyNotes() = runTest {
+        singleDevice_downloadOnce(ParametersStampRallyNotes)
     }
 
     @Test
@@ -809,7 +845,7 @@ class UserDataSyncTest {
     }
 
     private val ParametersArtists = Parameters(
-        data = { this.artistData.take(3).toList() },
+        data = { artistData.take(3).toList() },
         field = { it.artists },
         insertBaseEntry = {
             insertArtist(it.source.artist.databaseEntry.toArtistEntry(it.source.artist.year))
@@ -824,7 +860,7 @@ class UserDataSyncTest {
     )
 
     private val ParametersArtistNotes = Parameters(
-        data = { this.artistNotesData.take(3).toList() },
+        data = { artistNotesData.take(3).toList() },
         field = { it.artistNotes },
         insertBaseEntry = {
             insertArtist(it.source.first.databaseEntry.toArtistEntry(it.source.first.year))
@@ -844,8 +880,26 @@ class UserDataSyncTest {
         toServerModel = ArtistNotesData::toServerModel,
     )
 
+    private val ParametersStampRallyNotes = Parameters(
+        data = { stampRallyNotesData.take(3).toList() },
+        field = { it.rallyNotes },
+        insertBaseEntry = { insertStampRally(it.source.first.toStampRallyEntry(it.source.first.year)) },
+        insertUserEntry = { _, notesDao, data ->
+            notesDao.updateStampRallyNotes(
+                stampRallyId = data.source.first.id,
+                notes = data.source.third.notes,
+            )
+        },
+        insertServerEntry = { userStampRallyNotesQueries.insertUserStampRallyNotes(it) },
+        getClientEntries = { testQueries.getStampRallyNotes().awaitAsList() },
+        getServerEntries = { testQueries.getAllUserStampRallyNotes(USER_ID).awaitAsList() },
+        toUserEntry = StampRallyNotesData::toUserEntry,
+        toPayload = StampRallyNotesData::toPayload,
+        toServerModel = StampRallyNotesData::toServerModel,
+    )
+
     private val ParametersStampRallies = Parameters(
-        data = { this.stampRallyData.take(3).toList() },
+        data = { stampRallyData.take(3).toList() },
         field = { it.rallies },
         insertBaseEntry = {
             insertStampRally(it.source.stampRally.toStampRallyEntry(it.source.stampRally.year))
@@ -860,7 +914,7 @@ class UserDataSyncTest {
     )
 
     private val ParametersSeries = Parameters(
-        data = { this.seriesData.take(3).toList() },
+        data = { seriesData.take(3).toList() },
         field = { it.series },
         insertBaseEntry = { insertSeries(it.source.series.toSeriesEntry()) },
         insertUserEntry = { entryDao, _, data -> entryDao.insertSeriesUserEntry(data.source.userEntry) },
@@ -873,7 +927,7 @@ class UserDataSyncTest {
     )
 
     private val ParametersMerch = Parameters(
-        data = { this.merchData.take(3).toList() },
+        data = { merchData.take(3).toList() },
         field = { it.merch },
         insertBaseEntry = { insertMerch(it.source.merch) },
         insertUserEntry = { entryDao, _, data -> entryDao.insertMerchUserEntry(data.source.userEntry) },
@@ -989,6 +1043,30 @@ class UserDataSyncTest {
             stampRallyId = source.stampRally.id,
             favorite = source.userEntry.favorite,
             ignored = source.userEntry.ignored,
+            updatedAt = updatedAt,
+            generation = generation,
+        )
+    }
+
+    private data class StampRallyNotesData(val source: Triple<StampRallyDatabaseEntry, StampRallyUserEntry, StampRallyNotes>) {
+
+        fun toEdited(notes: String) =
+            copy(source = source.copy(third = source.third.copy(notes = notes)))
+
+        fun toUserEntry(updatedAt: Instant, generation: Long) =
+            source.third.copy(updatedAt = updatedAt, generation = generation)
+
+        fun toPayload(updatedAt: Instant, generation: Long) = UserDataSyncPayload.StampRallyNotes(
+            generation = generation,
+            stampRallyId = EncryptedStampRallyId(source.third.stampRallyId),
+            notes = source.third.notes,
+            updatedAt = updatedAt,
+        )
+
+        fun toServerModel(updatedAt: Instant, generation: Long) = UserStampRallyNotes(
+            userId = USER_ID,
+            stampRallyId = EncryptedStampRallyId(source.third.stampRallyId),
+            notes = source.third.notes,
             updatedAt = updatedAt,
             generation = generation,
         )

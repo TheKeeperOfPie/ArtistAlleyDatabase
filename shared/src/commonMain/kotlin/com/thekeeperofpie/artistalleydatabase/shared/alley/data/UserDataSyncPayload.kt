@@ -53,7 +53,7 @@ data class UserDataSyncPayload(
     @Serializable
     data class StampRallyNotes(
         val generation: Long,
-        val stampRallyId: String,
+        val stampRallyId: EncryptedStampRallyId,
         val notes: String? = null,
         val updatedAt: Instant? = null,
     )

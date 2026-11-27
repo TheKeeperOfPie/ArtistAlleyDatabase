@@ -10,6 +10,10 @@ getAllUserStampRallies:
 SELECT * FROM userStampRally
 WHERE userId = :userId;
 
+getAllUserStampRallyNotes:
+SELECT * FROM userStampRallyNotes
+WHERE userId = :userId;
+
 getAllUserSeries:
 SELECT * FROM userSeries
 WHERE userId = :userId;

@@ -7,3 +7,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 @Serializable
 value class EncryptedArtistId(val id: String)
+
+// TODO: Not actually encrypted yet, will be done in follow-up
+@JvmInline
+@Serializable
+value class EncryptedStampRallyId(val id: String)
