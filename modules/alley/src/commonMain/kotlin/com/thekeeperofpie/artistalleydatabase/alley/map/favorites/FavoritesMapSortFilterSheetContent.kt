@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_data_year
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.TransformState
@@ -80,7 +81,8 @@ internal fun FavoritesMapFilterSheetContent(
             options = DataYear.entries,
             selected = state.dataYear,
             onSelectedChanged = state.onDataYearChange,
-            label = { Text(stringResource(it.shortName)) },
+            label = { Text(stringResource(Res.string.alley_filter_data_year)) },
+            summaryLabel = { Text(stringResource(it.shortName)) },
         )
 
         // TODO: This doesn't actually work

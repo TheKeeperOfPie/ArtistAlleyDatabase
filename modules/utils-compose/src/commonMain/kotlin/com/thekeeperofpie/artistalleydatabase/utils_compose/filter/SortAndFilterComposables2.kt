@@ -649,7 +649,9 @@ fun <T> DropdownFilterSection(
     options: List<T>,
     selected: () -> T,
     onSelectedChanged: (T) -> Unit,
-    label: @Composable (T) -> Unit,
+    label: @Composable () -> Unit,
+    summaryLabel: @Composable (T) -> Unit,
+    optionLabel: @Composable (T) -> Unit = summaryLabel,
 ) {
 
     var expanded by remember { mutableStateOf(false) }
@@ -669,7 +671,7 @@ fun <T> DropdownFilterSection(
                 .align(Alignment.CenterVertically)
         ) {
             ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                label(selected())
+                label()
             }
         }
 
@@ -681,7 +683,7 @@ fun <T> DropdownFilterSection(
             ) {
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
                     ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                        label(selected())
+                        summaryLabel(selected())
                     }
                 }
 
@@ -690,7 +692,13 @@ fun <T> DropdownFilterSection(
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 options.forEachIndexed { index, item ->
                     DropdownMenuItem(
-                        text = { label(item) },
+                        text = {
+                            Box(modifier = Modifier.padding(vertical = 10.dp)) {
+                                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                                    optionLabel(item)
+                                }
+                            }
+                        },
                         onClick = {
                             onSelectedChanged(options[index])
                             expanded = false

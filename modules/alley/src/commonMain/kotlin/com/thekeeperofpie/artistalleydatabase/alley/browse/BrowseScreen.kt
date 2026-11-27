@@ -59,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.search.SeriesSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.series.ui.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
+import com.thekeeperofpie.artistalleydatabase.alley.tags.textWithExplanation
 import com.thekeeperofpie.artistalleydatabase.alley.ui.AlleySearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
@@ -201,9 +202,9 @@ object BrowseScreen {
                                                 options = AniListLanguageOption.entries,
                                                 selected = state.languageOption,
                                                 onSelectedChanged = state.onLanguageOptionChange,
-                                                label = {
-                                                    Text(stringResource(Res.string.alley_settings_series_language))
-                                                },
+                                                label = { Text(stringResource(Res.string.alley_settings_series_language)) },
+                                                summaryLabel = { Text(stringResource(it.textRes)) },
+                                                optionLabel = { Text(stringResource(it.textWithExplanation)) },
                                             )
 
                                             HorizontalDivider()
