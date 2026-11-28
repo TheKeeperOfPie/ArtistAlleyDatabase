@@ -6,3 +6,6 @@ RETURNING userId;
 insertCode:
 INSERT OR REPLACE INTO authCode
 VALUES ?;
+
+getCodes:
+SELECT * FROM authCode;

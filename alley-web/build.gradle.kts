@@ -53,6 +53,7 @@ kotlin {
         implementation(libs.kotlinx.coroutines.core)
         implementation(projects.modules.alley)
         implementation(projects.modules.alley.data)
+        implementation(projects.modules.alley.sync)
         implementation(projects.modules.utils)
         implementation(projects.modules.utilsBuildConfig)
         implementation(projects.modules.utilsCompose)

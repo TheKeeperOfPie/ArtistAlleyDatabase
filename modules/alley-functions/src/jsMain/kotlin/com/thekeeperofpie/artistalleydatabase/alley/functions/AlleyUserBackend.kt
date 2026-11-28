@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyAuthorization
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendUserRequest
 import com.thekeeperofpie.artistalleydatabase.alley.user.AuthCode
 import com.thekeeperofpie.artistalleydatabase.alley.user.User
+import com.thekeeperofpie.artistalleydatabase.alley.user.UserGeneration
 import com.thekeeperofpie.artistalleydatabase.alley.user.UserSession
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
@@ -100,7 +101,7 @@ internal object AlleyUserBackend {
 
         // TODO: Hash
         val userId = database.authCodeQueries.consumeCode(authCode).awaitAsOneOrNull()
-            ?: return Response("", ResponseInit(status = 403))
+            ?: return Response("", ResponseInit(status = 403, headers = Headers()))
         val refreshToken = crypto.createRefreshToken()
         database.userQueries.provisionUser(
             User(
@@ -119,6 +120,8 @@ internal object AlleyUserBackend {
                 createdAt = Clock.System.now(),
             )
         )
+
+        database.generationQueries.provisionGeneration(UserGeneration(userId, 0))
 
         return Response("", ResponseInit(status = 200, headers = Headers().apply {
             attachRefreshToken(refreshToken)

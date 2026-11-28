@@ -6,14 +6,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.UriHandler
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendUserRequest
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.web.LockManager
 import com.thekeeperofpie.artistalleydatabase.utils.web.cookieStore
+import com.thekeeperofpie.artistalleydatabase.utils.web.promise
 import dev.zacsweers.metro.Inject
+import io.ktor.http.HttpStatusCode
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
@@ -35,6 +42,7 @@ actual class AlleyUserAuth(
         appScope.launch {
             try {
                 isLoggedIn = cookieStore.get(COOKIE_CLIENT_AUTH_SIGNAL).await()?.value != null
+                checkAuth()
                 cookieStore.addEventListener("change") {
                     val changedAuth = it.changed.toList()
                         .find { it.name == COOKIE_CLIENT_AUTH_SIGNAL }
@@ -48,14 +56,34 @@ actual class AlleyUserAuth(
                     }
                 }
             } catch (t: Throwable) {
+                currentCoroutineContext().ensureActive()
                 t.printStackTrace()
             }
         }
 
         appScope.launch {
-            val pendingUserAuthCode = settings.pendingUserAuthCode
-            if (!pendingUserAuthCode.isNullOrEmpty()) {
-                userApi.exchangeAuthCode(pendingUserAuthCode)
+            if (!settings.pendingUserAuthCode.isNullOrEmpty()) {
+                try {
+                    // Use web lock to avoid double initialization of a tab from
+                    // exchanging the auth code multiple times
+                    (window.navigator as Navigator).locks.request<JsAny?>("AADB_authCode") {
+                        promise {
+                            val pendingUserAuthCode = settings.pendingUserAuthCode
+                            if (pendingUserAuthCode != null &&
+                                cookieStore.get(COOKIE_CLIENT_AUTH_SIGNAL).await()?.value == null
+                            ) {
+                                userApi.exchangeAuthCode(pendingUserAuthCode)
+                            }
+                            null
+                        }
+                    }.await()
+                } catch (_: Throwable) {
+                    currentCoroutineContext().ensureActive()
+                    val pendingUserAuthCode = settings.pendingUserAuthCode
+                    if (pendingUserAuthCode != null) {
+                        userApi.exchangeAuthCode(pendingUserAuthCode)
+                    }
+                }
                 settings.pendingUserAuthCode = null
                 delay(1.seconds)
             }
@@ -73,10 +101,21 @@ actual class AlleyUserAuth(
         }
     }
 
-    actual fun checkAuth() {
+    private fun checkAuth() {
         appScope.launch {
-            checkedAuthCode.await()
-            userApi.checkAuth()
+            try {
+                checkedAuthCode.await()
+                userApi.checkAuth()
+            } catch (_: Throwable) {
+                currentCoroutineContext().ensureActive()
+            }
         }
     }
+
+    actual suspend fun sync(payload: UserDataSyncPayload): Pair<HttpStatusCode, BackendUserRequest.Sync.Response>? =
+        userApi.sync(payload)
+}
+
+private external interface Navigator {
+    val locks: LockManager
 }

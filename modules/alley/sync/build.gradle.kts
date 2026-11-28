@@ -20,9 +20,11 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.sqldelight.coroutines.extensions)
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.database)
             implementation(projects.modules.alley.user)
+            implementation(projects.modules.utils)
         }
         desktopTest.dependencies {
             implementation(projects.modules.alleyFunctions)

@@ -135,9 +135,6 @@ object FavoritesScreen {
         eventSink: (Event) -> Unit,
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-            LaunchedEffect(state, eventSink) {
-                eventSink(Event.Shown)
-            }
             val artistsEntries = state.artistsEntries.collectAsLazyPagingItems()
             val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItems()
             val seriesEntries = state.seriesEntries.collectAsLazyPagingItems()
@@ -591,6 +588,5 @@ object FavoritesScreen {
         ) : Event
 
         data object Login : Event
-        data object Shown : Event
     }
 }

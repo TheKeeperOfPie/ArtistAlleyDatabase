@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDa
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserDataProvider
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserAuth
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserSettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -49,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.EncryptedStampRa
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.UserDataSyncPayload
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
@@ -689,6 +691,7 @@ class UserDataSyncTest {
             )
     }
 
+    context(scope: TestScope)
     private suspend fun createDatabases(
         artistData: List<ArtistData> = this.artistData.take(3).toList(),
     ): TestData<ArtistData> {
@@ -707,10 +710,12 @@ class UserDataSyncTest {
             clock = clock,
         )
         val syncer = AlleyUserDataSyncer(
+            applicationScope = scope,
+            database = { clientDatabase },
             userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
             userEntryDao = userEntryDao,
             userNotesDao = userNotesDao,
-            database = { clientDatabase },
+            userAuth = AlleyUserAuth(),
             settings = settings,
         )
         return TestData(
@@ -724,6 +729,7 @@ class UserDataSyncTest {
         )
     }
 
+    context(scope: TestScope)
     private suspend fun <Source> createDatabases(
         parameters: Parameters<Source, *, *, *>,
     ): TestData<Source> {
@@ -742,10 +748,12 @@ class UserDataSyncTest {
             clock = clock,
         )
         val syncer = AlleyUserDataSyncer(
+            applicationScope = scope,
+            database = { clientDatabase },
             userDataSyncDao = UserDataSyncDao(database = { clientDatabase }),
             userEntryDao = userEntryDao,
             userNotesDao = userNotesDao,
-            database = { clientDatabase },
+            userAuth = AlleyUserAuth(),
             settings = settings,
         )
         return TestData(
